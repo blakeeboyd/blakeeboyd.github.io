@@ -1,0 +1,392 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f9fafb;
+    color: #1f2937;
+    min-height: 100vh;
+    padding: 1.5rem;
+}
+
+.container {
+    max-width: 1536px;
+    margin: 0 auto;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+    .grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.left-column,
+.right-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.card {
+    background: white;
+    padding: 2rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+}
+
+.header {
+    margin-bottom: 1.5rem;
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.icon {
+    color: #2563eb;
+}
+
+.subtitle {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.upload-area {
+    position: relative;
+    border: 2px dashed #d1d5db;
+    border-radius: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.upload-area:hover {
+    background-color: #eff6ff;
+    border-color: #2563eb;
+}
+
+.file-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.upload-icon {
+    color: #9ca3af;
+    margin: 0 auto 0.75rem;
+    transition: color 0.3s ease;
+}
+
+.upload-area:hover .upload-icon {
+    color: #2563eb;
+}
+
+.upload-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #4b5563;
+    transition: color 0.3s ease;
+}
+
+.upload-area:hover .upload-text {
+    color: #2563eb;
+}
+
+.upload-hint {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-top: 0.25rem;
+}
+
+.message {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.error-message {
+    background-color: #fef2f2;
+    color: #991b1b;
+}
+
+.debug-message {
+    background-color: #eff6ff;
+    color: #1e40af;
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+}
+
+.message-icon {
+    flex-shrink: 0;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.metadata-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.badge {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.form-input,
+.form-textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-textarea {
+    resize: vertical;
+    font-family: inherit;
+}
+
+.right-column {
+    min-height: 600px;
+}
+
+.json-container {
+    background: #111827;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 600px;
+    animation: fadeInSlide 0.5s ease;
+}
+
+@media (min-width: 1024px) {
+    .json-container {
+        height: auto;
+        flex: 1;
+    }
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateX(2rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.json-header {
+    background: #1f2937;
+    padding: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #374151;
+}
+
+.json-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.json-id {
+    color: #34d399;
+    font-size: 0.75rem;
+    font-family: 'Courier New', monospace;
+    padding: 0.25rem 0.5rem;
+    background: rgba(52, 211, 153, 0.1);
+    border-radius: 0.25rem;
+}
+
+.json-count {
+    color: #9ca3af;
+    font-size: 0.75rem;
+}
+
+.json-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.icon-button {
+    padding: 0.5rem;
+    background: transparent;
+    border: none;
+    border-radius: 0.375rem;
+    color: #d1d5db;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.icon-button:hover {
+    background: #374151;
+}
+
+.json-content {
+    flex: 1;
+    overflow: auto;
+    padding: 1rem;
+}
+
+.json-content::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.json-content::-webkit-scrollbar-track {
+    background: #1f2937;
+}
+
+.json-content::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 4px;
+}
+
+.json-content::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
+}
+
+#jsonOutput {
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    color: #d1d5db;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.json-footer {
+    background: #1f2937;
+    padding: 0.75rem;
+    border-top: 1px solid #374151;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+.footer-stats {
+    display: flex;
+    gap: 1rem;
+}
+
+.stat {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.stat-icon {
+    flex-shrink: 0;
+}
+
+.stat-icon.blue {
+    color: #60a5fa;
+}
+
+.stat-icon.purple {
+    color: #a78bfa;
+}
+
+#verificationStatus.verified {
+    color: #34d399;
+}
+
+#verificationStatus.mismatch {
+    color: #fbbf24;
+}
+
+.placeholder-container {
+    background: #f3f4f6;
+    border-radius: 0.75rem;
+    border: 2px dashed #d1d5db;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    height: 600px;
+}
+
+@media (min-width: 1024px) {
+    .placeholder-container {
+        height: auto;
+        flex: 1;
+    }
+}
+
+.placeholder-icon {
+    color: #9ca3af;
+    opacity: 0.5;
+    margin-bottom: 1rem;
+}
+
+.placeholder-text {
+    color: #9ca3af;
+}

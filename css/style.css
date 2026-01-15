@@ -55,6 +55,7 @@ header {
 nav {
     display: flex;
     align-items: center;
+    justify-content: space-between;
 }
 
 .logo {
@@ -67,6 +68,31 @@ nav {
 
 .logo:hover {
     opacity: 0.7;
+}
+
+.nav-links {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.nav-link {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: 0.375rem;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.nav-link:hover {
+    color: var(--color-text);
+    background-color: var(--color-border);
+}
+
+.nav-link.active {
+    color: var(--color-accent);
+    background-color: rgba(0, 102, 204, 0.1);
 }
 
 /* Main content */
@@ -126,6 +152,66 @@ main {
     }
 }
 
+/* Projects section */
+.projects {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.project-card {
+    display: flex;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: white;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.project-card:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.1);
+}
+
+.project-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 102, 204, 0.1);
+    border-radius: 0.5rem;
+    color: var(--color-accent);
+}
+
+.project-content {
+    flex: 1;
+}
+
+.project-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+    color: var(--color-text);
+}
+
+.project-description {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.5;
+}
+
+.project-link {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-accent);
+}
+
 /* Footer */
 footer {
     padding: var(--spacing-lg) 0;
@@ -150,5 +236,19 @@ footer p {
 
     .hero .subtitle {
         font-size: 1rem;
+    }
+
+    .project-card {
+        flex-direction: column;
+    }
+
+    .project-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .project-icon svg {
+        width: 24px;
+        height: 24px;
     }
 }
