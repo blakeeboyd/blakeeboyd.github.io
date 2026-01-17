@@ -124,13 +124,6 @@
         .back-link:hover {
             text-decoration: underline;
         }
-
-        .demo-gif {
-            width: 100%;
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin: 1rem 0;
-        }
     </style>
 </head>
 <body>
@@ -151,54 +144,15 @@
                 </svg>
                 One-Click Bookmarklet Setup
             </h1>
-            <p class="subtitle">Parse BandLab sample packs instantly while browsing, without downloading HTML files.</p>
+            <p class="subtitle">Parse BandLab sample packs instantly while browsing.</p>
         </div>
 
-        <div class="card" style="margin-bottom: 2rem; background: #fef3c7; border: 2px solid #f59e0b;">
-            <h3 style="color: #92400e; font-weight: 700; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-                Setup Required
-            </h3>
-            <p style="color: #78350f; margin-bottom: 1rem; line-height: 1.6;">
-                Enter the full path to your index.html file below. You can find this by opening index.html in your browser and copying the full address from the address bar.
-            </p>
-            <div style="margin-bottom: 1rem;">
-                <label style="display: block; font-weight: 600; color: #92400e; margin-bottom: 0.5rem;">Path to index.html:</label>
-                <input type="text" id="toolPath" placeholder="https://blakeeboyd.github.io/projects/bandlab-parser/index.html"
-                    style="width: 100%; padding: 0.75rem; border: 2px solid #f59e0b; border-radius: 0.5rem; font-family: monospace; font-size: 0.875rem;"
-                    value="">
-            </div>
-            <button onclick="generateBookmarklet()" style="background: #f59e0b; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; width: 100%;">
-                Generate My Bookmarklet
-            </button>
-        </div>
-
-        <div class="bookmarklet-box" id="bookmarkletBox" style="display: none;">
+        <div class="bookmarklet-box">
             <h2 style="margin-bottom: 1rem; font-size: 1.5rem;">Drag This Button to Your Bookmarks Bar</h2>
-            <a href="" id="bookmarkletLink" class="bookmarklet-button" onclick="alert('Please drag this button to your bookmarks bar instead of clicking it!'); return false;">
+            <a href="javascript:(function(){const data={html:document.documentElement.outerHTML,url:window.location.href,title:document.title};const encoded=encodeURIComponent(JSON.stringify(data));const parserUrl='https://blakeeboyd.github.io/projects/bandlab-parser/index.html#bookmarklet='+encoded;window.open(parserUrl,'_blank')})();" class="bookmarklet-button" onclick="alert('Please drag this button to your bookmarks bar instead of clicking it!'); return false;">
                 Parse BandLab Pack
             </a>
             <p style="margin-top: 1rem; font-size: 0.875rem; opacity: 0.9;">Or right-click and select "Bookmark This Link" / "Add to Bookmarks"</p>
-        </div>
-
-        <div class="instruction-step">
-            <div class="step-title">
-                <span class="step-number">0</span>
-                <span>Generate Your Bookmarklet</span>
-            </div>
-            <div class="step-content">
-                <p>The page should automatically fill in the correct path. If not:</p>
-                <ol style="margin: 0.5rem 0 0.5rem 1.5rem; line-height: 1.8;">
-                    <li>Open <strong>index.html</strong> in your browser</li>
-                    <li>Copy the entire address from the address bar (should start with <code>file:///</code> or <code>https://</code>)</li>
-                    <li>Paste it into the input field above</li>
-                    <li>Click <strong>"Generate My Bookmarklet"</strong></li>
-                </ol>
-            </div>
         </div>
 
         <div class="instruction-step">
@@ -207,7 +161,7 @@
                 <span>Install the Bookmarklet</span>
             </div>
             <div class="step-content">
-                <p><strong>Drag the purple button that appears</strong> to your browser's bookmarks bar (usually below the address bar). If you don't see your bookmarks bar:</p>
+                <p><strong>Drag the purple button above</strong> to your browser's bookmarks bar (usually below the address bar). If you don't see your bookmarks bar:</p>
                 <ul style="margin: 0.5rem 0 0.5rem 1.5rem;">
                     <li><strong>Chrome/Edge:</strong> Press <code>Ctrl+Shift+B</code> (Windows) or <code>Cmd+Shift+B</code> (Mac)</li>
                     <li><strong>Firefox:</strong> Press <code>Ctrl+B</code> (Windows) or <code>Cmd+B</code> (Mac)</li>
@@ -269,7 +223,6 @@
                     <li><strong>Must be logged in:</strong> You need to be logged into BandLab for the page to load properly</li>
                     <li><strong>Wait for full load:</strong> Ensure all samples have loaded before clicking the bookmarklet</li>
                     <li><strong>Works locally:</strong> This tool processes everything in your browser - no data is sent to any server</li>
-                    <li><strong>Same domain:</strong> The bookmarklet works best when this HTML file is opened from the same location (local file system or hosted domain)</li>
                 </ul>
             </div>
         </div>
@@ -291,50 +244,5 @@
             </a>
         </div>
     </div>
-
-    <script>
-        // Auto-fill the path if we're on a file:// or http:// URL
-        window.addEventListener('DOMContentLoaded', function() {
-            const currentUrl = window.location.href;
-            if (currentUrl.includes('bookmarklet.html')) {
-                // Replace bookmarklet.html with index.html
-                const suggestedPath = currentUrl.replace('bookmarklet.html', 'index.html');
-                document.getElementById('toolPath').value = suggestedPath;
-            }
-        });
-
-        function generateBookmarklet() {
-            const toolPath = document.getElementById('toolPath').value.trim();
-
-            if (!toolPath) {
-                alert('Please enter the path to your index.html file!');
-                return;
-            }
-
-            // Create the bookmarklet code
-            const bookmarkletCode = `(function(){
-                const data = {
-                    html: document.documentElement.outerHTML,
-                    url: window.location.href,
-                    title: document.title
-                };
-                const encoded = encodeURIComponent(JSON.stringify(data));
-                const parserUrl = '${toolPath}#bookmarklet=' + encoded;
-                window.open(parserUrl, '_blank');
-            })()`;
-
-            // Encode it for use in a javascript: URL
-            const encodedBookmarklet = 'javascript:' + encodeURIComponent(bookmarkletCode).replace(/'/g, '%27');
-
-            // Update the bookmarklet link
-            document.getElementById('bookmarkletLink').href = encodedBookmarklet;
-
-            // Show the bookmarklet box
-            document.getElementById('bookmarkletBox').style.display = 'block';
-
-            // Scroll to the bookmarklet
-            document.getElementById('bookmarkletBox').scrollIntoView({ behavior: 'smooth' });
-        }
-    </script>
 </body>
 </html>
