@@ -96,7 +96,11 @@ Educational audio application for learning critical listening skills and frequen
 **Key Features:**
 - Three audio source modes: Mute, Pink Noise (internal), User Audio (upload)
 - User audio file upload with Web Audio API decoding (supports WAV, MP3, OGG, FLAC)
-- Play/pause/loop controls for uploaded audio
+- Full playback controls for uploaded audio:
+  - Play/pause with proper resume from position
+  - Loop toggle
+  - Progress bar with click-to-seek
+  - Current time / total time display
 - Six frequency band filters based on Moylan's EQ bands (Low, Low Mid, Mid, Mid-High, High, Very High)
 - Master filter toggle for all bands
 - Gain control (-70 to +6 dB)
@@ -109,7 +113,10 @@ Educational audio application for learning critical listening skills and frequen
 
 **Audio Architecture:**
 - `audioFile_selector` parameter controls source: 0=Mute, 1=Pink Noise, 2=User Audio
-- User audio routes through `AudioBufferSourceNode` connected to `device.node` (RNBO signal input)
+- User audio routes through `AudioBufferSourceNode` connected directly to `device.node` (RNBO signal input)
+- RNBO patch accepts stereo input and sums to mono internally
+- Playback state managed with `startTime`, `pausedAt` for accurate seek/resume
+- Progress updates via `requestAnimationFrame` for smooth UI
 - RNBO handles all frequency band filtering and output
 
 **Key Files:**

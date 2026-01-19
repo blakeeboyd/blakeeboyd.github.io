@@ -168,6 +168,20 @@
     border-top: 1px solid var(--color-border);
 }
 
+/* Drag-over state for file upload */
+.upload-area.drag-over {
+    background-color: rgba(0, 102, 204, 0.05);
+    border-color: var(--color-accent);
+}
+
+.upload-area.drag-over .upload-icon {
+    color: var(--color-accent);
+}
+
+.upload-area.drag-over .upload-text {
+    color: var(--color-accent);
+}
+
 /* Playback controls */
 .playback-controls {
     display: flex;

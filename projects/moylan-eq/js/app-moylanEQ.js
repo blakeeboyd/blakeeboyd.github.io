@@ -348,9 +348,8 @@ function loadRNBOScript(version) {
       console.log("Audio source changed to:", ["Mute", "Pink Noise", "User Audio"][value]);
     });
 
-    // Handle file upload
-    fileInput.addEventListener("change", async (event) => {
-      const file = event.target.files[0];
+    // Handle audio file (shared by file input and drag & drop)
+    async function handleAudioFile(file) {
       if (!file) return;
 
       // Validate file type
@@ -395,6 +394,31 @@ function loadRNBOScript(version) {
       } catch (error) {
         console.error("Error decoding audio file:", error);
       }
+    }
+
+    // Handle file upload via file input
+    fileInput.addEventListener("change", (event) => {
+      handleAudioFile(event.target.files[0]);
+    });
+
+    // Drag & drop handlers
+    const uploadArea = document.getElementById("audio-upload-area");
+
+    uploadArea.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      uploadArea.classList.add("drag-over");
+    });
+
+    uploadArea.addEventListener("dragleave", (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove("drag-over");
+    });
+
+    uploadArea.addEventListener("drop", (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove("drag-over");
+      const file = e.dataTransfer.files[0];
+      handleAudioFile(file);
     });
 
     // Play audio from a specific offset
@@ -691,21 +715,33 @@ function sendMessageToInport(device, inportTag, values) {
 
 function attachOutports(device) {
     const outports = device.outports;
+    const consoleEl = document.getElementById("rnbo-console");
+    const noOutportsLabel = document.getElementById("no-outports-label");
+    const readout = document.getElementById("rnbo-console-readout");
+
     if (outports.length < 1) {
-        document.getElementById("rnbo-console").removeChild(document.getElementById("rnbo-console-div"));
+        // No outports - keep console hidden (it's hidden by default in HTML)
         return;
     }
 
-    document.getElementById("rnbo-console").removeChild(document.getElementById("no-outports-label"));
-    device.messageEvent.subscribe((ev) => {
+    // Has outports - show console and remove "no outports" label
+    if (consoleEl) {
+        consoleEl.classList.remove("hidden");
+    }
+    if (noOutportsLabel && noOutportsLabel.parentNode) {
+        noOutportsLabel.parentNode.removeChild(noOutportsLabel);
+    }
 
+    device.messageEvent.subscribe((ev) => {
         // Ignore message events that don't belong to an outport
         if (outports.findIndex(elt => elt.tag === ev.tag) < 0) return;
 
         // Message events have a tag as well as a payload
         console.log(`${ev.tag}: ${ev.payload}`);
 
-        document.getElementById("rnbo-console-readout").innerText = `${ev.tag}: ${ev.payload}`;
+        if (readout) {
+            readout.innerText = `${ev.tag}: ${ev.payload}`;
+        }
     });
 }
 
