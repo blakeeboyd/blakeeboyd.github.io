@@ -94,17 +94,29 @@ https://blakeeboyd.github.io/projects/bandlab-parser/index.html#bookmarklet=...
 Educational audio application for learning critical listening skills and frequency band recognition. Built with RNBO (Max/MSP web export) for the MUS399 course.
 
 **Key Features:**
-- Audio playback with transport controls (start, loop, position, duration, gain)
+- Three audio source modes: Mute, Pink Noise (internal), User Audio (upload)
+- User audio file upload with Web Audio API decoding (supports WAV, MP3, OGG, FLAC)
+- Play/pause/loop controls for uploaded audio
 - Six frequency band filters based on Moylan's EQ bands (Low, Low Mid, Mid, Mid-High, High, Very High)
 - Master filter toggle for all bands
+- Gain control (-70 to +6 dB)
 - Exercise prompts for critical listening practice
 
 **Technical Stack:**
-- RNBO for Web Audio processing
+- RNBO for Web Audio processing (signal processing, filters, pink noise generation)
+- Web Audio API for user audio decoding and playback
 - Main site CSS with project-specific overrides in `style/style-moylanEQ.css`
-- Audio file stored in `export/media/` (not tracked in git due to size)
 
-**Note:** The audio file `Adele - One And Only.wav` must be manually added to `projects/moylan-eq/export/media/` for the application to function.
+**Audio Architecture:**
+- `audioFile_selector` parameter controls source: 0=Mute, 1=Pink Noise, 2=User Audio
+- User audio routes through `AudioBufferSourceNode` connected to `device.node` (RNBO signal input)
+- RNBO handles all frequency band filtering and output
+
+**Key Files:**
+- `js/app-moylanEQ.js` - Main application logic, audio routing, UI event handlers
+- `js/guardrails.js` - Input validation and safety checks
+- `export/gb.moylanEQ.export.json` - RNBO patcher export
+- `style/style-moylanEQ.css` - Project-specific styles
 
 ## Development Notes
 

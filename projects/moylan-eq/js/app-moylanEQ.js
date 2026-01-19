@@ -279,12 +279,20 @@ function loadRNBOScript(version) {
     const playIcon = document.getElementById("play-icon");
     const pauseIcon = document.getElementById("pause-icon");
     const loopToggle = document.getElementById("loop-toggle");
+    const progressBar = document.getElementById("progress-bar");
+    const progressFill = document.getElementById("progress-fill");
+    const currentTimeDisplay = document.getElementById("current-time");
+    const totalTimeDisplay = document.getElementById("total-time");
 
     // Audio playback state
     let uploadedAudioBuffer = null;
     let audioSourceNode = null;
     let isPlaying = false;
     let shouldLoop = false;
+    let startTime = 0;
+    let pausedAt = 0;
+    let audioDuration = 0;
+    let progressAnimationId = null;
 
     // Get the audio source selector parameter
     const selectorParam = getParameter(device, "audioFile_selector");
@@ -294,19 +302,40 @@ function loadRNBOScript(version) {
       sourceSelector.value = selectorParam.value;
     }
 
+    // Format time as MM:SS
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs.toString().padStart(2, "0")}`;
+    }
+
+    // Update progress bar and time display
+    function updateProgress() {
+      if (!isPlaying || !uploadedAudioBuffer) return;
+
+      const elapsed = context.currentTime - startTime + pausedAt;
+      let currentTime = elapsed;
+
+      if (shouldLoop) {
+        currentTime = elapsed % audioDuration;
+      } else if (currentTime > audioDuration) {
+        currentTime = audioDuration;
+      }
+
+      const progress = (currentTime / audioDuration) * 100;
+      progressFill.style.width = `${Math.min(progress, 100)}%`;
+      currentTimeDisplay.textContent = formatTime(currentTime);
+
+      if (isPlaying) {
+        progressAnimationId = requestAnimationFrame(updateProgress);
+      }
+    }
+
     // Handle source selection change
     sourceSelector.addEventListener("change", () => {
       const value = parseInt(sourceSelector.value, 10);
 
-      // Send message to RNBO
-      const messageEvent = new RNBO.MessageEvent(
-        RNBO.TimeNow,
-        "audioFile_selector",
-        [value]
-      );
-      device.scheduleEvent(messageEvent);
-
-      // Also update the parameter directly
+      // Update the parameter directly
       if (selectorParam) {
         selectorParam.value = value;
       }
@@ -336,20 +365,22 @@ function loadRNBOScript(version) {
 
         // Decode audio data
         uploadedAudioBuffer = await context.decodeAudioData(arrayBuffer);
-
-        // Calculate duration in seconds
-        const durationSec = uploadedAudioBuffer.duration;
+        audioDuration = uploadedAudioBuffer.duration;
 
         // Format duration display (MM:SS)
-        const minutes = Math.floor(durationSec / 60);
-        const seconds = Math.floor(durationSec % 60);
-        const durationFormatted = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+        const durationFormatted = formatTime(audioDuration);
 
         // Update UI
         fileName.textContent = file.name;
         fileDuration.textContent = durationFormatted;
+        totalTimeDisplay.textContent = durationFormatted;
+        currentTimeDisplay.textContent = "0:00";
+        progressFill.style.width = "0%";
         fileInfo.classList.remove("hidden");
         playbackControls.classList.remove("hidden");
+
+        // Reset playback state
+        pausedAt = 0;
 
         // Log info for debugging
         console.log("Audio file loaded:", file.name);
@@ -366,8 +397,8 @@ function loadRNBOScript(version) {
       }
     });
 
-    // Play/Stop button handler
-    function playAudio() {
+    // Play audio from a specific offset
+    function playAudio(offset = 0) {
       if (!uploadedAudioBuffer) return;
 
       // Resume audio context if suspended
@@ -380,33 +411,67 @@ function loadRNBOScript(version) {
       audioSourceNode.buffer = uploadedAudioBuffer;
       audioSourceNode.loop = shouldLoop;
 
-      // Connect to the RNBO device's signal input
-      // The device.node has inputs we can connect to
-      audioSourceNode.connect(device.node);
+      // For stereo files, mix down to mono for the RNBO device's single input channel
+      // Create a channel merger/splitter setup if needed
+      if (uploadedAudioBuffer.numberOfChannels > 1) {
+        // Create a channel merger to mix stereo to mono
+        const merger = context.createChannelMerger(1);
+        const splitter = context.createChannelSplitter(uploadedAudioBuffer.numberOfChannels);
+
+        audioSourceNode.connect(splitter);
+        // Mix all channels into the merger
+        for (let i = 0; i < uploadedAudioBuffer.numberOfChannels; i++) {
+          splitter.connect(merger, i, 0);
+        }
+        merger.connect(device.node);
+      } else {
+        // Mono file - connect directly
+        audioSourceNode.connect(device.node);
+      }
 
       // Handle playback ended
       audioSourceNode.onended = () => {
-        if (!shouldLoop) {
+        if (!shouldLoop && isPlaying) {
           isPlaying = false;
+          pausedAt = 0;
           updatePlayButton();
+          progressFill.style.width = "0%";
+          currentTimeDisplay.textContent = "0:00";
+          if (progressAnimationId) {
+            cancelAnimationFrame(progressAnimationId);
+            progressAnimationId = null;
+          }
         }
       };
 
-      audioSourceNode.start();
+      // Start playback from the offset
+      startTime = context.currentTime;
+      pausedAt = offset;
+      audioSourceNode.start(0, offset);
       isPlaying = true;
       updatePlayButton();
-      console.log("User audio playback started");
+      updateProgress();
+      console.log("User audio playback started at", formatTime(offset));
     }
 
     function stopAudio() {
+      if (progressAnimationId) {
+        cancelAnimationFrame(progressAnimationId);
+        progressAnimationId = null;
+      }
+
       if (audioSourceNode) {
+        // Calculate current position before stopping
+        const elapsed = context.currentTime - startTime + pausedAt;
+        pausedAt = shouldLoop ? elapsed % audioDuration : Math.min(elapsed, audioDuration);
+
         audioSourceNode.stop();
         audioSourceNode.disconnect();
         audioSourceNode = null;
       }
       isPlaying = false;
       updatePlayButton();
-      console.log("User audio playback stopped");
+      console.log("User audio playback paused at", formatTime(pausedAt));
     }
 
     function updatePlayButton() {
@@ -424,7 +489,7 @@ function loadRNBOScript(version) {
       if (isPlaying) {
         stopAudio();
       } else {
-        playAudio();
+        playAudio(pausedAt);
       }
     });
 
@@ -435,6 +500,37 @@ function loadRNBOScript(version) {
         audioSourceNode.loop = shouldLoop;
       }
       console.log("Loop:", shouldLoop ? "enabled" : "disabled");
+    });
+
+    // Progress bar click handler for seeking
+    progressBar.addEventListener("click", (event) => {
+      if (!uploadedAudioBuffer) return;
+
+      const rect = progressBar.getBoundingClientRect();
+      const clickX = event.clientX - rect.left;
+      const percentage = clickX / rect.width;
+      const seekTime = percentage * audioDuration;
+
+      // Update UI
+      progressFill.style.width = `${percentage * 100}%`;
+      currentTimeDisplay.textContent = formatTime(seekTime);
+
+      if (isPlaying) {
+        // Stop current playback and restart at new position
+        if (audioSourceNode) {
+          audioSourceNode.stop();
+          audioSourceNode.disconnect();
+          audioSourceNode = null;
+        }
+        if (progressAnimationId) {
+          cancelAnimationFrame(progressAnimationId);
+          progressAnimationId = null;
+        }
+        isPlaying = false;
+        playAudio(seekTime);
+      } else {
+        pausedAt = seekTime;
+      }
     });
   }
 

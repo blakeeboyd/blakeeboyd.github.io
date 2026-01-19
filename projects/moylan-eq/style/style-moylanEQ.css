@@ -203,6 +203,44 @@
     flex-shrink: 0;
 }
 
+/* Progress bar and time display */
+.progress-container {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    flex: 1;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--color-border);
+    border-radius: 4px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar:hover {
+    background: #d0d0d0;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--color-accent);
+    border-radius: 4px;
+    width: 0%;
+    transition: width 0.1s linear;
+}
+
+.time-display {
+    font-size: 0.75rem;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    color: var(--color-text-muted);
+    min-width: 3rem;
+    text-align: center;
+}
+
 /* RNBO-specific elements (keep for JS compatibility) */
 #rnbo-root {
     display: none;
