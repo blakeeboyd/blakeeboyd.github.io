@@ -1,168 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MoylanEQ - Critical Listening Skills Training">
     <meta name="theme-color" content="#000000">
     <meta name="rnbo-version" content="1.0.0-alpha.5">
+    <title>MoylanEQ - Blake Boyd</title>
+    <link rel="stylesheet" href="../../css/style.css">
     <link rel="stylesheet" href="style/style-moylanEQ.css">
-    <title>RNBO Web Export</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
-
 <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-   <div id="main-content" class="rounded">
-        <h1 id="main-title">MUS399: Critical Listening Skills</h1>
-        <h2 id="sub-title">Learning To Hear Moylan's EQ Bands</h2>
-        <div id="transport" class="row">
-            <div class="column">
-                <label for="start-toggle">Start</label>
-                <input
-                    type="checkbox"
-                    id="start-toggle"
-                />
+    <div class="container wide">
+        <header>
+            <nav>
+                <a href="../../index.html" class="logo">Blake Boyd</a>
+                <div class="nav-links">
+                    <a href="../../projects.html" class="nav-link">Projects</a>
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <div class="page-header">
+                <h1 class="page-title">MoylanEQ</h1>
+                <p class="page-subtitle">MUS399: Critical Listening Skills - Learning To Hear Moylan's EQ Bands</p>
             </div>
-            <div class="column">
-                <label for="loop-toggle">Loop</label>
-                <input
-                    type="checkbox"
-                    id="loop-toggle"
-                />
+
+            <div class="eq-app">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Transport Controls</h2>
+                    </div>
+                    <div class="eq-controls">
+                        <div class="control-group">
+                            <label class="control-label" for="start-toggle">Start</label>
+                            <input type="checkbox" id="start-toggle" class="eq-checkbox" />
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="loop-toggle">Loop</label>
+                            <input type="checkbox" id="loop-toggle" class="eq-checkbox" />
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="startPoint-text">Start Position (ms)</label>
+                            <input type="text" id="startPoint-text" class="form-input eq-input" min="0" max="348" value="69" step="1" />
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="duration-text">Duration (ms)</label>
+                            <input type="text" id="duration-text" class="form-input eq-input" min="0" max="348" value="30" step="1" />
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="gain-slider">Gain (dB)</label>
+                            <input type="range" id="gain-slider" class="eq-slider" min="-70" max="6" value="-12" step="1" />
+                            <span class="gain-text">-12</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Frequency Bands</h2>
+                    </div>
+                    <div class="eq-controls">
+                        <div class="control-group filter-master">
+                            <label class="control-label" for="filters-toggle">All Filters</label>
+                            <input type="checkbox" id="filters-toggle" class="eq-checkbox" />
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="low-toggle">Low</label>
+                            <span class="freq-range">up to 65.41 Hz</span>
+                            <input type="checkbox" id="low-toggle" class="eq-checkbox" />
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="lowMid-toggle">Low Mid</label>
+                            <span class="freq-range">73.42-196 Hz</span>
+                            <input type="checkbox" id="lowMid-toggle" class="eq-checkbox" />
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="mid-toggle">Mid</label>
+                            <span class="freq-range">220-440 Hz</span>
+                            <input type="checkbox" id="mid-toggle" class="eq-checkbox" />
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="midHigh-toggle">Mid-High</label>
+                            <span class="freq-range">493.88-1318.51 Hz</span>
+                            <input type="checkbox" id="midHigh-toggle" class="eq-checkbox" />
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="high-toggle">High</label>
+                            <span class="freq-range">1396.91-4186.01 Hz</span>
+                            <input type="checkbox" id="high-toggle" class="eq-checkbox" />
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="veryHigh-toggle">Very High</label>
+                            <span class="freq-range">4186.01 Hz and above</span>
+                            <input type="checkbox" id="veryHigh-toggle" class="eq-checkbox" />
+                        </div>
+                    </div>
+                </div>
+
+                <div id="rnbo-console" class="card console-card hidden">
+                    <p id="no-outports-label">No Outputs Available</p>
+                    <p id="rnbo-console-readout">RNBO Outport Readout</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Exercise</h2>
+                    </div>
+                    <div class="exercise-content">
+                        <ol class="exercise-list">
+                            <li>What instruments do you hear?</li>
+                            <li>For each frequency band, which instruments are present in that band? Which are absent?</li>
+                            <li>For any instruments that span multiple frequency bands, where is the instrument most present?</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Background</h2>
+                    </div>
+                    <div class="background-content">
+                        <p>In chapter 4, Moylan writes about the importance of the recordist to evaluate and talk about sound in a clear and definable manner.</p>
+
+                        <p><strong>Audio professionals need to:</strong></p>
+                        <ul>
+                            <li>define what they hear,</li>
+                            <li>understand what they hear,</li>
+                            <li>and communicate with one another about sound</li>
+                        </ul>
+
+                        <p>According to Moylan, common ways of speaking about sound are inadequate and rely on methods including <strong>associations with other senses</strong> (like "dark," "crisp," or "bright") which <strong>do not communicate precise and meaningful information</strong>, <strong>analogies</strong> (like "metallic" or "violin-like") which rely on external references that may not be shared, and <strong>mood connotations</strong> which are <strong>useless</strong> due to their extreme imprecision.</p>
+
+                        <p>Meaningful communication about sound can only be accomplished through the use of common experiences or knowledge. The sound source itself, as it exists in its physical dimensions in air, is the only common experience between two or more humans. Therefore, meaningful communication about sound will not be precise and relevant without a description of the sound source itself.</p>
+
+                        <p>This example plays the song "One and Only" by Adele. The song was chosen because the instruments sit rather nicely along the frequency boundaries that Moylan lays out for us in the text.</p>
+
+                        <p>While working through this exercise, think about the questions posted above.</p>
+                    </div>
+                </div>
             </div>
-            <div class="column">
-                <label for="startPoint-text">Start Position (ms)</label>
-                <input 
-                    type="text" 
-                    id="startPoint-text" 
-                    min="0" 
-                    max="348" 
-                    value="69" 
-                    step="1"
-                />
-            </div>
-            <div class="column">
-                <label for="duration-text">Duration (ms)</label>
-                <input 
-                    type="text" 
-                    id="duration-text" 
-                    min="0" 
-                    max="348" 
-                    value="30" 
-                    step="1"
-                />
-            </div>
-            <div class="column">
-                <label for="gain-slider">Gain (dB)</label>
-                <input 
-                type="range" 
-                id="gain-slider" 
-                min="-70" 
-                max="6" 
-                value="-12" 
-                step="1"
-                />
-                <label for="gain-slider" class="gain-text">-12</label>
-            </div>
-        </div>
-        <div id="filters" class="row">
-            <div class="column">
-                <label for="filters-toggle">Filters</label>
-                <input
-                    type="checkbox"
-                    id="filters-toggle"
-                />
-            </div>
-            <div class="column">
-                <label for="low-toggle">Low</label>
-                <label for="low-toggle">up to 65.41 Hz</label>
-                <input
-                    type="checkbox"
-                    id="low-toggle"
-                />
-            </div>
-            <div class="column">
-                <label for="lowMid-toggle">Low Mid</label>
-                <label for="lowMid-toggle">73.42-196 Hz</label>
-                <input
-                    type="checkbox"
-                    id="lowMid-toggle"
-                />
-            </div>
-            <div class="column">
-                <label for="mid-toggle">Mid</label>
-                <label for="mid-toggle">220-440 Hz</label>
-                <input
-                    type="checkbox"
-                    id="mid-toggle"
-                />
-            </div>
-            <div class="column">
-                <label for="midHigh-toggle">Mid-High</label>
-                <label for="midHigh-toggle">493.88-1318.51 Hz</label>
-                <input
-                    type="checkbox"
-                    id="midHigh-toggle"
-                />
-            </div>
-            <div class="column">
-                <label for="high-toggle">High</label>
-                <label for="high-toggle">1396.91-4186.01 Hz</label>
-                <input
-                    type="checkbox"
-                    id="high-toggle"
-                />
-            </div>
-            <div class="column">
-                <label for="veryHigh-toggle">Very High</label>
-                <label for="veryHigh-toggle">4186.01 Hz and above</label>
-                <input
-                    type="checkbox"
-                    id="veryHigh-toggle"
-                />
-            </div>
-        </div>
-        <div id="rnbo-console" class="rounded">
-            <p id="no-outports-label">No Outputs Available</p>
-            <p id="rnbo-console-readout">RNBO Outport Readout</p>
-        </div>
-        <h2 id="sub-title">Exercize</h2>
-        <p class="paragraph">
-            <ol>
-                <li>What instruments do you hear?</li>
-                <li>For each frequency band, which instruments are present in that band? Which are absent? </li>
-                <li>For any instruments that span multiple frequency bands, where is the instrument most present?</li>
-            </ol>
-        </p>
-        <p>In chapter 4, Moylan writes about the importance of the recordist to evaluate and talk about sound 
-            in a clear and definable manner.
-            <br>Audio professionals need to:</p>
-            <ul>
-                <li>define what they hear,</li>
-                <li>understand what they hear,</li>
-                <li>and communicate with one another about sound</li>
-            </ul>
-            <p>According to Moylan, common ways of speaking about sound are inadequate and rely on methods including <strong>associations with 
-                other senses</strong> (like "dark," "crisp," or "bright") which <strong>do not communicate precise and meaningful information</strong>,
-                <strong>analogies</strong>(like "metallic" or "violin-like") which rely on external references that may not be shared, and 
-                <strong>mood connotations</strong> which are <strong>useless</strong> due to their extreme imprecision.
-                <br><br>Meaningful communication about sound can only be accomplished through the use of common experiences or knowledge. 
-                The sound source itself, as it exists in its physical dimensions in air, is the only common experience between two or more humans.
-                Therefore, meaningful communication about sound will not be precise and relevant without a description of the sound source itself.
-                
-            <br><br>This example plays the song "One and Only" by Adele. The song was chosen because the instruments sit rather nicely along the 
-            frequency boudaries that Moylan lays out for us in the text.
-            <br><br>While working through this exercize, think about the questions posted above.</p>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Blake Boyd</p>
+        </footer>
     </div>
-    <!-- Load the script that creates the RNBO device  -->
-    <!-- Uncomment if you know the version of your exported RNBO patch to avoid dynamic loading -->
-    <!-- <script type="text/javascript" src="https://cdn.cycling74.com/rnbo/latest/rnbo.min.js"></script> -->
 
-    <!-- (Optional) The guardrails.js script isn't required for RNBO to work, and you can skip including it -->
-    <!-- It simply offers some helpful error messages for common problems -->
     <script type="text/javascript" src="js/guardrails.js"></script>
-
-    <!-- Import RNBO Engine Wrapper -->
-    <!-- Make sure to include the RNBO engine version to the version of your exported code, found in rnbopackage.json -->
     <script type="text/javascript" src="js/app-moylanEQ.js"></script>
 </body>
 </html>

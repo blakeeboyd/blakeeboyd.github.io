@@ -1,119 +1,156 @@
-html, body {
+/* MoylanEQ-specific styles */
+/* Works alongside the main site CSS */
+
+/* Reset the aggressive border styling from original */
+* {
+    box-sizing: border-box;
+    border: none;
+}
+
+/* EQ App container */
+.eq-app {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    max-width: 800px;
+}
+
+/* Control sections */
+.eq-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    justify-content: flex-start;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: var(--spacing-sm);
+    background: var(--color-bg);
+    border-radius: 0.5rem;
+    min-width: 100px;
+}
+
+.control-group.filter-master {
+    background: rgba(0, 102, 204, 0.1);
+    border: 1px solid var(--color-accent);
+}
+
+.control-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: center;
+}
+
+.freq-range {
+    font-size: 0.625rem;
+    color: var(--color-text-muted);
+    text-align: center;
+}
+
+/* Checkbox styling */
+.eq-checkbox {
+    width: 1.25rem;
+    height: 1.25rem;
+    cursor: pointer;
+    accent-color: var(--color-accent);
+}
+
+/* Text input styling */
+.eq-input {
+    width: 70px;
+    text-align: center;
+    padding: 0.375rem;
+}
+
+/* Slider styling */
+.eq-slider {
+    width: 100px;
+    cursor: pointer;
+    accent-color: var(--color-accent);
+}
+
+.gain-text {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+}
+
+/* Console card (hidden by default) */
+.console-card {
+    background: #1a1a1a;
+    color: #e5e5e5;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    font-size: 0.75rem;
+}
+
+.console-card p {
     margin: 0;
+    padding: var(--spacing-xs);
+}
+
+/* Exercise content */
+.exercise-content,
+.background-content {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--color-text);
+}
+
+.exercise-list {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.exercise-list li {
+    margin-bottom: var(--spacing-xs);
+}
+
+.background-content p {
+    margin-bottom: var(--spacing-sm);
+}
+
+.background-content ul {
+    margin: var(--spacing-xs) 0 var(--spacing-sm) 1.5rem;
     padding: 0;
 }
 
-* {
-    box-sizing: content-box;
-    /*~
-    moz-box-sizing: content-box;
-    ~webkit-box-sizing: content-box;
-    */
-    border-width: 1px;
-    border-style: solid;
-    border-color: black;
+.background-content li {
+    margin-bottom: 0.25rem;
 }
 
+/* RNBO-specific elements (keep for JS compatibility) */
 #rnbo-root {
-    height: 100vh;
-    width: 100vw;
-}
-#background {
-    position: absolute;
-    z-index: -1;
-}
-
-h2, em {
-    width: 100%;
-}
-
-#rnbo-root {
-    margin: auto;
-    max-width: 540px;
+    display: none;
 }
 
 #rnbo-clickable-keyboard {
-    display: flex;
-    flex-wrap: wrap;
-}
-
-#rnbo-clickable-keyboard > div {
-    margin: 2px;
-    border: solid black 1px;
-    min-height: 50px;
-    flex-grow: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-#rnbo-clickable-keyboard > div.clicked {
-    background: #222222;
-    color: #dddddd;
+    display: none;
 }
 
 #rnbo-parameter-sliders {
-    display: flex;
-    flex-direction: column;
+    display: none;
 }
 
-#rnbo-parameter-sliders > div {
-    display: flex;
-}
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .eq-controls {
+        justify-content: center;
+    }
 
-#rnbo-parameter-sliders > div > input:first-of-type {
-    flex-grow: 1;
-}
+    .control-group {
+        min-width: 80px;
+        padding: var(--spacing-xs);
+    }
 
-/* New CSS Code*/
-
-/* classes start with a period. IDs start with a hashtag */
-
-.rounded {
-    border-radius: 5px;
-}
-
-.column {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    margin: 10px;
-    min-height: 50px;
-}
-
-#main-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 60%;
-    margin: auto;
-    border-width: 1px;
-    border-color: black;
-    border-style: solid;
-    margin-top: 10px;
-}
-
-#main-title, #sub-title {
-    margin: 10px;
-    text-align: center;
-
-}
-
-#transport, #filters {
-    display: flex;
-    width: 100%;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-
-}
-
-#startPoint-text, #duration-text {
-    width: 40px;
-    text-align: center;
-    border-width: 1px;
-    border-color: black;
-    border-style: solid;
-    border-radius: 5px;
+    .eq-slider {
+        width: 80px;
+    }
 }
