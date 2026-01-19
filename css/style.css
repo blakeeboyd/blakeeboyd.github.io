@@ -746,6 +746,39 @@ footer p {
     width: 100%;
 }
 
+/* Audio controls row - side by side layout */
+.audio-controls-row {
+    display: flex;
+    gap: var(--spacing-lg);
+}
+
+.audio-source-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.frequency-bands-section {
+    flex-shrink: 0;
+}
+
+.section-divider {
+    width: 1px;
+    background: var(--color-border);
+    align-self: stretch;
+}
+
+/* Responsive: stack on smaller screens */
+@media (max-width: 900px) {
+    .audio-controls-row {
+        flex-direction: column;
+    }
+
+    .section-divider {
+        width: 100%;
+        height: 1px;
+    }
+}
+
 /* Control sections */
 .eq-controls {
     display: flex;
@@ -984,6 +1017,98 @@ footer p {
     color: var(--color-text-muted);
     min-width: 3rem;
     text-align: center;
+}
+
+/* Loop controls container */
+.loop-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.loop-range-inputs {
+    display: flex;
+    gap: var(--spacing-xs);
+    opacity: 0.5;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.loop-range-inputs.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.loop-time-input {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.125rem;
+}
+
+.time-input {
+    width: 50px;
+    text-align: center;
+    padding: 0.25rem;
+    font-size: 0.75rem;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    border: 1px solid var(--color-border);
+    border-radius: 0.25rem;
+    background: var(--color-bg);
+}
+
+.time-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+/* Loop region overlay on progress bar */
+.loop-region {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: rgba(0, 102, 204, 0.2);
+    border-radius: 4px;
+    pointer-events: none;
+    display: none;
+}
+
+.loop-region.active {
+    display: block;
+}
+
+/* Draggable loop handles */
+.loop-handle {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 16px;
+    background: var(--color-accent);
+    border-radius: 2px;
+    cursor: ew-resize;
+    display: none;
+    z-index: 10;
+}
+
+.loop-handle.active {
+    display: block;
+}
+
+.loop-handle:hover {
+    background: #0052a3;
+}
+
+.loop-handle::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px;
+    height: 8px;
+    background: white;
+    border-radius: 1px;
 }
 
 /* RNBO-specific elements (hidden - kept for JS compatibility) */

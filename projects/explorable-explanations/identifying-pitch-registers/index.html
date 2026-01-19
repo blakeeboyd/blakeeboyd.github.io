@@ -32,24 +32,73 @@
 
             <div class="eq-app">
                 <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Audio Source</h2>
-                    </div>
-                    <div class="eq-controls">
-                        <div class="control-group">
-                            <label class="control-label" for="source-selector">Source</label>
-                            <select id="source-selector" class="form-input eq-select">
-                                <option value="0">Mute</option>
-                                <option value="1">Pink Noise</option>
-                                <option value="2">User Audio</option>
-                            </select>
+                    <div class="audio-controls-row">
+                        <div class="audio-source-section">
+                            <div class="card-header">
+                                <h2 class="card-title">Audio Source</h2>
+                            </div>
+                            <div class="eq-controls">
+                                <div class="control-group">
+                                    <label class="control-label" for="source-selector">Source</label>
+                                    <select id="source-selector" class="form-input eq-select">
+                                        <option value="0">Mute</option>
+                                        <option value="1">Pink Noise</option>
+                                        <option value="2">User Audio</option>
+                                    </select>
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label" for="gain-slider">Gain (dB)</label>
+                                    <input type="range" id="gain-slider" class="eq-slider" min="-70" max="6" value="-12" step="1" />
+                                    <span class="gain-text">-12</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="control-group">
-                            <label class="control-label" for="gain-slider">Gain (dB)</label>
-                            <input type="range" id="gain-slider" class="eq-slider" min="-70" max="6" value="-12" step="1" />
-                            <span class="gain-text">-12</span>
+
+                        <div class="section-divider"></div>
+
+                        <div class="frequency-bands-section">
+                            <div class="card-header">
+                                <h2 class="card-title">Frequency Bands</h2>
+                            </div>
+                            <div class="eq-controls">
+                                <div class="control-group filter-master">
+                                    <label class="control-label" for="filters-toggle">All Filters</label>
+                                    <input type="checkbox" id="filters-toggle" class="eq-checkbox" />
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label" for="low-toggle">Low</label>
+                                    <span class="freq-range">up to 65.41 Hz</span>
+                                    <input type="checkbox" id="low-toggle" class="eq-checkbox" />
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label" for="lowMid-toggle">Low Mid</label>
+                                    <span class="freq-range">73.42-196 Hz</span>
+                                    <input type="checkbox" id="lowMid-toggle" class="eq-checkbox" />
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label" for="mid-toggle">Mid</label>
+                                    <span class="freq-range">220-440 Hz</span>
+                                    <input type="checkbox" id="mid-toggle" class="eq-checkbox" />
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label" for="midHigh-toggle">Mid-High</label>
+                                    <span class="freq-range">493.88-1318.51 Hz</span>
+                                    <input type="checkbox" id="midHigh-toggle" class="eq-checkbox" />
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label" for="high-toggle">High</label>
+                                    <span class="freq-range">1396.91-4186.01 Hz</span>
+                                    <input type="checkbox" id="high-toggle" class="eq-checkbox" />
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label" for="veryHigh-toggle">Very High</label>
+                                    <span class="freq-range">4186.01 Hz and above</span>
+                                    <input type="checkbox" id="veryHigh-toggle" class="eq-checkbox" />
+                                </div>
+                            </div>
                         </div>
                     </div>
+
                     <div class="audio-upload-section" id="audio-upload-section">
                         <div class="upload-area" id="audio-upload-area">
                             <input type="file" id="audio-file-input" class="file-input" accept="audio/*" />
@@ -78,56 +127,29 @@
                             <div class="progress-container">
                                 <span class="time-display" id="current-time">0:00</span>
                                 <div class="progress-bar" id="progress-bar">
+                                    <div class="loop-region" id="loop-region"></div>
                                     <div class="progress-fill" id="progress-fill"></div>
+                                    <div class="loop-handle loop-handle-start" id="loop-handle-start"></div>
+                                    <div class="loop-handle loop-handle-end" id="loop-handle-end"></div>
                                 </div>
                                 <span class="time-display" id="total-time">0:00</span>
                             </div>
-                            <div class="control-group">
-                                <label class="control-label" for="loop-toggle">Loop</label>
-                                <input type="checkbox" id="loop-toggle" class="eq-checkbox" />
+                            <div class="loop-controls">
+                                <div class="control-group">
+                                    <label class="control-label" for="loop-toggle">Loop</label>
+                                    <input type="checkbox" id="loop-toggle" class="eq-checkbox" />
+                                </div>
+                                <div class="loop-range-inputs" id="loop-range-inputs">
+                                    <div class="loop-time-input">
+                                        <label class="control-label" for="loop-start-input">Start</label>
+                                        <input type="text" id="loop-start-input" class="time-input" value="0:00" placeholder="0:00" />
+                                    </div>
+                                    <div class="loop-time-input">
+                                        <label class="control-label" for="loop-end-input">End</label>
+                                        <input type="text" id="loop-end-input" class="time-input" value="0:00" placeholder="0:00" />
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Frequency Bands</h2>
-                    </div>
-                    <div class="eq-controls">
-                        <div class="control-group filter-master">
-                            <label class="control-label" for="filters-toggle">All Filters</label>
-                            <input type="checkbox" id="filters-toggle" class="eq-checkbox" />
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label" for="low-toggle">Low</label>
-                            <span class="freq-range">up to 65.41 Hz</span>
-                            <input type="checkbox" id="low-toggle" class="eq-checkbox" />
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label" for="lowMid-toggle">Low Mid</label>
-                            <span class="freq-range">73.42-196 Hz</span>
-                            <input type="checkbox" id="lowMid-toggle" class="eq-checkbox" />
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label" for="mid-toggle">Mid</label>
-                            <span class="freq-range">220-440 Hz</span>
-                            <input type="checkbox" id="mid-toggle" class="eq-checkbox" />
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label" for="midHigh-toggle">Mid-High</label>
-                            <span class="freq-range">493.88-1318.51 Hz</span>
-                            <input type="checkbox" id="midHigh-toggle" class="eq-checkbox" />
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label" for="high-toggle">High</label>
-                            <span class="freq-range">1396.91-4186.01 Hz</span>
-                            <input type="checkbox" id="high-toggle" class="eq-checkbox" />
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label" for="veryHigh-toggle">Very High</label>
-                            <span class="freq-range">4186.01 Hz and above</span>
-                            <input type="checkbox" id="veryHigh-toggle" class="eq-checkbox" />
                         </div>
                     </div>
                 </div>

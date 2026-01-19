@@ -295,6 +295,14 @@ function loadRNBOScript(version) {
     const currentTimeDisplay = document.getElementById("current-time");
     const totalTimeDisplay = document.getElementById("total-time");
 
+    // Loop controls DOM elements
+    const loopRangeInputs = document.getElementById("loop-range-inputs");
+    const loopStartInput = document.getElementById("loop-start-input");
+    const loopEndInput = document.getElementById("loop-end-input");
+    const loopRegion = document.getElementById("loop-region");
+    const loopHandleStart = document.getElementById("loop-handle-start");
+    const loopHandleEnd = document.getElementById("loop-handle-end");
+
     // Audio playback state
     let uploadedAudioBuffer = null;
     let audioSourceNode = null;
@@ -304,6 +312,11 @@ function loadRNBOScript(version) {
     let pausedAt = 0;
     let audioDuration = 0;
     let progressAnimationId = null;
+
+    // Loop boundary state
+    let loopStart = 0;
+    let loopEnd = 0;
+    let isDraggingHandle = null;
 
     // Get the audio source selector parameter
     const selectorParam = getParameter(device, "audioFile_selector");
@@ -320,6 +333,30 @@ function loadRNBOScript(version) {
       return `${mins}:${secs.toString().padStart(2, "0")}`;
     }
 
+    // Parse time string (M:SS or MM:SS) to seconds
+    function parseTime(timeStr) {
+      const parts = timeStr.split(':');
+      if (parts.length !== 2) return null;
+      const minutes = parseInt(parts[0], 10);
+      const seconds = parseFloat(parts[1]);
+      if (isNaN(minutes) || isNaN(seconds)) return null;
+      return minutes * 60 + seconds;
+    }
+
+    // Update loop region and handles UI
+    function updateLoopRegionUI() {
+      if (!audioDuration) return;
+
+      const startPercent = (loopStart / audioDuration) * 100;
+      const endPercent = (loopEnd / audioDuration) * 100;
+
+      loopRegion.style.left = `${startPercent}%`;
+      loopRegion.style.width = `${endPercent - startPercent}%`;
+
+      loopHandleStart.style.left = `${startPercent}%`;
+      loopHandleEnd.style.left = `${endPercent}%`;
+    }
+
     // Update progress bar and time display
     function updateProgress() {
       if (!isPlaying || !uploadedAudioBuffer) return;
@@ -327,8 +364,45 @@ function loadRNBOScript(version) {
       const elapsed = context.currentTime - startTime + pausedAt;
       let currentTime = elapsed;
 
-      if (shouldLoop) {
-        currentTime = elapsed % audioDuration;
+      if (shouldLoop && loopEnd > loopStart) {
+        // Check if we've passed the loop end point
+        if (elapsed >= loopEnd) {
+          // Need to restart audio from loop start
+          if (audioSourceNode) {
+            audioSourceNode.onended = null;
+            audioSourceNode.stop();
+            audioSourceNode.disconnect();
+          }
+
+          audioSourceNode = context.createBufferSource();
+          audioSourceNode.buffer = uploadedAudioBuffer;
+          audioSourceNode.connect(userAudioGain);
+          audioSourceNode.loop = false; // We handle looping manually
+
+          audioSourceNode.onended = () => {
+            if (!shouldLoop && isPlaying) {
+              isPlaying = false;
+              pausedAt = 0;
+              updatePlayButton();
+              progressFill.style.width = "0%";
+              currentTimeDisplay.textContent = "0:00";
+              if (progressAnimationId) {
+                cancelAnimationFrame(progressAnimationId);
+                progressAnimationId = null;
+              }
+              if (selectorParam) {
+                selectorParam.value = 0;
+              }
+            }
+          };
+
+          startTime = context.currentTime;
+          pausedAt = loopStart;
+          audioSourceNode.start(0, loopStart);
+          currentTime = loopStart;
+        } else {
+          currentTime = elapsed;
+        }
       } else if (currentTime > audioDuration) {
         currentTime = audioDuration;
       }
@@ -398,6 +472,13 @@ function loadRNBOScript(version) {
         // Reset playback state
         pausedAt = 0;
 
+        // Initialize loop boundaries
+        loopStart = 0;
+        loopEnd = audioDuration;
+        loopStartInput.value = formatTime(0);
+        loopEndInput.value = formatTime(audioDuration);
+        updateLoopRegionUI();
+
         // Log info for debugging
         console.log("Audio file loaded:", file.name);
         console.log("Duration:", durationFormatted);
@@ -449,7 +530,7 @@ function loadRNBOScript(version) {
       // Create a new buffer source node
       audioSourceNode = context.createBufferSource();
       audioSourceNode.buffer = uploadedAudioBuffer;
-      audioSourceNode.loop = shouldLoop;
+      audioSourceNode.loop = false; // We handle looping manually with loop start/end
 
       // Connect through gain node to RNBO device - gain node handles volume control
       audioSourceNode.connect(userAudioGain);
@@ -538,15 +619,90 @@ function loadRNBOScript(version) {
     // Loop toggle handler
     loopToggle.addEventListener("change", () => {
       shouldLoop = loopToggle.checked;
-      if (audioSourceNode) {
-        audioSourceNode.loop = shouldLoop;
+
+      // Toggle visibility of loop controls
+      loopRangeInputs.classList.toggle("active", shouldLoop);
+      loopRegion.classList.toggle("active", shouldLoop);
+      loopHandleStart.classList.toggle("active", shouldLoop);
+      loopHandleEnd.classList.toggle("active", shouldLoop);
+
+      // Initialize loop end to audio duration if not set
+      if (shouldLoop && loopEnd === 0 && audioDuration > 0) {
+        loopEnd = audioDuration;
+        loopEndInput.value = formatTime(loopEnd);
+        updateLoopRegionUI();
       }
+
+      // Note: We no longer use audioSourceNode.loop - we handle it manually
       console.log("Loop:", shouldLoop ? "enabled" : "disabled");
     });
+
+    // Loop start input handler
+    loopStartInput.addEventListener("change", () => {
+      const time = parseTime(loopStartInput.value);
+      if (time !== null && time >= 0 && time < loopEnd) {
+        loopStart = time;
+        updateLoopRegionUI();
+      } else {
+        loopStartInput.value = formatTime(loopStart);
+      }
+    });
+
+    // Loop end input handler
+    loopEndInput.addEventListener("change", () => {
+      const time = parseTime(loopEndInput.value);
+      if (time !== null && time > loopStart && time <= audioDuration) {
+        loopEnd = time;
+        updateLoopRegionUI();
+      } else {
+        loopEndInput.value = formatTime(loopEnd);
+      }
+    });
+
+    // Drag handlers for loop handles
+    function handleDragStart(handle) {
+      return (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        isDraggingHandle = handle;
+        document.addEventListener('mousemove', handleDragMove);
+        document.addEventListener('mouseup', handleDragEnd);
+      };
+    }
+
+    function handleDragMove(event) {
+      if (!isDraggingHandle || !audioDuration) return;
+
+      const rect = progressBar.getBoundingClientRect();
+      let percentage = (event.clientX - rect.left) / rect.width;
+      percentage = Math.max(0, Math.min(1, percentage));
+      const time = percentage * audioDuration;
+
+      if (isDraggingHandle === 'start' && time < loopEnd - 0.1) {
+        loopStart = time;
+        loopStartInput.value = formatTime(loopStart);
+      } else if (isDraggingHandle === 'end' && time > loopStart + 0.1) {
+        loopEnd = time;
+        loopEndInput.value = formatTime(loopEnd);
+      }
+
+      updateLoopRegionUI();
+    }
+
+    function handleDragEnd() {
+      isDraggingHandle = null;
+      document.removeEventListener('mousemove', handleDragMove);
+      document.removeEventListener('mouseup', handleDragEnd);
+    }
+
+    loopHandleStart.addEventListener('mousedown', handleDragStart('start'));
+    loopHandleEnd.addEventListener('mousedown', handleDragStart('end'));
 
     // Progress bar click handler for seeking
     progressBar.addEventListener("click", (event) => {
       if (!uploadedAudioBuffer) return;
+      // Ignore clicks on loop handles
+      if (event.target.classList.contains('loop-handle')) return;
 
       const rect = progressBar.getBoundingClientRect();
       const clickX = event.clientX - rect.left;
@@ -575,7 +731,7 @@ function loadRNBOScript(version) {
         // Create new source and start immediately (RNBO stays at mode 2)
         audioSourceNode = context.createBufferSource();
         audioSourceNode.buffer = uploadedAudioBuffer;
-        audioSourceNode.loop = shouldLoop;
+        audioSourceNode.loop = false; // We handle looping manually with loop start/end
         audioSourceNode.connect(userAudioGain);
 
         audioSourceNode.onended = () => {
