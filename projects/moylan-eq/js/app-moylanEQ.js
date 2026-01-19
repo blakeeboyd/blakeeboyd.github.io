@@ -411,23 +411,8 @@ function loadRNBOScript(version) {
       audioSourceNode.buffer = uploadedAudioBuffer;
       audioSourceNode.loop = shouldLoop;
 
-      // For stereo files, mix down to mono for the RNBO device's single input channel
-      // Create a channel merger/splitter setup if needed
-      if (uploadedAudioBuffer.numberOfChannels > 1) {
-        // Create a channel merger to mix stereo to mono
-        const merger = context.createChannelMerger(1);
-        const splitter = context.createChannelSplitter(uploadedAudioBuffer.numberOfChannels);
-
-        audioSourceNode.connect(splitter);
-        // Mix all channels into the merger
-        for (let i = 0; i < uploadedAudioBuffer.numberOfChannels; i++) {
-          splitter.connect(merger, i, 0);
-        }
-        merger.connect(device.node);
-      } else {
-        // Mono file - connect directly
-        audioSourceNode.connect(device.node);
-      }
+      // Connect directly to RNBO device - it handles stereo-to-mono summing internally
+      audioSourceNode.connect(device.node);
 
       // Handle playback ended
       audioSourceNode.onended = () => {
