@@ -1,0 +1,119 @@
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+* {
+    box-sizing: content-box;
+    /*~
+    moz-box-sizing: content-box;
+    ~webkit-box-sizing: content-box;
+    */
+    border-width: 1px;
+    border-style: solid;
+    border-color: black;
+}
+
+#rnbo-root {
+    height: 100vh;
+    width: 100vw;
+}
+#background {
+    position: absolute;
+    z-index: -1;
+}
+
+h2, em {
+    width: 100%;
+}
+
+#rnbo-root {
+    margin: auto;
+    max-width: 540px;
+}
+
+#rnbo-clickable-keyboard {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#rnbo-clickable-keyboard > div {
+    margin: 2px;
+    border: solid black 1px;
+    min-height: 50px;
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#rnbo-clickable-keyboard > div.clicked {
+    background: #222222;
+    color: #dddddd;
+}
+
+#rnbo-parameter-sliders {
+    display: flex;
+    flex-direction: column;
+}
+
+#rnbo-parameter-sliders > div {
+    display: flex;
+}
+
+#rnbo-parameter-sliders > div > input:first-of-type {
+    flex-grow: 1;
+}
+
+/* New CSS Code*/
+
+/* classes start with a period. IDs start with a hashtag */
+
+.rounded {
+    border-radius: 5px;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 10px;
+    min-height: 50px;
+}
+
+#main-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 60%;
+    margin: auto;
+    border-width: 1px;
+    border-color: black;
+    border-style: solid;
+    margin-top: 10px;
+}
+
+#main-title, #sub-title {
+    margin: 10px;
+    text-align: center;
+
+}
+
+#transport, #filters {
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+}
+
+#startPoint-text, #duration-text {
+    width: 40px;
+    text-align: center;
+    border-width: 1px;
+    border-color: black;
+    border-style: solid;
+    border-radius: 5px;
+}
