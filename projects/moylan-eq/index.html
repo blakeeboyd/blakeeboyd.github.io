@@ -34,29 +34,52 @@
             <div class="eq-app">
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">Transport Controls</h2>
+                        <h2 class="card-title">Audio Source</h2>
                     </div>
                     <div class="eq-controls">
                         <div class="control-group">
-                            <label class="control-label" for="start-toggle">Start</label>
-                            <input type="checkbox" id="start-toggle" class="eq-checkbox" />
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label" for="loop-toggle">Loop</label>
-                            <input type="checkbox" id="loop-toggle" class="eq-checkbox" />
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label" for="startPoint-text">Start Position (ms)</label>
-                            <input type="text" id="startPoint-text" class="form-input eq-input" min="0" max="348" value="69" step="1" />
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label" for="duration-text">Duration (ms)</label>
-                            <input type="text" id="duration-text" class="form-input eq-input" min="0" max="348" value="30" step="1" />
+                            <label class="control-label" for="source-selector">Source</label>
+                            <select id="source-selector" class="form-input eq-select">
+                                <option value="0">Mute</option>
+                                <option value="1">Pink Noise</option>
+                                <option value="2">User Audio</option>
+                            </select>
                         </div>
                         <div class="control-group">
                             <label class="control-label" for="gain-slider">Gain (dB)</label>
                             <input type="range" id="gain-slider" class="eq-slider" min="-70" max="6" value="-12" step="1" />
                             <span class="gain-text">-12</span>
+                        </div>
+                    </div>
+                    <div class="audio-upload-section" id="audio-upload-section">
+                        <div class="upload-area" id="audio-upload-area">
+                            <input type="file" id="audio-file-input" class="file-input" accept="audio/*" />
+                            <svg class="upload-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                            <p class="upload-text">Drop audio file or click to browse</p>
+                            <p class="upload-hint">Supports WAV, MP3, OGG, FLAC</p>
+                        </div>
+                        <div id="audio-file-info" class="audio-file-info hidden">
+                            <span class="file-name" id="audio-file-name"></span>
+                            <span class="file-duration" id="audio-file-duration"></span>
+                        </div>
+                        <div class="playback-controls hidden" id="playback-controls">
+                            <button type="button" id="play-button" class="play-button">
+                                <svg id="play-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                </svg>
+                                <svg id="pause-icon" class="hidden" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <rect x="6" y="4" width="4" height="16"></rect>
+                                    <rect x="14" y="4" width="4" height="16"></rect>
+                                </svg>
+                            </button>
+                            <div class="control-group">
+                                <label class="control-label" for="loop-toggle">Loop</label>
+                                <input type="checkbox" id="loop-toggle" class="eq-checkbox" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -139,7 +162,7 @@
 
                         <p>Meaningful communication about sound can only be accomplished through the use of common experiences or knowledge. The sound source itself, as it exists in its physical dimensions in air, is the only common experience between two or more humans. Therefore, meaningful communication about sound will not be precise and relevant without a description of the sound source itself.</p>
 
-                        <p>This example plays the song "One and Only" by Adele. The song was chosen because the instruments sit rather nicely along the frequency boundaries that Moylan lays out for us in the text.</p>
+                        <p>This tool provides two audio sources for practice: pink noise (useful for understanding frequency bands in isolation) and the ability to upload your own audio file to analyze. Select "User Audio" and upload a track to hear how different instruments occupy different frequency bands.</p>
 
                         <p>While working through this exercise, think about the questions posted above.</p>
                     </div>

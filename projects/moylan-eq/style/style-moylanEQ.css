@@ -126,6 +126,83 @@
     margin-bottom: 0.25rem;
 }
 
+/* Audio file info display */
+.audio-file-info {
+    margin-top: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: var(--color-bg);
+    border-radius: 0.375rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.audio-file-info .file-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 70%;
+}
+
+.audio-file-info .file-duration {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+}
+
+/* Audio source selector */
+.eq-select {
+    width: 120px;
+    text-align: center;
+    padding: 0.375rem;
+    cursor: pointer;
+}
+
+/* Audio upload section */
+.audio-upload-section {
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+}
+
+/* Playback controls */
+.playback-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+}
+
+.play-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background: var(--color-accent);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.play-button:hover {
+    background: #0052a3;
+}
+
+.play-button:active {
+    transform: scale(0.95);
+}
+
+.play-button svg {
+    flex-shrink: 0;
+}
+
 /* RNBO-specific elements (keep for JS compatibility) */
 #rnbo-root {
     display: none;

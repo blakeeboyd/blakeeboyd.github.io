@@ -7,22 +7,35 @@ A personal website hosted on GitHub Pages at blakeeboyd.github.io.
 ```
 /
 ├── index.html              # Landing page (under construction)
-├── vibe-coding.html        # Vibe coding projects listing
+├── projects.html           # Projects listing page
 ├── CLAUDE.md               # Project context for AI agents
 ├── css/
 │   └── style.css           # Shared stylesheet (all pages use this)
 ├── js/
 │   └── bandlab-parser.js   # BandLab parser JavaScript
 └── projects/
-    └── bandlab-parser/
-        ├── index.html      # Parser main page (uses .container.wide)
-        └── bookmarklet.html # Bookmarklet setup instructions
+    ├── bandlab-parser/
+    │   ├── index.html      # Parser main page (uses .container.wide)
+    │   └── bookmarklet.html # Bookmarklet setup instructions
+    └── moylan-eq/
+        ├── index.html      # MoylanEQ main page (uses .container.wide)
+        ├── js/
+        │   ├── app.js
+        │   ├── app-moylanEQ.js
+        │   └── guardrails.js
+        ├── style/
+        │   └── style-moylanEQ.css  # Project-specific styles (uses main CSS vars)
+        └── export/
+            ├── gb.moylanEQ.export.json
+            ├── dependencies.json
+            └── media/      # Audio files (not tracked in git due to size)
 ```
 
 ## URL Conventions
 
 - Use clean URLs without explicit `index.html` (e.g., `/projects/bandlab-parser/` not `/projects/bandlab-parser/index.html`)
-- All asset paths should be absolute from root (e.g., `/css/style.css`, `/js/bandlab-parser.js`)
+- Use **relative paths** for local development compatibility (e.g., `../../css/style.css` not `/css/style.css`)
+- Navigation links should use relative paths from the current page
 
 ## Design System
 
@@ -52,34 +65,53 @@ The site uses a minimalist design inspired by stefanzweifel.dev. All styles are 
 ### Fonts
 - Inter from Google Fonts (weights: 400, 500, 600)
 
-## BandLab Parser
+## Projects
+
+### BandLab Parser
 
 A browser-based tool for parsing BandLab sample pack HTML pages into structured JSON.
 
-### Key Features
+**Key Features:**
 - File upload for saved HTML files
 - Bookmarklet for one-click parsing while browsing BandLab
 - Metadata extraction (pack name, artist, genre, instruments, etc.)
 - Sample information (BPM, key, duration, type)
 
-### Bookmarklet URL
+**Bookmarklet URL:**
 The bookmarklet is hardcoded to the hosted URL:
 ```
 https://blakeeboyd.github.io/projects/bandlab-parser/index.html#bookmarklet=...
 ```
 
-### How It Works
+**How It Works:**
 1. User drags bookmarklet to bookmark bar
 2. On a BandLab pack page, clicking the bookmarklet captures the page HTML
 3. Opens parser with data in URL hash (`#bookmarklet=<encoded-data>`)
 4. `bandlab-parser.js` checks for `#bookmarklet=` hash and processes automatically
+
+### MoylanEQ
+
+Educational audio application for learning critical listening skills and frequency band recognition. Built with RNBO (Max/MSP web export) for the MUS399 course.
+
+**Key Features:**
+- Audio playback with transport controls (start, loop, position, duration, gain)
+- Six frequency band filters based on Moylan's EQ bands (Low, Low Mid, Mid, Mid-High, High, Very High)
+- Master filter toggle for all bands
+- Exercise prompts for critical listening practice
+
+**Technical Stack:**
+- RNBO for Web Audio processing
+- Main site CSS with project-specific overrides in `style/style-moylanEQ.css`
+- Audio file stored in `export/media/` (not tracked in git due to size)
+
+**Note:** The audio file `Adele - One And Only.wav` must be manually added to `projects/moylan-eq/export/media/` for the application to function.
 
 ## Development Notes
 
 - Static site, no build process required
 - Hosted via GitHub Pages
 - All processing happens client-side (no server)
-- All pages share `/css/style.css` - use absolute paths from root
-- Project-specific JS goes in `/js/` with descriptive names
-- Navigation should be consistent across all pages (currently shows "Vibe Coding" link)
+- All pages share `/css/style.css` - use relative paths from current page
+- Project-specific CSS should use main site CSS variables for consistency
+- Navigation should be consistent across all pages (shows "Projects" link)
 - Footer shows copyright with current year

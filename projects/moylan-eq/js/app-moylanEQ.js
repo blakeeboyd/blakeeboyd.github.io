@@ -93,10 +93,6 @@ async function setup() {
         console.log(param);
     });
 
-    setupStartStop(device);
-    setupLoop(device);
-    setupStartPoint(device);
-    setupDuration(device);
     setupFilters(device);
     setupLow(device);
     setupLowMid(device);
@@ -105,6 +101,7 @@ async function setup() {
     setupHigh(device);
     setupVeryHigh(device);
     setupGain(device);
+    setupAudioSource(device, context);
 
     // (Optional) Load presets, if any
     // loadPresets(device, patcher);
@@ -138,82 +135,6 @@ function loadRNBOScript(version) {
         document.body.append(el);
     });
 }
-
-function setupStartPoint(device) {
-    const startPointText = document.getElementById("startPoint-text");
-    const startPointState = getParameter(device, "audioFile_startPoint");
-    startPointText.value = startPointState.value;
-  
-    startPointText.onchange = () => {
-      if (isNaN(startPointText.value) || startPointText.value < 0) {
-        startPointText.value = startPointState.value;
-      }
-      if (startPointText.value > startPointState.max) {
-        startPointText.value = startPointState.max;
-      }
-      if (startPointText.value < startPointState.min) {
-        startPointText.value = startPointState.min;
-      }
-  
-      // sendMessageToInport(device, "tempo", tempoText.value);
-      // OR
-      startPointState.value = startPointText.value;
-    };
-}
-
-function setupDuration(device) {
-    const durationText = document.getElementById("duration-text");
-    const durationState = getParameter(device, "audioFile_duration");
-    durationText.value = durationState.value;
-  
-    durationText.onchange = () => {
-      if (isNaN(durationText.value) || durationText.value < 0) {
-        durationText.value = durationState.value;
-      }
-      if (durationText.value > durationState.max) {
-        durationText.value = durationState.max;
-      }
-      if (durationText.value < durationState.min) {
-        durationText.value = durationState.min;
-      }
-  
-      // sendMessageToInport(device, "tempo", tempoText.value);
-      // OR
-      durationState.value = durationText.value;
-    };
-}
-
-function setupStartStop(device) {
-    const startToggle = document.getElementById("start-toggle");
-    startToggle.onclick = () => {
-      const messageEvent = new RNBO.MessageEvent(
-        RNBO.TimeNow,
-        "audioFile_play",
-        startToggle.checked ? [1] : [0]
-      );
-      device.scheduleEvent(messageEvent);
-      //OR
-      // sendMessageToInport(device, "audioFile_play", startToggle.checked ? "1" : "0");
-    };
-    const toggleState = getParameter(device, "audioFile_play");
-    startToggle.checked = toggleState.value === 1;
-  }
-
-  function setupLoop(device) {
-    const loopToggle = document.getElementById("loop-toggle");
-    loopToggle.onclick = () => {
-      const messageEvent = new RNBO.MessageEvent(
-        RNBO.TimeNow,
-        "audioFile_loop",
-        loopToggle.checked ? [1] : [0]
-      );
-      device.scheduleEvent(messageEvent);
-      //OR
-      // sendMessageToInport(device, "audioFile_loop", loopToggle.checked ? "1" : "0");
-    };
-    const toggleState = getParameter(device, "audioFile_loop");
-    loopToggle.checked = toggleState.value === 1;
-  }
 
   function setupFilters(device) {
     const filtersToggle = document.getElementById("filters-toggle");
@@ -332,7 +253,7 @@ function setupStartStop(device) {
     const gainValue = document.getElementsByClassName("gain-text")[0];
     gainSlider.value = -12;
     gainValue.innerHTML = -12;
-  
+
     gainSlider.oninput = function () {
       gainValue.innerHTML = Math.round(this.value);
       // sendMessageToInport(
@@ -344,6 +265,177 @@ function setupStartStop(device) {
       const gainParam = getParameter(device, "gain");
       gainParam.value = this.value;
     };
+  }
+
+  function setupAudioSource(device, context) {
+    // DOM elements
+    const sourceSelector = document.getElementById("source-selector");
+    const fileInput = document.getElementById("audio-file-input");
+    const fileInfo = document.getElementById("audio-file-info");
+    const fileName = document.getElementById("audio-file-name");
+    const fileDuration = document.getElementById("audio-file-duration");
+    const playbackControls = document.getElementById("playback-controls");
+    const playButton = document.getElementById("play-button");
+    const playIcon = document.getElementById("play-icon");
+    const pauseIcon = document.getElementById("pause-icon");
+    const loopToggle = document.getElementById("loop-toggle");
+
+    // Audio playback state
+    let uploadedAudioBuffer = null;
+    let audioSourceNode = null;
+    let isPlaying = false;
+    let shouldLoop = false;
+
+    // Get the audio source selector parameter
+    const selectorParam = getParameter(device, "audioFile_selector");
+
+    // Initialize selector from RNBO parameter
+    if (selectorParam) {
+      sourceSelector.value = selectorParam.value;
+    }
+
+    // Handle source selection change
+    sourceSelector.addEventListener("change", () => {
+      const value = parseInt(sourceSelector.value, 10);
+
+      // Send message to RNBO
+      const messageEvent = new RNBO.MessageEvent(
+        RNBO.TimeNow,
+        "audioFile_selector",
+        [value]
+      );
+      device.scheduleEvent(messageEvent);
+
+      // Also update the parameter directly
+      if (selectorParam) {
+        selectorParam.value = value;
+      }
+
+      // Stop any playing user audio when switching away from user audio
+      if (value !== 2 && isPlaying) {
+        stopAudio();
+      }
+
+      console.log("Audio source changed to:", ["Mute", "Pink Noise", "User Audio"][value]);
+    });
+
+    // Handle file upload
+    fileInput.addEventListener("change", async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      // Validate file type
+      if (!file.type.startsWith("audio/")) {
+        console.error("Please select an audio file");
+        return;
+      }
+
+      try {
+        // Read file as ArrayBuffer
+        const arrayBuffer = await file.arrayBuffer();
+
+        // Decode audio data
+        uploadedAudioBuffer = await context.decodeAudioData(arrayBuffer);
+
+        // Calculate duration in seconds
+        const durationSec = uploadedAudioBuffer.duration;
+
+        // Format duration display (MM:SS)
+        const minutes = Math.floor(durationSec / 60);
+        const seconds = Math.floor(durationSec % 60);
+        const durationFormatted = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+
+        // Update UI
+        fileName.textContent = file.name;
+        fileDuration.textContent = durationFormatted;
+        fileInfo.classList.remove("hidden");
+        playbackControls.classList.remove("hidden");
+
+        // Log info for debugging
+        console.log("Audio file loaded:", file.name);
+        console.log("Duration:", durationFormatted);
+        console.log("Sample rate:", uploadedAudioBuffer.sampleRate);
+        console.log("Channels:", uploadedAudioBuffer.numberOfChannels);
+
+        // Auto-select "User Audio" source when file is uploaded
+        sourceSelector.value = "2";
+        sourceSelector.dispatchEvent(new Event("change"));
+
+      } catch (error) {
+        console.error("Error decoding audio file:", error);
+      }
+    });
+
+    // Play/Stop button handler
+    function playAudio() {
+      if (!uploadedAudioBuffer) return;
+
+      // Resume audio context if suspended
+      if (context.state === "suspended") {
+        context.resume();
+      }
+
+      // Create a new buffer source node
+      audioSourceNode = context.createBufferSource();
+      audioSourceNode.buffer = uploadedAudioBuffer;
+      audioSourceNode.loop = shouldLoop;
+
+      // Connect to the RNBO device's signal input
+      // The device.node has inputs we can connect to
+      audioSourceNode.connect(device.node);
+
+      // Handle playback ended
+      audioSourceNode.onended = () => {
+        if (!shouldLoop) {
+          isPlaying = false;
+          updatePlayButton();
+        }
+      };
+
+      audioSourceNode.start();
+      isPlaying = true;
+      updatePlayButton();
+      console.log("User audio playback started");
+    }
+
+    function stopAudio() {
+      if (audioSourceNode) {
+        audioSourceNode.stop();
+        audioSourceNode.disconnect();
+        audioSourceNode = null;
+      }
+      isPlaying = false;
+      updatePlayButton();
+      console.log("User audio playback stopped");
+    }
+
+    function updatePlayButton() {
+      if (isPlaying) {
+        playIcon.classList.add("hidden");
+        pauseIcon.classList.remove("hidden");
+      } else {
+        playIcon.classList.remove("hidden");
+        pauseIcon.classList.add("hidden");
+      }
+    }
+
+    // Play button click handler
+    playButton.addEventListener("click", () => {
+      if (isPlaying) {
+        stopAudio();
+      } else {
+        playAudio();
+      }
+    });
+
+    // Loop toggle handler
+    loopToggle.addEventListener("change", () => {
+      shouldLoop = loopToggle.checked;
+      if (audioSourceNode) {
+        audioSourceNode.loop = shouldLoop;
+      }
+      console.log("Loop:", shouldLoop ? "enabled" : "disabled");
+    });
   }
 
 /* function makeSliders(device) {
