@@ -3,51 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Parse BandLab sample pack HTML files to structured JSON">
     <title>Sample Pack Parser - Blake Boyd</title>
     <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
+        <header>
+            <nav>
+                <a href="/" class="logo">Blake Boyd</a>
+                <div class="nav-links">
+                    <a href="/projects/bandlab-parser/" class="nav-link active">Parser</a>
+                    <a href="/projects/bandlab-parser/bookmarklet.html" class="nav-link">Bookmarklet</a>
+                </div>
+            </nav>
+        </header>
+
+        <div class="page-header">
+            <h1 class="page-title">Sample Pack Parser</h1>
+            <p class="page-subtitle">Upload an HTML file to extract sample metadata as structured JSON.</p>
+        </div>
+
         <div class="grid">
             <!-- Left Column: Upload and Metadata -->
             <div class="left-column">
                 <!-- Upload Section -->
                 <div class="card">
-                    <div class="header">
-                        <h1 class="title">
-                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="16 18 22 12 16 6"></polyline>
-                                <polyline points="8 6 2 12 8 18"></polyline>
-                            </svg>
-                            Sample Pack Parser
-                        </h1>
-                        <p class="subtitle">Upload an HTML file (supports BandLab, Splice, and table-based sites).</p>
-                        <div style="margin-top: 1rem;">
-                            <a href="bookmarklet.html" style="display: inline-flex; align-items: center; gap: 0.5rem; color: #667eea; text-decoration: none; font-size: 0.875rem; font-weight: 600; padding: 0.5rem 1rem; background: #eff6ff; border-radius: 0.5rem; transition: background 0.2s ease;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <line x1="2" y1="12" x2="22" y2="12"></line>
-                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                                </svg>
-                                Try One-Click Bookmarklet
-                            </a>
-                        </div>
+                    <div class="card-header">
+                        <h2 class="card-title">Upload HTML</h2>
+                        <p class="card-subtitle">Supports BandLab, Splice, and table-based sites.</p>
                     </div>
 
                     <div class="upload-area" id="uploadArea">
                         <input type="file" id="fileInput" accept=".html, .htm" class="file-input">
-                        <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                             <polyline points="17 8 12 3 7 8"></polyline>
                             <line x1="12" y1="3" x2="12" y2="15"></line>
                         </svg>
                         <p class="upload-text" id="uploadText">Click to upload HTML file</p>
-                        <p class="upload-hint">Supports .html</p>
+                        <p class="upload-hint">Supports .html and .htm files</p>
                     </div>
 
-                    <div style="margin-top: 1rem; padding: 0.75rem; background: #f9fafb; border-radius: 0.5rem; border: 1px solid #e5e7eb;">
-                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.875rem; color: #4b5563;">
-                            <input type="checkbox" id="autoDownloadCheckbox" style="width: 1rem; height: 1rem; cursor: pointer;">
+                    <a href="bookmarklet.html" class="bookmarklet-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                        </svg>
+                        Try the one-click bookmarklet
+                    </a>
+
+                    <div class="checkbox-option">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="autoDownloadCheckbox">
                             <span>Automatically download JSON after parsing</span>
                         </label>
                     </div>
@@ -136,15 +147,17 @@
                         <div class="footer-stats">
                             <span class="stat">
                                 <svg class="stat-icon blue" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                                 </svg>
                                 Loops: <span id="loopCount">0</span>
                             </span>
                             <span class="stat">
                                 <svg class="stat-icon purple" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
                                 </svg>
                                 One-Shots: <span id="oneShotCount">0</span>
                             </span>
@@ -154,7 +167,7 @@
                 </div>
 
                 <div id="placeholderContainer" class="placeholder-container">
-                    <svg class="placeholder-icon" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg class="placeholder-icon" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                         <polyline points="14 2 14 8 20 8"></polyline>
                         <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -165,6 +178,10 @@
                 </div>
             </div>
         </div>
+
+        <footer>
+            <p>&copy; 2025 Blake Boyd</p>
+        </footer>
     </div>
 
     <script src="assets/js/app.js"></script>
