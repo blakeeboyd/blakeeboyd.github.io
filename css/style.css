@@ -430,6 +430,111 @@ main {
     color: var(--color-text-muted);
 }
 
+.card-title-info {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--color-text-muted);
+    margin-left: 0.5rem;
+}
+
+/* Card header inline layout (title + control on same line) */
+.card-header-inline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+}
+
+.card-header-inline .card-title {
+    margin-bottom: 0;
+}
+
+/* Toggle switch component */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--color-border);
+    transition: 0.2s ease;
+    border-radius: 24px;
+}
+
+.toggle-slider::before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.2s ease;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: var(--color-accent);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(20px);
+}
+
+.toggle-switch input:focus + .toggle-slider {
+    box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+}
+
+/* Small toggle switch variant */
+.toggle-switch-sm {
+    width: 36px;
+    height: 20px;
+}
+
+.toggle-switch-sm .toggle-slider {
+    border-radius: 20px;
+}
+
+.toggle-switch-sm .toggle-slider::before {
+    height: 14px;
+    width: 14px;
+}
+
+.toggle-switch-sm input:checked + .toggle-slider::before {
+    transform: translateX(16px);
+}
+
+/* Toggle with label */
+.toggle-with-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.toggle-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
 /* Upload area */
 .upload-area {
     position: relative;
@@ -881,20 +986,26 @@ footer p {
 /* Audio controls row - side by side layout */
 .audio-controls-row {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--spacing-lg);
 }
 
 .audio-source-section {
-    flex: 1;
-    min-width: 0;
+    flex: 1 1 250px;
+    min-width: 250px;
 }
 
 .audio-source-section .eq-controls {
     flex-wrap: nowrap;
 }
 
+.audio-source-section .control-group {
+    flex: 1 1 auto;
+    max-width: 300px;
+}
+
 .frequency-bands-section {
-    flex-shrink: 0;
+    flex: 0 0 auto;
 }
 
 .section-divider {
@@ -904,7 +1015,7 @@ footer p {
 }
 
 /* Responsive: stack on smaller screens */
-@media (max-width: 900px) {
+@media (max-width: 1000px) {
     .audio-controls-row {
         flex-direction: column;
     }
@@ -952,6 +1063,63 @@ footer p {
     font-size: 0.625rem;
     color: var(--color-text-muted);
     text-align: center;
+}
+
+/* Mute/Solo button container */
+.mute-solo-buttons {
+    display: flex;
+    gap: 0.25rem;
+}
+
+/* Band control buttons (Mute/Solo) */
+.band-button {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+    font-size: 0.625rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.band-button:hover {
+    border-color: var(--color-text-muted);
+    color: var(--color-text);
+}
+
+/* Mute button active state */
+.mute-button.active {
+    background: var(--color-error);
+    border-color: var(--color-error);
+    color: white;
+}
+
+.mute-button.active:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+}
+
+/* Solo button active state */
+.solo-button.active {
+    background: var(--color-warning);
+    border-color: var(--color-warning);
+    color: white;
+}
+
+.solo-button.active:hover {
+    background: #d97706;
+    border-color: #d97706;
+}
+
+/* Implicitly muted state (muted due to another band being soloed) */
+.mute-button.implicit {
+    background: rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.5);
+    color: var(--color-error);
 }
 
 /* Checkbox styling */
@@ -1017,7 +1185,8 @@ footer p {
     margin-bottom: var(--spacing-sm);
 }
 
-.background-content ul {
+.background-content ul,
+.background-content ol {
     margin: var(--spacing-xs) 0 var(--spacing-sm) 1.5rem;
     padding: 0;
 }

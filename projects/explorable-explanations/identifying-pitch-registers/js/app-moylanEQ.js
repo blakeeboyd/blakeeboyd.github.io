@@ -94,12 +94,7 @@ async function setup() {
     });
 
     setupFilters(device);
-    setupLow(device);
-    setupLowMid(device);
-    setupMid(device);
-    setupMidHigh(device);
-    setupHigh(device);
-    setupVeryHigh(device);
+    setupBandControls(device);
     // Create gain node for user audio (controlled by gain slider)
     const userAudioGain = context.createGain();
     userAudioGain.connect(device.node);
@@ -156,100 +151,87 @@ function loadRNBOScript(version) {
     filtersToggle.checked = toggleState.value === 1;
   }
 
-  function setupLow(device) {
-    const lowToggle = document.getElementById("low-toggle");
-    lowToggle.onclick = () => {
-      const messageEvent = new RNBO.MessageEvent(
-        RNBO.TimeNow,
-        "low",
-        lowToggle.checked ? [1] : [0]
-      );
-      device.scheduleEvent(messageEvent);
-      //OR
-      // sendMessageToInport(device, "audioFile_loop", lowToggle.checked ? "1" : "0");
-    };
-    const toggleState = getParameter(device, "low");
-    lowToggle.checked = toggleState.value === 1;
+  // Band control state
+  const bandNames = ['low', 'lowMid', 'mid', 'midHigh', 'high', 'veryHigh'];
+  const bandState = {};
+
+  function setupBandControls(device) {
+    // Initialize state for each band
+    bandNames.forEach(band => {
+      bandState[band] = {
+        muted: false,
+        soloed: false
+      };
+    });
+
+    // Set up mute and solo buttons for each band
+    bandNames.forEach(band => {
+      const muteBtn = document.getElementById(`${band}-mute`);
+      const soloBtn = document.getElementById(`${band}-solo`);
+
+      muteBtn.addEventListener('click', () => {
+        bandState[band].muted = !bandState[band].muted;
+        updateBandUI(band);
+        updateAllBands(device);
+      });
+
+      soloBtn.addEventListener('click', () => {
+        bandState[band].soloed = !bandState[band].soloed;
+        updateBandUI(band);
+        updateAllBands(device);
+      });
+    });
+
+    // Initialize all bands to enabled (not muted)
+    updateAllBands(device);
   }
 
-  function setupLowMid(device) {
-    const lowMidToggle = document.getElementById("lowMid-toggle");
-    lowMidToggle.onclick = () => {
-      const messageEvent = new RNBO.MessageEvent(
-        RNBO.TimeNow,
-        "lowMid",
-        lowMidToggle.checked ? [1] : [0]
-      );
-      device.scheduleEvent(messageEvent);
-      //OR
-      // sendMessageToInport(device, "audioFile_loop", lowMidToggle.checked ? "1" : "0");
-    };
-    const toggleState = getParameter(device, "lowMid");
-    lowMidToggle.checked = toggleState.value === 1;
+  function updateBandUI(band) {
+    const muteBtn = document.getElementById(`${band}-mute`);
+    const soloBtn = document.getElementById(`${band}-solo`);
+
+    // Update mute button
+    muteBtn.classList.toggle('active', bandState[band].muted);
+
+    // Update solo button
+    soloBtn.classList.toggle('active', bandState[band].soloed);
+
+    // Check if any band is soloed
+    const anySoloed = bandNames.some(b => bandState[b].soloed);
+
+    // Update implicit mute state (band is muted because another band is soloed)
+    if (anySoloed && !bandState[band].soloed && !bandState[band].muted) {
+      muteBtn.classList.add('implicit');
+    } else {
+      muteBtn.classList.remove('implicit');
+    }
   }
 
-  function setupMid(device) {
-    const midToggle = document.getElementById("mid-toggle");
-    midToggle.onclick = () => {
-      const messageEvent = new RNBO.MessageEvent(
-        RNBO.TimeNow,
-        "mid",
-        midToggle.checked ? [1] : [0]
-      );
-      device.scheduleEvent(messageEvent);
-      //OR
-      // sendMessageToInport(device, "audioFile_loop", midToggle.checked ? "1" : "0");
-    };
-    const toggleState = getParameter(device, "mid");
-    midToggle.checked = toggleState.value === 1;
-  }
+  function updateAllBands(device) {
+    const anySoloed = bandNames.some(b => bandState[b].soloed);
 
-  function setupMidHigh(device) {
-    const midHighToggle = document.getElementById("midHigh-toggle");
-    midHighToggle.onclick = () => {
-      const messageEvent = new RNBO.MessageEvent(
-        RNBO.TimeNow,
-        "midHigh",
-        midHighToggle.checked ? [1] : [0]
-      );
-      device.scheduleEvent(messageEvent);
-      //OR
-      // sendMessageToInport(device, "audioFile_loop", midHighToggle.checked ? "1" : "0");
-    };
-    const toggleState = getParameter(device, "midHigh");
-    midHighToggle.checked = toggleState.value === 1;
-  }
+    bandNames.forEach(band => {
+      let enabled;
 
-  function setupHigh(device) {
-    const highToggle = document.getElementById("high-toggle");
-    highToggle.onclick = () => {
+      if (anySoloed) {
+        // If any band is soloed, only soloed bands play (unless they're also muted)
+        enabled = bandState[band].soloed && !bandState[band].muted;
+      } else {
+        // No solos - bands play unless muted
+        enabled = !bandState[band].muted;
+      }
+
+      // Send message to RNBO
       const messageEvent = new RNBO.MessageEvent(
         RNBO.TimeNow,
-        "high",
-        highToggle.checked ? [1] : [0]
+        band,
+        enabled ? [1] : [0]
       );
       device.scheduleEvent(messageEvent);
-      //OR
-      // sendMessageToInport(device, "audioFile_loop", highToggle.checked ? "1" : "0");
-    };
-    const toggleState = getParameter(device, "high");
-    highToggle.checked = toggleState.value === 1;
-  }
-  
-  function setupVeryHigh(device) {
-    const veryHighToggle = document.getElementById("veryHigh-toggle");
-    veryHighToggle.onclick = () => {
-      const messageEvent = new RNBO.MessageEvent(
-        RNBO.TimeNow,
-        "veryHigh",
-        veryHighToggle.checked ? [1] : [0]
-      );
-      device.scheduleEvent(messageEvent);
-      //OR
-      // sendMessageToInport(device, "audioFile_loop", veryHighToggle.checked ? "1" : "0");
-    };
-    const toggleState = getParameter(device, "veryHigh");
-    veryHighToggle.checked = toggleState.value === 1;
+
+      // Update UI for implicit mute state
+      updateBandUI(band);
+    });
   }
 
   // Separate gain values for different sources

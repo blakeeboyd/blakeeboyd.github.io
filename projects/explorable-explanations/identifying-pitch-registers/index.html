@@ -29,7 +29,7 @@
         <main>
             <div class="page-header">
                 <h1 class="page-title">Identifying Pitch Registers</h1>
-                <p class="page-subtitle">For use in Week 4 of Critical Listening Skills</p>
+                <p class="page-subtitle">For use in Week 3-4 of Critical Listening Skills. See Moylan Ch. 4-5 for more information.</p>
             </div>
 
             <div class="eq-app">
@@ -59,43 +59,64 @@
                         <div class="section-divider"></div>
 
                         <div class="frequency-bands-section">
-                            <div class="card-header">
-                                <h2 class="card-title">Frequency Bands</h2>
+                            <div class="card-header card-header-inline">
+                                <h2 class="card-title">Frequency Bands <span class="card-title-info">See Moylan p. 106</span></h2>
+                                <div class="toggle-with-label">
+                                    <span class="toggle-label">Filters On/Off</span>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="filters-toggle" />
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
                             </div>
                             <div class="eq-controls">
-                                <div class="control-group filter-master">
-                                    <label class="control-label" for="filters-toggle">Filters Enabled</label>
-                                    <input type="checkbox" id="filters-toggle" class="eq-checkbox" />
-                                </div>
-                                <div class="control-group">
-                                    <label class="control-label" for="low-toggle">Low</label>
+                                <div class="control-group band-control">
+                                    <label class="control-label">Low</label>
                                     <span class="freq-range">up to 65.41 Hz</span>
-                                    <input type="checkbox" id="low-toggle" class="eq-checkbox" />
+                                    <div class="mute-solo-buttons">
+                                        <button type="button" id="low-mute" class="band-button mute-button" title="Mute">M</button>
+                                        <button type="button" id="low-solo" class="band-button solo-button" title="Solo">S</button>
+                                    </div>
                                 </div>
-                                <div class="control-group">
-                                    <label class="control-label" for="lowMid-toggle">Low Mid</label>
+                                <div class="control-group band-control">
+                                    <label class="control-label">Low Mid</label>
                                     <span class="freq-range">73.42-196 Hz</span>
-                                    <input type="checkbox" id="lowMid-toggle" class="eq-checkbox" />
+                                    <div class="mute-solo-buttons">
+                                        <button type="button" id="lowMid-mute" class="band-button mute-button" title="Mute">M</button>
+                                        <button type="button" id="lowMid-solo" class="band-button solo-button" title="Solo">S</button>
+                                    </div>
                                 </div>
-                                <div class="control-group">
-                                    <label class="control-label" for="mid-toggle">Mid</label>
+                                <div class="control-group band-control">
+                                    <label class="control-label">Mid</label>
                                     <span class="freq-range">220-440 Hz</span>
-                                    <input type="checkbox" id="mid-toggle" class="eq-checkbox" />
+                                    <div class="mute-solo-buttons">
+                                        <button type="button" id="mid-mute" class="band-button mute-button" title="Mute">M</button>
+                                        <button type="button" id="mid-solo" class="band-button solo-button" title="Solo">S</button>
+                                    </div>
                                 </div>
-                                <div class="control-group">
-                                    <label class="control-label" for="midHigh-toggle">Mid-High</label>
+                                <div class="control-group band-control">
+                                    <label class="control-label">Mid-High</label>
                                     <span class="freq-range">493.88-1318.51 Hz</span>
-                                    <input type="checkbox" id="midHigh-toggle" class="eq-checkbox" />
+                                    <div class="mute-solo-buttons">
+                                        <button type="button" id="midHigh-mute" class="band-button mute-button" title="Mute">M</button>
+                                        <button type="button" id="midHigh-solo" class="band-button solo-button" title="Solo">S</button>
+                                    </div>
                                 </div>
-                                <div class="control-group">
-                                    <label class="control-label" for="high-toggle">High</label>
+                                <div class="control-group band-control">
+                                    <label class="control-label">High</label>
                                     <span class="freq-range">1396.91-4186.01 Hz</span>
-                                    <input type="checkbox" id="high-toggle" class="eq-checkbox" />
+                                    <div class="mute-solo-buttons">
+                                        <button type="button" id="high-mute" class="band-button mute-button" title="Mute">M</button>
+                                        <button type="button" id="high-solo" class="band-button solo-button" title="Solo">S</button>
+                                    </div>
                                 </div>
-                                <div class="control-group">
-                                    <label class="control-label" for="veryHigh-toggle">Very High</label>
+                                <div class="control-group band-control">
+                                    <label class="control-label">Very High</label>
                                     <span class="freq-range">4186.01 Hz and above</span>
-                                    <input type="checkbox" id="veryHigh-toggle" class="eq-checkbox" />
+                                    <div class="mute-solo-buttons">
+                                        <button type="button" id="veryHigh-mute" class="band-button mute-button" title="Mute">M</button>
+                                        <button type="button" id="veryHigh-solo" class="band-button solo-button" title="Solo">S</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -137,9 +158,12 @@
                                 <span class="time-display" id="total-time">0:00</span>
                             </div>
                             <div class="loop-controls">
-                                <div class="control-group">
-                                    <label class="control-label" for="loop-toggle">Loop</label>
-                                    <input type="checkbox" id="loop-toggle" class="eq-checkbox" />
+                                <div class="toggle-with-label">
+                                    <span class="toggle-label">Loop</span>
+                                    <label class="toggle-switch toggle-switch-sm">
+                                        <input type="checkbox" id="loop-toggle" />
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                                 <div class="loop-range-inputs" id="loop-range-inputs">
                                     <div class="loop-time-input">
@@ -190,6 +214,29 @@
 
                         <h3>Step 1: Calibration (Pink Noise)</h3>
                         <p>Before analyzing your reference track, calibrate your ears to the sound of each frequency band using pink noise.</p>
+                        <ol>
+                            <li>Select "Pink Noise" in the tool. Adjust the volume until the sound is at a comfortable volume.</li>
+                            <li>Solo each available frequency band one at a time.</li>
+                            <li>Listen and define: For each band, take a moment to internalize the physical characteristic of that specific range. Ask yourself: Is there a resonance or a formant I associate with what I am hearing?</li>
+                        </ol>
+                        <p class="note"><strong>Note:</strong> Use this step to remind yourself of the raw sound of the frequency band without the distraction of musical information. This creates the "reference experience" Moylan identifies as crucial for evaluation.</p>
+
+                        <h3>Step 2: Application (Musical Analysis)</h3>
+                        <p>Switch the tool to "User Audio" and upload a track of your choice. Isolate a loop no longer than 30 seconds in the song that contains instruments across the full spectrum. Perform the same isolation process for each frequency band and answer the following questions:</p>
+                        <ol>
+                            <li>What instruments do you hear in the audio example?</li>
+                            <li>In each band, what instruments are present?</li>
+                            <li>For instruments that appear in multiple bands, in which specific band is the instrument most present or dominant?</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Criteria</h2>
+                    </div>
+                    <div class="background-content">
+                        <p>Your analysis will be evaluated based on the following:</p>
                     </div>
                 </div>
             </div>
