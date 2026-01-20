@@ -24,16 +24,11 @@
         localStorage.setItem(STORAGE_KEY, next);
     }
 
+    // Expose toggleTheme globally for nav-component.js
+    window.toggleTheme = toggleTheme;
+
     // Apply theme immediately to prevent flash
     applyTheme(getThemePreference());
-
-    // Set up toggle button when DOM is ready
-    document.addEventListener('DOMContentLoaded', function() {
-        const toggleBtn = document.getElementById('theme-toggle');
-        if (toggleBtn) {
-            toggleBtn.addEventListener('click', toggleTheme);
-        }
-    });
 
     // Listen for system preference changes
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {

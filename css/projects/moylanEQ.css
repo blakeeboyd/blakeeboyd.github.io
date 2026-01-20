@@ -1,0 +1,606 @@
+/* ===========================================
+   MoylanEQ Styles
+   Project-specific styles for Identifying Pitch Registers
+   =========================================== */
+
+/* EQ App container */
+.eq-app {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    width: 100%;
+}
+
+/* Audio controls row - side by side layout */
+.audio-controls-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-lg);
+}
+
+.audio-source-section {
+    flex: 1 1 250px;
+    min-width: 250px;
+}
+
+.audio-source-section .eq-controls {
+    flex-wrap: nowrap;
+}
+
+.audio-source-section .control-group {
+    flex: 1 1 auto;
+    max-width: 300px;
+}
+
+.frequency-bands-section {
+    flex: 0 0 auto;
+}
+
+/* Band control specific styling */
+.band-control {
+    min-width: 75px;
+    padding: 0.625rem var(--spacing-xs);
+    transition: opacity var(--transition-normal), filter var(--transition-normal);
+}
+
+.band-control:hover {
+    background: var(--color-card-bg);
+}
+
+/* Disabled state when filters are off */
+.band-control.filters-disabled {
+    opacity: 0.4;
+    filter: grayscale(0.5);
+    pointer-events: none;
+}
+
+.band-control.filters-disabled .band-button {
+    cursor: not-allowed;
+}
+
+.section-divider {
+    width: 1px;
+    background: var(--color-border);
+    align-self: stretch;
+}
+
+/* Responsive: stack on smaller screens */
+@media (max-width: 1000px) {
+    .audio-controls-row {
+        flex-direction: column;
+    }
+
+    .section-divider {
+        width: 100%;
+        height: 1px;
+    }
+}
+
+/* Control sections */
+.eq-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    justify-content: flex-start;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.375rem;
+    padding: var(--spacing-sm);
+    background: var(--color-control-bg);
+    border-radius: var(--radius-md);
+    min-width: 100px;
+    border: 1px solid transparent;
+    transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.control-group:hover {
+    border-color: var(--color-border);
+}
+
+.control-group.filter-master {
+    background: var(--color-accent-light);
+    border: 1px solid var(--color-accent);
+}
+
+.control-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: center;
+}
+
+.freq-range {
+    font-size: 0.625rem;
+    color: var(--color-text-muted);
+    text-align: center;
+}
+
+/* Mute/Solo button container */
+.mute-solo-buttons {
+    display: flex;
+    gap: 0.25rem;
+}
+
+/* Band control buttons (Mute/Solo) */
+.band-button {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-card-bg);
+    color: var(--color-text-muted);
+    font-size: 0.625rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+}
+
+.band-button:hover {
+    border-color: var(--color-text-muted);
+    color: var(--color-text);
+}
+
+/* Mute button active state */
+.mute-button.active {
+    background: var(--color-error);
+    border-color: var(--color-error);
+    color: white;
+}
+
+.mute-button.active:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+}
+
+/* Solo button active state */
+.solo-button.active {
+    background: var(--color-warning);
+    border-color: var(--color-warning);
+    color: white;
+}
+
+.solo-button.active:hover {
+    background: #d97706;
+    border-color: #d97706;
+}
+
+/* Implicitly muted state (muted due to another band being soloed) */
+.mute-button.implicit {
+    background: rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.5);
+    color: var(--color-error);
+}
+
+/* Checkbox styling */
+.eq-checkbox {
+    width: 1.25rem;
+    height: 1.25rem;
+    cursor: pointer;
+    accent-color: var(--color-accent);
+}
+
+/* Text input styling */
+.eq-input {
+    width: 70px;
+    text-align: center;
+    padding: 0.375rem;
+}
+
+/* Slider styling */
+.eq-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100px;
+    height: 6px;
+    border-radius: 3px;
+    cursor: pointer;
+    background: var(--color-border);
+}
+
+.eq-slider:focus {
+    outline: none;
+}
+
+.eq-slider:focus-visible {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    border-radius: 3px;
+}
+
+/* Webkit (Chrome, Safari, Edge) slider thumb */
+.eq-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--color-accent);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.eq-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
+}
+
+.eq-slider::-webkit-slider-thumb:active {
+    transform: scale(0.95);
+}
+
+/* Firefox slider thumb */
+.eq-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--color-accent);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.eq-slider::-moz-range-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
+}
+
+/* Firefox slider track */
+.eq-slider::-moz-range-track {
+    background: var(--color-border);
+    border-radius: 3px;
+    height: 6px;
+}
+
+/* Firefox filled portion (progress) */
+.eq-slider::-moz-range-progress {
+    background: linear-gradient(90deg, var(--color-accent), #3b82f6);
+    border-radius: 3px;
+    height: 6px;
+}
+
+.gain-text {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+}
+
+/* Console card (hidden by default) */
+.console-card {
+    background: #1a1a1a;
+    color: #e5e5e5;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    font-size: 0.75rem;
+}
+
+.console-card p {
+    margin: 0;
+    padding: var(--spacing-xs);
+}
+
+/* Exercise content */
+.exercise-content,
+.background-content {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--color-text);
+}
+
+.exercise-list {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.exercise-list li {
+    margin-bottom: var(--spacing-xs);
+}
+
+.background-content p {
+    margin-bottom: var(--spacing-sm);
+}
+
+.background-content h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: var(--spacing-md) 0 var(--spacing-xs);
+}
+
+.background-content ul,
+.background-content ol {
+    margin: var(--spacing-xs) 0 var(--spacing-sm) 1.5rem;
+    padding: 0;
+}
+
+.background-content li {
+    margin-bottom: 0.25rem;
+}
+
+.background-content .note {
+    background: var(--color-control-bg);
+    border-left: 3px solid var(--color-accent);
+    padding: var(--spacing-sm);
+    margin: var(--spacing-sm) 0;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 0.875rem;
+}
+
+/* Audio file info display */
+.audio-file-info {
+    margin-top: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: var(--color-bg);
+    border-radius: 0.375rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.audio-file-info .file-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 70%;
+}
+
+.audio-file-info .file-duration {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+}
+
+/* Audio source selector */
+.eq-select {
+    width: 100px;
+    text-align: center;
+    padding: 0.25rem;
+    cursor: pointer;
+    font-size: 0.75rem;
+}
+
+/* Audio upload section */
+.audio-upload-section {
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+}
+
+/* Playback controls */
+.playback-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+}
+
+/* Playback divider */
+.playback-divider {
+    width: 1px;
+    height: 32px;
+    background: var(--color-border);
+    margin: 0 var(--spacing-xs);
+}
+
+/* Compact upload area (shown after file upload) */
+.upload-area-compact {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    flex-shrink: 0;
+}
+
+.upload-area-compact .upload-icon {
+    margin: 0;
+}
+
+/* Hide original upload area when file is loaded */
+.audio-upload-section.has-file .upload-area:not(.upload-area-compact) {
+    display: none;
+}
+
+.audio-upload-section.has-file .audio-file-info {
+    display: flex;
+}
+
+.play-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    background: var(--color-accent);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color var(--transition-normal), transform var(--transition-fast), box-shadow var(--transition-normal);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+
+.play-button:hover {
+    background: #1d4ed8;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+
+.play-button:active {
+    transform: scale(0.95);
+    box-shadow: 0 1px 4px rgba(37, 99, 235, 0.3);
+}
+
+.play-button svg {
+    flex-shrink: 0;
+}
+
+/* Progress bar and time display */
+.progress-container {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    flex: 1;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--color-border);
+    border-radius: 3px;
+    cursor: pointer;
+    position: relative;
+    overflow: visible;
+    transition: height var(--transition-fast);
+}
+
+.progress-bar:hover {
+    height: 8px;
+    background: #d1d5db;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-accent), #3b82f6);
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.1s linear;
+}
+
+.time-display {
+    font-size: 0.75rem;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    color: var(--color-text-muted);
+    min-width: 3rem;
+    text-align: center;
+}
+
+/* Loop controls container */
+.loop-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.loop-range-inputs {
+    display: flex;
+    gap: var(--spacing-xs);
+    opacity: 0.5;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.loop-range-inputs.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.loop-time-input {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.125rem;
+}
+
+.time-input {
+    width: 50px;
+    text-align: center;
+    padding: 0.25rem;
+    font-size: 0.75rem;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    border: 1px solid var(--color-border);
+    border-radius: 0.25rem;
+    background: var(--color-bg);
+    color: var(--color-text);
+}
+
+.time-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+/* Loop region overlay on progress bar */
+.loop-region {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: rgba(0, 102, 204, 0.2);
+    border-radius: 4px;
+    pointer-events: none;
+    display: none;
+}
+
+.loop-region.active {
+    display: block;
+}
+
+/* Draggable loop handles */
+.loop-handle {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 16px;
+    background: var(--color-accent);
+    border-radius: 2px;
+    cursor: ew-resize;
+    display: none;
+    z-index: 10;
+}
+
+.loop-handle.active {
+    display: block;
+}
+
+.loop-handle:hover {
+    background: #0052a3;
+}
+
+.loop-handle::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px;
+    height: 8px;
+    background: white;
+    border-radius: 1px;
+}
+
+/* RNBO-specific elements (hidden - kept for JS compatibility) */
+#rnbo-root,
+#rnbo-clickable-keyboard,
+#rnbo-parameter-sliders {
+    display: none;
+}
+
+/* MoylanEQ responsive adjustments */
+@media (max-width: 640px) {
+    .eq-controls {
+        justify-content: center;
+    }
+
+    .control-group {
+        min-width: 80px;
+        padding: var(--spacing-xs);
+    }
+
+    .eq-slider {
+        width: 80px;
+    }
+}

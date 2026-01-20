@@ -1,0 +1,171 @@
+/* ===========================================
+   Layout Styles
+   Header, nav, footer, containers, grid
+   =========================================== */
+
+/* Layout containers */
+.container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: var(--spacing-lg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container.wide {
+    --max-width: 1400px;
+}
+
+/* Content wrapper for narrow pages within wide container */
+.content-wrapper {
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+/* Header */
+header {
+    padding: var(--spacing-md) 0;
+    margin-bottom: var(--spacing-lg);
+}
+
+.container:not(.wide) header {
+    margin-bottom: var(--spacing-xl);
+}
+
+nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo {
+    font-weight: 600;
+    font-size: 1.125rem;
+    color: var(--color-text);
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+}
+
+.logo:hover {
+    opacity: 0.7;
+}
+
+.nav-links {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.nav-link {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: 0.375rem;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.nav-link:hover {
+    color: var(--color-text);
+    background-color: var(--color-border);
+}
+
+.nav-link.active {
+    color: var(--color-accent);
+    background-color: rgba(0, 102, 204, 0.1);
+}
+
+/* Dark mode toggle button */
+.theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    color: var(--color-text-muted);
+    transition: color var(--transition-normal), border-color var(--transition-normal), background-color var(--transition-normal);
+    margin-left: var(--spacing-xs);
+}
+
+.theme-toggle:hover {
+    color: var(--color-text);
+    border-color: var(--color-text-muted);
+    background-color: var(--color-control-bg);
+}
+
+.theme-toggle svg {
+    width: 18px;
+    height: 18px;
+    transition: transform var(--transition-normal);
+}
+
+.theme-toggle:hover svg {
+    transform: rotate(15deg);
+}
+
+/* Hide/show sun/moon icons based on theme */
+.theme-toggle .icon-sun {
+    display: none;
+}
+
+.theme-toggle .icon-moon {
+    display: block;
+}
+
+[data-theme="dark"] .theme-toggle .icon-sun {
+    display: block;
+}
+
+[data-theme="dark"] .theme-toggle .icon-moon {
+    display: none;
+}
+
+/* Main content */
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Grid layout */
+.grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+    flex: 1;
+}
+
+@media (min-width: 1024px) {
+    .grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.left-column,
+.right-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.right-column {
+    min-height: 500px;
+}
+
+/* Footer */
+footer {
+    padding: var(--spacing-lg) 0;
+    margin-top: auto;
+}
+
+footer p {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+}
