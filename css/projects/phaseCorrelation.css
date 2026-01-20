@@ -1,0 +1,75 @@
+/* ===========================================
+   Phase Correlation Styles
+   Project-specific styles for Understanding Phase Correlation
+   =========================================== */
+
+/* Exercise content */
+.background-content {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--color-text);
+}
+
+.background-content p {
+    margin-bottom: var(--spacing-sm);
+}
+
+.background-content .note {
+    background: var(--color-control-bg);
+    border-left: 3px solid var(--color-accent);
+    padding: var(--spacing-sm);
+    margin: var(--spacing-sm) 0;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 0.875rem;
+}
+
+/* Definition styling */
+.background-content dfn {
+    font-style: normal;
+    font-weight: 600;
+    color: var(--color-accent);
+}
+
+/* Audio player styling */
+.background-content audio {
+    width: 100%;
+    margin: var(--spacing-sm) 0;
+    border-radius: var(--radius-md);
+}
+
+/* Video player styling */
+.background-content video {
+    width: 100%;
+    margin: var(--spacing-sm) 0;
+    border-radius: var(--radius-md);
+    background: #000;
+}
+
+/* Figure and image styling */
+.background-content figure {
+    margin: var(--spacing-md) 0;
+    text-align: center;
+}
+
+.background-content figure img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.background-content figcaption {
+    margin-top: var(--spacing-xs);
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
+/* Dark mode adjustments for media */
+[data-theme="dark"] .background-content figure img {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .background-content video {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
