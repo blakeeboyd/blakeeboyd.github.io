@@ -36,6 +36,21 @@
     --transition-normal: 0.2s ease;
 }
 
+/* Dark mode theme */
+[data-theme="dark"] {
+    --color-bg: #111827;
+    --color-text: #f3f4f6;
+    --color-text-muted: #9ca3af;
+    --color-accent: #3b82f6;
+    --color-accent-light: rgba(59, 130, 246, 0.15);
+    --color-border: #374151;
+    --color-card-bg: #1f2937;
+    --color-control-bg: #374151;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+}
+
 html {
     font-size: 18px;
     -webkit-font-smoothing: antialiased;
@@ -115,6 +130,56 @@ nav {
 .nav-link.active {
     color: var(--color-accent);
     background-color: rgba(0, 102, 204, 0.1);
+}
+
+/* Dark mode toggle button */
+.theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    color: var(--color-text-muted);
+    transition: color var(--transition-normal), border-color var(--transition-normal), background-color var(--transition-normal);
+    margin-left: var(--spacing-xs);
+}
+
+.theme-toggle:hover {
+    color: var(--color-text);
+    border-color: var(--color-text-muted);
+    background-color: var(--color-control-bg);
+}
+
+.theme-toggle svg {
+    width: 18px;
+    height: 18px;
+    transition: transform var(--transition-normal);
+}
+
+.theme-toggle:hover svg {
+    transform: rotate(15deg);
+}
+
+/* Hide/show sun/moon icons based on theme */
+.theme-toggle .icon-sun {
+    display: none;
+}
+
+.theme-toggle .icon-moon {
+    display: block;
+}
+
+[data-theme="dark"] .theme-toggle .icon-sun {
+    display: block;
+}
+
+[data-theme="dark"] .theme-toggle .icon-moon {
+    display: none;
 }
 
 /* Main content */
@@ -221,7 +286,7 @@ main {
     font-family: var(--font-family);
     border: 1px solid var(--color-border);
     border-radius: 0.5rem;
-    background: white;
+    background: var(--color-card-bg);
     color: var(--color-text);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -349,7 +414,7 @@ main {
     flex-direction: column;
     gap: var(--spacing-sm);
     padding: var(--spacing-md);
-    background: white;
+    background: var(--color-card-bg);
     border: 1px solid var(--color-border);
     border-radius: 0.75rem;
     text-decoration: none;
@@ -1174,9 +1239,76 @@ footer p {
 
 /* Slider styling */
 .eq-slider {
+    -webkit-appearance: none;
+    appearance: none;
     width: 100px;
+    height: 6px;
+    border-radius: 3px;
     cursor: pointer;
-    accent-color: var(--color-accent);
+    background: var(--color-border);
+}
+
+.eq-slider:focus {
+    outline: none;
+}
+
+.eq-slider:focus-visible {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    border-radius: 3px;
+}
+
+/* Webkit (Chrome, Safari, Edge) slider thumb */
+.eq-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--color-accent);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.eq-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
+}
+
+.eq-slider::-webkit-slider-thumb:active {
+    transform: scale(0.95);
+}
+
+/* Firefox slider thumb */
+.eq-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--color-accent);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.eq-slider::-moz-range-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
+}
+
+/* Firefox slider track */
+.eq-slider::-moz-range-track {
+    background: var(--color-border);
+    border-radius: 3px;
+    height: 6px;
+}
+
+/* Firefox filled portion (progress) */
+.eq-slider::-moz-range-progress {
+    background: linear-gradient(90deg, var(--color-accent), #3b82f6);
+    border-radius: 3px;
+    height: 6px;
 }
 
 .gain-text {

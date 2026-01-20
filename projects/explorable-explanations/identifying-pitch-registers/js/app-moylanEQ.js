@@ -248,9 +248,19 @@ function loadRNBOScript(version) {
       return Math.pow(10, db / 20);
     }
 
+    // Update slider fill gradient (for Webkit browsers)
+    function updateSliderFill(slider) {
+      const min = parseFloat(slider.min);
+      const max = parseFloat(slider.max);
+      const value = parseFloat(slider.value);
+      const percentage = ((value - min) / (max - min)) * 100;
+      slider.style.background = `linear-gradient(90deg, #2563eb 0%, #3b82f6 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
+    }
+
     // Initialize with mute selected (show user audio gain as default display)
     gainSlider.value = userAudioGainValue;
     gainValue.innerHTML = userAudioGainValue;
+    updateSliderFill(gainSlider);
 
     // Set initial gains
     userAudioGain.gain.value = dbToLinear(userAudioGainValue);
@@ -271,11 +281,13 @@ function loadRNBOScript(version) {
         gainSlider.value = userAudioGainValue;
         gainValue.innerHTML = Math.round(userAudioGainValue);
       }
+      updateSliderFill(gainSlider);
     };
 
     gainSlider.oninput = function () {
       const value = parseFloat(this.value);
       gainValue.innerHTML = Math.round(value);
+      updateSliderFill(this);
 
       if (currentSource === 1) {
         // Pink Noise - update RNBO gain and store
