@@ -561,6 +561,11 @@ function loadRNBOScript(version) {
         // Show "User Audio" in dropdown but keep RNBO muted until play is pressed
         sourceSelector.value = "2";
 
+        // Update gain control to show active state (source 2 = User Audio)
+        if (window.updateGainSliderForSource) {
+          window.updateGainSliderForSource(2);
+        }
+
       } catch (error) {
         console.error("Error decoding audio file:", error);
       }
