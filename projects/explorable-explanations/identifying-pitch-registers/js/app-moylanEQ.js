@@ -252,29 +252,61 @@ function loadRNBOScript(version) {
     veryHighToggle.checked = toggleState.value === 1;
   }
 
+  // Separate gain values for different sources
+  let pinkNoiseGain = -24;
+  let userAudioGainValue = -12;
+  let currentSource = 0; // 0=Mute, 1=Pink Noise, 2=User Audio
+
   function setupGain(device, userAudioGain) {
     const gainSlider = document.getElementById("gain-slider");
     const gainValue = document.getElementsByClassName("gain-text")[0];
-    gainSlider.value = -12;
-    gainValue.innerHTML = -12;
 
     // Convert dB to linear gain
     function dbToLinear(db) {
       return Math.pow(10, db / 20);
     }
 
-    // Set initial gain for user audio
-    userAudioGain.gain.value = dbToLinear(-12);
+    // Initialize with mute selected (show user audio gain as default display)
+    gainSlider.value = userAudioGainValue;
+    gainValue.innerHTML = userAudioGainValue;
+
+    // Set initial gains
+    userAudioGain.gain.value = dbToLinear(userAudioGainValue);
+    const gainParam = getParameter(device, "gain");
+    if (gainParam) {
+      gainParam.value = pinkNoiseGain;
+    }
+
+    // Update slider display when source changes
+    window.updateGainSliderForSource = function(source) {
+      currentSource = source;
+      if (source === 1) {
+        // Pink Noise
+        gainSlider.value = pinkNoiseGain;
+        gainValue.innerHTML = Math.round(pinkNoiseGain);
+      } else {
+        // Mute or User Audio - show user audio gain
+        gainSlider.value = userAudioGainValue;
+        gainValue.innerHTML = Math.round(userAudioGainValue);
+      }
+    };
 
     gainSlider.oninput = function () {
-      gainValue.innerHTML = Math.round(this.value);
+      const value = parseFloat(this.value);
+      gainValue.innerHTML = Math.round(value);
 
-      // Update RNBO gain parameter (for pink noise)
-      const gainParam = getParameter(device, "gain");
-      gainParam.value = this.value;
-
-      // Update user audio gain node (for uploaded audio)
-      userAudioGain.gain.value = dbToLinear(this.value);
+      if (currentSource === 1) {
+        // Pink Noise - update RNBO gain and store
+        pinkNoiseGain = value;
+        const gainParam = getParameter(device, "gain");
+        if (gainParam) {
+          gainParam.value = value;
+        }
+      } else {
+        // User Audio (or Mute) - update user audio gain node and store
+        userAudioGainValue = value;
+        userAudioGain.gain.value = dbToLinear(value);
+      }
     };
   }
 
@@ -282,6 +314,8 @@ function loadRNBOScript(version) {
     // DOM elements
     const sourceSelector = document.getElementById("source-selector");
     const fileInput = document.getElementById("audio-file-input");
+    const fileInputCompact = document.getElementById("audio-file-input-compact");
+    const audioUploadSection = document.getElementById("audio-upload-section");
     const fileInfo = document.getElementById("audio-file-info");
     const fileName = document.getElementById("audio-file-name");
     const fileDuration = document.getElementById("audio-file-duration");
@@ -425,6 +459,11 @@ function loadRNBOScript(version) {
         stopAudio();
       }
 
+      // Update gain slider to show the appropriate gain for this source
+      if (window.updateGainSliderForSource) {
+        window.updateGainSliderForSource(value);
+      }
+
       // For User Audio, keep RNBO muted until play is pressed
       // For other sources (Mute, Pink Noise), update RNBO parameter directly
       if (selectorParam) {
@@ -468,6 +507,7 @@ function loadRNBOScript(version) {
         progressFill.style.width = "0%";
         fileInfo.classList.remove("hidden");
         playbackControls.classList.remove("hidden");
+        audioUploadSection.classList.add("has-file");
 
         // Reset playback state
         pausedAt = 0;
@@ -498,8 +538,14 @@ function loadRNBOScript(version) {
       handleAudioFile(event.target.files[0]);
     });
 
+    // Handle file upload via compact file input
+    fileInputCompact.addEventListener("change", (event) => {
+      handleAudioFile(event.target.files[0]);
+    });
+
     // Drag & drop handlers
     const uploadArea = document.getElementById("audio-upload-area");
+    const uploadAreaCompact = document.getElementById("audio-upload-area-compact");
 
     uploadArea.addEventListener("dragover", (e) => {
       e.preventDefault();
@@ -514,6 +560,24 @@ function loadRNBOScript(version) {
     uploadArea.addEventListener("drop", (e) => {
       e.preventDefault();
       uploadArea.classList.remove("drag-over");
+      const file = e.dataTransfer.files[0];
+      handleAudioFile(file);
+    });
+
+    // Drag & drop handlers for compact upload area
+    uploadAreaCompact.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      uploadAreaCompact.classList.add("drag-over");
+    });
+
+    uploadAreaCompact.addEventListener("dragleave", (e) => {
+      e.preventDefault();
+      uploadAreaCompact.classList.remove("drag-over");
+    });
+
+    uploadAreaCompact.addEventListener("drop", (e) => {
+      e.preventDefault();
+      uploadAreaCompact.classList.remove("drag-over");
       const file = e.dataTransfer.files[0];
       handleAudioFile(file);
     });
@@ -690,9 +754,27 @@ function loadRNBOScript(version) {
     }
 
     function handleDragEnd() {
+      const wasStartHandle = isDraggingHandle === 'start';
       isDraggingHandle = null;
       document.removeEventListener('mousemove', handleDragMove);
       document.removeEventListener('mouseup', handleDragEnd);
+
+      // If the start handle was moved, start playing from the new loop start position
+      if (wasStartHandle && uploadedAudioBuffer) {
+        // Stop current playback if any
+        if (isPlaying && audioSourceNode) {
+          audioSourceNode.onended = null;
+          audioSourceNode.stop();
+          audioSourceNode.disconnect();
+          audioSourceNode = null;
+          if (progressAnimationId) {
+            cancelAnimationFrame(progressAnimationId);
+            progressAnimationId = null;
+          }
+        }
+        // Start playback from the new loop start position
+        playAudio(loopStart);
+      }
     }
 
     loopHandleStart.addEventListener('mousedown', handleDragStart('start'));

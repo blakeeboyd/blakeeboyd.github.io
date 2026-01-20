@@ -27,7 +27,7 @@
 }
 
 html {
-    font-size: 17px;
+    font-size: 18px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -121,7 +121,7 @@ main {
 }
 
 .hero h1 {
-    font-size: 2.5rem;
+    font-size: 3rem;
     font-weight: 600;
     letter-spacing: -0.02em;
     margin-bottom: var(--spacing-sm);
@@ -129,7 +129,7 @@ main {
 }
 
 .hero .subtitle {
-    font-size: 1.125rem;
+    font-size: 1.25rem;
     color: var(--color-text-muted);
     max-width: 480px;
 }
@@ -140,7 +140,7 @@ main {
 }
 
 .page-title {
-    font-size: 1.75rem;
+    font-size: 2.25rem;
     font-weight: 600;
     letter-spacing: -0.02em;
     margin-bottom: var(--spacing-xs);
@@ -148,7 +148,7 @@ main {
 }
 
 .page-subtitle {
-    font-size: 1rem;
+    font-size: 1.125rem;
     color: var(--color-text-muted);
 }
 
@@ -309,7 +309,7 @@ main {
 }
 
 .projects-section-title {
-    font-size: 1.25rem;
+    font-size: 1.75rem;
     font-weight: 600;
     color: var(--color-text);
     margin-bottom: var(--spacing-xs);
@@ -366,7 +366,7 @@ main {
 }
 
 .project-title {
-    font-size: 1.125rem;
+    font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: var(--spacing-xs);
     color: var(--color-text);
@@ -419,7 +419,7 @@ main {
 }
 
 .card-title {
-    font-size: 1.125rem;
+    font-size: 1.5rem;
     font-weight: 600;
     margin-bottom: var(--spacing-xs);
     color: var(--color-text);
@@ -889,6 +889,10 @@ footer p {
     min-width: 0;
 }
 
+.audio-source-section .eq-controls {
+    flex-wrap: nowrap;
+}
+
 .frequency-bands-section {
     flex-shrink: 0;
 }
@@ -1051,10 +1055,11 @@ footer p {
 
 /* Audio source selector */
 .eq-select {
-    width: 120px;
+    width: 100px;
     text-align: center;
-    padding: 0.375rem;
+    padding: 0.25rem;
     cursor: pointer;
+    font-size: 0.75rem;
 }
 
 /* Audio upload section */
@@ -1084,6 +1089,39 @@ footer p {
     align-items: center;
     gap: var(--spacing-sm);
     margin-top: var(--spacing-sm);
+}
+
+/* Playback divider */
+.playback-divider {
+    width: 1px;
+    height: 32px;
+    background: var(--color-border);
+    margin: 0 var(--spacing-xs);
+}
+
+/* Compact upload area (shown after file upload) */
+.upload-area-compact {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    flex-shrink: 0;
+}
+
+.upload-area-compact .upload-icon {
+    margin: 0;
+}
+
+/* Hide original upload area when file is loaded */
+.audio-upload-section.has-file .upload-area:not(.upload-area-compact) {
+    display: none;
+}
+
+.audio-upload-section.has-file .audio-file-info {
+    display: flex;
 }
 
 .play-button {
