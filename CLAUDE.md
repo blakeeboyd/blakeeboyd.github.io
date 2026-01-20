@@ -159,6 +159,10 @@ Educational audio application for learning critical listening skills and frequen
 - `js/guardrails.js` - Input validation and safety checks
 - `export/gb.moylanEQ.export.json` - RNBO patcher export
 
+## Design Inspiration
+
+- https://www.seanhalpin.xyz/fun - Playful, interactive design elements
+
 ## Development Notes
 
 - Static site, no build process required

@@ -589,47 +589,109 @@
     font-size: 0.875rem;
 }
 
-/* About page */
-.about-content {
+/* About page - two column layout */
+.about-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-xl);
+    align-items: center;
+    min-height: 70vh;
+}
+
+.about-content-col {
     display: flex;
-    gap: var(--spacing-lg);
-    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--spacing-md);
 }
 
-.about-photo {
-    flex-shrink: 0;
+.about-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-muted);
 }
 
-.about-photo img {
-    width: 200px;
-    height: 200px;
-    object-fit: cover;
-    border-radius: var(--radius-lg);
+.about-headline {
+    font-size: 2.5rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--color-text);
+    margin: 0;
 }
 
 .about-text {
-    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
 }
 
 .about-text p {
     color: var(--color-text-muted);
     line-height: 1.7;
-    margin-bottom: var(--spacing-sm);
+    margin: 0;
 }
 
-.about-text p:last-child {
-    margin-bottom: 0;
+.about-cta {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text);
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: border-color var(--transition-normal), background-color var(--transition-normal);
+    align-self: flex-start;
+    margin-top: var(--spacing-sm);
+}
+
+.about-cta:hover {
+    border-color: var(--color-text);
+    background: var(--color-control-bg);
+}
+
+.about-photo-col {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.about-photo-col img {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+}
+
+@media (max-width: 900px) {
+    .about-layout {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+        min-height: auto;
+    }
+
+    .about-headline {
+        font-size: 2rem;
+    }
+
+    .about-photo-col {
+        order: -1;
+    }
+
+    .about-photo-col img {
+        max-width: 350px;
+    }
 }
 
 @media (max-width: 600px) {
-    .about-content {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
+    .about-headline {
+        font-size: 1.75rem;
     }
 
-    .about-photo img {
-        width: 160px;
-        height: 160px;
+    .about-photo-col img {
+        max-width: 280px;
     }
 }

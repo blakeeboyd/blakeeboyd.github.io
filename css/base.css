@@ -64,10 +64,20 @@ html {
 
 body {
     font-family: var(--font-family);
-    background-color: var(--color-bg);
+    background:
+        radial-gradient(ellipse at 15% 20%, rgba(37, 99, 235, 0.1) 0%, transparent 45%),
+        radial-gradient(ellipse at 85% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 45%),
+        var(--color-bg);
     color: var(--color-text);
     line-height: 1.6;
     min-height: 100vh;
+}
+
+[data-theme="dark"] body {
+    background:
+        radial-gradient(ellipse at 15% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 45%),
+        radial-gradient(ellipse at 85% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 45%),
+        var(--color-bg);
 }
 
 /* Hero section */
