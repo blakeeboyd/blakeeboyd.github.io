@@ -6,13 +6,23 @@ A personal website hosted on GitHub Pages at blakeeboyd.github.io.
 
 ```
 /
-├── index.html              # Landing page (under construction)
+├── index.html              # Landing page
+├── about.html              # About page with headshot
 ├── projects.html           # Projects listing page
+├── contact.html            # Contact form (Google Forms backend)
 ├── CLAUDE.md               # Project context for AI agents
 ├── css/
-│   └── style.css           # Single stylesheet for entire site
+│   ├── base.css            # Variables, resets, typography, dark mode
+│   ├── layout.css          # Header, nav, footer, containers
+│   ├── components.css      # Cards, forms, buttons, toggles
+│   └── projects/
+│       ├── bandlab-parser.css  # BandLab parser styles
+│       └── moylanEQ.css        # Pitch registers app styles
 ├── js/
+│   ├── theme.js            # Dark mode toggle
+│   ├── nav-component.js    # <site-nav> web component
 │   └── bandlab-parser.js   # BandLab parser JavaScript
+├── images/                 # Site images
 └── projects/
     ├── bandlab-parser/
     │   ├── index.html      # Parser main page (uses .container.wide)
@@ -38,15 +48,22 @@ A personal website hosted on GitHub Pages at blakeeboyd.github.io.
 
 ## Design System
 
-The site uses a minimalist design inspired by stefanzweifel.dev. All styles are in `/css/style.css` (single CSS file for the entire site).
+The site uses a minimalist design with modular CSS architecture.
+
+### CSS Architecture
+
+- `base.css` - CSS variables, resets, typography, dark mode theme
+- `layout.css` - Header, navigation, footer, containers
+- `components.css` - Reusable components (cards, forms, buttons, toggles)
+- `projects/*.css` - Project-specific styles
 
 ### CSS Variables
 
 ```css
---color-bg: #fafafa;
+--color-bg: #f8f9fa;
 --color-text: #1a1a1a;
 --color-text-muted: #666666;
---color-accent: #0066cc;
+--color-accent: #2563eb;
 --color-border: #e5e5e5;
 --color-card-bg: #ffffff;
 --color-success: #22c55e;
@@ -56,10 +73,26 @@ The site uses a minimalist design inspired by stefanzweifel.dev. All styles are 
 --max-width: 640px;  /* Default, override with .container.wide for 1400px */
 ```
 
+### Dark Mode
+
+Dark mode is controlled via `data-theme="dark"` attribute on `<html>`. Theme preference is stored in localStorage and respects system preference on first visit.
+
 ### Layout Classes
 - `.container` - Default 640px max-width layout
 - `.container.wide` - 1400px max-width for wide layouts (fits 14" MacBook Pro)
 - `.content-wrapper` - 640px wrapper for narrow content inside wide containers
+
+### Navigation
+
+Navigation is implemented as a Web Component (`<site-nav>`). Use the `base` attribute for nested pages:
+
+```html
+<!-- Root pages -->
+<site-nav></site-nav>
+
+<!-- Nested pages (2 levels deep) -->
+<site-nav base="../../"></site-nav>
+```
 
 ### Fonts
 - Inter from Google Fonts (weights: 400, 500, 600)
@@ -110,7 +143,7 @@ Educational audio application for learning critical listening skills and frequen
 **Technical Stack:**
 - RNBO for Web Audio processing (signal processing, filters, pink noise generation)
 - Web Audio API for user audio decoding and playback
-- Uses main site CSS (MoylanEQ-specific styles are in the "MoylanEQ Styles" section of `/css/style.css`)
+- Project-specific styles in `/css/projects/moylanEQ.css`
 
 **Audio Architecture:**
 - `audioFile_selector` parameter controls source: 0=Mute, 1=Pink Noise, 2=User Audio
@@ -131,6 +164,7 @@ Educational audio application for learning critical listening skills and frequen
 - Static site, no build process required
 - Hosted via GitHub Pages
 - All processing happens client-side (no server)
-- **Single CSS file** for entire site (`/css/style.css`) - project-specific styles are organized in labeled sections
-- Navigation should be consistent across all pages (shows "Projects" link)
+- Modular CSS architecture with separate files for base, layout, components, and project-specific styles
+- Navigation implemented as a Web Component for consistency across all pages
+- Dark mode support with system preference detection
 - Footer shows copyright with current year
