@@ -86,7 +86,6 @@ body {
 .hero .subtitle {
     font-size: 1.25rem;
     color: var(--color-text-muted);
-    max-width: 480px;
 }
 
 /* Page header */

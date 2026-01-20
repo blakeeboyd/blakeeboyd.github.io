@@ -251,7 +251,7 @@ function loadRNBOScript(version) {
   }
 
   // Separate gain values for different sources
-  let pinkNoiseGain = -24;
+  let pinkNoiseGain = -36;
   let userAudioGainValue = -12;
   let currentSource = 0; // 0=Mute, 1=Pink Noise, 2=User Audio
 
@@ -273,9 +273,12 @@ function loadRNBOScript(version) {
       slider.style.background = `linear-gradient(90deg, #2563eb 0%, #3b82f6 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
     }
 
-    // Initialize with mute selected (show user audio gain as default display)
-    gainSlider.value = userAudioGainValue;
-    gainValue.innerHTML = userAudioGainValue;
+    // Track last active source (non-mute) for restoring gain display
+    let lastActiveSource = 1; // Default to Pink Noise
+
+    // Initialize with mute selected, showing pink noise gain value
+    gainSlider.value = pinkNoiseGain;
+    gainValue.innerHTML = pinkNoiseGain;
     updateSliderFill(gainSlider);
 
     // Set initial gains
@@ -285,20 +288,40 @@ function loadRNBOScript(version) {
       gainParam.value = pinkNoiseGain;
     }
 
+    // Update gain control visual state based on source
+    const gainControl = document.getElementById("gain-control");
+    function updateGainControlVisualState(source) {
+      gainControl.classList.toggle('source-muted', source === 0);
+    }
+
     // Update slider display when source changes
     window.updateGainSliderForSource = function(source) {
       currentSource = source;
+      updateGainControlVisualState(source);
+
+      // When switching to Mute, keep slider in last state (don't update display)
+      if (source === 0) {
+        // Just update visual state, don't change slider value
+        return;
+      }
+
+      // Track the last non-mute source
+      lastActiveSource = source;
+
       if (source === 1) {
         // Pink Noise
         gainSlider.value = pinkNoiseGain;
         gainValue.innerHTML = Math.round(pinkNoiseGain);
       } else {
-        // Mute or User Audio - show user audio gain
+        // User Audio
         gainSlider.value = userAudioGainValue;
         gainValue.innerHTML = Math.round(userAudioGainValue);
       }
       updateSliderFill(gainSlider);
     };
+
+    // Initialize gain control visual state (source starts at Mute)
+    updateGainControlVisualState(0);
 
     gainSlider.oninput = function () {
       const value = parseFloat(this.value);

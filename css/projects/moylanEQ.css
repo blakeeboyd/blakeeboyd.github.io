@@ -58,6 +58,13 @@
     cursor: not-allowed;
 }
 
+/* Disabled state for gain control when source is muted */
+.control-group.source-muted {
+    opacity: 0.4;
+    filter: grayscale(0.5);
+    pointer-events: none;
+}
+
 .section-divider {
     width: 1px;
     background: var(--color-border);
@@ -364,7 +371,7 @@
 
 /* Audio source selector */
 .eq-select {
-    width: 100px;
+    width: auto;
     text-align: center;
     padding: 0.25rem;
     cursor: pointer;
