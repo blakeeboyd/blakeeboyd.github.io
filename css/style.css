@@ -1095,10 +1095,22 @@ footer p {
 .band-control {
     min-width: 75px;
     padding: 0.625rem var(--spacing-xs);
+    transition: opacity var(--transition-normal), filter var(--transition-normal);
 }
 
 .band-control:hover {
     background: var(--color-card-bg);
+}
+
+/* Disabled state when filters are off */
+.band-control.filters-disabled {
+    opacity: 0.4;
+    filter: grayscale(0.5);
+    pointer-events: none;
+}
+
+.band-control.filters-disabled .band-button {
+    cursor: not-allowed;
 }
 
 .section-divider {

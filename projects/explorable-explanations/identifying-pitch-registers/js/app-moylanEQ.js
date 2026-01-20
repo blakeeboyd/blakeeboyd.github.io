@@ -137,6 +137,14 @@ function loadRNBOScript(version) {
 
   function setupFilters(device) {
     const filtersToggle = document.getElementById("filters-toggle");
+    // Update band control visual state based on filter toggle
+    function updateBandControlsVisualState(filtersEnabled) {
+      const bandControls = document.querySelectorAll('.band-control');
+      bandControls.forEach(control => {
+        control.classList.toggle('filters-disabled', !filtersEnabled);
+      });
+    }
+
     filtersToggle.onclick = () => {
       const messageEvent = new RNBO.MessageEvent(
         RNBO.TimeNow,
@@ -144,11 +152,12 @@ function loadRNBOScript(version) {
         filtersToggle.checked ? [1] : [0]
       );
       device.scheduleEvent(messageEvent);
-      //OR
-      // sendMessageToInport(device, "audioFile_loop", filtersToggle.checked ? "1" : "0");
+      updateBandControlsVisualState(filtersToggle.checked);
     };
     const toggleState = getParameter(device, "filter");
     filtersToggle.checked = toggleState.value === 1;
+    // Initialize visual state on load
+    updateBandControlsVisualState(filtersToggle.checked);
   }
 
   // Band control state
@@ -175,8 +184,15 @@ function loadRNBOScript(version) {
         updateAllBands(device);
       });
 
-      soloBtn.addEventListener('click', () => {
-        bandState[band].soloed = !bandState[band].soloed;
+      soloBtn.addEventListener('click', (event) => {
+        // Opt+Shift (Mac) or Alt+Shift (Windows) clears all solos
+        if (event.altKey && event.shiftKey) {
+          bandNames.forEach(b => {
+            bandState[b].soloed = false;
+          });
+        } else {
+          bandState[band].soloed = !bandState[band].soloed;
+        }
         updateBandUI(band);
         updateAllBands(device);
       });
