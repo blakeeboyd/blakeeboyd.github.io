@@ -16,7 +16,7 @@ class SiteNav extends HTMLElement {
     this.innerHTML = `
       <header>
         <nav>
-          <a href="${basePath}index.html" class="logo">Blake Boyd</a>
+          <a href="${basePath || '/'}" class="logo">Blake Boyd</a>
           <div class="nav-links">
             <a href="${basePath}about.html" class="nav-link${isAbout ? ' active' : ''}">About</a>
             <a href="${basePath}projects.html" class="nav-link${isProjects ? ' active' : ''}">Projects</a>
