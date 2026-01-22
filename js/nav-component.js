@@ -17,6 +17,11 @@ class SiteNav extends HTMLElement {
       <header>
         <nav>
           <a href="${basePath || '/'}" class="logo">Blake Boyd</a>
+          <button type="button" class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+          </button>
           <div class="nav-links">
             <a href="${basePath}about.html" class="nav-link${isAbout ? ' active' : ''}">About</a>
             <a href="${basePath}projects.html" class="nav-link${isProjects ? ' active' : ''}">Projects</a>
@@ -42,14 +47,46 @@ class SiteNav extends HTMLElement {
       </header>
     `;
 
-    // Initialize theme toggle after rendering
+    // Initialize after rendering
     this.initThemeToggle();
+    this.initHamburger();
   }
 
   initThemeToggle() {
     const toggleBtn = this.querySelector('#theme-toggle');
     if (toggleBtn && typeof window.toggleTheme === 'function') {
       toggleBtn.addEventListener('click', window.toggleTheme);
+    }
+  }
+
+  initHamburger() {
+    const hamburger = this.querySelector('.hamburger');
+    const navLinks = this.querySelector('.nav-links');
+
+    if (hamburger && navLinks) {
+      hamburger.addEventListener('click', () => {
+        const isOpen = navLinks.classList.toggle('open');
+        hamburger.classList.toggle('open', isOpen);
+        hamburger.setAttribute('aria-expanded', isOpen);
+      });
+
+      // Close menu when clicking a link
+      navLinks.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+          navLinks.classList.remove('open');
+          hamburger.classList.remove('open');
+          hamburger.setAttribute('aria-expanded', 'false');
+        });
+      });
+
+      // Close menu when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!this.contains(e.target)) {
+          navLinks.classList.remove('open');
+          hamburger.classList.remove('open');
+          hamburger.setAttribute('aria-expanded', 'false');
+        }
+      });
     }
   }
 }
