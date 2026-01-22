@@ -386,8 +386,14 @@ async function runAutoDemo() {
         await sleep(DEMO_TIMING.initialPause, signal);
 
         // Process harmonics 1-10
-        // Sequence: (pull out, put in) x3 → silence (2s)
+        // Harmonic 1: (out, in) x3
+        // Harmonics 2-10: full tone first, then (out, in) x3
         for (let harmonicIndex = 0; harmonicIndex < 10; harmonicIndex++) {
+            // For harmonics 2-10, start by hearing the full tone with all harmonics
+            if (harmonicIndex > 0) {
+                await sleep(DEMO_TIMING.fullTone, signal);
+            }
+
             // Toggle this harmonic 3 times (out, in, out, in, out, in)
             for (let toggle = 0; toggle < 3; toggle++) {
                 // Pull out (mute) this harmonic
@@ -399,7 +405,7 @@ async function runAutoDemo() {
                 await sleep(DEMO_TIMING.fullTone, signal);
             }
 
-            // Silence (2 seconds) before next harmonic
+            // Silence before next harmonic
             if (harmonicIndex < 9) {
                 setMasterMute(true);
                 await sleep(DEMO_TIMING.silence, signal);
@@ -510,6 +516,144 @@ function updateAutoDemoButton() {
             button.classList.add('running');
         } else {
             button.textContent = 'Auto Demo';
+            button.classList.remove('running');
+        }
+    }
+}
+
+// ===== RANDOM BUILD =====
+// State for random build
+let randomBuildRunning = false;
+let randomBuildAbortController = null;
+
+/**
+ * Run the random build sequence
+ * - Switches to sawtooth, disables all harmonics
+ * - Randomly enables harmonics one by one with 0.5-1.5s delays
+ * - After all are in, waits 2s then stops audio
+ */
+async function runRandomBuild() {
+    if (randomBuildRunning) {
+        stopRandomBuild();
+        return;
+    }
+
+    // Save current state before demo
+    preDemoState = {
+        harmonicStates: [...state.harmonicStates],
+        waveform: state.currentWaveform
+    };
+
+    randomBuildAbortController = new AbortController();
+    const signal = randomBuildAbortController.signal;
+
+    randomBuildRunning = true;
+    updateRandomBuildButton();
+
+    // Switch to sawtooth waveform
+    setWaveform('sawtooth');
+    setWaveformButtonsEnabled(false);
+
+    // Disable all harmonics BEFORE starting audio to prevent brief sound
+    for (let i = 0; i < state.numHarmonics; i++) {
+        state.harmonicStates[i] = false;
+        updateHarmonicButton(i);
+    }
+
+    try {
+        // Start audio (with all harmonics already disabled)
+        if (!state.isPlaying) {
+            startAudio();
+        }
+
+        // Create shuffled array of harmonic indices
+        const indices = Array.from({ length: state.numHarmonics }, (_, i) => i);
+        for (let i = indices.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [indices[i], indices[j]] = [indices[j], indices[i]];
+        }
+
+        // Enable the first harmonic immediately
+        const firstIndex = indices.shift();
+        setHarmonicState(firstIndex, true);
+
+        // Enable remaining harmonics one by one with random delays
+        for (const index of indices) {
+            // Random delay between 0.5 and 1.5 seconds
+            const delay = 500 + Math.random() * 1000;
+            await sleep(delay, signal);
+
+            setHarmonicState(index, true);
+        }
+
+        // Wait 5 seconds with full tone
+        await sleep(5000, signal);
+
+        // Demo complete
+        randomBuildRunning = false;
+        randomBuildAbortController = null;
+        updateRandomBuildButton();
+        setWaveformButtonsEnabled(true);
+
+        // Ramp down and stop
+        if (state.isPlaying && state.masterGain && state.audioContext) {
+            state.masterGain.gain.setTargetAtTime(0, state.audioContext.currentTime, 0.05);
+            setTimeout(() => {
+                stopAudio();
+                restorePreDemoState();
+            }, 100);
+        } else {
+            restorePreDemoState();
+        }
+
+    } catch (e) {
+        if (e.name === 'AbortError') {
+            // Stopped by user
+        } else {
+            console.error('Random build error:', e);
+            randomBuildRunning = false;
+            randomBuildAbortController = null;
+            updateRandomBuildButton();
+            setWaveformButtonsEnabled(true);
+            restorePreDemoState();
+        }
+    }
+}
+
+/**
+ * Stop the random build if running
+ */
+function stopRandomBuild() {
+    if (randomBuildAbortController) {
+        randomBuildAbortController.abort();
+    }
+    randomBuildRunning = false;
+    randomBuildAbortController = null;
+    updateRandomBuildButton();
+    setWaveformButtonsEnabled(true);
+
+    if (state.isPlaying && state.masterGain && state.audioContext) {
+        state.masterGain.gain.setTargetAtTime(0, state.audioContext.currentTime, 0.05);
+        setTimeout(() => {
+            stopAudio();
+            restorePreDemoState();
+        }, 100);
+    } else {
+        restorePreDemoState();
+    }
+}
+
+/**
+ * Update the random build button appearance
+ */
+function updateRandomBuildButton() {
+    const button = document.getElementById('random-build');
+    if (button) {
+        if (randomBuildRunning) {
+            button.textContent = 'Stop Build';
+            button.classList.add('running');
+        } else {
+            button.textContent = 'Random Build';
             button.classList.remove('running');
         }
     }
@@ -791,6 +935,9 @@ function setupEventListeners() {
 
     // Auto Demo
     document.getElementById('auto-demo').addEventListener('click', runAutoDemo);
+
+    // Random Build
+    document.getElementById('random-build').addEventListener('click', runRandomBuild);
 
     // FFT size
     document.getElementById('fft-size').addEventListener('change', (e) => {

@@ -371,10 +371,22 @@
 .auto-demo-row {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    justify-content: space-between;
     margin-top: var(--spacing-sm);
     padding-top: var(--spacing-sm);
     border-top: 1px solid var(--color-border);
+}
+
+.demo-button-group {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.demo-description {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-left: var(--spacing-xs);
 }
 
 .auto-demo-description {
@@ -479,6 +491,31 @@
 }
 
 .action-button-primary.running:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+}
+
+/* Secondary action button (Random Build) */
+.action-button-secondary {
+    background: var(--color-success);
+    border-color: var(--color-success);
+    color: white;
+}
+
+.action-button-secondary:hover {
+    background: #059669;
+    border-color: #059669;
+    color: white;
+}
+
+/* Running state for Random Build */
+.action-button-secondary.running {
+    background: var(--color-error);
+    border-color: var(--color-error);
+    color: white;
+}
+
+.action-button-secondary.running:hover {
     background: #dc2626;
     border-color: #dc2626;
 }
