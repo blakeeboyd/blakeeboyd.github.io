@@ -45,7 +45,18 @@
                     <div class="audio-controls-row">
                         <div class="audio-source-section">
                             <div class="card-header">
-                                <h2 class="card-title">Audio Source</h2>
+                                <h2 class="card-title">Audio Source
+                                    <span class="info-trigger" tabindex="0" aria-label="Audio source information">
+                                        i
+                                        <span class="info-tooltip tooltip-left" role="tooltip">
+                                            <strong>Source:</strong> Choose your audio input.<br><br>
+                                            <strong>Mute</strong> – No audio output<br>
+                                            <strong>Pink Noise</strong> – Equal energy per octave, ideal for ear training<br>
+                                            <strong>User Audio</strong> – Upload your own file<br><br>
+                                            <strong>Gain:</strong> Adjust volume from -70dB to +6dB
+                                        </span>
+                                    </span>
+                                </h2>
                             </div>
                             <div class="eq-controls">
                                 <div class="control-group">
@@ -68,7 +79,16 @@
 
                         <div class="frequency-bands-section">
                             <div class="card-header card-header-inline">
-                                <h2 class="card-title">Frequency Bands <span class="card-title-info">See Moylan p. 106</span></h2>
+                                <h2 class="card-title">Frequency Bands <span class="card-title-info">See Moylan p. 106</span>
+                                    <span class="info-trigger" tabindex="0" aria-label="Frequency bands information">
+                                        i
+                                        <span class="info-tooltip tooltip-right" role="tooltip">
+                                            <strong>M (Mute):</strong> Removes that frequency band from the output.<br><br>
+                                            <strong>S (Solo):</strong> Isolates that band—only it will be heard. Multiple bands can be soloed together.<br><br>
+                                            <strong>Filters On/Off:</strong> Master toggle to bypass all filtering and hear the original signal.
+                                        </span>
+                                    </span>
+                                </h2>
                                 <div class="toggle-with-label">
                                     <span class="toggle-label">Filters On/Off</span>
                                     <label class="toggle-switch">
@@ -155,6 +175,15 @@
                                     <rect x="14" y="4" width="4" height="16"></rect>
                                 </svg>
                             </button>
+                            <span class="info-trigger playback-info" tabindex="0" aria-label="Playback controls information">
+                                i
+                                <span class="info-tooltip" role="tooltip">
+                                    <strong>Play/Pause:</strong> Start or stop audio playback.<br><br>
+                                    <strong>Progress Bar:</strong> Click anywhere to seek. Shows current position.<br><br>
+                                    <strong>Loop:</strong> Enable to repeat a section. Drag the handles or enter times to set loop points.<br><br>
+                                    <strong>Upload:</strong> Click the icon on the right to load a different file.
+                                </span>
+                            </span>
                             <div class="progress-container">
                                 <span class="time-display" id="current-time">0:00</span>
                                 <div class="progress-bar" id="progress-bar">

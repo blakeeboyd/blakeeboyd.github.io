@@ -596,6 +596,126 @@
     display: none;
 }
 
+/* Info Icon + Tooltip */
+.info-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--color-text-muted);
+    color: var(--color-text-muted);
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: help;
+    margin-left: var(--spacing-xs);
+    position: relative;
+    transition: all var(--transition-fast);
+    vertical-align: middle;
+}
+
+.info-trigger:hover,
+.info-trigger:focus {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    outline: none;
+}
+
+.info-tooltip {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 280px;
+    padding: var(--spacing-sm);
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    font-size: 0.8rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--color-text);
+    text-align: left;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-fast), visibility var(--transition-fast);
+}
+
+/* Arrow */
+.info-tooltip::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-bottom-color: var(--color-border);
+}
+
+.info-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-bottom-color: var(--color-card-bg);
+}
+
+/* Show on hover/focus */
+.info-trigger:hover .info-tooltip,
+.info-trigger:focus .info-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Right-aligned tooltip for Frequency Bands */
+.info-tooltip.tooltip-right {
+    left: auto;
+    right: -8px;
+    transform: none;
+}
+
+.info-tooltip.tooltip-right::before,
+.info-tooltip.tooltip-right::after {
+    left: auto;
+    right: 16px;
+    transform: none;
+}
+
+/* Left-aligned tooltip for Audio Source */
+.info-tooltip.tooltip-left {
+    left: -8px;
+    transform: none;
+}
+
+.info-tooltip.tooltip-left::before,
+.info-tooltip.tooltip-left::after {
+    left: 16px;
+    transform: none;
+}
+
+/* Playback info positioning */
+.playback-info {
+    margin-left: var(--spacing-sm);
+    margin-right: var(--spacing-xs);
+    flex-shrink: 0;
+}
+
+.playback-info .info-tooltip {
+    left: 0;
+    transform: none;
+}
+
+.playback-info .info-tooltip::before,
+.playback-info .info-tooltip::after {
+    left: 12px;
+    transform: none;
+}
+
 /* MoylanEQ responsive adjustments */
 @media (max-width: 640px) {
     .eq-controls {
