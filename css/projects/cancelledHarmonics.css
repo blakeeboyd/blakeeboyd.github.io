@@ -27,6 +27,12 @@
     flex-direction: column;
 }
 
+/* Reduce header spacing in controls row */
+.playback-section .card-header,
+.fundamental-section .card-header {
+    margin-bottom: var(--spacing-xs);
+}
+
 /* Ensure both sections have consistent spacing from header to slider row */
 .playback-section .playback-controls,
 .fundamental-section .freq-control {
@@ -313,13 +319,33 @@
     color: #e5e7eb;
 }
 
-/* Inactive/muted state */
-.harmonic-button:not(.active) {
+/* Inactive/muted state (toggled off but still available) */
+.harmonic-button:not(.active):not(.unavailable) {
     opacity: 0.6;
 }
 
-.harmonic-button:not(.active):hover {
+.harmonic-button:not(.active):not(.unavailable):hover {
     opacity: 0.8;
+}
+
+/* Unavailable state (harmonic not present in current waveform) */
+.harmonic-button.unavailable {
+    opacity: 0.35;
+    cursor: not-allowed;
+    background: var(--color-control-bg);
+    border-color: var(--color-border);
+}
+
+.harmonic-button.unavailable:hover {
+    border-color: var(--color-border);
+    background: var(--color-control-bg);
+    transform: none;
+}
+
+.harmonic-button.unavailable .harmonic-number,
+.harmonic-button.unavailable .harmonic-freq,
+.harmonic-button.unavailable .harmonic-amp {
+    color: var(--color-text-muted);
 }
 
 /* Harmonic button content */

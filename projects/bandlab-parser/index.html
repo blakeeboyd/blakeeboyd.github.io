@@ -42,7 +42,19 @@
                 <!-- Upload Section -->
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">Upload HTML</h2>
+                        <h2 class="card-title">Upload HTML
+                            <span class="info-trigger" tabindex="0" aria-label="Upload information">
+                                i
+                                <span class="info-tooltip tooltip-left" role="tooltip">
+                                    <strong>How to get the HTML file:</strong><br><br>
+                                    1. Visit a BandLab sample pack page<br>
+                                    2. Right-click and select "Save As..."<br>
+                                    3. Save as "Webpage, Complete" or "HTML Only"<br>
+                                    4. Upload the .html file here<br><br>
+                                    Or use the <strong>bookmarklet</strong> for one-click parsing.
+                                </span>
+                            </span>
+                        </h2>
                         <p class="card-subtitle">Supports BandLab, Splice, and table-based sites.</p>
                     </div>
 
@@ -87,7 +99,16 @@
                 <!-- Metadata Section -->
                 <div id="metadataSection" class="card hidden">
                     <div class="metadata-header">
-                        <h2 class="section-title">Verify Metadata</h2>
+                        <h2 class="section-title">Verify Metadata
+                            <span class="info-trigger" tabindex="0" aria-label="Metadata information">
+                                i
+                                <span class="info-tooltip tooltip-left" role="tooltip">
+                                    <strong>Review and edit</strong> the auto-detected metadata before downloading.<br><br>
+                                    Fields like genre and instruments can be comma-separated for multiple values.<br><br>
+                                    Changes here update the JSON output in real-time.
+                                </span>
+                            </span>
+                        </h2>
                         <span class="badge">Auto-detected</span>
                     </div>
                     <div class="form-group">
@@ -187,6 +208,20 @@
                 </div>
             </div>
         </div>
+
+        <!-- About Section -->
+        <section class="about-section">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">About This Tool</h2>
+                </div>
+                <div class="about-content">
+                    <p>This parser extracts structured JSON metadata from BandLab sample pack pages, capturing information like pack name, artist, genre, BPM, key signature, and individual sample details (loops vs. one-shots, duration, etc.).</p>
+                    <p>I built this tool as part of a larger project to create a corpus of sounds used in popular electronic music. The structured data enables analysis of common timbres, rhythmic patterns, and harmonic content across different genres, which I'm using to develop an AI-powered improvising partner that can respond to and complement live performance.</p>
+                    <p>The JSON output is designed to be machine-readable for database import, corpus analysis, or integration with music information retrieval (MIR) tools.</p>
+                </div>
+            </div>
+        </section>
 
         <footer>
             <p>&copy; 2025 Blake Boyd</p>

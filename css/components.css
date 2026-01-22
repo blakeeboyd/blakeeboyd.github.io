@@ -276,6 +276,29 @@
     color: var(--color-accent);
 }
 
+/* Projects note/callout */
+.projects-note {
+    margin-top: var(--spacing-xl);
+    padding: var(--spacing-sm) 0;
+    text-align: center;
+}
+
+.projects-note p {
+    margin: 0;
+    font-size: 0.9375rem;
+    color: var(--color-text-muted);
+}
+
+.projects-note a {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.projects-note a:hover {
+    text-decoration: underline;
+}
+
 @media (max-width: 480px) {
     .project-card {
         flex-direction: column;

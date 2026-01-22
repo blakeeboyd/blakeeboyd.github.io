@@ -117,13 +117,7 @@
                                 <span class="info-tooltip" role="tooltip">
                                     <strong>Click to toggle:</strong> Each button represents a harmonic.<br><br>
                                     <strong>Active (blue):</strong> Harmonic is sounding<br>
-                                    <strong>Inactive (gray):</strong> Harmonic is muted<br><br>
-                                    <strong>Waveform amplitudes:</strong><br>
-                                    • Sawtooth: all harmonics, 1/n<br>
-                                    • Square: odd harmonics, 1/n<br>
-                                    • Triangle: odd harmonics, 1/n²<br>
-                                    • Sine: fundamental only<br><br>
-                                    <strong>Auto Demo:</strong> Demonstrates each harmonic 1-10 by toggling it on/off three times.
+                                    <strong>Inactive (gray):</strong> Harmonic is muted
                                 </span>
                             </span>
                         </h2>
@@ -158,7 +152,16 @@
                     </div>
                     <div class="auto-demo-row">
                         <button type="button" id="auto-demo" class="action-button action-button-primary">Auto Demo</button>
-                        <span class="auto-demo-description">Demonstrates each harmonic 1-10 by toggling it on/off three times</span>
+                        <span class="auto-demo-description">Cycles through harmonics 1-10, toggling each on/off three times
+                            <span class="info-trigger" tabindex="0" aria-label="Auto Demo information">
+                                i
+                                <span class="info-tooltip tooltip-left" role="tooltip">
+                                    <strong>Auto Demo</strong> replicates the ASA demonstration sequence.<br><br>
+                                    It uses the <strong>sawtooth waveform</strong> because sawtooth contains all harmonics at equal relative amplitudes (1/n), making every harmonic clearly audible.<br><br>
+                                    For each harmonic 1-10, the demo toggles it on and off three times with a brief silence between harmonics, helping you hear how each component separates from and merges back into the complex tone.
+                                </span>
+                            </span>
+                        </span>
                     </div>
                 </div>
 

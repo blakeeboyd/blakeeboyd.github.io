@@ -626,7 +626,6 @@ function createHarmonicButtons() {
     for (let n = 1; n <= state.numHarmonics; n++) {
         const button = document.createElement('button');
         button.type = 'button';
-        button.className = 'harmonic-button' + (state.harmonicStates[n - 1] ? ' active' : '');
         button.dataset.harmonic = n;
 
         const freq = state.fundamentalFreq * n;
@@ -645,13 +644,33 @@ function createHarmonicButtons() {
             ampDisplay = `1/${n}`;
         }
 
+        // Determine if this harmonic is available in the current waveform
+        const isAvailable = amp > 0;
+        const isActive = state.harmonicStates[n - 1] && isAvailable;
+
+        // Build class name
+        let className = 'harmonic-button';
+        if (isActive) className += ' active';
+        if (!isAvailable) className += ' unavailable';
+        button.className = className;
+
+        // Disable button if harmonic is not available in this waveform
+        if (!isAvailable) {
+            button.disabled = true;
+        }
+
         button.innerHTML = `
             <span class="harmonic-number">${n}</span>
             <span class="harmonic-freq">${freqDisplay} Hz</span>
             <span class="harmonic-amp">${ampDisplay}</span>
         `;
 
-        button.addEventListener('click', () => toggleHarmonic(n - 1));
+        button.addEventListener('click', () => {
+            // Only toggle if harmonic is available
+            if (isAvailable) {
+                toggleHarmonic(n - 1);
+            }
+        });
         grid.appendChild(button);
     }
 }
@@ -659,7 +678,13 @@ function createHarmonicButtons() {
 function updateHarmonicButton(index) {
     const button = document.querySelector(`[data-harmonic="${index + 1}"]`);
     if (button) {
-        button.classList.toggle('active', state.harmonicStates[index]);
+        const amp = state.harmonicAmplitudes[index];
+        const isAvailable = amp > 0;
+        const isActive = state.harmonicStates[index] && isAvailable;
+
+        button.classList.toggle('active', isActive);
+        button.classList.toggle('unavailable', !isAvailable);
+        button.disabled = !isAvailable;
     }
 }
 
