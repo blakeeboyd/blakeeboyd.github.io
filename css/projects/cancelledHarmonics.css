@@ -1,0 +1,762 @@
+/* ===========================================
+   Cancelled Harmonics Styles
+   Project-specific styles for Cancelled Harmonics demo
+   =========================================== */
+
+/* App container */
+.harmonics-app {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    width: 100%;
+}
+
+/* Controls row - side by side layout */
+.controls-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-lg);
+    align-items: stretch;
+}
+
+.playback-section,
+.fundamental-section {
+    flex: 1 1 200px;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ensure both sections have consistent spacing from header to slider row */
+.playback-section .playback-controls,
+.fundamental-section .freq-control {
+    margin-top: auto;
+}
+
+.playback-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+/* Play button */
+.play-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.play-button:hover {
+    background: #1d4ed8;
+    transform: scale(1.05);
+}
+
+.play-button:active {
+    transform: scale(0.95);
+}
+
+.play-button svg {
+    width: 24px;
+    height: 24px;
+    color: white;
+}
+
+.play-button .icon-pause {
+    display: none;
+}
+
+.play-button.playing .icon-play {
+    display: none;
+}
+
+.play-button.playing .icon-pause {
+    display: block;
+}
+
+/* Gain control */
+.gain-control {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    flex: 1;
+    justify-content: flex-end;
+}
+
+.gain-control .control-label {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-bottom: 0;
+}
+
+.gain-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    height: 28px; /* Match freq-input-group height */
+}
+
+.gain-slider {
+    flex: 1;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--color-control-bg);
+    border-radius: 3px;
+    outline: none;
+}
+
+.gain-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    cursor: pointer;
+    transition: transform var(--transition-fast);
+}
+
+.gain-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.gain-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    cursor: pointer;
+    border: none;
+}
+
+.gain-text {
+    font-size: 0.75rem;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    color: var(--color-text-muted);
+    min-width: 45px;
+    text-align: right;
+}
+
+/* Frequency control */
+.freq-control {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.freq-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    height: 28px; /* Match gain-row height */
+}
+
+.freq-slider {
+    flex: 1;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--color-control-bg);
+    border-radius: 3px;
+    outline: none;
+}
+
+.freq-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    cursor: pointer;
+    transition: transform var(--transition-fast);
+}
+
+.freq-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.freq-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    cursor: pointer;
+    border: none;
+}
+
+/* Frequency input group */
+.freq-input-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.freq-input {
+    width: 60px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    background: var(--color-control-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    text-align: right;
+}
+
+.freq-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+/* Hide number input spinners */
+.freq-input::-webkit-outer-spin-button,
+.freq-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.freq-input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.freq-unit {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+/* Card header inline layout */
+.card-header-inline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+/* Harmonics grid - 8x2 grid for 16 harmonics */
+.harmonics-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 6px;
+}
+
+@media (max-width: 900px) {
+    .harmonics-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 500px) {
+    .harmonics-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Individual harmonic button */
+.harmonic-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 4px;
+    background: var(--color-control-bg);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    min-height: 48px;
+}
+
+.harmonic-button:hover {
+    border-color: var(--color-text-muted);
+    background: var(--color-card-bg);
+}
+
+/* Active state - harmonic is sounding */
+.harmonic-button.active {
+    background: var(--color-accent-light);
+    border-color: var(--color-accent);
+}
+
+.harmonic-button.active:hover {
+    background: rgba(37, 99, 235, 0.2);
+    border-color: #1d4ed8;
+}
+
+/* Dark mode: better contrast for active harmonic buttons */
+[data-theme="dark"] .harmonic-button.active {
+    background: rgba(37, 99, 235, 0.35);
+    border-color: #60a5fa;
+}
+
+[data-theme="dark"] .harmonic-button.active:hover {
+    background: rgba(37, 99, 235, 0.45);
+    border-color: #93c5fd;
+}
+
+[data-theme="dark"] .harmonic-button.active .harmonic-number {
+    color: #93c5fd;
+}
+
+[data-theme="dark"] .harmonic-button.active .harmonic-freq,
+[data-theme="dark"] .harmonic-button.active .harmonic-amp {
+    color: #e5e7eb;
+}
+
+/* Inactive/muted state */
+.harmonic-button:not(.active) {
+    opacity: 0.6;
+}
+
+.harmonic-button:not(.active):hover {
+    opacity: 0.8;
+}
+
+/* Harmonic button content */
+.harmonic-number {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+    line-height: 1;
+}
+
+.harmonic-button.active .harmonic-number {
+    color: var(--color-accent);
+}
+
+.harmonic-freq {
+    font-size: 0.65rem;
+    color: var(--color-text-muted);
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    line-height: 1;
+}
+
+/* Auto Demo row below harmonics grid */
+.auto-demo-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+}
+
+.auto-demo-description {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+.harmonic-amp {
+    font-size: 0.6rem;
+    color: var(--color-text-muted);
+    line-height: 1;
+}
+
+/* Harmonics header actions */
+.harmonics-actions {
+    display: flex;
+    gap: var(--spacing-xs);
+    align-items: center;
+}
+
+/* Waveform section with label */
+.waveform-section {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.waveform-label {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+}
+
+/* Waveform selection buttons */
+.waveform-buttons {
+    display: flex;
+    gap: 2px;
+}
+
+/* Small vertical divider between waveform and action buttons */
+.actions-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--color-border);
+    margin: 0 var(--spacing-xs);
+}
+
+.wave-button {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.7rem;
+}
+
+.wave-button.active {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+}
+
+.wave-button.active:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+}
+
+.action-button {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: var(--color-control-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.action-button:hover {
+    background: var(--color-card-bg);
+    border-color: var(--color-text-muted);
+    color: var(--color-text);
+}
+
+/* Primary action button (Auto Demo) */
+.action-button-primary {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+}
+
+.action-button-primary:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+    color: white;
+}
+
+/* Running state for Auto Demo */
+.action-button-primary.running {
+    background: var(--color-error);
+    border-color: var(--color-error);
+    color: white;
+}
+
+.action-button-primary.running:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+}
+
+/* Disabled state for waveform buttons (during auto demo) */
+.wave-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.wave-button:disabled:hover {
+    background: var(--color-control-bg);
+    border-color: var(--color-border);
+}
+
+.wave-button.active:disabled:hover {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+}
+
+/* Dark mode: better contrast for accent-colored buttons */
+[data-theme="dark"] .wave-button.active {
+    background: #2563eb;
+    border-color: #3b82f6;
+}
+
+[data-theme="dark"] .wave-button.active:hover {
+    background: #1d4ed8;
+    border-color: #2563eb;
+}
+
+[data-theme="dark"] .action-button-primary {
+    background: #2563eb;
+    border-color: #3b82f6;
+}
+
+[data-theme="dark"] .action-button-primary:hover {
+    background: #1d4ed8;
+    border-color: #2563eb;
+}
+
+/* Spectrogram container */
+.spectrogram-container {
+    position: relative;
+    background: #0a0a0a;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+#spectrogram {
+    display: block;
+    width: 100%;
+    height: 220px;
+    background: #0a0a0a;
+}
+
+/* Frequency axis labels */
+.frequency-axis {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: var(--spacing-xs) 0;
+    background: linear-gradient(90deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+.freq-label {
+    font-size: 0.625rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    padding-left: var(--spacing-xs);
+}
+
+/* Spectrogram controls */
+.spectrogram-controls {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+}
+
+.control-group.inline {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: 0;
+    background: transparent;
+    border: none;
+    min-width: auto;
+}
+
+.control-group.inline .control-label {
+    margin-bottom: 0;
+    font-size: 0.75rem;
+}
+
+.eq-select {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    background: var(--color-control-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+}
+
+.eq-select:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+/* Section divider */
+.section-divider {
+    width: 1px;
+    background: var(--color-border);
+    align-self: stretch;
+    min-height: 60px;
+}
+
+@media (max-width: 600px) {
+    .controls-row {
+        flex-direction: column;
+    }
+
+    .section-divider {
+        width: 100%;
+        height: 1px;
+        min-height: 1px;
+    }
+}
+
+/* Dark mode adjustments for spectrogram */
+[data-theme="dark"] .spectrogram-container {
+    background: #000;
+}
+
+[data-theme="dark"] #spectrogram {
+    background: #000;
+}
+
+/* Info tooltip styles (reuse from moylanEQ) */
+.info-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--color-text-muted);
+    color: var(--color-text-muted);
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: help;
+    margin-left: var(--spacing-xs);
+    position: relative;
+    transition: all var(--transition-fast);
+    vertical-align: middle;
+}
+
+.info-trigger:hover,
+.info-trigger:focus {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    outline: none;
+}
+
+.info-tooltip {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 280px;
+    padding: var(--spacing-sm);
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    font-size: 0.8rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--color-text);
+    text-align: left;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-fast), visibility var(--transition-fast);
+}
+
+/* Arrow */
+.info-tooltip::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-bottom-color: var(--color-border);
+}
+
+.info-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-bottom-color: var(--color-card-bg);
+}
+
+/* Show on hover/focus */
+.info-trigger:hover .info-tooltip,
+.info-trigger:focus .info-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Left-aligned tooltip */
+.info-tooltip.tooltip-left {
+    left: -8px;
+    transform: none;
+}
+
+.info-tooltip.tooltip-left::before,
+.info-tooltip.tooltip-left::after {
+    left: 16px;
+    transform: none;
+}
+
+/* Right-aligned tooltip */
+.info-tooltip.tooltip-right {
+    left: auto;
+    right: -8px;
+    transform: none;
+}
+
+.info-tooltip.tooltip-right::before,
+.info-tooltip.tooltip-right::after {
+    left: auto;
+    right: 16px;
+    transform: none;
+}
+
+/* Control group for fundamental section */
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.control-label {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+}
+
+/* Background content for educational sections */
+.background-content {
+    line-height: 1.7;
+}
+
+.background-content p {
+    margin-bottom: var(--spacing-sm);
+}
+
+.background-content p:last-child {
+    margin-bottom: 0;
+}
+
+.background-content ul,
+.background-content ol {
+    margin-left: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+}
+
+.background-content li {
+    margin-bottom: var(--spacing-xs);
+}
+
+/* References section */
+.references {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    border-top: 1px solid var(--color-border);
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-md);
+}
+
+.references h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--spacing-xs);
+    color: var(--color-text-muted);
+}
+
+.references ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.references li {
+    margin-bottom: var(--spacing-xs);
+}

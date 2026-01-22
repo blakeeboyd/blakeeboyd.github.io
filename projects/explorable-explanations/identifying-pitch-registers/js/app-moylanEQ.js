@@ -521,6 +521,13 @@ function loadRNBOScript(version) {
         return;
       }
 
+      // Stop any existing playback before loading new file
+      if (isPlaying) {
+        stopAudio();
+      }
+      // Reset playback position to beginning
+      pausedAt = 0;
+
       try {
         // Read file as ArrayBuffer
         const arrayBuffer = await file.arrayBuffer();
@@ -541,9 +548,6 @@ function loadRNBOScript(version) {
         fileInfo.classList.remove("hidden");
         playbackControls.classList.remove("hidden");
         audioUploadSection.classList.add("has-file");
-
-        // Reset playback state
-        pausedAt = 0;
 
         // Initialize loop boundaries
         loopStart = 0;
