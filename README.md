@@ -11,7 +11,9 @@ Personal website hosted on GitHub Pages at [blakeeboyd.github.io](https://blakee
 
 ## Projects
 
-### Identifying Pitch Registers
+### Explorable Explanations
+
+#### Identifying Pitch Registers
 
 An interactive audio tool for learning to identify frequency registers, built for the MUS399 Critical Listening Skills course.
 
@@ -24,7 +26,23 @@ An interactive audio tool for learning to identify frequency registers, built fo
 
 [View Project](https://blakeeboyd.github.io/projects/explorable-explanations/identifying-pitch-registers/)
 
-### BandLab JSON Parser
+#### Cancelled Harmonics (ASA 1)
+
+Interactive demonstration of Fourier analysis based on the ASA "Cancelled Harmonics" demo.
+
+**Features:**
+- 16 harmonic additive synthesizer with toggleable harmonics
+- Four waveform presets (sine, triangle, square, sawtooth)
+- Real-time scrolling spectrogram visualization
+- Auto Demo mode replicating the ASA demonstration sequence
+- Random Build mode for fun exploration
+- Pure Web Audio API, no external dependencies
+
+[View Project](https://blakeeboyd.github.io/projects/explorable-explanations/cancelled-harmonics/)
+
+### Creative Tools
+
+#### BandLab JSON Parser
 
 A browser-based tool for parsing BandLab sample pack pages into structured JSON metadata.
 
@@ -68,7 +86,8 @@ npx serve
 └── projects/
     ├── bandlab-parser/
     └── explorable-explanations/
-        └── identifying-pitch-registers/
+        ├── identifying-pitch-registers/
+        └── cancelled-harmonics/
 ```
 
 ## License

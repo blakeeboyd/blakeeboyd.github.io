@@ -16,8 +16,9 @@ A personal website hosted on GitHub Pages at blakeeboyd.github.io.
 │   ├── layout.css          # Header, nav, footer, containers
 │   ├── components.css      # Cards, forms, buttons, toggles
 │   └── projects/
-│       ├── bandlab-parser.css  # BandLab parser styles
-│       └── moylanEQ.css        # Pitch registers app styles
+│       ├── bandlab-parser.css      # BandLab parser styles
+│       ├── moylanEQ.css            # Pitch registers app styles
+│       └── cancelledHarmonics.css  # Cancelled harmonics app styles
 ├── js/
 │   ├── theme.js            # Dark mode toggle
 │   ├── nav-component.js    # <site-nav> web component
@@ -28,16 +29,20 @@ A personal website hosted on GitHub Pages at blakeeboyd.github.io.
     │   ├── index.html      # Parser main page (uses .container.wide)
     │   └── bookmarklet.html # Bookmarklet setup instructions
     └── explorable-explanations/
-        └── identifying-pitch-registers/
+        ├── identifying-pitch-registers/
+        │   ├── index.html      # Main page (uses .container.wide)
+        │   ├── js/
+        │   │   ├── app.js
+        │   │   ├── app-moylanEQ.js
+        │   │   └── guardrails.js
+        │   └── export/
+        │       ├── gb.moylanEQ.export.json
+        │       ├── dependencies.json
+        │       └── media/      # Audio files (not tracked in git due to size)
+        └── cancelled-harmonics/
             ├── index.html      # Main page (uses .container.wide)
-            ├── js/
-            │   ├── app.js
-            │   ├── app-moylanEQ.js
-            │   └── guardrails.js
-            └── export/
-                ├── gb.moylanEQ.export.json
-                ├── dependencies.json
-                └── media/      # Audio files (not tracked in git due to size)
+            └── js/
+                └── app.js      # Pure Web Audio API, no dependencies
 ```
 
 ## URL Conventions
@@ -158,6 +163,46 @@ Educational audio application for learning critical listening skills and frequen
 - `js/app-moylanEQ.js` - Main application logic, audio routing, UI event handlers
 - `js/guardrails.js` - Input validation and safety checks
 - `export/gb.moylanEQ.export.json` - RNBO patcher export
+
+### Cancelled Harmonics (Explorable Explanations)
+
+Interactive demonstration of Fourier analysis where users can toggle individual harmonics of a complex tone and observe spectral changes in a real-time spectrogram. Based on the ASA (Acoustical Society of America) "Cancelled Harmonics" demo.
+
+**Location:** `projects/explorable-explanations/cancelled-harmonics/`
+
+**Key Features:**
+- 16 harmonic additive synthesizer with toggleable harmonics
+- Four waveform presets (sine, triangle, square, sawtooth) with correct amplitude relationships
+- Real-time scrolling spectrogram visualization (0-8kHz range)
+- Adjustable fundamental frequency (50-500 Hz)
+- Master gain control (-70 to 0 dB)
+- Auto Demo: Replicates ASA demonstration sequence, toggling harmonics 1-10 three times each
+- Random Build: Fun mode that randomly adds harmonics one by one to build a sawtooth
+
+**Technical Stack:**
+- Pure Web Audio API (no external dependencies)
+- OscillatorNode x 16 with individual GainNodes for harmonic control
+- AnalyserNode for FFT-based spectrogram
+- Canvas 2D for spectrogram rendering
+- Project-specific styles in `/css/projects/cancelledHarmonics.css`
+
+**Audio Architecture:**
+```
+OscillatorNode x 16 (sine waves at f, 2f, 3f, ... 16f)
+    → GainNode x 16 (individual amplitude control)
+    → MasterGainNode (volume control)
+    → AnalyserNode (FFT for spectrogram)
+    → AudioContext.destination
+```
+
+**Waveform Amplitude Formulas:**
+- Sawtooth: all harmonics, amplitude = 1/n
+- Square: odd harmonics only, amplitude = 1/n
+- Triangle: odd harmonics only, amplitude = 1/n²
+- Sine: fundamental only
+
+**Key Files:**
+- `js/app.js` - Complete application (audio synthesis, spectrogram, UI)
 
 ## Design Inspiration
 
