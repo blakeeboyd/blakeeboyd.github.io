@@ -19,7 +19,8 @@ A personal website hosted on GitHub Pages at blakeeboyd.github.io.
 │       ├── bandlab-parser.css      # BandLab parser styles
 │       ├── moylanEQ.css            # Pitch registers app styles
 │       ├── cancelledHarmonics.css  # Cancelled harmonics app styles
-│       └── phaseCorrelation.css    # Phase correlation app styles
+│       ├── phaseCorrelation.css    # Phase correlation app styles
+│       └── eqMatching.css          # EQ matching ear training styles
 ├── js/
 │   ├── theme.js            # Dark mode toggle
 │   ├── nav-component.js    # <site-nav> web component
@@ -49,6 +50,11 @@ A personal website hosted on GitHub Pages at blakeeboyd.github.io.
             ├── index.html      # Main page (uses .container.wide)
             └── js/
                 └── app.js      # Pure Web Audio API, stereo correlation meter
+    └── ear-training/
+        └── EQ-Training/
+            ├── index.html      # EQ matching game (uses .container.wide)
+            └── js/
+                └── app.js      # Web Audio API, canvas EQ visualization, game logic
 ```
 
 ## URL Conventions
@@ -258,6 +264,54 @@ AnalyserNode x2 (L/R channels) → Correlation calculation
 
 **Key Files:**
 - `js/app.js` - Audio engine, correlation meter, UI logic
+
+### EQ Matching (Ear Training)
+
+Gamified ear training tool where users listen to audio processed through a hidden 4-band parametric EQ and try to recreate the sound by adjusting their own EQ curve.
+
+**Location:** `projects/ear-training/EQ-Training/`
+
+**Note:** This project is not listed on the projects page - accessible only via direct URL.
+
+**Key Features:**
+- 4-band parametric EQ with graphical canvas interface
+  - Band 1: High-pass or Low-shelf filter
+  - Bands 2-3: Peaking (bell) filters
+  - Band 4: Low-pass or High-shelf filter
+- Draggable control points for frequency/gain adjustment
+- Scroll wheel Q adjustment for peaking bands
+- A/B comparison between Target EQ, User EQ, and Bypass
+- Scoring system based on frequency response matching
+- Streak tracking for consecutive good scores
+- Spectrum analyzer (revealed after guess submission)
+- Pink noise or user-uploaded audio sources
+
+**Technical Stack:**
+- Pure Web Audio API (no external dependencies)
+- BiquadFilterNode x 8 (two parallel EQ chains)
+- Canvas 2D for EQ curve visualization
+- Real-time filter parameter updates
+- Project-specific styles in `/css/projects/eqMatching.css`
+
+**Audio Architecture:**
+```
+Source (Pink Noise or User Audio)
+    ├─→ [Target EQ Chain] → TargetGain ─┐
+    ├─→ [User EQ Chain] → UserGain ─────┼─→ A/B Switch → MasterGain → Destination
+    └─→ BypassGain ─────────────────────┘
+
+Each EQ Chain: HPF/LSF → Peak → Peak → LPF/HSF (4 BiquadFilterNodes)
+```
+
+**Game Flow:**
+1. New Round generates random EQ parameters
+2. User listens to Target EQ and adjusts their curve
+3. Toggle between Target/User/Bypass to compare
+4. Submit reveals target curve and calculates score
+5. Score based on average dB difference across frequency spectrum
+
+**Key Files:**
+- `js/app.js` - Audio engine, canvas interaction, game logic
 
 ## Design Inspiration
 

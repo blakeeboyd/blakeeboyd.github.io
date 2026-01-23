@@ -919,10 +919,17 @@ function updateCorrelationValue(correlation) {
 // ============================================
 
 function startProgressUpdate() {
-    if (state.progressAnimationId) return;
+    // Cancel any existing animation
+    if (state.progressAnimationId) {
+        cancelAnimationFrame(state.progressAnimationId);
+        state.progressAnimationId = null;
+    }
 
     function update() {
-        if (!state.isPlaying || state.currentSource !== 2) {
+        // Check if we should continue updating
+        // Note: we check userAudioSource instead of isPlaying because isPlaying
+        // may not be set yet when startProgressUpdate is called from startUserAudio
+        if (!state.userAudioSource || state.currentSource !== 2) {
             state.progressAnimationId = null;
             return;
         }
