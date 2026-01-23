@@ -290,8 +290,8 @@
 }
 
 .action-button.primary:hover {
-    background: #1d4ed8;
-    border-color: #1d4ed8;
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
 }
 
 .action-button.secondary {

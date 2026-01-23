@@ -7,22 +7,24 @@ class SiteNav extends HTMLElement {
     const currentPath = window.location.pathname;
     const basePath = this.getAttribute('base') || '';
 
-    // Determine active page
-    const isAbout = currentPath.includes('about');
-    const isContact = currentPath.includes('contact');
-    const isProjects = currentPath.includes('projects');
+    // Determine active page - match exact path segments
+    const segments = currentPath.split('/').filter(Boolean);
+    const firstSegment = segments[0] || '';
+    const isAbout = firstSegment === 'about.html' || firstSegment === 'about';
+    const isContact = firstSegment === 'contact.html' || firstSegment === 'contact';
+    const isProjects = firstSegment === 'projects.html' || firstSegment === 'projects' || currentPath.includes('/projects/');
     const isHome = !isAbout && !isContact && !isProjects;
 
     this.innerHTML = `
       <header>
         <nav>
           <a href="${basePath || '/'}" class="logo">Blake Boyd</a>
-          <button type="button" class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+          <button type="button" class="hamburger" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links">
             <span class="hamburger-line"></span>
             <span class="hamburger-line"></span>
             <span class="hamburger-line"></span>
           </button>
-          <div class="nav-links">
+          <div class="nav-links" id="nav-links">
             <a href="${basePath}about.html" class="nav-link${isAbout ? ' active' : ''}">About</a>
             <a href="${basePath}projects.html" class="nav-link${isProjects ? ' active' : ''}">Projects</a>
             <a href="${basePath}contact.html" class="nav-link${isContact ? ' active' : ''}">Contact</a>

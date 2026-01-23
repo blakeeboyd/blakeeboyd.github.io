@@ -17,6 +17,8 @@
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Contact - Blake Boyd">
     <meta name="twitter:description" content="Contact Blake Boyd - Get in touch">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake Boyd">
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/components.css">
@@ -66,36 +68,9 @@
                     <p>Thank you for reaching out. I'll get back to you soon.</p>
                 </div>
             </section>
-
-            <script>
-                document.getElementById('contact-form').addEventListener('submit', function(e) {
-                    e.preventDefault();
-
-                    const form = this;
-                    const formData = new FormData(form);
-                    const submitButton = form.querySelector('.form-submit');
-                    const statusDiv = document.getElementById('form-status');
-
-                    submitButton.disabled = true;
-                    submitButton.textContent = 'Sending...';
-                    statusDiv.textContent = 'Sending your message...';
-
-                    fetch('https://docs.google.com/forms/d/e/1FAIpQLSftQC3-QlgIvA3_dVFKJoeNN-k6B6CdDjzE6X74oGA-Uhg5Ww/formResponse', {
-                        method: 'POST',
-                        body: formData,
-                        mode: 'no-cors'
-                    }).then(function() {
-                        form.classList.add('hidden');
-                        document.getElementById('form-success').classList.remove('hidden');
-                        statusDiv.textContent = 'Message sent successfully!';
-                    }).catch(function() {
-                        form.classList.add('hidden');
-                        document.getElementById('form-success').classList.remove('hidden');
-                        statusDiv.textContent = 'Message sent successfully!';
-                    });
-                });
-            </script>
         </main>
+
+    <script src="js/contact-form.js" defer></script>
 
         <footer>
             <p>&copy; 2025 Blake Boyd</p>

@@ -61,7 +61,7 @@
 }
 
 .play-button:hover {
-    background: #1d4ed8;
+    background: var(--color-accent-hover);
     transform: scale(1.05);
 }
 
@@ -296,7 +296,7 @@
 
 .harmonic-button.active:hover {
     background: rgba(37, 99, 235, 0.2);
-    border-color: #1d4ed8;
+    border-color: var(--color-accent-hover);
 }
 
 /* Dark mode: better contrast for active harmonic buttons */
@@ -448,8 +448,8 @@
 }
 
 .wave-button.active:hover {
-    background: #1d4ed8;
-    border-color: #1d4ed8;
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
 }
 
 .action-button {
@@ -478,8 +478,8 @@
 }
 
 .action-button-primary:hover {
-    background: #1d4ed8;
-    border-color: #1d4ed8;
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
     color: white;
 }
 
@@ -503,8 +503,8 @@
 }
 
 .action-button-secondary:hover {
-    background: #059669;
-    border-color: #059669;
+    background: var(--color-success-hover);
+    border-color: var(--color-success-hover);
     color: white;
 }
 
@@ -543,7 +543,7 @@
 }
 
 [data-theme="dark"] .wave-button.active:hover {
-    background: #1d4ed8;
+    background: var(--color-accent-hover);
     border-color: #2563eb;
 }
 
@@ -553,7 +553,7 @@
 }
 
 [data-theme="dark"] .action-button-primary:hover {
-    background: #1d4ed8;
+    background: var(--color-accent-hover);
     border-color: #2563eb;
 }
 
