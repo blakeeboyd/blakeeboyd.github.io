@@ -26,9 +26,10 @@ A personal website hosted on GitHub Pages at blakeeboyd.github.io.
 │   └── bandlab-parser.js   # BandLab parser JavaScript
 ├── images/                 # Site images
 └── projects/
-    ├── bandlab-parser/
-    │   ├── index.html      # Parser main page (uses .container.wide)
-    │   └── bookmarklet.html # Bookmarklet setup instructions
+    ├── creative-tools/
+    │   └── bandlab-parser/
+    │       ├── index.html      # Parser main page (uses .container.wide)
+    │       └── bookmarklet.html # Bookmarklet setup instructions
     └── explorable-explanations/
         ├── identifying-pitch-registers/
         │   ├── index.html      # Main page (uses .container.wide)
@@ -52,7 +53,7 @@ A personal website hosted on GitHub Pages at blakeeboyd.github.io.
 
 ## URL Conventions
 
-- Use clean URLs without explicit `index.html` (e.g., `/projects/bandlab-parser/` not `/projects/bandlab-parser/index.html`)
+- Use clean URLs without explicit `index.html` (e.g., `/projects/creative-tools/bandlab-parser/` not `/projects/creative-tools/bandlab-parser/index.html`)
 - Use **relative paths** for local development compatibility (e.g., `../../css/style.css` not `/css/style.css`)
 - Navigation links should use relative paths from the current page
 
@@ -119,10 +120,12 @@ A browser-based tool for parsing BandLab sample pack HTML pages into structured 
 - Metadata extraction (pack name, artist, genre, instruments, etc.)
 - Sample information (BPM, key, duration, type)
 
+**Location:** `projects/creative-tools/bandlab-parser/`
+
 **Bookmarklet URL:**
 The bookmarklet is hardcoded to the hosted URL:
 ```
-https://blakeeboyd.github.io/projects/bandlab-parser/index.html#bookmarklet=...
+https://blakeeboyd.github.io/projects/creative-tools/bandlab-parser/index.html#bookmarklet=...
 ```
 
 **How It Works:**
