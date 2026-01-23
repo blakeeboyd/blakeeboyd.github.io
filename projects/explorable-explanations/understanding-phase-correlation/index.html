@@ -3,46 +3,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="What happens when the exact same signal comes from two separate places? An interactive exploration of phase correlation in audio.">
+    <meta name="description" content="Explore how correlated and uncorrelated audio behaves with stereo imaging and phase.">
     <meta name="theme-color" content="#000000">
     <title>Understanding Phase Correlation - Blake Boyd</title>
     <!-- SEO -->
     <link rel="canonical" href="https://blakeeboyd.github.io/projects/explorable-explanations/understanding-phase-correlation/">
     <!-- Open Graph -->
     <meta property="og:title" content="Understanding Phase Correlation - Blake Boyd">
-    <meta property="og:description" content="What happens when the exact same signal comes from two separate places?">
+    <meta property="og:description" content="Explore how correlated and uncorrelated audio behaves with stereo imaging and phase.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://blakeeboyd.github.io/projects/explorable-explanations/understanding-phase-correlation/">
     <meta property="og:site_name" content="Blake Boyd">
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Understanding Phase Correlation - Blake Boyd">
-    <meta name="twitter:description" content="What happens when the exact same signal comes from two separate places?">
+    <meta name="twitter:description" content="Explore how correlated and uncorrelated audio behaves with stereo imaging and phase.">
+    <!-- CSS -->
     <link rel="stylesheet" href="../../../css/base.css">
     <link rel="stylesheet" href="../../../css/layout.css">
     <link rel="stylesheet" href="../../../css/components.css">
+    <link rel="stylesheet" href="../../../css/projects/phaseCorrelation.css">
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- JS -->
     <script src="../../../js/theme.js"></script>
     <script src="../../../js/nav-component.js" defer></script>
 </head>
 <body>
-    <div class="container">
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div class="container wide">
         <site-nav base="../../../"></site-nav>
 
         <main>
             <div class="page-header">
                 <h1 class="page-title">Understanding Phase Correlation</h1>
-                <p class="page-subtitle">What happens when the exact same signal comes from two separate places?</p>
+                <p class="page-subtitle">Explore how correlated and uncorrelated audio behaves with stereo imaging and phase.</p>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Under Construction</h2>
+            <div class="phase-app">
+                <!-- Main controls row: Meter | Scenarios | Source -->
+                <div class="controls-row">
+                    <!-- Correlation Meter - visual focus on the left -->
+                    <div class="card meter-card">
+                        <div class="card-header">
+                            <h2 class="card-title">Correlation Meter
+                                <span class="info-trigger" tabindex="0" aria-label="Correlation meter information">
+                                    i
+                                    <span class="info-tooltip" role="tooltip">
+                                        <strong>Scatter Display:</strong> Each dot represents an L/R sample pair. Dots toward the top are in-phase, bottom are out-of-phase.<br><br>
+                                        <strong>+1 (top):</strong> Perfectly correlated / mono compatible (green zone).<br><br>
+                                        <strong>0 (sides):</strong> Uncorrelated / independent L/R (blue zone).<br><br>
+                                        <strong>-1 (bottom):</strong> Out of phase / cancels in mono (red zone).
+                                    </span>
+                                </span>
+                            </h2>
+                        </div>
+                        <div class="correlation-meter-container">
+                            <canvas id="correlation-meter"></canvas>
+                            <div class="correlation-readout">
+                                <span class="correlation-label">Correlation:</span>
+                                <span id="correlation-value" class="correlation-value">+1.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phase Scenarios - center column -->
+                    <div class="card scenarios-card">
+                        <div class="card-header">
+                            <h2 class="card-title">Phase Scenarios
+                                <span class="info-trigger" tabindex="0" aria-label="Phase scenarios information">
+                                    i
+                                    <span class="info-tooltip" role="tooltip">
+                                        <strong>Correlated:</strong> Same signal to both channels (like a centered mono source).<br><br>
+                                        <strong>Uncorrelated:</strong> Different signals to each channel (independent L/R).<br><br>
+                                        <strong>Same Polarity:</strong> Both channels have matching polarity.<br><br>
+                                        <strong>Inverted Polarity:</strong> Right channel polarity is flipped (multiplied by -1).
+                                    </span>
+                                </span>
+                            </h2>
+                        </div>
+                        <div class="scenario-grid">
+                            <!-- Top row: Correlated scenarios (always visible) -->
+                            <button type="button" class="scenario-button active" data-correlated="true" data-inverted="false">
+                                <span class="scenario-title">Correlated</span>
+                                <span class="scenario-title">Same Polarity</span>
+                                <span class="scenario-subtitle">Phantom Center</span>
+                            </button>
+                            <button type="button" class="scenario-button" data-correlated="true" data-inverted="true">
+                                <span class="scenario-title">Correlated</span>
+                                <span class="scenario-title">Inverted</span>
+                                <span class="scenario-subtitle">Power Valley</span>
+                            </button>
+                            <!-- Bottom row: Uncorrelated scenarios (hidden when User Audio selected) -->
+                            <button type="button" class="scenario-button" data-correlated="false" data-inverted="false" id="uncorrelated-same">
+                                <span class="scenario-title">Uncorrelated</span>
+                                <span class="scenario-title">Same Polarity</span>
+                                <span class="scenario-subtitle">Diffuse Sound</span>
+                            </button>
+                            <button type="button" class="scenario-button" data-correlated="false" data-inverted="true" id="uncorrelated-inverted">
+                                <span class="scenario-title">Uncorrelated</span>
+                                <span class="scenario-title">Inverted</span>
+                                <span class="scenario-subtitle">No Change</span>
+                            </button>
+                            <!-- User audio section (shown when User Audio selected, replaces bottom row) -->
+                        <div id="user-audio-section" class="user-audio-section hidden">
+                            <div class="upload-area" id="upload-area">
+                                <input type="file" id="audio-file-input" accept="audio/*" hidden>
+                                <label for="audio-file-input" class="upload-label">
+                                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="17 8 12 3 7 8"></polyline>
+                                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                                    </svg>
+                                    <span>Drop audio file or click to upload</span>
+                                </label>
+                            </div>
+                            <div id="playback-controls" class="playback-controls hidden">
+                                <button type="button" id="play-button" class="play-button" aria-label="Play audio">
+                                    <svg id="play-icon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                    </svg>
+                                    <svg id="pause-icon" class="hidden" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <rect x="6" y="4" width="4" height="16"></rect>
+                                        <rect x="14" y="4" width="4" height="16"></rect>
+                                    </svg>
+                                </button>
+                                <div class="progress-container">
+                                    <span class="time-display" id="current-time">0:00</span>
+                                    <div id="progress-bar" class="progress-bar">
+                                        <div id="progress-fill" class="progress-fill"></div>
+                                    </div>
+                                    <span class="time-display" id="total-time">0:00</span>
+                                </div>
+                                <div class="upload-area upload-area-compact" id="upload-area-compact">
+                                    <input type="file" id="audio-file-input-compact" accept="audio/*" hidden>
+                                    <label for="audio-file-input-compact">
+                                        <svg aria-hidden="true" class="upload-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                            <polyline points="17 8 12 3 7 8"></polyline>
+                                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                                        </svg>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+
+                    <!-- Audio Source - controls on the right -->
+                    <div class="card source-card">
+                        <div class="card-header">
+                            <h2 class="card-title">Audio Source
+                                <span class="info-trigger" tabindex="0" aria-label="Audio source information">
+                                    i
+                                    <span class="info-tooltip tooltip-right" role="tooltip">
+                                        <strong>Mute:</strong> No audio output.<br><br>
+                                        <strong>Pink Noise:</strong> Generated internally for clear demonstration of phase effects. Plays automatically when selected.<br><br>
+                                        <strong>User Audio:</strong> Upload your own stereo audio file to hear how phase affects real content.<br><br>
+                                        <strong>Gain:</strong> Separate volume settings are remembered for Pink Noise (-24dB) and User Audio (-12dB).
+                                    </span>
+                                </span>
+                            </h2>
+                        </div>
+                        <div class="source-controls-vertical">
+                            <div class="source-button-group-vertical">
+                                <button type="button" class="source-button active" data-source="0">Mute</button>
+                                <button type="button" class="source-button" data-source="1">Pink Noise</button>
+                                <button type="button" class="source-button" data-source="2">User Audio</button>
+                            </div>
+                            <div class="gain-control">
+                                <label class="control-label" for="master-gain">Gain (dB)</label>
+                                <div class="gain-row">
+                                    <input type="range" id="master-gain" class="gain-slider" min="-70" max="0" value="-24" step="1" />
+                                    <span class="gain-text" id="gain-display">-24</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="background-content">
-                    <p>This explorable explanation is currently under development. It will provide an interactive tool for understanding phase correlation and its effects on audio signals.</p>
+
+                <!-- Background card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Background</h2>
+                    </div>
+                    <div class="background-content">
+                        <p><strong>Phase correlation</strong> describes the relationship between the left and right channels of a stereo signal. Understanding this relationship is crucial for mixing, mastering, and understanding how audio behaves in different playback scenarios.</p>
+
+                        <p>When identical signals are sent to both speakers (correlated audio with same polarity), the sound waves reinforce each other and create a <dfn>phantom center</dfn> - the perception of sound coming from directly between the speakers. This is how centered vocals and instruments are typically reproduced in stereo.</p>
+
+                        <p>If one channel's polarity is inverted (flipped), the waves now oppose each other. For perfectly correlated content, this creates a "hole" in the center - the sound seems to come from the speakers themselves rather than between them. This is sometimes called the <dfn>Power Valley</dfn> effect. If such a signal were summed to mono, the correlated content would cancel completely.</p>
+
+                        <p>With uncorrelated audio (independent left and right content), polarity inversion has no perceptible effect because there's no consistent phase relationship to disrupt. The sound simply appears diffuse, coming from both speakers without a clear center image.</p>
+
+                        <p>The <strong>correlation meter</strong> visualizes this relationship in real-time:</p>
+                        <ul>
+                            <li><strong>+1</strong> = Perfectly correlated (mono compatible)</li>
+                            <li><strong>0</strong> = Uncorrelated (independent L/R)</li>
+                            <li><strong>-1</strong> = Out of phase (will cancel in mono)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Exercise card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Exercise</h2>
+                    </div>
+                    <div class="background-content">
+                        <p>Try the following exercises to develop your understanding of phase correlation:</p>
+                        <ol>
+                            <li><strong>Listen to each scenario with pink noise:</strong> Start with "Correlated + Same Polarity" and notice how the sound appears centered between your speakers. Then switch to "Correlated + Inverted Polarity" - notice how the center image disappears and sound seems to come from the speakers themselves.</li>
+                            <li><strong>Compare uncorrelated scenarios:</strong> Switch between the two uncorrelated options. Can you hear any difference? You shouldn't - because there's no correlation to disrupt, polarity inversion has no effect.</li>
+                            <li><strong>Watch the correlation meter:</strong> As you switch between scenarios, observe how the meter reading changes. Correlated audio with same polarity shows +1, inverted shows -1, and uncorrelated hovers around 0.</li>
+                            <li><strong>Upload your own music:</strong> Try a track with a strong center vocal or kick drum. Switch to inverted polarity - what happens to the centered elements? This demonstrates what would happen if one speaker wire were connected backwards.</li>
+                            <li><strong>Consider mono compatibility:</strong> Any content that shows negative correlation will lose energy or cancel entirely when summed to mono (phone speakers, club systems, etc.). Understanding this helps you make mixing decisions.</li>
+                        </ol>
+                    </div>
                 </div>
             </div>
         </main>
@@ -51,5 +230,7 @@
             <p>&copy; 2025 Blake Boyd</p>
         </footer>
     </div>
+
+    <script type="text/javascript" src="js/app.js"></script>
 </body>
 </html>

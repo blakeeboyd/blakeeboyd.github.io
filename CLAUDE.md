@@ -18,7 +18,8 @@ A personal website hosted on GitHub Pages at blakeeboyd.github.io.
 │   └── projects/
 │       ├── bandlab-parser.css      # BandLab parser styles
 │       ├── moylanEQ.css            # Pitch registers app styles
-│       └── cancelledHarmonics.css  # Cancelled harmonics app styles
+│       ├── cancelledHarmonics.css  # Cancelled harmonics app styles
+│       └── phaseCorrelation.css    # Phase correlation app styles
 ├── js/
 │   ├── theme.js            # Dark mode toggle
 │   ├── nav-component.js    # <site-nav> web component
@@ -39,10 +40,14 @@ A personal website hosted on GitHub Pages at blakeeboyd.github.io.
         │       ├── gb.moylanEQ.export.json
         │       ├── dependencies.json
         │       └── media/      # Audio files (not tracked in git due to size)
-        └── cancelled-harmonics/
+        ├── cancelled-harmonics/
+        │   ├── index.html      # Main page (uses .container.wide)
+        │   └── js/
+        │       └── app.js      # Pure Web Audio API, no dependencies
+        └── understanding-phase-correlation/
             ├── index.html      # Main page (uses .container.wide)
             └── js/
-                └── app.js      # Pure Web Audio API, no dependencies
+                └── app.js      # Pure Web Audio API, stereo correlation meter
 ```
 
 ## URL Conventions
@@ -203,6 +208,53 @@ OscillatorNode x 16 (sine waves at f, 2f, 3f, ... 16f)
 
 **Key Files:**
 - `js/app.js` - Complete application (audio synthesis, spectrogram, UI)
+
+### Understanding Phase Correlation (Explorable Explanations)
+
+Interactive demonstration of stereo phase correlation showing how correlated and uncorrelated audio behaves with different polarity configurations. Features a real-time stereo correlation meter.
+
+**Location:** `projects/explorable-explanations/understanding-phase-correlation/`
+
+**Key Features:**
+- Four phase scenarios demonstrating stereo behavior:
+  - Correlated + Same Polarity: Phantom center (sound appears between speakers)
+  - Correlated + Inverted Polarity: Power valley (sound at speakers with hole in middle)
+  - Uncorrelated + Same Polarity: Diffuse sound (no localization)
+  - Uncorrelated + Inverted Polarity: No audible change
+- Three audio sources: Mute, Pink Noise (generated), User Audio (upload)
+- Real-time stereo correlation meter (half-circle visualization)
+- Master gain control (-70 to 0 dB)
+- User audio file upload with stereo support
+
+**Technical Stack:**
+- Pure Web Audio API (no external dependencies)
+- Pink noise generation using Paul Kellet's algorithm
+- ChannelSplitter/Merger for stereo manipulation
+- AnalyserNode x2 for correlation calculation
+- Canvas 2D for correlation meter rendering
+- Project-specific styles in `/css/projects/phaseCorrelation.css`
+
+**Audio Architecture:**
+```
+Pink Noise (correlated or uncorrelated)
+    → LeftGain → Merger → MasterGain → destination
+    → RightGain → PolarityGain (±1) → Merger
+
+User Audio (stereo)
+    → Splitter → LeftGain → ...
+              → RightGain → PolarityGain → ...
+
+AnalyserNode x2 (L/R channels) → Correlation calculation
+```
+
+**Correlation Calculation:**
+- Uses Pearson correlation coefficient
+- +1 = Perfectly correlated (mono compatible)
+- 0 = Uncorrelated (independent L/R)
+- -1 = Out of phase (will cancel in mono)
+
+**Key Files:**
+- `js/app.js` - Audio engine, correlation meter, UI logic
 
 ## Design Inspiration
 
