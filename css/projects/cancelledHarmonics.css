@@ -823,3 +823,56 @@
 .references li {
     margin-bottom: var(--spacing-xs);
 }
+
+/* ===========================================
+   Mobile Responsive Fixes
+   =========================================== */
+
+@media (max-width: 640px) {
+    /* Fix harmonics card header */
+    .card-header-inline {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-sm);
+    }
+
+    /* Fix harmonics actions row */
+    .harmonics-actions {
+        flex-wrap: wrap;
+        width: 100%;
+        gap: var(--spacing-xs);
+    }
+
+    /* Stack waveform label above buttons */
+    .waveform-section {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    .waveform-buttons {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    /* Hide divider on mobile */
+    .actions-divider {
+        display: none;
+    }
+
+    /* Stack auto demo row vertically */
+    .auto-demo-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-sm);
+    }
+
+    .demo-button-group {
+        flex-wrap: wrap;
+    }
+
+    /* Hide demo descriptions on mobile to save space */
+    .demo-description {
+        display: none;
+    }
+}
