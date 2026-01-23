@@ -83,29 +83,40 @@
                                     </span>
                                 </span>
                             </h2>
+                            <div class="output-mode-group">
+                                <button type="button" class="output-mode-button active" data-output="stereo">Stereo</button>
+                                <button type="button" class="output-mode-button" data-output="mono">Mono</button>
+                                <span class="info-trigger" tabindex="0" aria-label="Output mode information">
+                                    i
+                                    <span class="info-tooltip" role="tooltip">
+                                        <strong>Stereo:</strong> Normal stereo output to left and right speakers.<br><br>
+                                        <strong>Mono:</strong> Sums L+R after polarity processing. With Correlated + Inverted, the center content cancels completely - demonstrating why phase correlation matters for mono compatibility.
+                                    </span>
+                                </span>
+                            </div>
                         </div>
                         <div class="scenario-grid">
                             <!-- Top row: Correlated scenarios (always visible) -->
-                            <button type="button" class="scenario-button active" data-correlated="true" data-inverted="false">
-                                <span class="scenario-title">Correlated</span>
-                                <span class="scenario-title">Same Polarity</span>
+                            <button type="button" class="scenario-button active" data-correlated="true" data-inverted="false" id="correlated-same">
+                                <span class="scenario-title scenario-correlation">Correlated Audio</span>
+                                <span class="scenario-title">Polarity Matched</span>
                                 <span class="scenario-subtitle">Phantom Center</span>
                             </button>
-                            <button type="button" class="scenario-button" data-correlated="true" data-inverted="true">
-                                <span class="scenario-title">Correlated</span>
-                                <span class="scenario-title">Inverted</span>
-                                <span class="scenario-subtitle">Power Valley</span>
+                            <button type="button" class="scenario-button" data-correlated="true" data-inverted="true" id="correlated-inverted">
+                                <span class="scenario-title scenario-correlation">Correlated Audio</span>
+                                <span class="scenario-title">Polarity Inverted</span>
+                                <span class="scenario-subtitle">Phantom L/R</span>
                             </button>
                             <!-- Bottom row: Uncorrelated scenarios (hidden when User Audio selected) -->
                             <button type="button" class="scenario-button" data-correlated="false" data-inverted="false" id="uncorrelated-same">
-                                <span class="scenario-title">Uncorrelated</span>
-                                <span class="scenario-title">Same Polarity</span>
+                                <span class="scenario-title">Uncorrelated Audio</span>
+                                <span class="scenario-title">Polarity Matched</span>
                                 <span class="scenario-subtitle">Diffuse Sound</span>
                             </button>
                             <button type="button" class="scenario-button" data-correlated="false" data-inverted="true" id="uncorrelated-inverted">
-                                <span class="scenario-title">Uncorrelated</span>
-                                <span class="scenario-title">Inverted</span>
-                                <span class="scenario-subtitle">No Change</span>
+                                <span class="scenario-title">Uncorrelated Audio</span>
+                                <span class="scenario-title">Polarity Inverted</span>
+                                <span class="scenario-subtitle">Diffuse Sound</span>
                             </button>
                             <!-- User audio section (shown when User Audio selected, replaces bottom row) -->
                         <div id="user-audio-section" class="user-audio-section hidden">
@@ -194,7 +205,7 @@
 
                         <p>When identical signals are sent to both speakers (correlated audio with same polarity), the sound waves reinforce each other and create a <dfn>phantom center</dfn> - the perception of sound coming from directly between the speakers. This is how centered vocals and instruments are typically reproduced in stereo.</p>
 
-                        <p>If one channel's polarity is inverted (flipped), the waves now oppose each other. For perfectly correlated content, this creates a "hole" in the center - the sound seems to come from the speakers themselves rather than between them. This is sometimes called the <dfn>Power Valley</dfn> effect. If such a signal were summed to mono, the correlated content would cancel completely.</p>
+                        <p>If one channel's polarity is inverted (flipped), the waves now oppose each other. For perfectly correlated content, this creates a <dfn>Phantom L/R</dfn> effect - sounds that exist equally in both speakers cancel out in the center, and the remaining audio appears to come from the left and right speakers themselves rather than between them. If such a signal were summed to mono, the correlated content would cancel completely.</p>
 
                         <p>With uncorrelated audio (independent left and right content), polarity inversion has no perceptible effect because there's no consistent phase relationship to disrupt. The sound simply appears diffuse, coming from both speakers without a clear center image.</p>
 
@@ -219,7 +230,7 @@
                             <li><strong>Compare uncorrelated scenarios:</strong> Switch between the two uncorrelated options. Can you hear any difference? You shouldn't - because there's no correlation to disrupt, polarity inversion has no effect.</li>
                             <li><strong>Watch the correlation meter:</strong> As you switch between scenarios, observe how the meter reading changes. Correlated audio with same polarity shows +1, inverted shows -1, and uncorrelated hovers around 0.</li>
                             <li><strong>Upload your own music:</strong> Try a track with a strong center vocal or kick drum. Switch to inverted polarity - what happens to the centered elements? This demonstrates what would happen if one speaker wire were connected backwards.</li>
-                            <li><strong>Consider mono compatibility:</strong> Any content that shows negative correlation will lose energy or cancel entirely when summed to mono (phone speakers, club systems, etc.). Understanding this helps you make mixing decisions.</li>
+                            <li><strong>Test mono compatibility:</strong> Click the "Mono" button to sum L+R. With "Correlated + Inverted" selected, the audio should completely cancel - demonstrating why phase correlation matters for mono playback (phone speakers, club systems, etc.).</li>
                         </ol>
                     </div>
                 </div>

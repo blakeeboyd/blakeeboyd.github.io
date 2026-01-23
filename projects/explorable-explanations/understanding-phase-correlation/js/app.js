@@ -48,6 +48,11 @@ const state = {
     currentSource: 0,      // 0=Mute, 1=Pink Noise, 2=User Audio
     isCorrelated: true,    // true = same signal both channels
     isInverted: false,     // true = invert right channel
+    isMono: false,         // true = sum to mono after polarity processing
+
+    // Mono summing nodes
+    monoSummer: null,      // Gain node that sums L+R
+    monoSplitter: null,    // Splits mono sum back to stereo
 
     // Separate gain values for each source
     pinkNoiseGainValue: -24,  // dB (initial for pink noise)
@@ -112,6 +117,11 @@ function createAudioContext() {
     state.analyserLeft.fftSize = state.analyserBufferSize;
     state.analyserRight.fftSize = state.analyserBufferSize;
 
+    // Create mono summing nodes
+    // monoSummer receives both channels and outputs their sum
+    state.monoSummer = state.audioContext.createGain();
+    state.monoSummer.gain.value = 0.5; // Scale down to prevent clipping when summing
+
     // Connect the stereo processing chain
     // After splitter, signals go through individual gains, then polarity, then to analyser and merger
     state.leftGain.connect(state.analyserLeft);
@@ -121,9 +131,15 @@ function createAudioContext() {
     state.rightPolarity.connect(state.analyserRight);
     state.rightPolarity.connect(state.merger, 0, 1);
 
-    // Merger to master gain to destination
+    // Also connect both channels to mono summer (for mono mode)
+    state.leftGain.connect(state.monoSummer);
+    state.rightPolarity.connect(state.monoSummer);
+
+    // Merger to master gain to destination (stereo path - default)
     state.merger.connect(state.masterGain);
     state.masterGain.connect(state.audioContext.destination);
+
+    // Mono summer is NOT connected by default - will be connected when mono mode is enabled
 
     // Generate pink noise buffers
     generatePinkNoiseBuffers();
@@ -392,6 +408,40 @@ function setScenario(correlated, inverted) {
     }
 
     updateScenarioButtons();
+}
+
+/**
+ * Set output mode (stereo or mono)
+ * In mono mode, L+R are summed after polarity processing
+ * This demonstrates how inverted correlated content cancels in mono
+ */
+function setOutputMode(isMono) {
+    if (state.isMono === isMono) return;
+    state.isMono = isMono;
+
+    // Disconnect current output routing
+    state.merger.disconnect();
+    state.monoSummer.disconnect();
+
+    if (isMono) {
+        // Mono mode: route mono summer to master gain
+        // The mono summer already receives both L and R (after polarity)
+        state.monoSummer.connect(state.masterGain);
+    } else {
+        // Stereo mode: route merger to master gain
+        state.merger.connect(state.masterGain);
+    }
+
+    updateOutputModeButtons();
+}
+
+function updateOutputModeButtons() {
+    const buttons = document.querySelectorAll('.output-mode-button');
+    buttons.forEach(button => {
+        const output = button.dataset.output;
+        const isActive = (output === 'mono' && state.isMono) || (output === 'stereo' && !state.isMono);
+        button.classList.toggle('active', isActive);
+    });
 }
 
 // ============================================
@@ -993,12 +1043,16 @@ function setSource(source) {
     const uncorrelatedSame = document.getElementById('uncorrelated-same');
     const uncorrelatedInverted = document.getElementById('uncorrelated-inverted');
     const userAudioSection = document.getElementById('user-audio-section');
+    const correlationLabels = document.querySelectorAll('.scenario-correlation');
 
     if (source === 2) {
         // User Audio: hide uncorrelated buttons, show user audio section in their place
         if (uncorrelatedSame) uncorrelatedSame.classList.add('hidden');
         if (uncorrelatedInverted) uncorrelatedInverted.classList.add('hidden');
         if (userAudioSection) userAudioSection.classList.remove('hidden');
+
+        // Hide "Correlated Audio" labels on the remaining buttons
+        correlationLabels.forEach(label => label.classList.add('hidden'));
 
         // If currently on an uncorrelated scenario, switch to correlated same polarity
         if (!state.isCorrelated) {
@@ -1009,6 +1063,9 @@ function setSource(source) {
         if (uncorrelatedSame) uncorrelatedSame.classList.remove('hidden');
         if (uncorrelatedInverted) uncorrelatedInverted.classList.remove('hidden');
         if (userAudioSection) userAudioSection.classList.add('hidden');
+
+        // Show "Correlated Audio" labels
+        correlationLabels.forEach(label => label.classList.remove('hidden'));
     }
 
     // Update gain slider and master gain based on source
@@ -1088,6 +1145,15 @@ function setupEventListeners() {
             const correlated = button.dataset.correlated === 'true';
             const inverted = button.dataset.inverted === 'true';
             setScenario(correlated, inverted);
+        });
+    });
+
+    // Output mode buttons (Stereo/Mono)
+    const outputModeButtons = document.querySelectorAll('.output-mode-button');
+    outputModeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const output = button.dataset.output;
+            setOutputMode(output === 'mono');
         });
     });
 
@@ -1189,6 +1255,7 @@ function init() {
     // Set initial state
     updateScenarioButtons();
     updateSourceButtons();
+    updateOutputModeButtons();
 
     // Set initial gain slider to pink noise value (default source)
     const gainSlider = document.getElementById('master-gain');
