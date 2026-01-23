@@ -58,19 +58,16 @@
                                     </span>
                                 </h2>
                             </div>
-                            <div class="eq-controls">
-                                <div class="control-group">
-                                    <label class="control-label" for="source-selector">Source</label>
-                                    <select id="source-selector" class="form-input eq-select">
-                                        <option value="0">Mute</option>
-                                        <option value="1">Pink Noise</option>
-                                        <option value="2">User Audio</option>
-                                    </select>
+                            <div class="source-controls">
+                                <div class="source-buttons">
+                                    <button type="button" data-source="0" class="source-button active">Mute</button>
+                                    <button type="button" data-source="1" class="source-button">Pink Noise</button>
+                                    <button type="button" data-source="2" class="source-button">User Audio</button>
                                 </div>
-                                <div id="gain-control" class="control-group">
-                                    <label class="control-label" for="gain-slider">Gain (dB)</label>
+                                <div id="gain-control" class="gain-row">
+                                    <label class="control-label" for="gain-slider">Gain</label>
                                     <input type="range" id="gain-slider" class="eq-slider" min="-70" max="6" value="-12" step="1" />
-                                    <span class="gain-text">-12</span>
+                                    <span class="gain-text">-12 dB</span>
                                 </div>
                             </div>
                         </div>
@@ -222,6 +219,26 @@
                                     <line x1="12" y1="3" x2="12" y2="15"></line>
                                 </svg>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Demo Section -->
+                    <div class="demo-section" id="demo-section">
+                        <button type="button" id="demo-button" class="demo-button">
+                            <svg aria-hidden="true" class="demo-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            </svg>
+                            Run Demo
+                        </button>
+                        <span class="info-trigger" tabindex="0" aria-label="Demo information">
+                            i
+                            <span class="info-tooltip" role="tooltip">
+                                <strong>Demo Mode:</strong> Automatically cycles through each frequency band, soloing them one at a time for 3 seconds.<br><br>
+                                This helps you learn the characteristic sound of each band before analyzing your own audio.
+                            </span>
+                        </span>
+                        <div class="demo-status hidden" id="demo-status">
+                            <span class="demo-status-text" id="demo-status-text">Soloing "Low" Band</span>
                         </div>
                     </div>
                 </div>

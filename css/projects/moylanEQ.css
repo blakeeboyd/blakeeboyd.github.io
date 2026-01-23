@@ -23,6 +23,81 @@
     min-width: 250px;
 }
 
+/* Source controls layout */
+.source-controls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+/* Source buttons row */
+.source-buttons {
+    display: flex;
+    gap: var(--spacing-xs);
+    flex-wrap: wrap;
+}
+
+.source-button {
+    flex: 1;
+    min-width: 80px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    background: var(--color-control-bg);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.source-button:hover {
+    border-color: var(--color-text-muted);
+}
+
+.source-button.active {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+}
+
+/* Gain row layout */
+.gain-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: var(--color-control-bg);
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    transition: border-color var(--transition-fast), background-color var(--transition-fast), opacity var(--transition-normal), filter var(--transition-normal);
+}
+
+.gain-row:hover {
+    border-color: var(--color-border);
+}
+
+.gain-row .control-label {
+    min-width: 35px;
+}
+
+.gain-row .eq-slider {
+    flex: 1;
+    min-width: 100px;
+}
+
+.gain-row .gain-text {
+    min-width: 50px;
+    text-align: right;
+}
+
+/* Disabled state for gain control when source is muted */
+.gain-row.source-muted {
+    opacity: 0.4;
+    filter: grayscale(0.5);
+    pointer-events: none;
+}
+
 .audio-source-section .eq-controls {
     flex-wrap: nowrap;
 }
@@ -58,12 +133,6 @@
     cursor: not-allowed;
 }
 
-/* Disabled state for gain control when source is muted */
-.control-group.source-muted {
-    opacity: 0.4;
-    filter: grayscale(0.5);
-    pointer-events: none;
-}
 
 .section-divider {
     width: 1px;
@@ -730,4 +799,110 @@
     .eq-slider {
         width: 80px;
     }
+
+    .source-buttons {
+        flex-direction: column;
+    }
+
+    .source-button {
+        min-width: unset;
+    }
+
+    .gain-row {
+        flex-wrap: wrap;
+    }
+
+    .gain-row .control-label {
+        width: 100%;
+        text-align: left;
+        min-width: unset;
+    }
+
+    .gain-row .eq-slider {
+        flex: 1;
+    }
+}
+
+/* ===========================================
+   Demo Section
+   =========================================== */
+
+.demo-section {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+}
+
+.demo-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: 0.5rem 1rem;
+    background: var(--color-control-bg);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.demo-button:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.demo-button:hover .demo-icon {
+    stroke: var(--color-accent);
+}
+
+.demo-button.running {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+}
+
+.demo-button.running .demo-icon {
+    stroke: white;
+}
+
+.demo-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.demo-icon {
+    transition: stroke var(--transition-fast);
+}
+
+/* Demo Status Display */
+.demo-status {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: 0.5rem 1rem;
+    background: var(--color-accent-light);
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-md);
+    animation: pulse-border 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-border {
+    0%, 100% { border-color: var(--color-accent); }
+    50% { border-color: rgba(37, 99, 235, 0.4); }
+}
+
+.demo-status-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-accent);
+}
+
+/* Dark mode adjustments for demo */
+[data-theme="dark"] .demo-status {
+    background: rgba(37, 99, 235, 0.15);
 }

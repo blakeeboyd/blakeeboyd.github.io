@@ -101,6 +101,7 @@ async function setup() {
 
     setupGain(device, userAudioGain);
     setupAudioSource(device, context, userAudioGain);
+    setupDemo(device);
 
     // (Optional) Load presets, if any
     // loadPresets(device, patcher);
@@ -164,6 +165,20 @@ function loadRNBOScript(version) {
   const bandNames = ['low', 'lowMid', 'mid', 'midHigh', 'high', 'veryHigh'];
   const bandState = {};
 
+  // Demo state
+  let demoRunning = false;
+  let demoTimeouts = [];
+
+  // Band display names mapping
+  const bandDisplayNames = {
+    'low': 'Low',
+    'lowMid': 'Low Mid',
+    'mid': 'Mid',
+    'midHigh': 'Mid-High',
+    'high': 'High',
+    'veryHigh': 'Very High'
+  };
+
   function setupBandControls(device) {
     // Initialize state for each band
     bandNames.forEach(band => {
@@ -178,8 +193,15 @@ function loadRNBOScript(version) {
       const muteBtn = document.getElementById(`${band}-mute`);
       const soloBtn = document.getElementById(`${band}-solo`);
 
-      muteBtn.addEventListener('click', () => {
-        bandState[band].muted = !bandState[band].muted;
+      muteBtn.addEventListener('click', (event) => {
+        // Opt+Shift (Mac) or Alt+Shift (Windows) clears all mutes
+        if (event.altKey && event.shiftKey) {
+          bandNames.forEach(b => {
+            bandState[b].muted = false;
+          });
+        } else {
+          bandState[band].muted = !bandState[band].muted;
+        }
         updateBandUI(band);
         updateAllBands(device);
       });
@@ -206,8 +228,9 @@ function loadRNBOScript(version) {
     const muteBtn = document.getElementById(`${band}-mute`);
     const soloBtn = document.getElementById(`${band}-solo`);
 
-    // Update mute button
-    muteBtn.classList.toggle('active', bandState[band].muted);
+    // Update mute button - show active only if muted AND not soloed
+    // (soloed bands show mute as implicit instead of active)
+    muteBtn.classList.toggle('active', bandState[band].muted && !bandState[band].soloed);
 
     // Update solo button
     soloBtn.classList.toggle('active', bandState[band].soloed);
@@ -215,8 +238,10 @@ function loadRNBOScript(version) {
     // Check if any band is soloed
     const anySoloed = bandNames.some(b => bandState[b].soloed);
 
-    // Update implicit mute state (band is muted because another band is soloed)
-    if (anySoloed && !bandState[band].soloed && !bandState[band].muted) {
+    // Update implicit mute state:
+    // - Band is implicitly muted because another band is soloed (and this one isn't)
+    // - OR band is soloed but also has mute enabled (shows mute would apply when solo released)
+    if ((anySoloed && !bandState[band].soloed) || (bandState[band].soloed && bandState[band].muted)) {
       muteBtn.classList.add('implicit');
     } else {
       muteBtn.classList.remove('implicit');
@@ -230,8 +255,9 @@ function loadRNBOScript(version) {
       let enabled;
 
       if (anySoloed) {
-        // If any band is soloed, only soloed bands play (unless they're also muted)
-        enabled = bandState[band].soloed && !bandState[band].muted;
+        // If any band is soloed, soloed bands play (even if muted - mute is "suspended" while soloed)
+        // Non-soloed bands don't play
+        enabled = bandState[band].soloed;
       } else {
         // No solos - bands play unless muted
         enabled = !bandState[band].muted;
@@ -250,8 +276,150 @@ function loadRNBOScript(version) {
     });
   }
 
+  function setupDemo(device) {
+    const demoButton = document.getElementById('demo-button');
+    const demoStatus = document.getElementById('demo-status');
+    const demoStatusText = document.getElementById('demo-status-text');
+    const selectorParam = getParameter(device, 'audioFile_selector');
+    const filtersToggle = document.getElementById('filters-toggle');
+
+    demoButton.addEventListener('click', () => {
+      if (demoRunning) {
+        stopDemo();
+      } else {
+        startDemo();
+      }
+    });
+
+    function startDemo() {
+      demoRunning = true;
+      demoButton.classList.add('running');
+      demoButton.innerHTML = `
+        <svg aria-hidden="true" class="demo-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="6" y="4" width="4" height="16"></rect>
+          <rect x="14" y="4" width="4" height="16"></rect>
+        </svg>
+        Stop Demo
+      `;
+
+      // Step 1: Switch to Pink Noise
+      if (selectorParam) {
+        selectorParam.value = 1;
+      }
+      document.querySelectorAll('.source-button').forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.dataset.source, 10) === 1);
+      });
+      if (window.updateGainSliderForSource) {
+        window.updateGainSliderForSource(1);
+      }
+
+      // Step 2: Enable filters if not already enabled
+      if (!filtersToggle.checked) {
+        filtersToggle.click();
+      }
+
+      // Step 3: Clear all mutes and solos
+      bandNames.forEach(band => {
+        bandState[band].muted = false;
+        bandState[band].soloed = false;
+        updateBandUI(band);
+      });
+      updateAllBands(device);
+
+      // Step 4: Show "Full Range" for 3 seconds, then start cycling
+      demoStatus.classList.remove('hidden');
+      demoStatusText.textContent = 'Full Range';
+
+      demoTimeouts.push(setTimeout(() => {
+        cycleThroughBands(0);
+      }, 3000));
+    }
+
+    function cycleThroughBands(index) {
+      if (!demoRunning) {
+        stopDemo();
+        return;
+      }
+
+      // After all bands, show full range section
+      if (index >= bandNames.length) {
+        showFullRange();
+        return;
+      }
+
+      const band = bandNames[index];
+
+      // Solo this band
+      bandState[band].soloed = true;
+      updateBandUI(band);
+      updateAllBands(device);
+
+      // Show status
+      demoStatus.classList.remove('hidden');
+      demoStatusText.textContent = `Soloing "${bandDisplayNames[band]}" Band`;
+
+      // After 3.5 seconds, unsolo and move to next band
+      demoTimeouts.push(setTimeout(() => {
+        bandState[band].soloed = false;
+        updateBandUI(band);
+        updateAllBands(device);
+        cycleThroughBands(index + 1);
+      }, 3500));
+    }
+
+    function showFullRange() {
+      if (!demoRunning) {
+        stopDemo();
+        return;
+      }
+
+      // Show status
+      demoStatus.classList.remove('hidden');
+      demoStatusText.textContent = 'Full Range';
+
+      // After 3 seconds, end demo
+      demoTimeouts.push(setTimeout(() => {
+        stopDemo();
+      }, 3000));
+    }
+
+    function stopDemo() {
+      demoTimeouts.forEach(timeout => clearTimeout(timeout));
+      demoTimeouts = [];
+
+      demoRunning = false;
+      demoButton.classList.remove('running');
+      demoButton.innerHTML = `
+        <svg aria-hidden="true" class="demo-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+        Run Demo
+      `;
+
+      demoStatus.classList.add('hidden');
+
+      // Clear all solos
+      bandNames.forEach(band => {
+        bandState[band].soloed = false;
+        updateBandUI(band);
+      });
+      updateAllBands(device);
+
+      // Switch to Mute source
+      if (selectorParam) {
+        selectorParam.value = 0;
+      }
+      document.querySelectorAll('.source-button').forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.dataset.source, 10) === 0);
+      });
+      if (window.updateGainSliderForSource) {
+        window.updateGainSliderForSource(0);
+      }
+    }
+  }
+
   // Separate gain values for different sources
-  let pinkNoiseGain = -36;
+  let pinkNoiseGain = -24;
   let userAudioGainValue = -12;
   let currentSource = 0; // 0=Mute, 1=Pink Noise, 2=User Audio
 
@@ -278,7 +446,7 @@ function loadRNBOScript(version) {
 
     // Initialize with mute selected, showing pink noise gain value
     gainSlider.value = pinkNoiseGain;
-    gainValue.innerHTML = pinkNoiseGain;
+    gainValue.innerHTML = pinkNoiseGain + ' dB';
     updateSliderFill(gainSlider);
 
     // Set initial gains
@@ -311,11 +479,11 @@ function loadRNBOScript(version) {
       if (source === 1) {
         // Pink Noise
         gainSlider.value = pinkNoiseGain;
-        gainValue.innerHTML = Math.round(pinkNoiseGain);
+        gainValue.innerHTML = Math.round(pinkNoiseGain) + ' dB';
       } else {
         // User Audio
         gainSlider.value = userAudioGainValue;
-        gainValue.innerHTML = Math.round(userAudioGainValue);
+        gainValue.innerHTML = Math.round(userAudioGainValue) + ' dB';
       }
       updateSliderFill(gainSlider);
     };
@@ -325,7 +493,7 @@ function loadRNBOScript(version) {
 
     gainSlider.oninput = function () {
       const value = parseFloat(this.value);
-      gainValue.innerHTML = Math.round(value);
+      gainValue.innerHTML = Math.round(value) + ' dB';
       updateSliderFill(this);
 
       if (currentSource === 1) {
@@ -345,7 +513,7 @@ function loadRNBOScript(version) {
 
   function setupAudioSource(device, context, userAudioGain) {
     // DOM elements
-    const sourceSelector = document.getElementById("source-selector");
+    const sourceButtons = document.querySelectorAll(".source-button");
     const fileInput = document.getElementById("audio-file-input");
     const fileInputCompact = document.getElementById("audio-file-input-compact");
     const audioUploadSection = document.getElementById("audio-upload-section");
@@ -388,9 +556,16 @@ function loadRNBOScript(version) {
     // Get the audio source selector parameter
     const selectorParam = getParameter(device, "audioFile_selector");
 
-    // Initialize selector from RNBO parameter
+    // Update source button active state
+    function updateSourceButtons(value) {
+      sourceButtons.forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.dataset.source, 10) === value);
+      });
+    }
+
+    // Initialize buttons from RNBO parameter
     if (selectorParam) {
-      sourceSelector.value = selectorParam.value;
+      updateSourceButtons(selectorParam.value);
     }
 
     // Format time as MM:SS
@@ -483,32 +658,37 @@ function loadRNBOScript(version) {
       }
     }
 
-    // Handle source selection change
-    sourceSelector.addEventListener("change", () => {
-      const value = parseInt(sourceSelector.value, 10);
+    // Handle source button clicks
+    sourceButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const value = parseInt(btn.dataset.source, 10);
 
-      // Stop any playing user audio when switching away from user audio
-      if (value !== 2 && isPlaying) {
-        stopAudio();
-      }
-
-      // Update gain slider to show the appropriate gain for this source
-      if (window.updateGainSliderForSource) {
-        window.updateGainSliderForSource(value);
-      }
-
-      // For User Audio, keep RNBO muted until play is pressed
-      // For other sources (Mute, Pink Noise), update RNBO parameter directly
-      if (selectorParam) {
-        if (value === 2) {
-          // User Audio selected - stay muted, playAudio() will switch to 2 when needed
-          selectorParam.value = 0;
-        } else {
-          selectorParam.value = value;
+        // Stop any playing user audio when switching away from user audio
+        if (value !== 2 && isPlaying) {
+          stopAudio();
         }
-      }
 
-      console.log("Audio source changed to:", ["Mute", "Pink Noise", "User Audio"][value]);
+        // Update button active states
+        updateSourceButtons(value);
+
+        // Update gain slider to show the appropriate gain for this source
+        if (window.updateGainSliderForSource) {
+          window.updateGainSliderForSource(value);
+        }
+
+        // For User Audio, keep RNBO muted until play is pressed
+        // For other sources (Mute, Pink Noise), update RNBO parameter directly
+        if (selectorParam) {
+          if (value === 2) {
+            // User Audio selected - stay muted, playAudio() will switch to 2 when needed
+            selectorParam.value = 0;
+          } else {
+            selectorParam.value = value;
+          }
+        }
+
+        console.log("Audio source changed to:", ["Mute", "Pink Noise", "User Audio"][value]);
+      });
     });
 
     // Handle audio file (shared by file input and drag & drop)
@@ -562,8 +742,8 @@ function loadRNBOScript(version) {
         console.log("Sample rate:", uploadedAudioBuffer.sampleRate);
         console.log("Channels:", uploadedAudioBuffer.numberOfChannels);
 
-        // Show "User Audio" in dropdown but keep RNBO muted until play is pressed
-        sourceSelector.value = "2";
+        // Show "User Audio" button active but keep RNBO muted until play is pressed
+        updateSourceButtons(2);
 
         // Update gain control to show active state (source 2 = User Audio)
         if (window.updateGainSliderForSource) {
