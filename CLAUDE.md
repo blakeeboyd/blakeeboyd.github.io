@@ -17,7 +17,7 @@ A personal website hosted on GitHub Pages at blakeeboyd.github.io.
 │   ├── components.css      # Cards, forms, buttons, toggles
 │   └── projects/
 │       ├── bandlab-parser.css      # BandLab parser styles
-│       ├── moylanEQ.css            # Pitch registers app styles
+│       ├── moylanEQ.css            # Frequency bands app styles
 │       ├── cancelledHarmonics.css  # Cancelled harmonics app styles
 │       ├── phaseCorrelation.css    # Phase correlation app styles
 │       └── eqMatching.css          # EQ matching ear training styles
@@ -32,7 +32,7 @@ A personal website hosted on GitHub Pages at blakeeboyd.github.io.
     │       ├── index.html      # Parser main page (uses .container.wide)
     │       └── bookmarklet.html # Bookmarklet setup instructions
     └── explorable-explanations/
-        ├── identifying-pitch-registers/
+        ├── identifying-frequency-bands/
         │   ├── index.html      # Main page (uses .container.wide)
         │   ├── js/
         │   │   ├── app.js
@@ -140,11 +140,11 @@ https://blakeeboyd.github.io/projects/creative-tools/bandlab-parser/index.html#b
 3. Opens parser with data in URL hash (`#bookmarklet=<encoded-data>`)
 4. `bandlab-parser.js` checks for `#bookmarklet=` hash and processes automatically
 
-### Identifying Pitch Registers (Explorable Explanations)
+### Identifying Frequency Bands (Explorable Explanations)
 
 Educational audio application for learning critical listening skills and frequency band recognition. Built with RNBO (Max/MSP web export) for the MUS399 course.
 
-**Location:** `projects/explorable-explanations/identifying-pitch-registers/`
+**Location:** `projects/explorable-explanations/identifying-frequency-bands/`
 
 **Key Features:**
 - Three audio source modes: Mute, Pink Noise (internal), User Audio (upload)

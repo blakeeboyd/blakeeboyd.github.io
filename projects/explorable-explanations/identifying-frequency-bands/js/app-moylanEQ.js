@@ -101,7 +101,7 @@ async function setup() {
 
     setupGain(device, userAudioGain);
     setupAudioSource(device, context, userAudioGain);
-    setupDemo(device);
+    setupDemo(device, context);
 
     // (Optional) Load presets, if any
     // loadPresets(device, patcher);
@@ -276,7 +276,7 @@ function loadRNBOScript(version) {
     });
   }
 
-  function setupDemo(device) {
+  function setupDemo(device, context) {
     const demoButton = document.getElementById('demo-button');
     const demoStatus = document.getElementById('demo-status');
     const demoStatusText = document.getElementById('demo-status-text');
@@ -284,6 +284,11 @@ function loadRNBOScript(version) {
     const filtersToggle = document.getElementById('filters-toggle');
 
     demoButton.addEventListener('click', () => {
+      // Resume audio context if suspended (required for iOS)
+      if (context.state === "suspended") {
+        context.resume();
+      }
+
       if (demoRunning) {
         stopDemo();
       } else {
@@ -662,6 +667,11 @@ function loadRNBOScript(version) {
     sourceButtons.forEach(btn => {
       btn.addEventListener("click", () => {
         const value = parseInt(btn.dataset.source, 10);
+
+        // Resume audio context if suspended (required for iOS)
+        if (context.state === "suspended") {
+          context.resume();
+        }
 
         // Stop any playing user audio when switching away from user audio
         if (value !== 2 && isPlaying) {
