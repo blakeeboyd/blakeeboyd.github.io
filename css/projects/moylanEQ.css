@@ -61,6 +61,13 @@
     color: white;
 }
 
+/* Dark mode: use darker blue for better contrast with white text */
+[data-theme="dark"] .source-button.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
 /* Gain row layout */
 .gain-row {
     display: flex;

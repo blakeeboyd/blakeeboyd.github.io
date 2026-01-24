@@ -197,6 +197,15 @@
     flex-shrink: 0;
 }
 
+/* Dark mode: use darker blue for better contrast with white text */
+[data-theme="dark"] .play-button {
+    background: #3b82f6;
+}
+
+[data-theme="dark"] .play-button:hover {
+    background: #2563eb;
+}
+
 /* Playback controls row (for user audio) */
 .playback-controls {
     display: flex;
@@ -749,6 +758,124 @@
     margin: var(--spacing-sm) 0;
     border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     font-size: 0.875rem;
+}
+
+/* Auto Demo Card */
+.demo-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.demo-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.demo-note {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    background: var(--color-control-bg);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+}
+
+/* Demo status display (inline) */
+.demo-status {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: 0.5rem 1rem;
+    background: var(--color-accent-light, rgba(37, 99, 235, 0.1));
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-md);
+}
+
+/* Flash animation applied via JS when status changes */
+.demo-status.flash {
+    animation: flash-highlight 0.4s ease-out;
+}
+
+@keyframes flash-highlight {
+    0% { background: rgba(37, 99, 235, 0.3); }
+    100% { background: var(--color-accent-light, rgba(37, 99, 235, 0.1)); }
+}
+
+.demo-status.hidden {
+    display: none;
+}
+
+.demo-status-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-accent);
+}
+
+/* Dark mode adjustments for demo status */
+[data-theme="dark"] .demo-status {
+    background: rgba(37, 99, 235, 0.15);
+}
+
+/* Action button styles */
+.action-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background: var(--color-control-bg);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.action-button:hover {
+    border-color: var(--color-text-muted);
+    background: var(--color-card-bg);
+}
+
+.action-button-primary {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+}
+
+.action-button-primary:hover {
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+}
+
+/* Dark mode for primary button */
+[data-theme="dark"] .action-button-primary {
+    background: #3b82f6;
+    border-color: #3b82f6;
+}
+
+[data-theme="dark"] .action-button-primary:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+/* Demo running state */
+.action-button.demo-running {
+    background: var(--color-error);
+    border-color: var(--color-error);
+    color: white;
+}
+
+.action-button.demo-running:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+}
+
+.action-button .demo-icon {
+    flex-shrink: 0;
 }
 
 /* Hidden utility */

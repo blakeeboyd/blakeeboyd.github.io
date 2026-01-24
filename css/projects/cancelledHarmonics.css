@@ -87,6 +87,15 @@
     display: block;
 }
 
+/* Dark mode: use darker blue for better contrast with white text */
+[data-theme="dark"] .play-button {
+    background: #3b82f6;
+}
+
+[data-theme="dark"] .play-button:hover {
+    background: #2563eb;
+}
+
 /* Gain control */
 .gain-control {
     display: flex;

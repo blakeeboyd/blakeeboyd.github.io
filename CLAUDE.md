@@ -24,6 +24,7 @@ A personal website hosted on GitHub Pages at blakeeboyd.github.io.
 ├── js/
 │   ├── theme.js            # Dark mode toggle
 │   ├── nav-component.js    # <site-nav> web component
+│   ├── contact-form.js     # Contact form submission handler
 │   └── bandlab-parser.js   # BandLab parser JavaScript
 ├── images/                 # Site images
 └── projects/
@@ -86,9 +87,14 @@ The site uses a minimalist design with modular CSS architecture.
 --color-success: #22c55e;
 --color-warning: #f59e0b;
 --color-error: #ef4444;
+--color-accent-hover: #1d4ed8;
+--color-success-hover: #059669;
 --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 --max-width: 640px;  /* Default, override with .container.wide for 1400px */
 ```
+
+**Dark Mode Button Contrast:**
+In dark mode, `--color-accent` becomes `#bfdbfe` (light blue) which has poor contrast with white text. Interactive buttons (play buttons, source buttons) use dark mode overrides with `#3b82f6` (medium blue) for better readability.
 
 ### Dark Mode
 
@@ -158,6 +164,8 @@ Educational audio application for learning critical listening skills and frequen
 - Master filter toggle for all bands
 - Gain control (-70 to +6 dB)
 - Exercise prompts for critical listening practice
+- Auto Demo mode that cycles through each band with solo/mute
+- Demo supports user audio (uses uploaded file) or pink noise (default)
 
 **Technical Stack:**
 - RNBO for Web Audio processing (signal processing, filters, pink noise generation)
@@ -177,6 +185,17 @@ Educational audio application for learning critical listening skills and frequen
 - `js/app-moylanEQ.js` - Main application logic, audio routing, UI event handlers
 - `js/guardrails.js` - Input validation and safety checks
 - `export/gb.moylanEQ.export.json` - RNBO patcher export
+
+**Global API for Demo Integration:**
+The user audio playback functions are exposed via `window.userAudioPlayback`:
+```javascript
+window.userAudioPlayback = {
+  play: () => {},     // Start playback
+  stop: () => {},     // Stop playback
+  isPlaying: () => Boolean,
+  hasAudio: () => Boolean
+};
+```
 
 ### Cancelled Harmonics (Explorable Explanations)
 
@@ -317,12 +336,22 @@ Each EQ Chain: HPF/LSF → Peak → Peak → LPF/HSF (4 BiquadFilterNodes)
 
 - https://www.seanhalpin.xyz/fun - Playful, interactive design elements
 
+## SEO & Meta Tags
+
+All pages include standard SEO meta tags:
+- `theme-color` meta tag (`#2563eb`)
+- `author` meta tag
+- Open Graph tags (og:title, og:description, og:type, og:url, og:site_name)
+- Twitter Card tags (twitter:card, twitter:title, twitter:description)
+- Canonical URL
+
 ## Development Notes
 
 - Static site, no build process required
 - Hosted via GitHub Pages
 - All processing happens client-side (no server)
 - Modular CSS architecture with separate files for base, layout, components, and project-specific styles
-- Navigation implemented as a Web Component for consistency across all pages
+- Navigation implemented as a Web Component with `aria-controls` for accessibility
 - Dark mode support with system preference detection
+- Contact form uses externalized JavaScript (`js/contact-form.js`) for better performance
 - Footer shows copyright with current year

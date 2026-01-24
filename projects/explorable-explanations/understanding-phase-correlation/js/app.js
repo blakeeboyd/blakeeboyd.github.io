@@ -84,8 +84,43 @@ const state = {
 
     // Polar scatter display - history of recent samples for visualization
     scatterHistory: [],
-    maxScatterPoints: 200  // Number of dots to display
+    maxScatterPoints: 200,  // Number of dots to display
+
+    // Auto Demo state
+    demoRunning: false,
+    demoTimeoutId: null
 };
+
+// ============================================
+// Auto Demo Sequence
+// ============================================
+
+const DEMO_SEQUENCE = [
+    { correlated: true, inverted: false, mono: false,
+      label: 'Correlated + Same Polarity (Stereo)',
+      message: 'Identical signals create a phantom center between speakers.' },
+    { correlated: true, inverted: false, mono: true,
+      label: 'Correlated + Same Polarity (Mono)',
+      message: 'Mono sum reinforces the signal - full volume.' },
+    { correlated: true, inverted: true, mono: false,
+      label: 'Correlated + Inverted (Stereo)',
+      message: 'Inverted polarity shifts sound to the speakers themselves.' },
+    { correlated: true, inverted: true, mono: true,
+      label: 'Correlated + Inverted (Mono)',
+      message: 'L+R cancels completely - signals are equal and opposite.' },
+    { correlated: false, inverted: false, mono: false,
+      label: 'Uncorrelated + Same Polarity (Stereo)',
+      message: 'Independent L/R channels create diffuse, spacious sound.' },
+    { correlated: false, inverted: false, mono: true,
+      label: 'Uncorrelated + Same Polarity (Mono)',
+      message: 'Uncorrelated signals average together - no cancellation.' },
+    { correlated: false, inverted: true, mono: false,
+      label: 'Uncorrelated + Inverted (Stereo)',
+      message: 'No audible difference - there\'s no correlation to invert.' },
+    { correlated: false, inverted: true, mono: true,
+      label: 'Uncorrelated + Inverted (Mono)',
+      message: 'Same as stereo - polarity has no effect on uncorrelated audio.' }
+];
 
 // ============================================
 // Audio Context and Setup
@@ -1099,6 +1134,121 @@ function setSource(source) {
 }
 
 // ============================================
+// Auto Demo
+// ============================================
+
+function startDemo() {
+    if (state.demoRunning) {
+        stopDemo();
+        return;
+    }
+
+    state.demoRunning = true;
+
+    // Save current state to restore after demo
+    const savedState = {
+        source: state.currentSource,
+        correlated: state.isCorrelated,
+        inverted: state.isInverted,
+        mono: state.isMono
+    };
+
+    // Switch to pink noise
+    setSource(1);
+    updateSourceButtons();
+
+    // Update button appearance
+    const demoBtn = document.getElementById('auto-demo-btn');
+    demoBtn.classList.add('demo-running');
+    demoBtn.innerHTML = `
+        <svg class="demo-icon" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="6" y="4" width="4" height="16"></rect>
+            <rect x="14" y="4" width="4" height="16"></rect>
+        </svg>
+        Stop Demo
+    `;
+
+    // Show status display
+    document.getElementById('demo-status').classList.remove('hidden');
+
+    let stepIndex = 0;
+    const stepDuration = 4000; // 4 seconds per step
+
+    function runStep() {
+        if (!state.demoRunning || stepIndex >= DEMO_SEQUENCE.length) {
+            stopDemo(savedState);
+            return;
+        }
+
+        const step = DEMO_SEQUENCE[stepIndex];
+
+        // Apply the scenario
+        setScenario(step.correlated, step.inverted);
+        setOutputMode(step.mono);
+
+        // Update status display with flash effect
+        const demoStatus = document.getElementById('demo-status');
+        document.getElementById('demo-status-text').textContent = `${step.label}: ${step.message}`;
+
+        // Trigger flash animation
+        demoStatus.classList.remove('flash');
+        // Force reflow to restart animation
+        void demoStatus.offsetWidth;
+        demoStatus.classList.add('flash');
+
+        stepIndex++;
+        state.demoTimeoutId = setTimeout(runStep, stepDuration);
+    }
+
+    // Start the demo
+    runStep();
+}
+
+function stopDemo(savedState = null) {
+    state.demoRunning = false;
+
+    // Clear any pending timeout
+    if (state.demoTimeoutId) {
+        clearTimeout(state.demoTimeoutId);
+        state.demoTimeoutId = null;
+    }
+
+    // Reset button
+    const demoBtn = document.getElementById('auto-demo-btn');
+    if (demoBtn) {
+        demoBtn.classList.remove('demo-running');
+        demoBtn.innerHTML = `
+            <svg class="demo-icon" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            Auto Demo
+        `;
+    }
+
+    // Hide status display
+    const demoStatus = document.getElementById('demo-status');
+    if (demoStatus) {
+        demoStatus.classList.add('hidden');
+    }
+
+    // Stop audio and restore state
+    if (savedState) {
+        stopAudio();
+        setSource(savedState.source);
+        updateSourceButtons();
+        setScenario(savedState.correlated, savedState.inverted);
+        setOutputMode(savedState.mono);
+    } else {
+        // Default: stop audio and set to mute
+        stopAudio();
+        setSource(0);
+        updateSourceButtons();
+        setScenario(true, false);
+        setOutputMode(false);
+    }
+}
+
+// ============================================
 // Event Listeners
 // ============================================
 
@@ -1246,6 +1396,12 @@ function setupEventListeners() {
         attributes: true,
         attributeFilter: ['data-theme']
     });
+
+    // Auto Demo button
+    const demoBtn = document.getElementById('auto-demo-btn');
+    if (demoBtn) {
+        demoBtn.addEventListener('click', startDemo);
+    }
 }
 
 // ============================================

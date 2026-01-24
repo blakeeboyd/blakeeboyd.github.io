@@ -283,6 +283,9 @@ function loadRNBOScript(version) {
     const selectorParam = getParameter(device, 'audioFile_selector');
     const filtersToggle = document.getElementById('filters-toggle');
 
+    // Track whether we're using user audio for the demo
+    let demoUsingUserAudio = false;
+
     demoButton.addEventListener('click', () => {
       // Resume audio context if suspended (required for iOS)
       if (context.state === "suspended") {
@@ -307,15 +310,34 @@ function loadRNBOScript(version) {
         Stop Demo
       `;
 
-      // Step 1: Switch to Pink Noise
-      if (selectorParam) {
-        selectorParam.value = 1;
-      }
-      document.querySelectorAll('.source-button').forEach(btn => {
-        btn.classList.toggle('active', parseInt(btn.dataset.source, 10) === 1);
-      });
-      if (window.updateGainSliderForSource) {
-        window.updateGainSliderForSource(1);
+      // Check if user audio is selected and has audio loaded
+      const userAudioSelected = currentSource === 2;
+      const hasUserAudio = window.userAudioPlayback && window.userAudioPlayback.hasAudio();
+
+      if (userAudioSelected && hasUserAudio) {
+        // Use user audio for demo
+        demoUsingUserAudio = true;
+
+        // Start user audio playback if not already playing
+        if (!window.userAudioPlayback.isPlaying()) {
+          window.userAudioPlayback.play();
+        }
+
+        // Keep UI showing user audio is selected (no change needed)
+      } else {
+        // Use pink noise for demo (mute or pink noise selected, or no user audio loaded)
+        demoUsingUserAudio = false;
+
+        // Switch to Pink Noise
+        if (selectorParam) {
+          selectorParam.value = 1;
+        }
+        document.querySelectorAll('.source-button').forEach(btn => {
+          btn.classList.toggle('active', parseInt(btn.dataset.source, 10) === 1);
+        });
+        if (window.updateGainSliderForSource) {
+          window.updateGainSliderForSource(1);
+        }
       }
 
       // Step 2: Enable filters if not already enabled
@@ -410,15 +432,24 @@ function loadRNBOScript(version) {
       });
       updateAllBands(device);
 
-      // Switch to Mute source
-      if (selectorParam) {
-        selectorParam.value = 0;
-      }
-      document.querySelectorAll('.source-button').forEach(btn => {
-        btn.classList.toggle('active', parseInt(btn.dataset.source, 10) === 0);
-      });
-      if (window.updateGainSliderForSource) {
-        window.updateGainSliderForSource(0);
+      if (demoUsingUserAudio) {
+        // Stop user audio playback and keep UI showing user audio selected
+        if (window.userAudioPlayback && window.userAudioPlayback.isPlaying()) {
+          window.userAudioPlayback.stop();
+        }
+        // Keep source set to User Audio (2) in UI, but RNBO will be muted by stopAudio()
+        demoUsingUserAudio = false;
+      } else {
+        // Switch to Mute source (original behavior for pink noise demo)
+        if (selectorParam) {
+          selectorParam.value = 0;
+        }
+        document.querySelectorAll('.source-button').forEach(btn => {
+          btn.classList.toggle('active', parseInt(btn.dataset.source, 10) === 0);
+        });
+        if (window.updateGainSliderForSource) {
+          window.updateGainSliderForSource(0);
+        }
       }
     }
   }
@@ -813,6 +844,14 @@ function loadRNBOScript(version) {
       const file = e.dataTransfer.files[0];
       handleAudioFile(file);
     });
+
+    // Expose audio playback functions globally for demo
+    window.userAudioPlayback = {
+      play: () => { if (!isPlaying) playAudio(pausedAt); },
+      stop: () => { if (isPlaying) stopAudio(); },
+      isPlaying: () => isPlaying,
+      hasAudio: () => uploadedAudioBuffer !== null
+    };
 
     // Play audio from a specific offset
     function playAudio(offset = 0) {
