@@ -11,9 +11,10 @@ class SiteNav extends HTMLElement {
     const segments = currentPath.split('/').filter(Boolean);
     const firstSegment = segments[0] || '';
     const isAbout = firstSegment === 'about.html' || firstSegment === 'about';
+    const isWorks = firstSegment === 'works.html' || firstSegment === 'works';
     const isContact = firstSegment === 'contact.html' || firstSegment === 'contact';
     const isProjects = firstSegment === 'projects.html' || firstSegment === 'projects' || currentPath.includes('/projects/');
-    const isHome = !isAbout && !isContact && !isProjects;
+    const isHome = !isAbout && !isWorks && !isContact && !isProjects;
 
     this.innerHTML = `
       <header>
@@ -26,6 +27,7 @@ class SiteNav extends HTMLElement {
           </button>
           <div class="nav-links" id="nav-links">
             <a href="${basePath}about.html" class="nav-link${isAbout ? ' active' : ''}">About</a>
+            <a href="${basePath}works.html" class="nav-link${isWorks ? ' active' : ''}">Works</a>
             <a href="${basePath}projects.html" class="nav-link${isProjects ? ' active' : ''}">Projects</a>
             <a href="${basePath}contact.html" class="nav-link${isContact ? ' active' : ''}">Contact</a>
             <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
