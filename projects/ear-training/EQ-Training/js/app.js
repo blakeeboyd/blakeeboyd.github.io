@@ -1225,6 +1225,13 @@ function setupEventListeners() {
 }
 
 async function handleAudioFile(file) {
+    // Validate file size (100MB limit)
+    const MAX_FILE_SIZE = 100 * 1024 * 1024;
+    if (file.size > MAX_FILE_SIZE) {
+        alert('File is too large. Maximum size is 100MB.');
+        return;
+    }
+
     try {
         const arrayBuffer = await file.arrayBuffer();
         state.userAudioBuffer = await state.audioContext.decodeAudioData(arrayBuffer);

@@ -21,6 +21,9 @@
     <meta name="twitter:image" content="https://blakeeboyd.github.io/images/Headshot_003.jpg">
     <meta name="theme-color" content="#2563eb">
     <meta name="author" content="Blake Boyd">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/components.css">
@@ -49,7 +52,10 @@
                     <a href="contact.html" class="about-cta">Get in touch</a>
                 </div>
                 <div class="about-photo-col">
-                    <img src="images/Headshot_003.jpg" alt="Blake Boyd" width="800" height="1200" loading="lazy">
+                    <picture>
+                        <source srcset="images/Headshot_003.webp" type="image/webp">
+                        <img src="images/Headshot_003.jpg" alt="Blake Boyd" width="800" height="1200" loading="lazy">
+                    </picture>
                 </div>
             </section>
         </main>

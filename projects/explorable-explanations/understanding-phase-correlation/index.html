@@ -15,10 +15,15 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://blakeeboyd.github.io/projects/explorable-explanations/understanding-phase-correlation/">
     <meta property="og:site_name" content="Blake Boyd">
+    <meta property="og:image" content="https://blakeeboyd.github.io/images/social-card.jpg">
     <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Understanding Phase Correlation - Blake Boyd">
     <meta name="twitter:description" content="Explore how correlated and uncorrelated audio behaves with stereo imaging and phase.">
+    <meta name="twitter:image" content="https://blakeeboyd.github.io/images/social-card.jpg">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+    <link rel="manifest" href="../../../manifest.json">
     <!-- CSS -->
     <link rel="stylesheet" href="../../../css/base.css">
     <link rel="stylesheet" href="../../../css/layout.css">
@@ -62,7 +67,7 @@
                             </h2>
                         </div>
                         <div class="correlation-meter-container">
-                            <canvas id="correlation-meter"></canvas>
+                            <canvas id="correlation-meter" aria-label="Stereo correlation meter showing phase relationship between left and right channels"></canvas>
                             <div class="correlation-readout">
                                 <span class="correlation-label">Correlation:</span>
                                 <span id="correlation-value" class="correlation-value">+1.00</span>

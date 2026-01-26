@@ -850,3 +850,118 @@
 .audio-embed.bandcamp.tall iframe {
     height: 470px;
 }
+
+/* Home page */
+.home-hero {
+    text-align: center;
+    padding: var(--spacing-xl) 0;
+    position: relative;
+}
+
+.home-hero::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100vw;
+    height: 400px;
+    max-width: 1200px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 400' preserveAspectRatio='none'%3E%3Cpath d='M0,200 Q15,195 30,200 T60,200 Q75,190 90,200 T120,200 Q150,180 180,200 T240,200 Q300,120 360,200 T480,200 Q540,40 600,200 T720,200 Q780,120 840,200 T960,200 Q1005,160 1050,200 T1110,200 Q1125,180 1140,200 T1170,200 Q1185,195 1200,200' fill='none' stroke='%232563eb' stroke-width='2' opacity='0.08'/%3E%3Cpath d='M0,200 Q20,198 40,200 T80,200 Q110,185 140,200 T200,200 Q280,150 360,200 T520,200 Q560,80 600,200 T680,200 Q760,150 840,200 T1000,200 Q1030,185 1060,200 T1120,200 Q1160,198 1200,200' fill='none' stroke='%232563eb' stroke-width='1.5' opacity='0.06'/%3E%3Cpath d='M0,200 C20,200 40,205 60,205 S100,195 120,195 S160,210 200,220 S260,195 300,170 S360,220 400,260 S480,150 540,100 S580,200 600,200 S620,200 660,300 S720,350 760,260 S820,170 860,220 S920,200 960,195 S1020,210 1060,210 S1100,195 1140,195 S1180,205 1200,200' fill='none' stroke='%232563eb' stroke-width='1' opacity='0.05'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: -1;
+    pointer-events: none;
+}
+
+[data-theme="dark"] .home-hero::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 400' preserveAspectRatio='none'%3E%3Cpath d='M0,200 Q15,195 30,200 T60,200 Q75,190 90,200 T120,200 Q150,180 180,200 T240,200 Q300,120 360,200 T480,200 Q540,40 600,200 T720,200 Q780,120 840,200 T960,200 Q1005,160 1050,200 T1110,200 Q1125,180 1140,200 T1170,200 Q1185,195 1200,200' fill='none' stroke='%233b82f6' stroke-width='2' opacity='0.12'/%3E%3Cpath d='M0,200 Q20,198 40,200 T80,200 Q110,185 140,200 T200,200 Q280,150 360,200 T520,200 Q560,80 600,200 T680,200 Q760,150 840,200 T1000,200 Q1030,185 1060,200 T1120,200 Q1160,198 1200,200' fill='none' stroke='%233b82f6' stroke-width='1.5' opacity='0.10'/%3E%3Cpath d='M0,200 C20,200 40,205 60,205 S100,195 120,195 S160,210 200,220 S260,195 300,170 S360,220 400,260 S480,150 540,100 S580,200 600,200 S620,200 660,300 S720,350 760,260 S820,170 860,220 S920,200 960,195 S1020,210 1060,210 S1100,195 1140,195 S1180,205 1200,200' fill='none' stroke='%233b82f6' stroke-width='1' opacity='0.08'/%3E%3C/svg%3E");
+}
+
+.home-hero h1 {
+    font-size: 3rem;
+    margin-bottom: var(--spacing-sm);
+}
+
+.home-hero .subtitle {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.home-links {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+}
+
+.home-link-card {
+    display: block;
+    padding: var(--spacing-md);
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.home-link-card:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.1);
+}
+
+.home-link-card h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-xs);
+}
+
+.home-link-card p {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .home-hero h1 {
+        font-size: 2.25rem;
+    }
+
+    .home-links {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===========================================
+   Focus States for Keyboard Navigation
+   =========================================== */
+
+/* Interactive cards and links */
+.home-link-card:focus-visible,
+.project-card:focus-visible,
+.toc a:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+/* Form elements */
+.form-submit:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+/* Buttons (used across project pages) */
+.action-button:focus-visible,
+.source-btn:focus-visible,
+.scenario-btn:focus-visible,
+.output-btn:focus-visible,
+.waveform-btn:focus-visible,
+.harmonic-btn:focus-visible,
+.preset-btn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}

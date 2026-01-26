@@ -1,0 +1,16 @@
+{
+  "name": "Blake Boyd",
+  "short_name": "Blake Boyd",
+  "description": "Composer, educator, and audio engineer exploring the intersection of music, technology, and humanity.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

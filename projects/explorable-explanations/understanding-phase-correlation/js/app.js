@@ -489,6 +489,13 @@ async function handleAudioFile(file) {
         return;
     }
 
+    // Validate file size (100MB limit)
+    const MAX_FILE_SIZE = 100 * 1024 * 1024;
+    if (file.size > MAX_FILE_SIZE) {
+        alert('File is too large. Maximum size is 100MB.');
+        return;
+    }
+
     // Stop any current playback
     if (state.isPlaying) {
         stopAudio();

@@ -8,7 +8,8 @@ A personal website hosted on GitHub Pages at blakeeboyd.github.io.
 /
 ├── index.html              # Landing page
 ├── about.html              # About page with headshot
-├── projects.html           # Projects listing page
+├── works.html              # Creative works catalog (compositions, interactive scores)
+├── projects.html           # Projects listing page (tools, explorable explanations)
 ├── contact.html            # Contact form (Google Forms backend)
 ├── CLAUDE.md               # Project context for AI agents
 ├── css/
@@ -335,6 +336,55 @@ Each EQ Chain: HPF/LSF → Peak → Peak → LPF/HSF (4 BiquadFilterNodes)
 ## Design Inspiration
 
 - https://www.seanhalpin.xyz/fun - Playful, interactive design elements
+
+## Writing Style
+
+The site's written content should be more formal than conversational while maintaining a clear authorial voice.
+
+### Tone and Voice
+- Formally conversational: intellectual rigor with accessibility
+- Willing to sit with ambiguity rather than forcing resolution
+- Personal conviction balanced with intellectual humility
+- Use "I think" and "I'm interested in" when appropriate
+- Acknowledge incompleteness and work-in-progress thinking
+
+### Sentence Structure
+- Use flowing, complex sentences that build ideas through subordination
+- Use short sentences strategically for emphasis and conclusions
+- Vary sentence length. Avoid uniformly medium-length sentences.
+- Do not start consecutive sentences or paragraphs the same way
+
+### Punctuation
+- Parentheses: for technical specifications and brief asides
+- Colons: to set up explanations or parallel structures
+- Quotation marks: around key concepts to signal linguistic precision
+- **Never use em dashes or semicolons.** Use commas, colons, or parentheses instead.
+
+### Vocabulary
+- Specific over abstract: ground ideas in concrete examples
+- Comfortable with philosophical and technical terms when needed
+- Use metaphorical language purposefully
+- Define or contextualize specialized terms for clarity
+
+### Structure
+- Historical or narrative framing when explaining concepts
+- Movement from broad context to specific application
+- Thematic organization around central ideas
+- Use headers for clarity in longer documents
+- Use prose when it works better than bullet points
+
+### Patterns to Use
+- Position ideas through contrast ("The first impulse... The second impulse...")
+- Layer multiple threads simultaneously
+- Use questions to invite thinking rather than declare answers
+- Ground abstract arguments in specific examples or moments
+
+### Patterns to Avoid
+- Filler phrases: "It's important to note that," "In today's world," "When it comes to," "At the end of the day"
+- Overused words: "delve," "crucial," "vital," "cutting-edge," "leverage," "robust," "seamless," "utilize," "facilitate," "comprehensive," "innovative"
+- Excessive hedging: "It seems that perhaps this might possibly be..."
+- Performative enthusiasm: "Great question!" or "Absolutely!"
+- Overwrought constructions or phrases that sound too clever
 
 ## SEO & Meta Tags
 
