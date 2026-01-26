@@ -822,7 +822,7 @@
 
 .audio-embed iframe {
     width: 100%;
-    height: 450px;
+    height: 540px;
     border: none;
 }
 
@@ -843,6 +843,7 @@
 
 .audio-embed.bandcamp iframe {
     width: 600px;
+    max-width: 100%;
     height: 340px;
     display: block;
 }
