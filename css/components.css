@@ -854,7 +854,7 @@
 /* Home page */
 .home-hero {
     text-align: center;
-    padding: var(--spacing-xl) 0;
+    padding: var(--spacing-lg) 0;
     position: relative;
 }
 
@@ -893,7 +893,7 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: var(--spacing-md);
-    margin-top: var(--spacing-lg);
+    margin-top: var(--spacing-md);
 }
 
 .home-link-card {
