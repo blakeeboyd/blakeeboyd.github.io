@@ -77,6 +77,7 @@
     const presenterSection = document.getElementById('presenter-section');
     const presenterCurrentImg = document.getElementById('presenter-current-img');
     const presenterNextImg = document.getElementById('presenter-next-img');
+    const presenterNextPlaceholder = document.getElementById('presenter-next-placeholder');
     const presenterTime = document.getElementById('presenter-time');
     const presenterCounter = document.getElementById('presenter-counter');
     const presenterEndBtn = document.getElementById('presenter-end-btn');
@@ -1133,6 +1134,15 @@
         }
     }
 
+    // Calculate elapsed time for slides before a given index
+    function getElapsedTimeBeforeSlide(index) {
+        let elapsed = 0;
+        for (let i = 0; i < index; i++) {
+            elapsed += getSlideDuration(i) * 1000;
+        }
+        return elapsed;
+    }
+
     // Navigate to previous slide (practice mode)
     function goToPreviousSlide() {
         if (currentIndex > 0) {
@@ -1140,6 +1150,8 @@
             isPaused = false;
             pausedTimeRemaining = 0;
             pausedElapsedOnSlide = 0;
+            // Adjust presentation start time so elapsed display reflects new position
+            presentationStartTime = Date.now() - getElapsedTimeBeforeSlide(currentIndex - 1);
             showSlide(currentIndex - 1);
         }
     }
@@ -1151,6 +1163,8 @@
             isPaused = false;
             pausedTimeRemaining = 0;
             pausedElapsedOnSlide = 0;
+            // Adjust presentation start time so elapsed display reflects new position
+            presentationStartTime = Date.now() - getElapsedTimeBeforeSlide(currentIndex + 1);
             showSlide(currentIndex + 1);
         }
     }
@@ -1445,9 +1459,12 @@
         if (index + 1 < images.length) {
             presenterNextImg.src = images[index + 1].dataUrl;
             presenterNextImg.alt = `Slide ${index + 2}`;
+            presenterNextImg.hidden = false;
+            presenterNextPlaceholder.hidden = true;
         } else {
             presenterNextImg.src = '';
-            presenterNextImg.alt = 'No next slide';
+            presenterNextImg.hidden = true;
+            presenterNextPlaceholder.hidden = false;
         }
 
         presenterCounter.textContent = `Slide ${index + 1} of ${images.length}`;

@@ -806,6 +806,7 @@
             padding: var(--spacing-md);
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
         /* Fullscreen presenter layout - two columns */
@@ -829,6 +830,7 @@
         .pk-presenter-current {
             position: relative;
             aspect-ratio: 16 / 9;
+            max-height: calc(100vh - 280px);
             background: var(--color-card-bg);
             border: 1px solid var(--color-border);
             border-radius: var(--radius-md);
@@ -927,7 +929,8 @@
 
         /* Slide filmstrip for navigation */
         .pk-presenter-filmstrip {
-            flex: 1;
+            flex: 0 0 auto;
+            height: 80px;
             min-height: 0;
             background: var(--color-card-bg);
             border: 1px solid var(--color-border);
@@ -964,7 +967,7 @@
 
         .pk-presenter-filmstrip-thumb {
             flex: 0 0 auto;
-            height: 100%;
+            height: calc(100% - 16px);
             aspect-ratio: 16 / 9;
             border-radius: var(--radius-sm);
             overflow: hidden;
@@ -1021,6 +1024,22 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            position: relative;
+        }
+
+        .pk-presenter-next-placeholder {
+            position: absolute;
+            inset: 0;
+            top: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+        }
+
+        .pk-presenter-next-placeholder span {
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
         }
 
         /* External display info message */
@@ -1312,16 +1331,19 @@
             padding: 4px 10px;
             font-size: 0.75rem;
             font-weight: 500;
-            background: var(--color-accent);
-            color: #fff;
-            border: none;
+            font-family: var(--font-family);
+            background: var(--color-control-bg);
+            color: var(--color-text-muted);
+            border: 1px solid var(--color-border);
             border-radius: var(--radius-sm);
             cursor: pointer;
-            transition: background-color var(--transition-fast);
+            transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
         }
 
         .pk-presenter-export-btn:hover {
-            background: var(--color-accent-hover);
+            background: var(--color-card-bg);
+            border-color: var(--color-text-muted);
+            color: var(--color-text);
         }
 
         .pk-presenter-notes-input {
@@ -1635,6 +1657,9 @@
                     <div class="pk-presenter-next">
                         <div class="pk-presenter-slide-label">Next Slide</div>
                         <img id="presenter-next-img" class="pk-presenter-slide-img" src="" alt="Next slide">
+                        <div id="presenter-next-placeholder" class="pk-presenter-next-placeholder" hidden>
+                            <span>No Next Slide</span>
+                        </div>
                     </div>
 
                     <div id="presenter-notes" class="pk-presenter-notes">
