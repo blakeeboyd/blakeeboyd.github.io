@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PechaKucha Presentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .presentation-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .slide-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        /* Waiting state */
+        .waiting-overlay {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            color: #fff;
+        }
+
+        .waiting-overlay h1 {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .waiting-overlay p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1rem;
+        }
+
+        .waiting-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Completion overlay */
+        .complete-overlay {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            color: #fff;
+        }
+
+        .complete-overlay.visible {
+            display: flex;
+        }
+
+        .complete-overlay h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+        }
+
+        .complete-overlay p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1rem;
+        }
+
+        /* Ready to start overlay */
+        .ready-overlay {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            color: #fff;
+        }
+
+        /* Title slide background */
+        .ready-background {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+
+        .ready-background img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Content container (fades in/out) */
+        .ready-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            padding: 32px 48px;
+            background: rgba(0, 0, 0, 0.75);
+            border-radius: 16px;
+            backdrop-filter: blur(8px);
+            transition: opacity 0.5s ease;
+        }
+
+        .ready-content.faded {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .ready-overlay h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+        }
+
+        .ready-overlay p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1rem;
+        }
+
+        .ready-actions {
+            display: flex;
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .ready-button {
+            padding: 12px 32px;
+            font-size: 1rem;
+            font-weight: 500;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .ready-button:hover {
+            background: #2563eb;
+        }
+
+        .ready-button.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .ready-button.secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .ready-hint {
+            margin-top: 16px;
+            font-size: 0.875rem;
+        }
+
+        /* Fullscreen button during presentation */
+        .presentation-fullscreen-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease, background-color 0.15s ease;
+            z-index: 100;
+        }
+
+        .presentation-fullscreen-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Show fullscreen button on mouse move */
+        .presentation-container:hover .presentation-fullscreen-btn,
+        .presentation-fullscreen-btn:focus {
+            opacity: 1;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Waiting for connection -->
+    <div id="waiting-overlay" class="waiting-overlay">
+        <div class="waiting-spinner"></div>
+        <h1>PechaKucha Presentation</h1>
+        <p>Waiting for connection from main window...</p>
+    </div>
+
+    <!-- Ready to start (after init, before presentation begins) -->
+    <div id="ready-overlay" class="ready-overlay" hidden>
+        <!-- Title slide as background -->
+        <div id="ready-background" class="ready-background"></div>
+        <!-- Info content (fades when window not focused) -->
+        <div id="ready-content" class="ready-content">
+            <h1>Ready to Present</h1>
+            <p id="ready-slide-count">20 slides</p>
+            <div class="ready-actions">
+                <button id="fullscreen-btn" class="ready-button">Go Fullscreen</button>
+            </div>
+            <p class="ready-hint">Position this window on your external display, then click Start in the main window</p>
+        </div>
+    </div>
+
+    <!-- Main presentation -->
+    <div id="presentation" class="presentation-container" hidden>
+        <div class="slide-container">
+            <img id="current-slide" src="" alt="Presentation slide">
+        </div>
+        <!-- Fullscreen button (shows on hover) -->
+        <button id="presentation-fullscreen-btn" class="presentation-fullscreen-btn" aria-label="Toggle fullscreen">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Completion overlay -->
+    <div id="complete-overlay" class="complete-overlay">
+        <h1>Presentation Complete</h1>
+        <p>You can close this window</p>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // State
+            let images = [];
+            let titleSlide = null;
+            let currentIndex = 0;
+            let slideDuration = 20;
+            let isPaused = false;
+            let pausedTimeRemaining = 0;
+            let parentWindow = null;
+            let isPresenting = false;
+            let fadeTimer = null;
+
+            // DOM Elements
+            const waitingOverlay = document.getElementById('waiting-overlay');
+            const readyOverlay = document.getElementById('ready-overlay');
+            const readyBackground = document.getElementById('ready-background');
+            const readyContent = document.getElementById('ready-content');
+            const readySlideCount = document.getElementById('ready-slide-count');
+            const fullscreenBtn = document.getElementById('fullscreen-btn');
+            const presentation = document.getElementById('presentation');
+            const currentSlide = document.getElementById('current-slide');
+            const completeOverlay = document.getElementById('complete-overlay');
+            const presentationFullscreenBtn = document.getElementById('presentation-fullscreen-btn');
+
+            // Listen for messages from parent window
+            window.addEventListener('message', (event) => {
+                // In production, verify origin matches expected parent
+                const data = event.data;
+                parentWindow = event.source;
+
+                switch (data.type) {
+                    case 'init':
+                        handleInit(data);
+                        break;
+                    case 'start':
+                        startPresentation();
+                        break;
+                    case 'showSlide':
+                        handleShowSlide(data);
+                        break;
+                    case 'pause':
+                        handlePause();
+                        break;
+                    case 'resume':
+                        handleResume();
+                        break;
+                    case 'end':
+                        handleEnd();
+                        break;
+                }
+            });
+
+            // Send ready message when loaded
+            function sendReady() {
+                if (window.opener) {
+                    window.opener.postMessage({ type: 'ready' }, '*');
+                }
+            }
+
+            // Handle initialization with images and settings
+            function handleInit(data) {
+                images = data.images || [];
+                titleSlide = data.titleSlide || null;
+                slideDuration = data.settings?.slideDuration || 20;
+                currentIndex = data.startIndex || 0;
+
+                // Show ready overlay instead of starting immediately
+                waitingOverlay.hidden = true;
+                readyOverlay.hidden = false;
+
+                // Show title slide as background if available
+                if (titleSlide) {
+                    const img = document.createElement('img');
+                    img.src = titleSlide.dataUrl;
+                    img.alt = 'Title slide';
+                    readyBackground.appendChild(img);
+                }
+
+                // Update slide count message
+                const totalSlides = images.length;
+                const startingFrom = currentIndex + 1;
+                let message = '';
+                if (currentIndex === 0) {
+                    message = `${totalSlides} slides`;
+                } else {
+                    message = `Starting from slide ${startingFrom} of ${totalSlides}`;
+                }
+                if (titleSlide) {
+                    message += ' (with title slide)';
+                }
+                readySlideCount.textContent = message;
+
+                // Start fade timer if window is not focused
+                if (!document.hasFocus()) {
+                    startFadeTimer();
+                }
+            }
+
+            // Fade timer functions
+            function startFadeTimer() {
+                clearFadeTimer();
+                fadeTimer = setTimeout(() => {
+                    readyContent.classList.add('faded');
+                }, 1000);
+            }
+
+            function clearFadeTimer() {
+                if (fadeTimer) {
+                    clearTimeout(fadeTimer);
+                    fadeTimer = null;
+                }
+            }
+
+            function showReadyContent() {
+                clearFadeTimer();
+                readyContent.classList.remove('faded');
+            }
+
+            // Start the actual presentation
+            function startPresentation() {
+                if (images.length === 0 || isPresenting) return;
+
+                isPresenting = true;
+                clearFadeTimer();
+                readyOverlay.hidden = true;
+                presentation.hidden = false;
+
+                // Notify parent that we're starting
+                if (window.opener) {
+                    window.opener.postMessage({ type: 'started' }, '*');
+                }
+
+                // Title slide was shown as background during ready state
+                // Now show the first presentation slide and start the timer
+                showSlide(currentIndex);
+            }
+
+            // Toggle fullscreen
+            function toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.warn('Fullscreen request failed:', err);
+                    });
+                } else {
+                    document.exitFullscreen();
+                }
+            }
+
+            // Handle slide change command
+            function handleShowSlide(data) {
+                currentIndex = data.index;
+                pausedTimeRemaining = data.timeRemaining || slideDuration * 1000;
+                showSlide(currentIndex);
+            }
+
+            // Show a specific slide
+            function showSlide(index) {
+                if (index >= images.length) {
+                    handleEnd();
+                    return;
+                }
+
+                currentIndex = index;
+                currentSlide.src = images[index].dataUrl;
+                currentSlide.alt = `Slide ${index + 1} of ${images.length}`;
+            }
+
+            // Handle pause command (no visible indicator to audience)
+            function handlePause() {
+                isPaused = true;
+
+                // Calculate remaining time
+                const elapsed = Date.now() - slideStartTime;
+                pausedTimeRemaining = Math.max((slideDuration * 1000) - elapsed, 0);
+
+                // Stop timers
+                clearTimers();
+            }
+
+            // Handle resume command
+            function handleResume() {
+                isPaused = false;
+            }
+
+            // Handle end command
+            function handleEnd() {
+                clearTimers();
+                presentation.hidden = true;
+                completeOverlay.classList.add('visible');
+            }
+
+            // Clear all timers (no-op since main window handles timing)
+            function clearTimers() {
+                // Timing is now controlled by the main presenter window
+            }
+
+            // Notify parent when window is closing
+            window.addEventListener('beforeunload', () => {
+                if (window.opener) {
+                    window.opener.postMessage({ type: 'closed' }, '*');
+                }
+            });
+
+            // Button event listeners
+            fullscreenBtn.addEventListener('click', toggleFullscreen);
+            presentationFullscreenBtn.addEventListener('click', toggleFullscreen);
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                // F or F11 for fullscreen
+                if (e.code === 'KeyF' || e.code === 'F11') {
+                    e.preventDefault();
+                    toggleFullscreen();
+                }
+            });
+
+            // Double-click anywhere to toggle fullscreen
+            document.addEventListener('dblclick', toggleFullscreen);
+
+            // Window focus/blur for fading ready content
+            window.addEventListener('blur', () => {
+                if (!readyOverlay.hidden) {
+                    startFadeTimer();
+                }
+            });
+
+            window.addEventListener('focus', () => {
+                if (!readyOverlay.hidden) {
+                    showReadyContent();
+                }
+            });
+
+            // Click on ready overlay shows content
+            readyOverlay.addEventListener('click', (e) => {
+                if (e.target === readyOverlay || e.target === readyBackground || e.target.parentElement === readyBackground) {
+                    showReadyContent();
+                }
+            });
+
+            // Send ready message
+            sendReady();
+        })();
+    </script>
+</body>
+</html>

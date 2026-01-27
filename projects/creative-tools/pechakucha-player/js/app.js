@@ -7,7 +7,8 @@
     'use strict';
 
     // State
-    let images = [];           // Array of { name, dataUrl }
+    let images = [];           // Array of { name, dataUrl, notes }
+    let titleSlide = null;     // { name, dataUrl, notes } | null (always a copy)
     let currentIndex = 0;
     let slideTimer = null;
     let progressTimer = null;
@@ -20,8 +21,13 @@
     let insertIndicator = null; // Floating indicator element
     let hoveredIndex = null;   // Currently hovered thumbnail index
     let selectedIndex = null;  // Currently selected thumbnail index
-    let undoStack = [];        // Stack of deleted images for undo
+    let undoStack = [];        // Stack of undoable actions: { type, ...data }
     let toastTimer = null;     // Timer for auto-hiding toast
+
+    // External presentation state
+    let presentationWindow = null;
+    let windowCheckTimer = null;
+    let isExternalPresentation = false;
 
     // Settings (will be read from inputs)
     let slideDuration = 20;    // Seconds per slide
@@ -63,6 +69,54 @@
     const toastShortcut = document.getElementById('toast-shortcut');
     const toastUndoBtn = document.getElementById('toast-undo-btn');
 
+    // External presentation elements
+    const externalDisplayCheckbox = document.getElementById('external-display-checkbox');
+    const presenterSection = document.getElementById('presenter-section');
+    const presenterCurrentImg = document.getElementById('presenter-current-img');
+    const presenterNextImg = document.getElementById('presenter-next-img');
+    const presenterTime = document.getElementById('presenter-time');
+    const presenterCounter = document.getElementById('presenter-counter');
+    const presenterEndBtn = document.getElementById('presenter-end-btn');
+    const presenterStartBtn = document.getElementById('presenter-start-btn');
+    const presenterPauseBtn = document.getElementById('presenter-pause-btn');
+    const presenterSkipBtn = document.getElementById('presenter-skip-btn');
+    const presenterGridBtn = document.getElementById('presenter-grid-btn');
+    const presenterGridOverlay = document.getElementById('presenter-grid-overlay');
+    const presenterGrid = document.getElementById('presenter-grid');
+    const presenterGridClose = document.getElementById('presenter-grid-close');
+
+    // Notes elements
+    const notesPanel = document.getElementById('notes-panel');
+    const notesSlideNumber = document.getElementById('notes-slide-number');
+    const notesInput = document.getElementById('notes-input');
+    const notesCloseBtn = document.getElementById('notes-close-btn');
+    const presenterNotesInput = document.getElementById('presenter-notes-input');
+    const presenterExportBtn = document.getElementById('presenter-export-btn');
+
+    // Title slide elements
+    const titleSlideSlot = document.getElementById('title-slide-slot');
+    const titleSlotHint = document.getElementById('title-slot-hint');
+    const titleSlideImg = document.getElementById('title-slide-img');
+    const titleSlideRemove = document.getElementById('title-slide-remove');
+    const setTitleBtn = document.getElementById('set-title-btn');
+
+    // Export/Import elements
+    const exportBtn = document.getElementById('export-btn');
+    const importInput = document.getElementById('import-input');
+
+    // Presenter progress bar
+    const presenterProgressFill = document.getElementById('presenter-progress-fill');
+
+    // Close window button
+    const presenterCloseWindowBtn = document.getElementById('presenter-close-window-btn');
+
+    // Elapsed/total time
+    const presenterElapsed = document.getElementById('presenter-elapsed');
+    const presenterTotal = document.getElementById('presenter-total');
+
+    // Filmstrip for slide navigation
+    const presenterFilmstrip = document.getElementById('presenter-filmstrip');
+
     // Natural sort comparison for filenames
     function naturalSort(a, b) {
         return a.name.localeCompare(b.name, undefined, {
@@ -80,7 +134,20 @@
 
     // Handle file selection (initial upload, replaces images array)
     function handleFiles(fileList) {
-        const imageFiles = Array.from(fileList).filter(file =>
+        const files = Array.from(fileList);
+
+        // Check for JSON configuration file
+        const jsonFile = files.find(f =>
+            f.type === 'application/json' || f.name.endsWith('.json')
+        );
+
+        if (jsonFile) {
+            importConfiguration(jsonFile);
+            return;
+        }
+
+        // Filter to valid image files only
+        const imageFiles = files.filter(file =>
             file.type.startsWith('image/')
         );
 
@@ -101,7 +168,8 @@
             reader.onload = function(e) {
                 images.push({
                     name: file.name,
-                    dataUrl: e.target.result
+                    dataUrl: e.target.result,
+                    notes: ''
                 });
                 loaded++;
 
@@ -133,7 +201,8 @@
             reader.onload = function(e) {
                 newImages.push({
                     name: file.name,
-                    dataUrl: e.target.result
+                    dataUrl: e.target.result,
+                    notes: ''
                 });
                 loaded++;
 
@@ -173,7 +242,7 @@
 
         images.forEach((img, index) => {
             const thumb = document.createElement('div');
-            thumb.className = 'pk-thumbnail';
+            thumb.className = 'pk-thumbnail' + (img.notes ? ' has-notes' : '');
             thumb.draggable = true;
             thumb.dataset.index = index;
             thumb.innerHTML = `
@@ -301,6 +370,7 @@
             }
             selectedIndex = null;
             updateStartFromButton();
+            hideNotesPanel();
         }
     }
 
@@ -388,7 +458,13 @@
         e.dataTransfer.dropEffect = 'move';
         const thumb = e.currentTarget;
 
+        // Accept drags from both thumbnails and title slide
         if (!thumb.classList.contains('pk-thumbnail') || thumb.classList.contains('dragging')) {
+            return;
+        }
+
+        // Skip if no thumbnail is being dragged
+        if (draggedIndex === null) {
             return;
         }
 
@@ -465,6 +541,11 @@
 
     // Grid-level drag handlers for catching drops in gaps between thumbnails
     function handleGridDragOver(e) {
+        // Only handle if dragging a thumbnail
+        if (draggedIndex === null) {
+            return;
+        }
+
         // Allow drops on the grid (for gaps between thumbnails)
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
@@ -529,7 +610,7 @@
     function deleteImage(index) {
         // Save to undo stack before removing
         const deletedImage = images[index];
-        undoStack.push({ image: deletedImage, index: index });
+        undoStack.push({ type: 'deleteSlide', image: deletedImage, index: index });
 
         images.splice(index, 1);
 
@@ -552,20 +633,36 @@
         }
     }
 
-    // Undo the last delete
+    // Undo the last action
     function undoDelete() {
         if (undoStack.length === 0) return;
 
         hideUndoToast();
 
-        const lastDeleted = undoStack.pop();
-        // Insert back at original position, or at end if that position no longer exists
-        const insertIndex = Math.min(lastDeleted.index, images.length);
-        images.splice(insertIndex, 0, lastDeleted.image);
+        const lastAction = undoStack.pop();
 
-        // Adjust selection if needed
-        if (selectedIndex !== null && insertIndex <= selectedIndex) {
-            selectedIndex++;
+        switch (lastAction.type) {
+            case 'deleteSlide': {
+                // Insert back at original position, or at end if that position no longer exists
+                const insertIndex = Math.min(lastAction.index, images.length);
+                images.splice(insertIndex, 0, lastAction.image);
+
+                // Adjust selection if needed
+                if (selectedIndex !== null && insertIndex <= selectedIndex) {
+                    selectedIndex++;
+                }
+                break;
+            }
+
+            default:
+                // Legacy format or unknown type - treat as deleteSlide
+                if (lastAction.image) {
+                    const insertIndex = Math.min(lastAction.index, images.length);
+                    images.splice(insertIndex, 0, lastAction.image);
+                    if (selectedIndex !== null && insertIndex <= selectedIndex) {
+                        selectedIndex++;
+                    }
+                }
         }
 
         showPreview();
@@ -628,6 +725,7 @@
         if (selectedIndex === index) {
             allThumbs[index].classList.remove('selected');
             selectedIndex = null;
+            hideNotesPanel();
         } else {
             // Remove previous selection
             if (selectedIndex !== null && allThumbs[selectedIndex]) {
@@ -636,6 +734,7 @@
             // Add new selection
             allThumbs[index].classList.add('selected');
             selectedIndex = index;
+            showNotesPanel(index);
         }
 
         updateStartFromButton();
@@ -651,9 +750,154 @@
         }
     }
 
+    // Show the notes panel for a specific slide
+    function showNotesPanel(index) {
+        notesSlideNumber.textContent = index + 1;
+        notesInput.value = images[index].notes || '';
+        notesPanel.hidden = false;
+        updateSetTitleButton();
+    }
+
+    // Hide the notes panel
+    function hideNotesPanel() {
+        notesPanel.hidden = true;
+    }
+
+    // Save notes for the currently selected slide
+    function saveCurrentNotes() {
+        if (selectedIndex !== null && images[selectedIndex]) {
+            images[selectedIndex].notes = notesInput.value;
+            // Update thumbnail indicator
+            const allThumbs = thumbnails.querySelectorAll('.pk-thumbnail');
+            if (allThumbs[selectedIndex]) {
+                if (notesInput.value) {
+                    allThumbs[selectedIndex].classList.add('has-notes');
+                } else {
+                    allThumbs[selectedIndex].classList.remove('has-notes');
+                }
+            }
+        }
+    }
+
+    // ========================================
+    // Title Slide Functions
+    // ========================================
+
+    // Set the title slide (copies from images array)
+    function setTitleSlide(index) {
+        const img = images[index];
+        titleSlide = {
+            name: img.name,
+            dataUrl: img.dataUrl,
+            notes: img.notes || ''
+        };
+        updateTitleSlideUI();
+        updateSetTitleButton();
+    }
+
+    // Remove the title slide
+    function removeTitleSlide() {
+        titleSlide = null;
+        updateTitleSlideUI();
+        updateSetTitleButton();
+    }
+
+    // Update the title slide UI to reflect current state
+    function updateTitleSlideUI() {
+        if (titleSlide) {
+            titleSlideSlot.classList.add('has-image');
+            titleSlideImg.src = titleSlide.dataUrl;
+            titleSlideImg.hidden = false;
+            titleSlotHint.hidden = true;
+            titleSlideRemove.hidden = false;
+        } else {
+            titleSlideSlot.classList.remove('has-image');
+            titleSlideImg.src = '';
+            titleSlideImg.hidden = true;
+            titleSlotHint.hidden = false;
+            titleSlideRemove.hidden = true;
+        }
+    }
+
+    // Update "Set as Title" button state
+    function updateSetTitleButton() {
+        if (selectedIndex !== null && images[selectedIndex]) {
+            const isCurrentTitle = titleSlide && images[selectedIndex].dataUrl === titleSlide.dataUrl;
+            setTitleBtn.textContent = isCurrentTitle ? 'Title Slide ✓' : 'Set as Title Slide';
+            setTitleBtn.disabled = isCurrentTitle;
+        }
+    }
+
+    // ========================================
+    // Configuration Export/Import Functions
+    // ========================================
+
+    // Export current configuration as JSON
+    function exportConfiguration() {
+        const config = {
+            version: 1,
+            exportedAt: new Date().toISOString(),
+            settings: {
+                slideDuration: slideDuration,
+                targetSlideCount: targetSlideCount
+            },
+            titleSlide: titleSlide,
+            slides: images
+        };
+
+        const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `pechakucha-${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // Import configuration from JSON file
+    function importConfiguration(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const config = JSON.parse(e.target.result);
+
+                if (config.version !== 1) {
+                    throw new Error('Unsupported configuration version');
+                }
+
+                // Apply settings
+                slideDuration = config.settings?.slideDuration || 20;
+                targetSlideCount = config.settings?.targetSlideCount || 20;
+                slideDurationInput.value = slideDuration;
+                targetSlidesInput.value = targetSlideCount;
+
+                // Apply title slide
+                titleSlide = config.titleSlide || null;
+
+                // Apply slides
+                images = config.slides || [];
+
+                // Show preview
+                updateTitleSlideUI();
+                showPreview();
+            } catch (err) {
+                alert('Invalid configuration file: ' + err.message);
+            }
+        };
+        reader.readAsText(file);
+    }
+
     // Start slideshow from a specific index
     function startSlideshowFrom(startIndex) {
         if (images.length === 0) return;
+
+        // Check if external display is selected
+        if (externalDisplayCheckbox.checked) {
+            startExternalPresentation(startIndex);
+            return;
+        }
 
         hideUndoToast();
 
@@ -689,6 +933,12 @@
     // Start the slideshow
     function startSlideshow() {
         if (images.length === 0) return;
+
+        // Check if external display is selected
+        if (externalDisplayCheckbox.checked) {
+            startExternalPresentation(0);
+            return;
+        }
 
         hideUndoToast();
 
@@ -825,7 +1075,9 @@
     function resetToUpload() {
         clearTimers();
         hideUndoToast();
+        endExternalPresentation();
         images = [];
+        titleSlide = null;
         currentIndex = 0;
         isPaused = false;
         selectedIndex = null;
@@ -835,10 +1087,492 @@
         previewSection.hidden = true;
         slideshowSection.hidden = true;
         completeSection.hidden = true;
+        presenterSection.hidden = true;
 
         thumbnails.innerHTML = '';
         fileInput.value = '';
         startFromBtn.hidden = true;
+        updateTitleSlideUI();
+    }
+
+    // ========================================
+    // External Presentation Functions
+    // ========================================
+
+    // Check if Window Management API is supported
+    function hasWindowManagementAPI() {
+        return 'getScreenDetails' in window;
+    }
+
+    // Check if display is extended (multiple monitors)
+    function isExtendedDisplay() {
+        return window.screen.isExtended === true;
+    }
+
+    // Open presentation window on second screen (Chrome/Edge with multi-screen)
+    async function openOnSecondScreen() {
+        if (!hasWindowManagementAPI()) return null;
+
+        try {
+            const screenDetails = await window.getScreenDetails();
+            const secondScreen = screenDetails.screens.find(s => !s.isPrimary);
+
+            if (secondScreen) {
+                return window.open(
+                    'presentation.html',
+                    'PechaKucha Presentation',
+                    `left=${secondScreen.left},top=${secondScreen.top},width=${secondScreen.width},height=${secondScreen.height}`
+                );
+            }
+        } catch (e) {
+            console.warn('Multi-screen API not available or permission denied:', e);
+        }
+        return null;
+    }
+
+    // Fallback: open window that user can manually move
+    function openPresentationWindowFallback() {
+        return window.open(
+            'presentation.html',
+            'PechaKucha Presentation',
+            'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no'
+        );
+    }
+
+    // Start external presentation (optionally from a specific slide index)
+    async function startExternalPresentation(startIndex = 0) {
+        if (images.length === 0) return;
+
+        hideUndoToast();
+
+        // Read settings
+        slideDuration = parseInt(slideDurationInput.value, 10) || 20;
+
+        // Try to open on second screen first, fall back to regular window
+        if (hasWindowManagementAPI() && isExtendedDisplay()) {
+            presentationWindow = await openOnSecondScreen();
+        }
+
+        // Fallback if multi-screen didn't work
+        if (!presentationWindow) {
+            presentationWindow = openPresentationWindowFallback();
+        }
+
+        if (!presentationWindow) {
+            alert('Unable to open presentation window. Please check your popup blocker settings.');
+            return;
+        }
+
+        // Set up state
+        isExternalPresentation = true;
+        currentIndex = startIndex;
+        isPaused = false;
+
+        // Show presenter view
+        previewSection.hidden = true;
+        presenterSection.hidden = false;
+
+        // Listen for messages from presentation window
+        window.addEventListener('message', handlePresentationMessage);
+
+        // Start checking if window is still open
+        startWindowCheck();
+
+        // Wait for presentation window to be ready, then initialize
+        // The ready message will trigger sendInitToPresentation
+    }
+
+    // Handle messages from presentation window
+    function handlePresentationMessage(event) {
+        const data = event.data;
+
+        switch (data.type) {
+            case 'ready':
+                sendInitToPresentation();
+                break;
+            case 'closed':
+                endExternalPresentation();
+                break;
+        }
+    }
+
+    // Render the presenter filmstrip
+    function renderPresenterFilmstrip() {
+        presenterFilmstrip.innerHTML = '';
+
+        images.forEach((img, index) => {
+            const thumb = document.createElement('div');
+            thumb.className = 'pk-presenter-filmstrip-thumb';
+            thumb.dataset.index = index;
+
+            const image = document.createElement('img');
+            image.src = img.dataUrl;
+            image.alt = `Slide ${index + 1}`;
+            thumb.appendChild(image);
+
+            const number = document.createElement('span');
+            number.className = 'pk-presenter-filmstrip-number';
+            number.textContent = index + 1;
+            thumb.appendChild(number);
+
+            // Click to jump to slide
+            thumb.addEventListener('click', () => {
+                jumpToExternalSlide(index);
+            });
+
+            presenterFilmstrip.appendChild(thumb);
+        });
+
+        updateFilmstripState();
+    }
+
+    // Update filmstrip visual state (current, past indicators)
+    function updateFilmstripState() {
+        const thumbs = presenterFilmstrip.querySelectorAll('.pk-presenter-filmstrip-thumb');
+        thumbs.forEach((thumb, index) => {
+            thumb.classList.toggle('current', index === currentIndex);
+            thumb.classList.toggle('past', index < currentIndex);
+        });
+
+        // Scroll current slide into view
+        const currentThumb = presenterFilmstrip.querySelector('.pk-presenter-filmstrip-thumb.current');
+        if (currentThumb) {
+            currentThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+    }
+
+    // Jump to a specific slide during presentation
+    function jumpToExternalSlide(index) {
+        if (index < 0 || index >= images.length) return;
+
+        // Clear current timer
+        clearTimers();
+
+        // Update current index and show slide
+        currentIndex = index;
+        showExternalSlide(index);
+        updateFilmstripState();
+
+        // Restart timer if presentation is running (not waiting to start)
+        if (presenterStartBtn.hidden) {
+            isPaused = false;
+            pausedTimeRemaining = 0;
+            presenterPauseBtn.textContent = 'Pause';
+            startExternalSlideTimer();
+        }
+    }
+
+    // Send initialization data to presentation window
+    function sendInitToPresentation() {
+        if (!presentationWindow) return;
+
+        presentationWindow.postMessage({
+            type: 'init',
+            images: images,
+            titleSlide: titleSlide,
+            settings: {
+                slideDuration: slideDuration
+            },
+            startIndex: currentIndex
+        }, '*');
+
+        // Render the filmstrip
+        renderPresenterFilmstrip();
+
+        // Show starting slide in presenter view (but don't start timer yet)
+        showExternalSlide(currentIndex);
+        // Update presenter view to show "waiting to start" state
+        presenterTime.textContent = formatTime(slideDuration);
+        // Show start button, hide pause/skip
+        presenterStartBtn.hidden = false;
+        presenterPauseBtn.hidden = true;
+        presenterSkipBtn.hidden = true;
+    }
+
+    // Begin the slideshow (called when user clicks Start in main window)
+    function beginExternalSlideshow() {
+        // Send start command to presentation window
+        if (presentationWindow && !presentationWindow.closed) {
+            presentationWindow.postMessage({ type: 'start' }, '*');
+        }
+
+        // Hide start button, show pause/skip/grid
+        presenterStartBtn.hidden = true;
+        presenterPauseBtn.hidden = false;
+        presenterSkipBtn.hidden = false;
+        presenterGridBtn.hidden = false;
+
+        // Set presentation start time and total time display
+        presentationStartTime = Date.now();
+        const totalSeconds = images.length * slideDuration;
+        presenterTotal.textContent = formatTime(totalSeconds);
+        presenterElapsed.textContent = '0:00';
+
+        startExternalSlideTimer();
+    }
+
+    // Show a slide in external presentation
+    function showExternalSlide(index) {
+        if (index >= images.length) {
+            endExternalPresentation();
+            showCompletion();
+            return;
+        }
+
+        currentIndex = index;
+
+        // Update presenter view
+        presenterCurrentImg.src = images[index].dataUrl;
+        presenterCurrentImg.alt = `Slide ${index + 1}`;
+
+        if (index + 1 < images.length) {
+            presenterNextImg.src = images[index + 1].dataUrl;
+            presenterNextImg.alt = `Slide ${index + 2}`;
+        } else {
+            presenterNextImg.src = '';
+            presenterNextImg.alt = 'No next slide';
+        }
+
+        presenterCounter.textContent = `Slide ${index + 1} of ${images.length}`;
+
+        // Update presenter notes
+        presenterNotesInput.value = images[index].notes || '';
+
+        // Update filmstrip state
+        updateFilmstripState();
+
+        // Send to presentation window
+        if (presentationWindow && !presentationWindow.closed) {
+            presentationWindow.postMessage({
+                type: 'showSlide',
+                index: index,
+                timeRemaining: slideDuration * 1000
+            }, '*');
+        }
+    }
+
+    // Start timer for external presentation
+    function startExternalSlideTimer() {
+        clearTimers();
+
+        slideStartTime = Date.now();
+        const duration = isPaused ? pausedTimeRemaining : slideDuration * 1000;
+
+        // Timer for advancing slides
+        slideTimer = setTimeout(() => {
+            advanceExternalSlide();
+        }, duration);
+
+        // Progress update for presenter view
+        updateExternalProgress();
+    }
+
+    // Update presenter view progress/timer
+    function updateExternalProgress() {
+        const elapsed = Date.now() - slideStartTime;
+        const duration = isPaused ? pausedTimeRemaining : slideDuration * 1000;
+        const remaining = Math.max(duration - elapsed, 0);
+        const remainingSeconds = Math.ceil(remaining / 1000);
+        const progress = Math.min(elapsed / duration, 1);
+
+        presenterTime.textContent = formatTime(remainingSeconds);
+
+        // Update progress bar
+        presenterProgressFill.style.width = `${progress * 100}%`;
+
+        // Update elapsed time display
+        if (presentationStartTime) {
+            const totalElapsed = Math.floor((Date.now() - presentationStartTime) / 1000);
+            presenterElapsed.textContent = formatTime(totalElapsed);
+        }
+
+        // Warning color when < 5 seconds
+        if (remainingSeconds <= 5) {
+            presenterTime.classList.add('warning');
+        } else {
+            presenterTime.classList.remove('warning');
+        }
+
+        if (!isPaused && remaining > 0) {
+            progressTimer = requestAnimationFrame(updateExternalProgress);
+        }
+    }
+
+    // Advance to next slide in external presentation
+    function advanceExternalSlide() {
+        clearTimers();
+        isPaused = false;
+        pausedTimeRemaining = 0;
+        presenterPauseBtn.textContent = 'Pause';
+
+        const nextIndex = currentIndex + 1;
+        if (nextIndex >= images.length) {
+            endExternalPresentation();
+            showCompletion();
+        } else {
+            showExternalSlide(nextIndex);
+            startExternalSlideTimer();
+        }
+    }
+
+    // Toggle pause in external presentation
+    function toggleExternalPause() {
+        if (isPaused) {
+            // Resume
+            isPaused = false;
+            presenterPauseBtn.textContent = 'Pause';
+
+            if (presentationWindow && !presentationWindow.closed) {
+                presentationWindow.postMessage({ type: 'resume' }, '*');
+            }
+
+            startExternalSlideTimer();
+        } else {
+            // Pause
+            clearTimers();
+            isPaused = true;
+            presenterPauseBtn.textContent = 'Resume';
+
+            // Calculate remaining time
+            const elapsed = Date.now() - slideStartTime;
+            pausedTimeRemaining = Math.max((slideDuration * 1000) - elapsed, 0);
+
+            if (presentationWindow && !presentationWindow.closed) {
+                presentationWindow.postMessage({ type: 'pause' }, '*');
+            }
+        }
+    }
+
+    // Skip to next slide in external presentation
+    function skipExternalSlide() {
+        advanceExternalSlide();
+    }
+
+    // Show completion screen
+    function showCompletion() {
+        presenterSection.hidden = true;
+        completeSection.hidden = false;
+
+        // Calculate stats
+        const totalSlides = images.length;
+        const totalSeconds = totalSlides * slideDuration;
+
+        finalSlideCount.textContent = totalSlides;
+        finalDuration.textContent = formatTime(totalSeconds);
+    }
+
+    // End external presentation
+    function endExternalPresentation() {
+        clearTimers();
+        stopWindowCheck();
+
+        window.removeEventListener('message', handlePresentationMessage);
+
+        if (presentationWindow && !presentationWindow.closed) {
+            presentationWindow.postMessage({ type: 'end' }, '*');
+            presentationWindow.close();
+        }
+
+        presentationWindow = null;
+        isExternalPresentation = false;
+        isPaused = false;
+        pausedTimeRemaining = 0;
+    }
+
+    // Return to preview from presenter view
+    function exitPresenterView() {
+        endExternalPresentation();
+        presenterSection.hidden = true;
+        previewSection.hidden = false;
+    }
+
+    // Check if presentation window is still open
+    function startWindowCheck() {
+        stopWindowCheck();
+        windowCheckTimer = setInterval(() => {
+            if (presentationWindow && presentationWindow.closed) {
+                presentationWindow = null;
+            }
+        }, 500);
+    }
+
+    // Toggle external presentation window (close or reopen)
+    function toggleExternalWindow() {
+        if (presentationWindow && !presentationWindow.closed) {
+            // Close the window
+            presentationWindow.close();
+            presentationWindow = null;
+        } else {
+            // Reopen the window
+            reopenPresentationWindow();
+        }
+    }
+
+    // Reopen the presentation window
+    function reopenPresentationWindow() {
+        presentationWindow = openPresentationWindowFallback();
+        if (presentationWindow) {
+            // Re-listen for messages
+            window.addEventListener('message', handlePresentationMessage);
+        }
+    }
+
+    function stopWindowCheck() {
+        if (windowCheckTimer) {
+            clearInterval(windowCheckTimer);
+            windowCheckTimer = null;
+        }
+    }
+
+    // ========================================
+    // Presenter Grid View (Jump to Slide)
+    // ========================================
+
+    // Show the grid overlay with all slides
+    function showPresenterGrid() {
+        // Render thumbnails
+        presenterGrid.innerHTML = images.map((img, i) => `
+            <div class="pk-presenter-grid-item ${i === currentIndex ? 'current' : ''}" data-index="${i}">
+                <img src="${img.dataUrl}" alt="Slide ${i + 1}">
+                <span class="pk-presenter-grid-number">${i + 1}</span>
+            </div>
+        `).join('');
+
+        presenterGridOverlay.hidden = false;
+
+        // Add click handlers to each thumbnail
+        presenterGrid.querySelectorAll('.pk-presenter-grid-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const index = parseInt(item.dataset.index, 10);
+                jumpToSlide(index);
+                hidePresenterGrid();
+            });
+        });
+    }
+
+    // Hide the grid overlay
+    function hidePresenterGrid() {
+        presenterGridOverlay.hidden = true;
+    }
+
+    // Toggle the grid overlay
+    function togglePresenterGrid() {
+        if (presenterGridOverlay.hidden) {
+            showPresenterGrid();
+        } else {
+            hidePresenterGrid();
+        }
+    }
+
+    // Jump to a specific slide during external presentation
+    function jumpToSlide(index) {
+        clearTimers();
+        isPaused = false;
+        pausedTimeRemaining = 0;
+        presenterPauseBtn.textContent = 'Pause';
+
+        showExternalSlide(index);
+        startExternalSlideTimer();
     }
 
     // Event Listeners
@@ -882,19 +1616,79 @@
     restartBtn.addEventListener('click', startSlideshow);
     newBtn.addEventListener('click', resetToUpload);
 
+    // Export/Import buttons
+    exportBtn.addEventListener('click', exportConfiguration);
+    importInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            importConfiguration(e.target.files[0]);
+            e.target.value = ''; // Reset for re-import
+        }
+    });
+
+    // External presentation buttons
+    presenterEndBtn.addEventListener('click', exitPresenterView);
+    presenterCloseWindowBtn.addEventListener('click', toggleExternalWindow);
+    presenterStartBtn.addEventListener('click', beginExternalSlideshow);
+    presenterPauseBtn.addEventListener('click', toggleExternalPause);
+    presenterSkipBtn.addEventListener('click', skipExternalSlide);
+    presenterGridBtn.addEventListener('click', showPresenterGrid);
+    presenterGridClose.addEventListener('click', hidePresenterGrid);
+
     // Lightbox events - close on any click
     lightbox.addEventListener('click', hideLightbox);
     lightboxClose.addEventListener('click', hideLightbox);
+
+    // Notes panel events
+    notesCloseBtn.addEventListener('click', () => {
+        saveCurrentNotes();
+        deselectThumbnail();
+    });
+    notesInput.addEventListener('input', saveCurrentNotes);
+    notesInput.addEventListener('blur', saveCurrentNotes);
+
+    // Presenter notes input (during presentation)
+    presenterNotesInput.addEventListener('input', () => {
+        if (isExternalPresentation && currentIndex < images.length) {
+            images[currentIndex].notes = presenterNotesInput.value;
+        }
+    });
+
+    // Presenter export button
+    presenterExportBtn.addEventListener('click', exportConfiguration);
+
+    // Title slide remove button
+    titleSlideRemove.addEventListener('click', (e) => {
+        e.stopPropagation();
+        removeTitleSlide();
+    });
+
+    // Set as Title button
+    setTitleBtn.addEventListener('click', () => {
+        if (selectedIndex !== null) {
+            setTitleSlide(selectedIndex);
+        }
+    });
 
     // Toast undo button
     toastUndoBtn.addEventListener('click', undoDelete);
 
     // Keyboard controls
     document.addEventListener('keydown', (e) => {
+        // Ignore keyboard shortcuts when typing in an input or textarea
+        const isTyping = document.activeElement?.tagName === 'INPUT' ||
+                         document.activeElement?.tagName === 'TEXTAREA';
+
         // Handle lightbox close
         if (!lightbox.hidden && e.code === 'Escape') {
             e.preventDefault();
             hideLightbox();
+            return;
+        }
+
+        // Handle presenter grid overlay
+        if (!presenterGridOverlay.hidden && e.code === 'Escape') {
+            e.preventDefault();
+            hidePresenterGrid();
             return;
         }
 
@@ -903,6 +1697,38 @@
             e.preventDefault();
             undoDelete();
             return;
+        }
+
+        // Handle presenter view keyboard shortcuts (during external presentation)
+        if (!presenterSection.hidden && isExternalPresentation) {
+            // Only when presentation is actually running (start button is hidden)
+            if (presenterStartBtn.hidden) {
+                switch (e.code) {
+                    case 'Space':
+                        // Don't trigger pause when typing in notes
+                        if (isTyping) return;
+                        e.preventDefault();
+                        toggleExternalPause();
+                        return;
+                    case 'ArrowRight':
+                    case 'ArrowDown':
+                        // Don't interfere with text navigation
+                        if (isTyping) return;
+                        e.preventDefault();
+                        skipExternalSlide();
+                        return;
+                    case 'KeyG':
+                        // Don't trigger grid when typing
+                        if (isTyping) return;
+                        e.preventDefault();
+                        togglePresenterGrid();
+                        return;
+                    case 'Escape':
+                        e.preventDefault();
+                        exitPresenterView();
+                        return;
+                }
+            }
         }
 
         // Only handle slideshow controls when slideshow is visible

@@ -138,11 +138,94 @@
             color: var(--color-warning);
         }
 
+        /* Title Slide Section */
+        .pk-thumbnails-container {
+            display: flex;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .pk-title-slide-section {
+            flex-shrink: 0;
+            width: 180px;
+        }
+
+        .pk-section-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        /* Title Slide Slot */
+        .pk-title-slide-slot {
+            aspect-ratio: 16 / 9;
+            width: 120px;
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius-sm);
+            background: var(--color-card-bg);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .pk-title-slide-slot.has-image {
+            border-style: solid;
+        }
+
+        .pk-slot-hint {
+            font-size: 0.625rem;
+            color: var(--color-text-muted);
+            text-align: center;
+            padding: 0.5rem;
+        }
+
+        .pk-title-slide-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .pk-title-slide-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            font-size: 14px;
+            line-height: 1;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .pk-title-slide-slot:hover .pk-title-slide-remove {
+            opacity: 1;
+        }
+
+        .pk-grid-divider {
+            width: 1px;
+            background: var(--color-border);
+            flex-shrink: 0;
+        }
+
+        .pk-slides-section {
+            flex: 1;
+            min-width: 0;
+        }
+
         .pk-thumbnail-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
             gap: var(--spacing-md);
-            margin-bottom: var(--spacing-lg);
             position: relative;
         }
 
@@ -346,9 +429,64 @@
 
         .pk-actions {
             display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .pk-start-options {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+        }
+
+        .pk-checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            user-select: none;
+        }
+
+        .pk-checkbox-label input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--color-accent);
+            cursor: pointer;
+        }
+
+        .pk-checkbox-label:hover {
+            color: var(--color-text);
+        }
+
+        .pk-action-buttons {
+            display: flex;
             gap: var(--spacing-md);
             justify-content: center;
             flex-wrap: wrap;
+        }
+
+        .pk-secondary-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            justify-content: center;
+            margin-top: var(--spacing-sm);
+        }
+
+        .pk-secondary-actions .action-button {
+            font-size: 0.75rem;
+            padding: var(--spacing-xs) var(--spacing-sm);
+        }
+
+        .pk-import-label {
+            display: inline-flex;
+            cursor: pointer;
+        }
+
+        .pk-import-label input {
+            display: none;
         }
 
         .pk-slideshow-section {
@@ -582,6 +720,485 @@
         .pk-about p:last-child {
             margin-bottom: 0;
         }
+
+        /* Presenter View (shown during external presentation) */
+        .pk-presenter-view {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: var(--color-bg);
+            padding: var(--spacing-md);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Fullscreen presenter layout - two columns */
+        .pk-presenter-layout {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: var(--spacing-lg);
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* Left column: Current slide + controls */
+        .pk-presenter-left {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            min-height: 0;
+        }
+
+        /* Current slide (16:9 aspect ratio) */
+        .pk-presenter-current {
+            position: relative;
+            aspect-ratio: 16 / 9;
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Progress bar on current slide */
+        .pk-presenter-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .pk-presenter-progress-fill {
+            height: 100%;
+            background: var(--color-accent);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .pk-presenter-slide-label {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            background: var(--color-control-bg);
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pk-presenter-slide-img {
+            width: 100%;
+            flex: 1;
+            object-fit: contain;
+            background: #000;
+            min-height: 0;
+        }
+
+        /* Controls area below current slide */
+        .pk-presenter-controls-area {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+            padding: var(--spacing-md);
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+        }
+
+        .pk-presenter-timer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .pk-presenter-time {
+            font-size: 3rem;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            color: var(--color-text);
+            line-height: 1;
+        }
+
+        .pk-presenter-time.warning {
+            color: var(--color-warning);
+        }
+
+        .pk-presenter-time-secondary {
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .pk-presenter-slide-counter {
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+        }
+
+        .pk-presenter-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-xs);
+            flex: 1;
+        }
+
+        .pk-presenter-controls .action-button {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            font-size: 0.875rem;
+        }
+
+        /* Slide filmstrip for navigation */
+        .pk-presenter-filmstrip {
+            flex: 1;
+            min-height: 0;
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pk-presenter-filmstrip-track {
+            flex: 1;
+            display: flex;
+            gap: var(--spacing-xs);
+            padding: var(--spacing-sm);
+            overflow-x: auto;
+            overflow-y: hidden;
+            align-items: center;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-border) transparent;
+        }
+
+        .pk-presenter-filmstrip-track::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .pk-presenter-filmstrip-track::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .pk-presenter-filmstrip-track::-webkit-scrollbar-thumb {
+            background: var(--color-border);
+            border-radius: 4px;
+        }
+
+        .pk-presenter-filmstrip-thumb {
+            flex: 0 0 auto;
+            height: 100%;
+            aspect-ratio: 16 / 9;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            border: 2px solid transparent;
+            transition: border-color var(--transition-fast), opacity var(--transition-fast);
+        }
+
+        .pk-presenter-filmstrip-thumb:hover {
+            border-color: var(--color-text-muted);
+        }
+
+        .pk-presenter-filmstrip-thumb.current {
+            border-color: var(--color-accent);
+        }
+
+        .pk-presenter-filmstrip-thumb.past {
+            opacity: 0.5;
+        }
+
+        .pk-presenter-filmstrip-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .pk-presenter-filmstrip-number {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            font-size: 0.625rem;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Right column: Next slide + Notes stacked */
+        .pk-presenter-right {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            min-height: 0;
+        }
+
+        .pk-presenter-next {
+            flex: 0 0 auto;
+            aspect-ratio: 16 / 9;
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* External display info message */
+        .pk-external-info {
+            text-align: center;
+            padding: var(--spacing-md);
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-lg);
+            color: var(--color-text-muted);
+        }
+
+        .pk-external-info strong {
+            color: var(--color-text);
+        }
+
+        /* Presenter Grid Overlay (Jump to Slide) */
+        .pk-presenter-grid-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            padding: var(--spacing-lg);
+        }
+
+        .pk-presenter-grid-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .pk-presenter-grid-title {
+            color: #fff;
+            font-size: 1.25rem;
+            font-weight: 500;
+        }
+
+        .pk-presenter-grid-close {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: var(--radius-sm);
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.15s;
+        }
+
+        .pk-presenter-grid-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .pk-presenter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: var(--spacing-md);
+            overflow-y: auto;
+            flex: 1;
+            padding-bottom: var(--spacing-lg);
+        }
+
+        .pk-presenter-grid-item {
+            position: relative;
+            aspect-ratio: 16 / 9;
+            cursor: pointer;
+            border: 3px solid transparent;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            transition: border-color 0.15s, transform 0.15s;
+        }
+
+        .pk-presenter-grid-item:hover {
+            border-color: var(--color-accent);
+            transform: scale(1.03);
+        }
+
+        .pk-presenter-grid-item.current {
+            border-color: var(--color-success);
+        }
+
+        .pk-presenter-grid-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .pk-presenter-grid-number {
+            position: absolute;
+            bottom: 4px;
+            left: 4px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .pk-presenter-grid-item.current .pk-presenter-grid-number {
+            background: var(--color-success);
+        }
+
+        /* Notes indicator on thumbnails */
+        .pk-thumbnail.has-notes::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            width: 8px;
+            height: 8px;
+            background: var(--color-accent);
+            border-radius: 50%;
+            box-shadow: 0 0 4px var(--color-accent);
+        }
+
+        /* Notes Panel (shown when slide is selected) */
+        .pk-notes-panel {
+            margin-top: var(--spacing-md);
+            padding: var(--spacing-md);
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+        }
+
+        .pk-notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .pk-notes-header-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--color-text);
+        }
+
+        .pk-notes-close {
+            width: 28px;
+            height: 28px;
+            background: transparent;
+            border: none;
+            border-radius: var(--radius-sm);
+            color: var(--color-text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: background-color 0.15s, color 0.15s;
+        }
+
+        .pk-notes-close:hover {
+            background: var(--color-control-bg);
+            color: var(--color-text);
+        }
+
+        .pk-notes-input {
+            width: 100%;
+            min-height: 100px;
+            padding: var(--spacing-sm);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            background: var(--color-bg);
+            color: var(--color-text);
+            font-family: inherit;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            resize: vertical;
+        }
+
+        .pk-notes-input:focus {
+            outline: none;
+            border-color: var(--color-accent);
+        }
+
+        .pk-notes-input::placeholder {
+            color: var(--color-text-muted);
+        }
+
+        /* Presenter Notes Display (in right column) */
+        .pk-presenter-notes {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .pk-presenter-notes-header {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            background: var(--color-control-bg);
+        }
+
+        .pk-presenter-notes-label {
+            font-size: 0.625rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pk-presenter-export-btn {
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: var(--color-accent);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background-color var(--transition-fast);
+        }
+
+        .pk-presenter-export-btn:hover {
+            background: var(--color-accent-hover);
+        }
+
+        .pk-presenter-notes-input {
+            flex: 1;
+            width: 100%;
+            min-height: 0;
+            padding: var(--spacing-sm);
+            border: none;
+            background: transparent;
+            color: var(--color-text);
+            font-family: inherit;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            resize: none;
+        }
+
+        .pk-presenter-notes-input:focus {
+            outline: none;
+        }
+
+        .pk-presenter-notes-input::placeholder {
+            color: var(--color-text-muted);
+        }
     </style>
 </head>
 <body>
@@ -603,7 +1220,7 @@
                 </svg>
                 <p class="pk-dropzone-text">Drag and drop images here</p>
                 <p class="pk-dropzone-text">or</p>
-                <input type="file" id="file-input" class="pk-file-input" multiple accept="image/*">
+                <input type="file" id="file-input" class="pk-file-input" multiple accept="image/*,.json,application/json">
                 <label for="file-input" class="action-button">Choose Files</label>
             </div>
 
@@ -629,13 +1246,128 @@
         <!-- Preview Section -->
         <section id="preview-section" class="pk-preview-section" hidden>
             <p id="slide-notice" class="pk-slide-notice"></p>
-            <div id="thumbnails" class="pk-thumbnail-grid"></div>
+
+            <div class="pk-thumbnails-container">
+                <!-- Title Slide Section -->
+                <div class="pk-title-slide-section">
+                    <div class="pk-section-label">Title Slide (optional)</div>
+                    <div id="title-slide-slot" class="pk-title-slide-slot">
+                        <span id="title-slot-hint" class="pk-slot-hint">Select a slide below</span>
+                        <img id="title-slide-img" class="pk-title-slide-img" src="" alt="Title slide" hidden>
+                        <button id="title-slide-remove" class="pk-title-slide-remove" aria-label="Remove title slide" hidden>&times;</button>
+                    </div>
+                </div>
+
+                <div class="pk-grid-divider"></div>
+
+                <!-- Slides Section -->
+                <div class="pk-slides-section">
+                    <div class="pk-section-label">Presentation Slides</div>
+                    <div id="thumbnails" class="pk-thumbnail-grid"></div>
+                </div>
+            </div>
+
+            <!-- Notes Panel (shown when slide is selected) -->
+            <div id="notes-panel" class="pk-notes-panel" hidden>
+                <div class="pk-notes-header">
+                    <span class="pk-notes-header-title">Notes for Slide <span id="notes-slide-number">1</span></span>
+                    <button id="notes-close-btn" class="pk-notes-close" aria-label="Close notes">&times;</button>
+                </div>
+                <textarea id="notes-input" class="pk-notes-input" placeholder="Add speaker notes for this slide..."></textarea>
+                <button id="set-title-btn" class="action-button secondary">Set as Title Slide</button>
+            </div>
+
             <div class="pk-actions">
-                <button id="start-btn" class="action-button">Start Presentation</button>
-                <button id="start-from-btn" class="action-button" hidden>Start from Slide 1</button>
-                <button id="reset-btn" class="action-button secondary">Choose Different Images</button>
+                <div class="pk-start-options">
+                    <label class="pk-checkbox-label">
+                        <input type="checkbox" id="external-display-checkbox">
+                        <span>Present on External Display</span>
+                    </label>
+                </div>
+                <div class="pk-action-buttons">
+                    <button id="start-btn" class="action-button">Start Presentation</button>
+                    <button id="start-from-btn" class="action-button" hidden>Start from Slide 1</button>
+                    <button id="reset-btn" class="action-button secondary">Choose Different Images</button>
+                </div>
+                <div class="pk-secondary-actions">
+                    <button id="export-btn" class="action-button secondary">Export</button>
+                    <label class="pk-import-label">
+                        <span class="action-button secondary">Import</span>
+                        <input type="file" id="import-input" accept=".json,application/json">
+                    </label>
+                </div>
             </div>
         </section>
+
+        <!-- Presenter View (shown during external presentation) -->
+        <section id="presenter-section" class="pk-presenter-view" hidden>
+            <div class="pk-presenter-layout">
+                <!-- Left: Current Slide + Controls -->
+                <div class="pk-presenter-left">
+                    <div class="pk-presenter-current">
+                        <div class="pk-presenter-slide-label">Current Slide</div>
+                        <img id="presenter-current-img" class="pk-presenter-slide-img" src="" alt="Current slide">
+                        <div class="pk-presenter-progress">
+                            <div id="presenter-progress-fill" class="pk-presenter-progress-fill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Controls below current slide -->
+                    <div class="pk-presenter-controls-area">
+                        <div class="pk-presenter-timer">
+                            <div id="presenter-time" class="pk-presenter-time">0:20</div>
+                            <div class="pk-presenter-time-secondary">
+                                <span id="presenter-elapsed">0:00</span> / <span id="presenter-total">6:40</span>
+                            </div>
+                            <div id="presenter-counter" class="pk-presenter-slide-counter">Slide 1 of 20</div>
+                        </div>
+
+                        <div class="pk-presenter-controls">
+                            <button id="presenter-start-btn" class="action-button">Start Presentation</button>
+                            <button id="presenter-pause-btn" class="action-button" hidden>Pause</button>
+                            <button id="presenter-skip-btn" class="action-button secondary" hidden>Skip</button>
+                            <button id="presenter-grid-btn" class="action-button secondary" hidden>Grid</button>
+                            <button id="presenter-close-window-btn" class="action-button secondary">Toggle Window</button>
+                            <button id="presenter-end-btn" class="action-button secondary">End</button>
+                        </div>
+                    </div>
+
+                    <!-- Slide filmstrip for quick navigation -->
+                    <div class="pk-presenter-filmstrip">
+                        <div id="presenter-filmstrip" class="pk-presenter-filmstrip-track">
+                            <!-- Thumbnails rendered dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Next Slide + Notes -->
+                <div class="pk-presenter-right">
+                    <div class="pk-presenter-next">
+                        <div class="pk-presenter-slide-label">Next Slide</div>
+                        <img id="presenter-next-img" class="pk-presenter-slide-img" src="" alt="Next slide">
+                    </div>
+
+                    <div id="presenter-notes" class="pk-presenter-notes">
+                        <div class="pk-presenter-notes-header">
+                            <span class="pk-presenter-notes-label">Notes</span>
+                            <button id="presenter-export-btn" class="pk-presenter-export-btn" title="Export presentation">Export</button>
+                        </div>
+                        <textarea id="presenter-notes-input" class="pk-presenter-notes-input" placeholder="Add notes for this slide..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Grid Overlay for Jump to Slide (during external presentation) -->
+        <div id="presenter-grid-overlay" class="pk-presenter-grid-overlay" hidden>
+            <div class="pk-presenter-grid-header">
+                <span class="pk-presenter-grid-title">Jump to Slide</span>
+                <button id="presenter-grid-close" class="pk-presenter-grid-close" aria-label="Close">&times;</button>
+            </div>
+            <div id="presenter-grid" class="pk-presenter-grid">
+                <!-- Thumbnails rendered here -->
+            </div>
+        </div>
 
         <!-- Slideshow Section (fullscreen overlay) -->
         <section id="slideshow-section" class="pk-slideshow-section" hidden>
