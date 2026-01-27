@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A web-based PechaKucha presentation player. Upload images and present them with automatic 20-second timing.">
+    <title>PechaKucha Player - Blake Boyd</title>
+    <!-- SEO -->
+    <link rel="canonical" href="https://blakeeboyd.github.io/projects/creative-tools/pechakucha-player/">
+    <!-- Open Graph -->
+    <meta property="og:title" content="PechaKucha Player - Blake Boyd">
+    <meta property="og:description" content="A web-based PechaKucha presentation player. Upload images and present them with automatic 20-second timing.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://blakeeboyd.github.io/projects/creative-tools/pechakucha-player/">
+    <meta property="og:site_name" content="Blake Boyd">
+    <meta property="og:image" content="https://blakeeboyd.github.io/images/social-card.jpg">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="PechaKucha Player - Blake Boyd">
+    <meta name="twitter:description" content="A web-based PechaKucha presentation player with automatic timing.">
+    <meta name="twitter:image" content="https://blakeeboyd.github.io/images/social-card.jpg">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake Boyd">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+    <link rel="manifest" href="../../../manifest.json">
+    <link rel="stylesheet" href="../../../css/base.css">
+    <link rel="stylesheet" href="../../../css/layout.css">
+    <link rel="stylesheet" href="../../../css/components.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="../../../js/theme.js"></script>
+    <script src="../../../js/nav-component.js" defer></script>
+    <script src="../../../js/wip-modal.js" defer></script>
+    <style>
+        /* PechaKucha-specific styles */
+        .pk-upload-section {
+            text-align: center;
+            padding: var(--spacing-xl) var(--spacing-md);
+        }
+
+        .pk-dropzone {
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            cursor: pointer;
+            transition: border-color 0.2s, background-color 0.2s;
+            background: var(--color-card-bg);
+        }
+
+        .pk-dropzone:hover,
+        .pk-dropzone.dragover {
+            border-color: var(--color-accent);
+            background: var(--color-bg);
+        }
+
+        .pk-dropzone-text {
+            color: var(--color-text-muted);
+            margin: var(--spacing-sm) 0;
+        }
+
+        .pk-dropzone-icon {
+            color: var(--color-text-muted);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .pk-file-input {
+            display: none;
+        }
+
+        .pk-settings {
+            display: flex;
+            gap: var(--spacing-lg);
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: var(--spacing-lg);
+            padding: var(--spacing-md);
+            background: var(--color-card-bg);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--color-border);
+        }
+
+        .pk-setting {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .pk-setting label {
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
+        }
+
+        .pk-setting input[type="number"] {
+            width: 70px;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            background: var(--color-bg);
+            color: var(--color-text);
+            font-size: 1rem;
+            text-align: center;
+            /* Hide spinner arrows */
+            -moz-appearance: textfield;
+            appearance: textfield;
+            cursor: ns-resize;
+        }
+
+        .pk-setting input[type="number"]::-webkit-inner-spin-button,
+        .pk-setting input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .pk-setting input[type="number"]:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            cursor: text;
+        }
+
+        .pk-setting input[type="number"].dragging {
+            border-color: var(--color-accent);
+            user-select: none;
+        }
+
+        .pk-preview-section {
+            padding: var(--spacing-md);
+        }
+
+        .pk-slide-notice {
+            text-align: center;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text-muted);
+        }
+
+        .pk-slide-notice.warning {
+            color: var(--color-warning);
+        }
+
+        .pk-thumbnail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            position: relative;
+        }
+
+        /* Floating insertion indicator */
+        .pk-insert-indicator {
+            position: absolute;
+            width: 4px;
+            background: var(--color-accent);
+            border-radius: 2px;
+            box-shadow: 0 0 8px var(--color-accent);
+            pointer-events: none;
+            z-index: 100;
+            display: none;
+        }
+
+        .pk-insert-indicator.visible {
+            display: block;
+        }
+
+        .pk-thumbnail {
+            position: relative;
+            aspect-ratio: 16 / 9;
+            border-radius: var(--radius-sm);
+            border: 2px solid var(--color-border);
+        }
+
+        .pk-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: calc(var(--radius-sm) - 2px);
+        }
+
+        .pk-thumbnail-number {
+            position: absolute;
+            bottom: 4px;
+            left: 4px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.125rem 0.5rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 500;
+            line-height: 1.4;
+            min-width: 1.5rem;
+            text-align: center;
+        }
+
+        /* Drag and drop reordering */
+        .pk-thumbnail[draggable="true"] {
+            cursor: grab;
+            position: relative;
+        }
+
+        .pk-thumbnail[draggable="true"]:active {
+            cursor: grabbing;
+        }
+
+        .pk-thumbnail.dragging {
+            opacity: 0.4;
+            transform: scale(0.95);
+        }
+
+        .pk-thumbnail.selected {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 2px var(--color-accent);
+        }
+
+        /* Thumbnail action buttons (hover to reveal) */
+        .pk-thumbnail-action {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            border-radius: var(--radius-sm);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            opacity: 0;
+            transition: opacity 0.15s, background-color 0.15s;
+        }
+
+        .pk-thumbnail:hover .pk-thumbnail-action {
+            opacity: 1;
+        }
+
+        .pk-thumbnail-action svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* Preview button (top-left) */
+        .pk-thumbnail-preview {
+            top: 4px;
+            left: 4px;
+        }
+
+        .pk-thumbnail-preview:hover {
+            background: var(--color-accent);
+        }
+
+        /* Delete button (top-right) */
+        .pk-thumbnail-delete {
+            top: 4px;
+            right: 4px;
+        }
+
+        .pk-thumbnail-delete:hover {
+            background: var(--color-error);
+        }
+
+        /* Lightbox overlay */
+        .pk-lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: zoom-out;
+        }
+
+        .pk-lightbox img {
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: var(--radius-md);
+        }
+
+        .pk-lightbox-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: var(--radius-sm);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.15s;
+        }
+
+        .pk-lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .pk-lightbox-close svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .pk-lightbox-hint {
+            position: absolute;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.875rem;
+        }
+
+        /* Add more card */
+        .pk-add-more {
+            aspect-ratio: 16 / 9;
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius-sm);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            cursor: pointer;
+            transition: border-color 0.2s, background-color 0.2s;
+            background: var(--color-card-bg);
+            color: var(--color-text-muted);
+        }
+
+        .pk-add-more:hover,
+        .pk-add-more.dragover {
+            border-color: var(--color-accent);
+            background: var(--color-bg);
+        }
+
+        .pk-add-more-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .pk-add-more-text {
+            font-size: 0.75rem;
+            margin: 0;
+        }
+
+        .pk-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .pk-slideshow-section {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pk-slide-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .pk-slide-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .pk-controls {
+            background: rgba(0, 0, 0, 0.8);
+            padding: var(--spacing-sm) var(--spacing-md);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--spacing-md);
+        }
+
+        .pk-progress-container {
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .pk-progress-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .pk-progress-fill {
+            height: 100%;
+            background: var(--color-accent);
+            transition: width 0.1s linear;
+        }
+
+        .pk-slide-info {
+            color: white;
+            font-size: 0.875rem;
+            display: flex;
+            gap: var(--spacing-md);
+        }
+
+        .pk-time-remaining {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .pk-pause-indicator {
+            color: var(--color-warning);
+            font-weight: 500;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pk-controls-hint {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.75rem;
+        }
+
+        .pk-complete-section {
+            text-align: center;
+            padding: var(--spacing-xl);
+        }
+
+        .pk-complete-stats {
+            display: flex;
+            gap: var(--spacing-lg);
+            justify-content: center;
+            margin: var(--spacing-lg) 0;
+        }
+
+        .pk-stat {
+            text-align: center;
+        }
+
+        .pk-stat-value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--color-accent);
+        }
+
+        .pk-stat-label {
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        /* Action buttons - matches Cancelled Harmonics style */
+        .action-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            font-family: var(--font-family);
+            background: var(--color-accent);
+            border: 1px solid var(--color-accent);
+            border-radius: var(--radius-sm);
+            color: white;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-decoration: none;
+        }
+
+        .action-button:hover {
+            background: var(--color-accent-hover);
+            border-color: var(--color-accent-hover);
+            opacity: 1;
+        }
+
+        .action-button.secondary {
+            background: var(--color-control-bg);
+            border: 1px solid var(--color-border);
+            color: var(--color-text-muted);
+        }
+
+        .action-button.secondary:hover {
+            background: var(--color-card-bg);
+            border-color: var(--color-text-muted);
+            color: var(--color-text);
+        }
+
+        /* Dark mode button contrast fix */
+        [data-theme="dark"] .action-button:not(.secondary) {
+            background: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        [data-theme="dark"] .action-button:not(.secondary):hover {
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        /* Undo toast notification */
+        .pk-toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-sm) var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1500;
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .pk-toast.visible {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .pk-toast-message {
+            color: var(--color-text);
+            font-size: 0.875rem;
+        }
+
+        .pk-toast-shortcut {
+            color: var(--color-text-muted);
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            background: var(--color-bg);
+            border-radius: var(--radius-sm);
+            font-family: monospace;
+        }
+
+        .pk-toast-undo {
+            background: none;
+            border: none;
+            color: var(--color-accent);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            transition: background-color 0.15s;
+        }
+
+        .pk-toast-undo:hover {
+            background: var(--color-bg);
+        }
+
+        /* About section styling */
+        .pk-about {
+            margin-top: var(--spacing-xl);
+            padding: var(--spacing-lg);
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+        }
+
+        .pk-about h2 {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .pk-about p {
+            color: var(--color-text-muted);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .pk-about p:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container wide">
+        <site-nav base="../../../"></site-nav>
+
+        <div class="page-header">
+            <h1 class="page-title">PechaKucha Player</h1>
+            <p class="page-subtitle">Upload images to create an auto-advancing presentation in the PechaKucha style.</p>
+        </div>
+
+        <!-- Upload Section -->
+        <section id="upload-section" class="pk-upload-section">
+            <div id="dropzone" class="pk-dropzone">
+                <svg class="pk-dropzone-icon" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <p class="pk-dropzone-text">Drag and drop images here</p>
+                <p class="pk-dropzone-text">or</p>
+                <input type="file" id="file-input" class="pk-file-input" multiple accept="image/*">
+                <label for="file-input" class="action-button">Choose Files</label>
+            </div>
+
+            <div class="pk-settings">
+                <div class="pk-setting">
+                    <label for="slide-duration">Seconds per slide</label>
+                    <input type="number" id="slide-duration" value="20" min="1" max="120">
+                </div>
+                <div class="pk-setting">
+                    <label for="target-slides">Target slide count</label>
+                    <input type="number" id="target-slides" value="20" min="1" max="100">
+                </div>
+            </div>
+
+            <div class="pk-about">
+                <h2>What is PechaKucha?</h2>
+                <p>PechaKucha (ぺちゃくちゃ, Japanese for "chit-chat") is a presentation format created by Klein-Dytham Architecture in Tokyo in 2003. The classic format uses 20 slides shown for 20 seconds each, totaling 6 minutes and 40 seconds.</p>
+                <p>The key constraint: slides auto-advance whether the speaker is ready or not. This forces concise storytelling and keeps presentations energetic. The format has spread to over 1,000 cities worldwide.</p>
+                <p>Name your image files in numerical or alphabetical order (1.jpg, 2.jpg... or a.png, b.png...) and they'll be sorted automatically.</p>
+            </div>
+        </section>
+
+        <!-- Preview Section -->
+        <section id="preview-section" class="pk-preview-section" hidden>
+            <p id="slide-notice" class="pk-slide-notice"></p>
+            <div id="thumbnails" class="pk-thumbnail-grid"></div>
+            <div class="pk-actions">
+                <button id="start-btn" class="action-button">Start Presentation</button>
+                <button id="start-from-btn" class="action-button" hidden>Start from Slide 1</button>
+                <button id="reset-btn" class="action-button secondary">Choose Different Images</button>
+            </div>
+        </section>
+
+        <!-- Slideshow Section (fullscreen overlay) -->
+        <section id="slideshow-section" class="pk-slideshow-section" hidden>
+            <div class="pk-slide-container">
+                <img id="current-slide" src="" alt="Presentation slide">
+            </div>
+            <div class="pk-controls">
+                <div class="pk-slide-info">
+                    <span id="slide-counter">1 / 20</span>
+                    <span id="pause-indicator" class="pk-pause-indicator" hidden>PAUSED</span>
+                </div>
+                <div class="pk-progress-container">
+                    <div class="pk-progress-bar">
+                        <div id="progress-fill" class="pk-progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="pk-slide-info">
+                    <span id="time-remaining" class="pk-time-remaining">6:40</span>
+                </div>
+                <span class="pk-controls-hint">Space: pause · Esc: exit</span>
+            </div>
+        </section>
+
+        <!-- Complete Section -->
+        <section id="complete-section" class="pk-complete-section" hidden>
+            <h2>Presentation Complete</h2>
+            <div class="pk-complete-stats">
+                <div class="pk-stat">
+                    <div id="final-slide-count" class="pk-stat-value">20</div>
+                    <div class="pk-stat-label">slides</div>
+                </div>
+                <div class="pk-stat">
+                    <div id="final-duration" class="pk-stat-value">6:40</div>
+                    <div class="pk-stat-label">total time</div>
+                </div>
+            </div>
+            <div class="pk-actions">
+                <button id="restart-btn" class="action-button">Present Again</button>
+                <button id="new-btn" class="action-button secondary">New Presentation</button>
+            </div>
+        </section>
+
+        <footer>
+            <p>&copy; 2025 Blake Boyd</p>
+        </footer>
+    </div>
+
+    <!-- Undo toast notification -->
+    <div id="undo-toast" class="pk-toast" aria-live="polite">
+        <span class="pk-toast-message">Slide deleted</span>
+        <span id="toast-shortcut" class="pk-toast-shortcut"></span>
+        <button id="toast-undo-btn" class="pk-toast-undo">Undo</button>
+    </div>
+
+    <!-- Lightbox for image preview -->
+    <div id="lightbox" class="pk-lightbox" hidden>
+        <img id="lightbox-image" src="" alt="Image preview">
+        <button id="lightbox-close" class="pk-lightbox-close" aria-label="Close preview">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+        <span class="pk-lightbox-hint">Click anywhere or press Esc to close</span>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

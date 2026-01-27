@@ -1,0 +1,162 @@
+/**
+ * Work in Progress Modal
+ *
+ * Include this script on any page to show a "work in progress" notice.
+ * The modal appears on page load and must be dismissed before using the page.
+ *
+ * Usage: Add to any page's <head>:
+ *   <script src="../../../js/wip-modal.js" defer></script>
+ *
+ * Or for root-level pages:
+ *   <script src="js/wip-modal.js" defer></script>
+ */
+
+(function() {
+    'use strict';
+
+    // Determine the base path for links based on script location
+    function getBasePath() {
+        const scripts = document.getElementsByTagName('script');
+        for (let i = 0; i < scripts.length; i++) {
+            const src = scripts[i].src;
+            if (src.includes('wip-modal.js')) {
+                // Count how many directories deep we are from root
+                const match = src.match(/^(.*?)js\/wip-modal\.js/);
+                if (match) {
+                    const path = match[1];
+                    // Extract relative path from current page to root
+                    const url = new URL(path);
+                    const pathname = url.pathname;
+                    // Return the base path
+                    return pathname.endsWith('/') ? pathname : pathname + '/';
+                }
+            }
+        }
+        return '/';
+    }
+
+    // Get the contact page URL relative to current page
+    function getContactUrl() {
+        const siteNav = document.querySelector('site-nav');
+        if (siteNav && siteNav.hasAttribute('base')) {
+            return siteNav.getAttribute('base') + 'contact.html';
+        }
+        return 'contact.html';
+    }
+
+    // Inject CSS styles
+    function injectStyles() {
+        const style = document.createElement('style');
+        style.textContent = `
+            .wip-modal-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.6);
+                z-index: 3000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: var(--spacing-md, 16px);
+            }
+
+            .wip-modal {
+                background: var(--color-card-bg, #ffffff);
+                border: 1px solid var(--color-border, #e5e5e5);
+                border-radius: var(--radius-lg, 12px);
+                max-width: 480px;
+                width: 100%;
+                padding: var(--spacing-lg, 24px);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            }
+
+            .wip-modal-header {
+                display: flex;
+                align-items: center;
+                gap: var(--spacing-sm, 8px);
+                margin-bottom: var(--spacing-md, 16px);
+            }
+
+            .wip-modal-icon {
+                width: 24px;
+                height: 24px;
+                color: var(--color-warning, #f59e0b);
+            }
+
+            .wip-modal-title {
+                font-size: 1.25rem;
+                font-weight: 600;
+                margin: 0;
+            }
+
+            .wip-modal-body {
+                color: var(--color-text-muted, #666666);
+                margin-bottom: var(--spacing-lg, 24px);
+            }
+
+            .wip-modal-body p {
+                margin-bottom: var(--spacing-sm, 8px);
+            }
+
+            .wip-modal-body p:last-child {
+                margin-bottom: 0;
+            }
+
+            .wip-modal-body a {
+                color: var(--color-accent, #2563eb);
+                text-decoration: none;
+            }
+
+            .wip-modal-body a:hover {
+                text-decoration: underline;
+            }
+
+            .wip-modal-footer {
+                display: flex;
+                justify-content: flex-end;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // Create and show the modal
+    function showModal() {
+        const contactUrl = getContactUrl();
+
+        const overlay = document.createElement('div');
+        overlay.className = 'wip-modal-overlay';
+        overlay.innerHTML = `
+            <div class="wip-modal" role="dialog" aria-labelledby="wip-title" aria-describedby="wip-description">
+                <div class="wip-modal-header">
+                    <svg class="wip-modal-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    <h2 id="wip-title" class="wip-modal-title">Work in Progress</h2>
+                </div>
+                <div id="wip-description" class="wip-modal-body">
+                    <p>This tool is still under active development. Some features may be incomplete or behave unexpectedly.</p>
+                    <p>If you encounter any bugs or have feature requests, please <a href="${contactUrl}">get in touch</a>.</p>
+                </div>
+                <div class="wip-modal-footer">
+                    <button class="action-button wip-confirm-btn">Got it</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        // Add click handler to close button
+        const confirmBtn = overlay.querySelector('.wip-confirm-btn');
+        confirmBtn.addEventListener('click', function() {
+            overlay.remove();
+        });
+
+        // Focus the button for accessibility
+        confirmBtn.focus();
+    }
+
+    // Initialize
+    injectStyles();
+    showModal();
+})();

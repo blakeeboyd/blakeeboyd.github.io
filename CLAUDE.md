@@ -26,7 +26,8 @@ A personal website hosted on GitHub Pages at blakeeboyd.github.io.
 │   ├── theme.js            # Dark mode toggle
 │   ├── nav-component.js    # <site-nav> web component
 │   ├── contact-form.js     # Contact form submission handler
-│   └── bandlab-parser.js   # BandLab parser JavaScript
+│   ├── bandlab-parser.js   # BandLab parser JavaScript
+│   └── wip-modal.js        # Reusable "work in progress" modal
 ├── images/                 # Site images
 └── projects/
     ├── creative-tools/
@@ -120,6 +121,28 @@ Navigation is implemented as a Web Component (`<site-nav>`). Use the `base` attr
 
 ### Fonts
 - Inter from Google Fonts (weights: 400, 500, 600)
+
+### Work in Progress Modal
+
+A reusable modal for pages under active development. Include the script on any page to show a dismissible notice on load.
+
+**Usage:**
+```html
+<!-- For nested pages (adjust path as needed) -->
+<script src="../../../js/wip-modal.js" defer></script>
+
+<!-- For root-level pages -->
+<script src="js/wip-modal.js" defer></script>
+```
+
+The modal:
+- Appears on page load with a warning icon
+- Shows a message that the tool is under development
+- Includes a link to the contact page for bug reports/feature requests
+- Must be dismissed with the "Got it" button before using the page
+- Automatically detects the correct path to contact.html based on the `<site-nav base="">` attribute
+
+**To disable:** Simply remove the `<script>` tag from the page's `<head>`.
 
 ## Projects
 
