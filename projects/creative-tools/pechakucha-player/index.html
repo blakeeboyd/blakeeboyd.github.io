@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="../../../css/base.css">
     <link rel="stylesheet" href="../../../css/layout.css">
     <link rel="stylesheet" href="../../../css/components.css">
+    <link rel="stylesheet" href="../../../css/components-audio.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -438,27 +439,50 @@
             display: flex;
             gap: var(--spacing-md);
             justify-content: center;
+            align-items: center;
         }
 
-        .pk-checkbox-label {
+        .pk-mode-toggle {
             display: flex;
-            align-items: center;
-            gap: var(--spacing-xs);
-            cursor: pointer;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .pk-mode-toggle input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .pk-mode-toggle label {
+            padding: 8px 16px;
             font-size: 0.875rem;
+            cursor: pointer;
+            background: var(--color-bg);
             color: var(--color-text-muted);
+            border-right: 1px solid var(--color-border);
+            transition: background-color var(--transition-fast), color var(--transition-fast);
             user-select: none;
         }
 
-        .pk-checkbox-label input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            accent-color: var(--color-accent);
-            cursor: pointer;
+        .pk-mode-toggle label:last-of-type {
+            border-right: none;
         }
 
-        .pk-checkbox-label:hover {
+        .pk-mode-toggle label:hover {
+            background: var(--color-control-bg);
             color: var(--color-text);
+        }
+
+        .pk-mode-toggle input[type="radio"]:checked + label {
+            background: var(--color-accent);
+            color: white;
+        }
+
+        .pk-mode-toggle input[type="radio"]:focus-visible + label {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
         }
 
         .pk-action-buttons {
@@ -524,9 +548,13 @@
         .pk-progress-container {
             flex: 1;
             max-width: 400px;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
         }
 
         .pk-progress-bar {
+            flex: 1;
             height: 4px;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 2px;
@@ -539,6 +567,14 @@
             transition: width 0.1s linear;
         }
 
+        .pk-slide-timer {
+            color: white;
+            font-size: 0.875rem;
+            font-variant-numeric: tabular-nums;
+            min-width: 24px;
+            text-align: right;
+        }
+
         .pk-slide-info {
             color: white;
             font-size: 0.875rem;
@@ -546,8 +582,13 @@
             gap: var(--spacing-md);
         }
 
-        .pk-time-remaining {
+        .pk-elapsed-time,
+        .pk-total-time {
             font-variant-numeric: tabular-nums;
+        }
+
+        .pk-time-separator {
+            opacity: 0.5;
         }
 
         .pk-pause-indicator {
@@ -706,10 +747,22 @@
             background: var(--color-card-bg);
             border: 1px solid var(--color-border);
             border-radius: var(--radius-lg);
+            text-align: left;
         }
 
         .pk-about h2 {
             margin-bottom: var(--spacing-md);
+        }
+
+        .pk-about h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--color-text);
+            margin: var(--spacing-lg) 0 var(--spacing-sm);
+        }
+
+        .pk-about h3:first-of-type {
+            margin-top: var(--spacing-md);
         }
 
         .pk-about p {
@@ -719,6 +772,29 @@
 
         .pk-about p:last-child {
             margin-bottom: 0;
+        }
+
+        .pk-about ol,
+        .pk-about ul {
+            margin: 0 0 var(--spacing-md) var(--spacing-lg);
+            padding: 0;
+            color: var(--color-text-muted);
+        }
+
+        .pk-about li {
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .pk-about kbd {
+            display: inline-block;
+            padding: 0.15rem 0.4rem;
+            font-size: 0.8rem;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+            color: var(--color-text);
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
         }
 
         /* Presenter View (shown during external presentation) */
@@ -1068,6 +1144,20 @@
             box-shadow: 0 0 4px var(--color-accent);
         }
 
+        /* Custom duration indicator on thumbnails */
+        .pk-thumbnail.has-custom-duration::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 8px;
+            height: 8px;
+            background: var(--color-warning);
+            border-radius: 50%;
+            box-shadow: 0 0 4px var(--color-warning);
+            z-index: 1;
+        }
+
         /* Notes Panel (shown when slide is selected) */
         .pk-notes-panel {
             margin-top: var(--spacing-md);
@@ -1131,6 +1221,62 @@
 
         .pk-notes-input::placeholder {
             color: var(--color-text-muted);
+        }
+
+        /* Per-slide duration override */
+        .pk-notes-duration {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: var(--spacing-sm);
+            padding-top: var(--spacing-sm);
+            border-top: 1px solid var(--color-border);
+        }
+
+        .pk-notes-duration label {
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+        }
+
+        .pk-notes-duration input {
+            width: 60px;
+            padding: 6px 8px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            background: var(--color-bg);
+            color: var(--color-text);
+            font-size: 0.875rem;
+            text-align: center;
+            /* Hide spinner arrows */
+            -moz-appearance: textfield;
+            appearance: textfield;
+            cursor: ns-resize;
+        }
+
+        .pk-notes-duration input::-webkit-inner-spin-button,
+        .pk-notes-duration input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .pk-notes-duration input:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            cursor: text;
+        }
+
+        .pk-notes-duration input.dragging {
+            border-color: var(--color-accent);
+            user-select: none;
+        }
+
+        .pk-notes-duration-unit {
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+        }
+
+        .pk-notes-panel #set-title-btn {
+            margin-top: var(--spacing-md);
         }
 
         /* Presenter Notes Display (in right column) */
@@ -1199,6 +1345,102 @@
         .pk-presenter-notes-input::placeholder {
             color: var(--color-text-muted);
         }
+
+        /* Timer overlay checkbox */
+        .pk-checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .pk-checkbox-label input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--color-accent);
+            cursor: pointer;
+        }
+
+        .pk-checkbox-label:hover {
+            color: var(--color-text);
+        }
+
+        #timer-overlay-option {
+            display: none;
+        }
+
+        /* Show timer overlay option only when Practice mode is selected */
+        .pk-start-options:has(#mode-practice:checked) ~ #timer-overlay-option {
+            display: flex;
+        }
+
+        /* Timer overlay on slide */
+        .pk-timer-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .pk-timer-overlay span {
+            font-size: 12rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: rgba(255, 255, 255, 0.3);
+            text-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+            line-height: 1;
+        }
+
+        /* Navigation arrows */
+        .pk-nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 64px;
+            height: 64px;
+            background: rgba(0, 0, 0, 0.3);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s ease, background-color 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .pk-nav-prev { left: 24px; }
+        .pk-nav-next { right: 24px; }
+
+        .pk-slide-container:hover .pk-nav-arrow:not(:disabled) {
+            opacity: 1;
+        }
+
+        .pk-nav-arrow:hover:not(:disabled) {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .pk-nav-arrow:disabled {
+            opacity: 0 !important;
+            cursor: default;
+        }
+
+        .pk-nav-arrow svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        /* Position slide container as relative for absolute positioned children */
+        .pk-slide-container {
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -1228,18 +1470,41 @@
                 <div class="pk-setting">
                     <label for="slide-duration">Seconds per slide</label>
                     <input type="number" id="slide-duration" value="20" min="1" max="120">
-                </div>
-                <div class="pk-setting">
-                    <label for="target-slides">Target slide count</label>
-                    <input type="number" id="target-slides" value="20" min="1" max="100">
+                    <span class="info-trigger" tabindex="0" aria-label="More information about seconds per slide">?
+                        <span class="info-tooltip tooltip-left">The classic PechaKucha format uses 20 seconds per slide, but you can adjust this for practice (e.g., 10 seconds for faster pacing) or custom presentations.</span>
+                    </span>
                 </div>
             </div>
 
             <div class="pk-about">
                 <h2>What is PechaKucha?</h2>
-                <p>PechaKucha (ぺちゃくちゃ, Japanese for "chit-chat") is a presentation format created by Klein-Dytham Architecture in Tokyo in 2003. The classic format uses 20 slides shown for 20 seconds each, totaling 6 minutes and 40 seconds.</p>
+                <p>PechaKucha (ぺちゃくちゃ, Japanese for "chit-chat") is a presentation format created by Klein-Dytham Architecture in Tokyo in 2003. The classic format uses 20 slides shown for 20 seconds each, totaling 6 minutes and 40 seconds. Visit <a href="https://www.klein-dytham.com/pechakucha" target="_blank" rel="noopener">klein-dytham.com/pechakucha</a> to learn more about the format's history and find PechaKucha events near you.</p>
                 <p>The key constraint: slides auto-advance whether the speaker is ready or not. This forces concise storytelling and keeps presentations energetic. The format has spread to over 1,000 cities worldwide.</p>
-                <p>Name your image files in numerical or alphabetical order (1.jpg, 2.jpg... or a.png, b.png...) and they'll be sorted automatically.</p>
+
+                <h3>How to Use This Tool</h3>
+                <ol>
+                    <li><strong>Upload images</strong> by dragging them into the dropzone or clicking "Choose Files." Name files in numerical order (1.jpg, 2.jpg...) for automatic sorting.</li>
+                    <li><strong>Organize your slides</strong> by dragging thumbnails to reorder. Click a slide to select it and add speaker notes.</li>
+                    <li><strong>Set a title slide</strong> (optional) by selecting a slide and clicking "Set as Title Slide." This will display first before the timed presentation begins.</li>
+                    <li><strong>Choose your mode:</strong> <em>Practice</em> shows the presentation fullscreen on a single screen, while <em>Present</em> opens a separate window for your audience and gives you presenter view with notes, timer, and slide navigation.</li>
+                    <li><strong>Start presenting!</strong> Slides will auto-advance according to your timing settings.</li>
+                </ol>
+
+                <h3>Keyboard Shortcuts</h3>
+                <p><strong>During presentation:</strong> <kbd>Space</kbd> pauses/resumes the timer. <kbd>Esc</kbd> exits the slideshow. <kbd>←</kbd> and <kbd>→</kbd> navigate between slides (in practice mode). <kbd>G</kbd> opens the slide grid for quick navigation.</p>
+                <p><strong>In preview:</strong> <kbd>Ctrl/Cmd+Z</kbd> undoes the last deleted slide.</p>
+
+                <h3>Tips for Great PechaKucha Presentations</h3>
+                <ul>
+                    <li>Practice until you can deliver your talk within the time constraint without rushing.</li>
+                    <li>Let images tell the story. Avoid text-heavy slides; the format rewards visual storytelling.</li>
+                    <li>Plan your transitions. Know exactly what you'll say as each slide appears.</li>
+                    <li>Embrace the constraint. The auto-advance keeps energy high and prevents rambling.</li>
+                </ul>
+
+                <h3>Export and Import</h3>
+                <p>Use the <strong>Export</strong> button to save your presentation as a JSON file, including slide order, speaker notes, and settings. This lets you back up your work or share it with others.</p>
+                <p>To restore a presentation, upload your images along with the exported JSON file. The tool will automatically detect the JSON and apply your saved slide order, notes, and settings. Note that images are stored by filename, so keep the same filenames when re-importing.</p>
             </div>
         </section>
 
@@ -1250,7 +1515,11 @@
             <div class="pk-thumbnails-container">
                 <!-- Title Slide Section -->
                 <div class="pk-title-slide-section">
-                    <div class="pk-section-label">Title Slide (optional)</div>
+                    <div class="pk-section-label">Title Slide (optional)
+                        <span class="info-trigger" tabindex="0" aria-label="More information about title slide">?
+                            <span class="info-tooltip tooltip-left">Click any slide thumbnail to select it, then click "Set as Title Slide" to designate it as your opening slide. The title slide displays for the full duration before auto-advance begins.</span>
+                        </span>
+                    </div>
                     <div id="title-slide-slot" class="pk-title-slide-slot">
                         <span id="title-slot-hint" class="pk-slot-hint">Select a slide below</span>
                         <img id="title-slide-img" class="pk-title-slide-img" src="" alt="Title slide" hidden>
@@ -1262,7 +1531,11 @@
 
                 <!-- Slides Section -->
                 <div class="pk-slides-section">
-                    <div class="pk-section-label">Presentation Slides</div>
+                    <div class="pk-section-label">Presentation Slides
+                        <span class="info-trigger" tabindex="0" aria-label="More information about presentation slides">?
+                            <span class="info-tooltip tooltip-left">Drag to reorder slides. Click a slide to add speaker notes. Hover over thumbnails to see preview and delete buttons.</span>
+                        </span>
+                    </div>
                     <div id="thumbnails" class="pk-thumbnail-grid"></div>
                 </div>
             </div>
@@ -1274,16 +1547,33 @@
                     <button id="notes-close-btn" class="pk-notes-close" aria-label="Close notes">&times;</button>
                 </div>
                 <textarea id="notes-input" class="pk-notes-input" placeholder="Add speaker notes for this slide..."></textarea>
+                <div class="pk-notes-duration">
+                    <label for="slide-duration-override">Duration</label>
+                    <input type="number" id="slide-duration-override" min="1" max="120">
+                    <span class="pk-notes-duration-unit">seconds</span>
+                    <span class="info-trigger" tabindex="0" aria-label="More information about slide duration">?
+                        <span class="info-tooltip">Override the default duration for this slide. Leave empty to use the global setting.</span>
+                    </span>
+                </div>
                 <button id="set-title-btn" class="action-button secondary">Set as Title Slide</button>
             </div>
 
             <div class="pk-actions">
                 <div class="pk-start-options">
-                    <label class="pk-checkbox-label">
-                        <input type="checkbox" id="external-display-checkbox">
-                        <span>Present on External Display</span>
-                    </label>
+                    <div class="pk-mode-toggle" role="radiogroup" aria-label="Presentation mode">
+                        <input type="radio" id="mode-practice" name="presentation-mode" value="practice" checked>
+                        <label for="mode-practice">Practice</label>
+                        <input type="radio" id="mode-present" name="presentation-mode" value="present">
+                        <label for="mode-present">Present</label>
+                    </div>
+                    <span class="info-trigger" tabindex="0" aria-label="More information about presentation modes">?
+                        <span class="info-tooltip"><strong>Practice:</strong> Single-screen fullscreen view for rehearsing.<br><strong>Present:</strong> Opens a separate window for your audience while you see presenter view with notes and timer. Best with two screens.</span>
+                    </span>
                 </div>
+                <label class="pk-checkbox-label" id="timer-overlay-option">
+                    <input type="checkbox" id="show-timer-overlay">
+                    <span>Show timer on slide</span>
+                </label>
                 <div class="pk-action-buttons">
                     <button id="start-btn" class="action-button">Start Presentation</button>
                     <button id="start-from-btn" class="action-button" hidden>Start from Slide 1</button>
@@ -1373,6 +1663,21 @@
         <section id="slideshow-section" class="pk-slideshow-section" hidden>
             <div class="pk-slide-container">
                 <img id="current-slide" src="" alt="Presentation slide">
+                <!-- Timer overlay (optional, practice mode only) -->
+                <div id="timer-overlay" class="pk-timer-overlay" hidden>
+                    <span id="timer-overlay-value">20</span>
+                </div>
+                <!-- Navigation arrows (practice mode only) -->
+                <button id="nav-prev" class="pk-nav-arrow pk-nav-prev" aria-label="Previous slide">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+                <button id="nav-next" class="pk-nav-arrow pk-nav-next" aria-label="Next slide">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
             </div>
             <div class="pk-controls">
                 <div class="pk-slide-info">
@@ -1383,9 +1688,12 @@
                     <div class="pk-progress-bar">
                         <div id="progress-fill" class="pk-progress-fill" style="width: 0%"></div>
                     </div>
+                    <span id="slide-timer" class="pk-slide-timer">20</span>
                 </div>
                 <div class="pk-slide-info">
-                    <span id="time-remaining" class="pk-time-remaining">6:40</span>
+                    <span id="elapsed-time" class="pk-elapsed-time">0:00</span>
+                    <span class="pk-time-separator">/</span>
+                    <span id="total-time" class="pk-total-time">6:40</span>
                 </div>
                 <span class="pk-controls-hint">Space: pause · Esc: exit</span>
             </div>

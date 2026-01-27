@@ -7,7 +7,7 @@
     'use strict';
 
     // State
-    let images = [];           // Array of { name, dataUrl, notes }
+    let images = [];           // Array of { name, dataUrl, notes, duration }
     let titleSlide = null;     // { name, dataUrl, notes } | null (always a copy)
     let currentIndex = 0;
     let slideTimer = null;
@@ -15,6 +15,9 @@
     let slideStartTime = null;
     let isPaused = false;
     let pausedTimeRemaining = 0;
+    let pausedElapsedOnSlide = 0;  // Time elapsed on current slide when paused (ms)
+    let currentSlideDuration = 0;  // Remaining duration for current slide timer (in ms)
+    let fullSlideDuration = 0;     // Total duration for current slide (in ms)
     let presentationStartTime = null;
     let draggedIndex = null;   // For drag-and-drop reordering
     let insertPosition = null; // 'before' or 'after' relative to hovered thumbnail
@@ -30,8 +33,7 @@
     let isExternalPresentation = false;
 
     // Settings (will be read from inputs)
-    let slideDuration = 20;    // Seconds per slide
-    let targetSlideCount = 20; // Target number of slides
+    let slideDuration = 20;    // Seconds per slide (global default)
 
     // DOM Elements
     const uploadSection = document.getElementById('upload-section');
@@ -42,7 +44,6 @@
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('file-input');
     const slideDurationInput = document.getElementById('slide-duration');
-    const targetSlidesInput = document.getElementById('target-slides');
 
     const slideNotice = document.getElementById('slide-notice');
     const thumbnails = document.getElementById('thumbnails');
@@ -53,7 +54,9 @@
     const currentSlide = document.getElementById('current-slide');
     const slideCounter = document.getElementById('slide-counter');
     const progressFill = document.getElementById('progress-fill');
-    const timeRemaining = document.getElementById('time-remaining');
+    const slideTimerDisplay = document.getElementById('slide-timer');
+    const elapsedTimeDisplay = document.getElementById('elapsed-time');
+    const totalTimeDisplay = document.getElementById('total-time');
     const pauseIndicator = document.getElementById('pause-indicator');
 
     const finalSlideCount = document.getElementById('final-slide-count');
@@ -70,7 +73,7 @@
     const toastUndoBtn = document.getElementById('toast-undo-btn');
 
     // External presentation elements
-    const externalDisplayCheckbox = document.getElementById('external-display-checkbox');
+    const modePresentRadio = document.getElementById('mode-present');
     const presenterSection = document.getElementById('presenter-section');
     const presenterCurrentImg = document.getElementById('presenter-current-img');
     const presenterNextImg = document.getElementById('presenter-next-img');
@@ -90,6 +93,7 @@
     const notesSlideNumber = document.getElementById('notes-slide-number');
     const notesInput = document.getElementById('notes-input');
     const notesCloseBtn = document.getElementById('notes-close-btn');
+    const slideDurationOverride = document.getElementById('slide-duration-override');
     const presenterNotesInput = document.getElementById('presenter-notes-input');
     const presenterExportBtn = document.getElementById('presenter-export-btn');
 
@@ -117,6 +121,15 @@
     // Filmstrip for slide navigation
     const presenterFilmstrip = document.getElementById('presenter-filmstrip');
 
+    // Timer overlay elements (practice mode)
+    const showTimerOverlayCheckbox = document.getElementById('show-timer-overlay');
+    const timerOverlay = document.getElementById('timer-overlay');
+    const timerOverlayValue = document.getElementById('timer-overlay-value');
+
+    // Navigation arrows (practice mode)
+    const navPrev = document.getElementById('nav-prev');
+    const navNext = document.getElementById('nav-next');
+
     // Natural sort comparison for filenames
     function naturalSort(a, b) {
         return a.name.localeCompare(b.name, undefined, {
@@ -130,6 +143,17 @@
         const mins = Math.floor(seconds / 60);
         const secs = Math.floor(seconds % 60);
         return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // Get duration for a specific slide (per-slide override or global default)
+    function getSlideDuration(index) {
+        const slide = images[index];
+        return (slide && slide.duration > 0) ? slide.duration : slideDuration;
+    }
+
+    // Calculate total presentation time (sum of all slide durations)
+    function calculateTotalTime() {
+        return images.reduce((sum, img, i) => sum + getSlideDuration(i), 0);
     }
 
     // Handle file selection (initial upload, replaces images array)
@@ -157,7 +181,6 @@
 
         // Read settings
         slideDuration = parseInt(slideDurationInput.value, 10) || 20;
-        targetSlideCount = parseInt(targetSlidesInput.value, 10) || 20;
 
         // Process each file
         images = [];
@@ -169,7 +192,8 @@
                 images.push({
                     name: file.name,
                     dataUrl: e.target.result,
-                    notes: ''
+                    notes: '',
+                    duration: null  // null = use global default
                 });
                 loaded++;
 
@@ -225,24 +249,18 @@
 
         // Update slide count notice
         const count = images.length;
-        const target = targetSlideCount;
-        if (count === target) {
-            slideNotice.textContent = `${count} slides ready`;
-            slideNotice.classList.remove('warning');
-        } else if (count < target) {
-            slideNotice.textContent = `${count} of ${target} slides (${target - count} fewer than target)`;
-            slideNotice.classList.add('warning');
-        } else {
-            slideNotice.textContent = `${count} of ${target} slides (${count - target} more than target)`;
-            slideNotice.classList.add('warning');
-        }
+        slideNotice.textContent = `${count} slide${count !== 1 ? 's' : ''} ready`;
+        slideNotice.classList.remove('warning');
 
         // Render thumbnails
         thumbnails.innerHTML = '';
 
         images.forEach((img, index) => {
             const thumb = document.createElement('div');
-            thumb.className = 'pk-thumbnail' + (img.notes ? ' has-notes' : '');
+            let classes = 'pk-thumbnail';
+            if (img.notes) classes += ' has-notes';
+            if (img.duration) classes += ' has-custom-duration';
+            thumb.className = classes;
             thumb.draggable = true;
             thumb.dataset.index = index;
             thumb.innerHTML = `
@@ -754,6 +772,9 @@
     function showNotesPanel(index) {
         notesSlideNumber.textContent = index + 1;
         notesInput.value = images[index].notes || '';
+        // Show duration override (empty string if null/undefined to use placeholder)
+        slideDurationOverride.value = images[index].duration || '';
+        slideDurationOverride.placeholder = slideDuration; // Show global default as placeholder
         notesPanel.hidden = false;
         updateSetTitleButton();
     }
@@ -763,17 +784,27 @@
         notesPanel.hidden = true;
     }
 
-    // Save notes for the currently selected slide
+    // Save notes and duration for the currently selected slide
     function saveCurrentNotes() {
         if (selectedIndex !== null && images[selectedIndex]) {
             images[selectedIndex].notes = notesInput.value;
-            // Update thumbnail indicator
+            // Save duration override (null if empty)
+            const durationValue = parseInt(slideDurationOverride.value, 10);
+            images[selectedIndex].duration = (durationValue > 0) ? durationValue : null;
+            // Update thumbnail indicators
             const allThumbs = thumbnails.querySelectorAll('.pk-thumbnail');
             if (allThumbs[selectedIndex]) {
+                // Notes indicator
                 if (notesInput.value) {
                     allThumbs[selectedIndex].classList.add('has-notes');
                 } else {
                     allThumbs[selectedIndex].classList.remove('has-notes');
+                }
+                // Custom duration indicator
+                if (images[selectedIndex].duration) {
+                    allThumbs[selectedIndex].classList.add('has-custom-duration');
+                } else {
+                    allThumbs[selectedIndex].classList.remove('has-custom-duration');
                 }
             }
         }
@@ -838,8 +869,7 @@
             version: 1,
             exportedAt: new Date().toISOString(),
             settings: {
-                slideDuration: slideDuration,
-                targetSlideCount: targetSlideCount
+                slideDuration: slideDuration
             },
             titleSlide: titleSlide,
             slides: images
@@ -869,15 +899,16 @@
 
                 // Apply settings
                 slideDuration = config.settings?.slideDuration || 20;
-                targetSlideCount = config.settings?.targetSlideCount || 20;
                 slideDurationInput.value = slideDuration;
-                targetSlidesInput.value = targetSlideCount;
 
                 // Apply title slide
                 titleSlide = config.titleSlide || null;
 
-                // Apply slides
-                images = config.slides || [];
+                // Apply slides (ensure each has duration property for backward compatibility)
+                images = (config.slides || []).map(slide => ({
+                    ...slide,
+                    duration: slide.duration || null
+                }));
 
                 // Show preview
                 updateTitleSlideUI();
@@ -894,7 +925,7 @@
         if (images.length === 0) return;
 
         // Check if external display is selected
-        if (externalDisplayCheckbox.checked) {
+        if (modePresentRadio.checked) {
             startExternalPresentation(startIndex);
             return;
         }
@@ -906,12 +937,21 @@
 
         currentIndex = startIndex;
         isPaused = false;
+        pausedTimeRemaining = 0;
+        pausedElapsedOnSlide = 0;
         presentationStartTime = Date.now();
 
         previewSection.hidden = true;
         slideshowSection.hidden = false;
         completeSection.hidden = true;
         pauseIndicator.hidden = true;
+
+        // Show/hide timer overlay based on checkbox
+        timerOverlay.hidden = !showTimerOverlayCheckbox.checked;
+
+        // Initialize elapsed/total time display
+        elapsedTimeDisplay.textContent = '0:00';
+        totalTimeDisplay.textContent = formatTime(calculateTotalTime());
 
         showSlide(startIndex);
     }
@@ -935,7 +975,7 @@
         if (images.length === 0) return;
 
         // Check if external display is selected
-        if (externalDisplayCheckbox.checked) {
+        if (modePresentRadio.checked) {
             startExternalPresentation(0);
             return;
         }
@@ -947,12 +987,21 @@
 
         currentIndex = 0;
         isPaused = false;
+        pausedTimeRemaining = 0;
+        pausedElapsedOnSlide = 0;
         presentationStartTime = Date.now();
 
         previewSection.hidden = true;
         slideshowSection.hidden = false;
         completeSection.hidden = true;
         pauseIndicator.hidden = true;
+
+        // Show/hide timer overlay based on checkbox
+        timerOverlay.hidden = !showTimerOverlayCheckbox.checked;
+
+        // Initialize elapsed/total time display
+        elapsedTimeDisplay.textContent = '0:00';
+        totalTimeDisplay.textContent = formatTime(calculateTotalTime());
 
         showSlide(0);
     }
@@ -969,7 +1018,9 @@
         currentSlide.alt = `Slide ${index + 1} of ${images.length}`;
         slideCounter.textContent = `${index + 1} / ${images.length}`;
 
-        updateTotalTimeRemaining();
+        // Update navigation arrow states
+        updateNavArrows();
+
         startSlideTimer();
     }
 
@@ -977,36 +1028,67 @@
     function startSlideTimer() {
         clearTimers();
 
+        const isResuming = pausedTimeRemaining > 0;
+
         slideStartTime = Date.now();
-        const duration = isPaused ? pausedTimeRemaining : slideDuration * 1000;
+
+        if (isResuming) {
+            // Resuming from pause: keep full duration, use remaining time for timer
+            currentSlideDuration = pausedTimeRemaining;
+            // fullSlideDuration stays the same
+        } else {
+            // New slide: set both to full duration, reset elapsed
+            fullSlideDuration = getSlideDuration(currentIndex) * 1000;
+            currentSlideDuration = fullSlideDuration;
+            pausedElapsedOnSlide = 0;
+        }
+
+        // Initialize slide timer display immediately
+        slideTimerDisplay.textContent = Math.ceil(currentSlideDuration / 1000);
+
+        // Set progress bar: if resuming, show elapsed portion; if new slide, start at 0
+        if (isResuming) {
+            progressFill.style.width = `${(pausedElapsedOnSlide / fullSlideDuration) * 100}%`;
+        } else {
+            progressFill.style.width = '0%';
+        }
 
         // Set timeout for slide advance
         slideTimer = setTimeout(() => {
             advanceSlide();
-        }, duration);
+        }, currentSlideDuration);
 
         // Start progress animation
         updateProgress();
     }
 
-    // Update progress bar
+    // Update progress bar and slide timer
     function updateProgress() {
-        const elapsed = Date.now() - slideStartTime;
-        const duration = isPaused ? pausedTimeRemaining : slideDuration * 1000;
-        const progress = Math.min(elapsed / duration, 1);
+        const elapsedSinceStart = Date.now() - slideStartTime;
+        const remaining = Math.max(currentSlideDuration - elapsedSinceStart, 0);
+        const remainingSeconds = Math.ceil(remaining / 1000);
+
+        // Calculate progress based on total elapsed time on this slide
+        const totalElapsedOnSlide = pausedElapsedOnSlide + elapsedSinceStart;
+        const progress = Math.min(totalElapsedOnSlide / fullSlideDuration, 1);
 
         progressFill.style.width = `${progress * 100}%`;
+        slideTimerDisplay.textContent = remainingSeconds;
+
+        // Update timer overlay if visible
+        if (!timerOverlay.hidden) {
+            timerOverlayValue.textContent = remainingSeconds;
+        }
+
+        // Update elapsed time since presentation started
+        if (presentationStartTime) {
+            const totalElapsed = Math.floor((Date.now() - presentationStartTime) / 1000);
+            elapsedTimeDisplay.textContent = formatTime(totalElapsed);
+        }
 
         if (!isPaused && progress < 1) {
             progressTimer = requestAnimationFrame(updateProgress);
         }
-    }
-
-    // Update total time remaining display
-    function updateTotalTimeRemaining() {
-        const slidesLeft = images.length - currentIndex;
-        const totalSecondsLeft = slidesLeft * slideDuration;
-        timeRemaining.textContent = formatTime(totalSecondsLeft);
     }
 
     // Advance to next slide
@@ -1014,7 +1096,9 @@
         clearTimers();
         isPaused = false;
         pausedTimeRemaining = 0;
-        showSlide(currentIndex + 1);
+        pausedElapsedOnSlide = 0;
+        const nextIndex = currentIndex + 1;
+        showSlide(nextIndex);
     }
 
     // Toggle pause state
@@ -1030,10 +1114,10 @@
             isPaused = true;
             pauseIndicator.hidden = false;
 
-            // Calculate remaining time
-            const elapsed = Date.now() - slideStartTime;
-            const fullDuration = slideDuration * 1000;
-            pausedTimeRemaining = Math.max(fullDuration - elapsed, 0);
+            // Calculate remaining time and elapsed time on this slide
+            const elapsedSinceStart = Date.now() - slideStartTime;
+            pausedTimeRemaining = Math.max(currentSlideDuration - elapsedSinceStart, 0);
+            pausedElapsedOnSlide = pausedElapsedOnSlide + elapsedSinceStart;
         }
     }
 
@@ -1047,6 +1131,34 @@
             cancelAnimationFrame(progressTimer);
             progressTimer = null;
         }
+    }
+
+    // Navigate to previous slide (practice mode)
+    function goToPreviousSlide() {
+        if (currentIndex > 0) {
+            clearTimers();
+            isPaused = false;
+            pausedTimeRemaining = 0;
+            pausedElapsedOnSlide = 0;
+            showSlide(currentIndex - 1);
+        }
+    }
+
+    // Navigate to next slide (practice mode)
+    function goToNextSlide() {
+        if (currentIndex < images.length - 1) {
+            clearTimers();
+            isPaused = false;
+            pausedTimeRemaining = 0;
+            pausedElapsedOnSlide = 0;
+            showSlide(currentIndex + 1);
+        }
+    }
+
+    // Update navigation arrow states
+    function updateNavArrows() {
+        navPrev.disabled = currentIndex === 0;
+        navNext.disabled = currentIndex === images.length - 1;
     }
 
     // Exit slideshow and return to preview
@@ -1257,6 +1369,7 @@
         if (presenterStartBtn.hidden) {
             isPaused = false;
             pausedTimeRemaining = 0;
+            currentSlideDuration = getSlideDuration(index) * 1000;
             presenterPauseBtn.textContent = 'Pause';
             startExternalSlideTimer();
         }
@@ -1304,9 +1417,13 @@
 
         // Set presentation start time and total time display
         presentationStartTime = Date.now();
-        const totalSeconds = images.length * slideDuration;
+        const totalSeconds = calculateTotalTime();
         presenterTotal.textContent = formatTime(totalSeconds);
         presenterElapsed.textContent = '0:00';
+
+        // Initialize slide duration for first slide
+        pausedTimeRemaining = 0;
+        currentSlideDuration = getSlideDuration(currentIndex) * 1000;
 
         startExternalSlideTimer();
     }
@@ -1346,7 +1463,7 @@
             presentationWindow.postMessage({
                 type: 'showSlide',
                 index: index,
-                timeRemaining: slideDuration * 1000
+                timeRemaining: getSlideDuration(index) * 1000
             }, '*');
         }
     }
@@ -1356,12 +1473,13 @@
         clearTimers();
 
         slideStartTime = Date.now();
-        const duration = isPaused ? pausedTimeRemaining : slideDuration * 1000;
+        // Use pausedTimeRemaining if we have it, otherwise per-slide duration
+        currentSlideDuration = pausedTimeRemaining > 0 ? pausedTimeRemaining : getSlideDuration(currentIndex) * 1000;
 
         // Timer for advancing slides
         slideTimer = setTimeout(() => {
             advanceExternalSlide();
-        }, duration);
+        }, currentSlideDuration);
 
         // Progress update for presenter view
         updateExternalProgress();
@@ -1370,10 +1488,9 @@
     // Update presenter view progress/timer
     function updateExternalProgress() {
         const elapsed = Date.now() - slideStartTime;
-        const duration = isPaused ? pausedTimeRemaining : slideDuration * 1000;
-        const remaining = Math.max(duration - elapsed, 0);
+        const remaining = Math.max(currentSlideDuration - elapsed, 0);
         const remainingSeconds = Math.ceil(remaining / 1000);
-        const progress = Math.min(elapsed / duration, 1);
+        const progress = Math.min(elapsed / currentSlideDuration, 1);
 
         presenterTime.textContent = formatTime(remainingSeconds);
 
@@ -1410,6 +1527,7 @@
             endExternalPresentation();
             showCompletion();
         } else {
+            currentSlideDuration = getSlideDuration(nextIndex) * 1000;
             showExternalSlide(nextIndex);
             startExternalSlideTimer();
         }
@@ -1433,9 +1551,9 @@
             isPaused = true;
             presenterPauseBtn.textContent = 'Resume';
 
-            // Calculate remaining time
+            // Calculate remaining time based on current slide's duration
             const elapsed = Date.now() - slideStartTime;
-            pausedTimeRemaining = Math.max((slideDuration * 1000) - elapsed, 0);
+            pausedTimeRemaining = Math.max(currentSlideDuration - elapsed, 0);
 
             if (presentationWindow && !presentationWindow.closed) {
                 presentationWindow.postMessage({ type: 'pause' }, '*');
@@ -1569,6 +1687,7 @@
         clearTimers();
         isPaused = false;
         pausedTimeRemaining = 0;
+        currentSlideDuration = getSlideDuration(index) * 1000;
         presenterPauseBtn.textContent = 'Pause';
 
         showExternalSlide(index);
@@ -1672,6 +1791,10 @@
     // Toast undo button
     toastUndoBtn.addEventListener('click', undoDelete);
 
+    // Navigation arrows (practice mode)
+    navPrev.addEventListener('click', goToPreviousSlide);
+    navNext.addEventListener('click', goToNextSlide);
+
     // Keyboard controls
     document.addEventListener('keydown', (e) => {
         // Ignore keyboard shortcuts when typing in an input or textarea
@@ -1740,6 +1863,12 @@
         } else if (e.code === 'Escape') {
             e.preventDefault();
             exitSlideshow();
+        } else if (e.code === 'ArrowLeft') {
+            e.preventDefault();
+            goToPreviousSlide();
+        } else if (e.code === 'ArrowRight') {
+            e.preventDefault();
+            goToNextSlide();
         }
     });
 
@@ -1802,6 +1931,6 @@
 
     // Initialize drag-to-adjust on number inputs
     setupDragToAdjust(slideDurationInput);
-    setupDragToAdjust(targetSlidesInput);
+    setupDragToAdjust(slideDurationOverride);
 
 })();
