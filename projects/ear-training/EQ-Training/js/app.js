@@ -221,12 +221,18 @@ function resetUserEQ() {
 // Playback Control
 // ============================================
 
-function startPlayback() {
+async function startPlayback() {
     if (state.isPlaying) return;
 
-    // Resume audio context if suspended
+    // Resume audio context if suspended (required for iOS)
     if (state.audioContext.state === 'suspended') {
-        state.audioContext.resume();
+        try {
+            await state.audioContext.resume();
+            console.log('Audio context resumed');
+        } catch (err) {
+            console.error('Failed to resume audio context:', err);
+            return;
+        }
     }
 
     if (state.currentSource === 'noise') {
@@ -317,7 +323,7 @@ function setListeningMode(mode) {
 // Game Logic
 // ============================================
 
-function newRound() {
+async function newRound() {
     // Generate random target EQ
     state.targetParams = generateRandomEQ();
     applyParamsToFilters(state.targetParams, state.targetFilters);
@@ -332,7 +338,7 @@ function newRound() {
 
     // Start playback if not playing
     if (!state.isPlaying) {
-        startPlayback();
+        await startPlayback();
     }
 
     // Switch to target mode
@@ -1127,14 +1133,14 @@ function showResultMessage() {
 function setupEventListeners() {
     // Source buttons
     document.querySelectorAll('.source-buttons button').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
             const wasPlaying = state.isPlaying;
             if (wasPlaying) stopPlayback();
 
             state.currentSource = btn.dataset.source;
             updateSourceButtons();
 
-            if (wasPlaying) startPlayback();
+            if (wasPlaying) await startPlayback();
         });
     });
 
@@ -1246,7 +1252,7 @@ async function handleAudioFile(file) {
         // If playing, switch to user audio
         if (state.isPlaying) {
             stopPlayback();
-            startPlayback();
+            await startPlayback();
         }
     } catch (error) {
         console.error('Error loading audio file:', error);
@@ -1293,9 +1299,17 @@ function init() {
 // Start when DOM is ready
 document.addEventListener('DOMContentLoaded', init);
 
-// Handle audio context resume on user interaction
-document.addEventListener('click', () => {
+// Handle audio context resume on user interaction (required for iOS)
+const resumeAudioContext = async () => {
     if (state.audioContext && state.audioContext.state === 'suspended') {
-        state.audioContext.resume();
+        try {
+            await state.audioContext.resume();
+            console.log('Audio context resumed');
+        } catch (err) {
+            console.error('Failed to resume audio context:', err);
+        }
     }
-}, { once: true });
+};
+
+document.addEventListener('click', resumeAudioContext, { once: true });
+document.addEventListener('touchstart', resumeAudioContext, { once: true });

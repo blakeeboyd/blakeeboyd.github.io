@@ -1122,18 +1122,21 @@ function setSource(source) {
 
     // Auto-play pink noise when selected
     if (source === 1) {
-        // Resume context if suspended (required for first interaction)
-        if (state.audioContext.state === 'suspended') {
-            state.audioContext.resume().then(() => {
-                startPinkNoise();
-                state.isPlaying = true;
-                startCorrelationMeter();
-            });
-        } else {
+        // Resume context if suspended (required for iOS)
+        (async () => {
+            if (state.audioContext.state === 'suspended') {
+                try {
+                    await state.audioContext.resume();
+                    console.log('Audio context resumed');
+                } catch (err) {
+                    console.error('Failed to resume audio context:', err);
+                    return;
+                }
+            }
             startPinkNoise();
             state.isPlaying = true;
             startCorrelationMeter();
-        }
+        })();
     }
 
     // For user audio, don't auto-play - let user click play button
@@ -1440,14 +1443,20 @@ function init() {
 
 // Handle audio context suspension (browsers require user gesture)
 function setupContextResume() {
-    const resumeContext = () => {
+    const resumeContext = async () => {
         if (state.audioContext && state.audioContext.state === 'suspended') {
-            state.audioContext.resume();
+            try {
+                await state.audioContext.resume();
+                console.log('Audio context resumed');
+            } catch (err) {
+                console.error('Failed to resume audio context:', err);
+            }
         }
     };
 
     document.addEventListener('click', resumeContext, { once: true });
     document.addEventListener('keydown', resumeContext, { once: true });
+    document.addEventListener('touchstart', resumeContext, { once: true });
 }
 
 // Initialize on DOM ready

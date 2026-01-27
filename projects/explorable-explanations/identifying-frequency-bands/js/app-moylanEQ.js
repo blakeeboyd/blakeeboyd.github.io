@@ -109,10 +109,14 @@ async function setup() {
     // (Optional) Connect MIDI inputs
     // makeMIDIKeyboard(device);
 
-    document.body.onclick = () => {
+    document.body.onclick = async () => {
         if (context.state === "running") return;
-        context.resume();
-        console.log("Audio context resumed");
+        try {
+          await context.resume();
+          console.log("Audio context resumed");
+        } catch (err) {
+          console.error("Failed to resume audio context:", err);
+        }
       };
 
     // Skip if you're not using guardrails.js
@@ -286,10 +290,16 @@ function loadRNBOScript(version) {
     // Track whether we're using user audio for the demo
     let demoUsingUserAudio = false;
 
-    demoButton.addEventListener('click', () => {
+    demoButton.addEventListener('click', async () => {
       // Resume audio context if suspended (required for iOS)
       if (context.state === "suspended") {
-        context.resume();
+        try {
+          await context.resume();
+          console.log("Audio context resumed");
+        } catch (err) {
+          console.error("Failed to resume audio context:", err);
+          return;
+        }
       }
 
       if (demoRunning) {
@@ -696,12 +706,18 @@ function loadRNBOScript(version) {
 
     // Handle source button clicks
     sourceButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", async () => {
         const value = parseInt(btn.dataset.source, 10);
 
         // Resume audio context if suspended (required for iOS)
         if (context.state === "suspended") {
-          context.resume();
+          try {
+            await context.resume();
+            console.log("Audio context resumed");
+          } catch (err) {
+            console.error("Failed to resume audio context:", err);
+            return;
+          }
         }
 
         // Stop any playing user audio when switching away from user audio
@@ -854,19 +870,25 @@ function loadRNBOScript(version) {
 
     // Expose audio playback functions globally for demo
     window.userAudioPlayback = {
-      play: () => { if (!isPlaying) playAudio(pausedAt); },
+      play: async () => { if (!isPlaying) await playAudio(pausedAt); },
       stop: () => { if (isPlaying) stopAudio(); },
       isPlaying: () => isPlaying,
       hasAudio: () => uploadedAudioBuffer !== null
     };
 
     // Play audio from a specific offset
-    function playAudio(offset = 0) {
+    async function playAudio(offset = 0) {
       if (!uploadedAudioBuffer) return;
 
-      // Resume audio context if suspended
+      // Resume audio context if suspended (required for iOS)
       if (context.state === "suspended") {
-        context.resume();
+        try {
+          await context.resume();
+          console.log("Audio context resumed");
+        } catch (err) {
+          console.error("Failed to resume audio context:", err);
+          return;
+        }
       }
 
       // Create a new buffer source node
@@ -950,11 +972,11 @@ function loadRNBOScript(version) {
     }
 
     // Play button click handler
-    playButton.addEventListener("click", () => {
+    playButton.addEventListener("click", async () => {
       if (isPlaying) {
         stopAudio();
       } else {
-        playAudio(pausedAt);
+        await playAudio(pausedAt);
       }
     });
 
