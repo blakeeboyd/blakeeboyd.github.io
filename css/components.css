@@ -566,6 +566,12 @@
     border-radius: 0.25rem;
 }
 
+.badge.wip {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--color-warning);
+    font-weight: 500;
+}
+
 /* Icon button */
 .icon-button {
     padding: var(--spacing-xs);
