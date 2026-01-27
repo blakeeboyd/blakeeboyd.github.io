@@ -165,46 +165,7 @@
     }
 }
 
-/* Play button (for user audio playback) */
-.play-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 42px;
-    height: 42px;
-    padding: 0;
-    background: var(--color-accent);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: background-color var(--transition-normal), transform var(--transition-fast), box-shadow var(--transition-normal);
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
-    flex-shrink: 0;
-}
-
-.play-button:hover {
-    background: var(--color-accent-hover);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
-}
-
-.play-button:active {
-    transform: scale(0.95);
-    box-shadow: 0 1px 4px rgba(37, 99, 235, 0.3);
-}
-
-.play-button svg {
-    flex-shrink: 0;
-}
-
-/* Dark mode: use darker blue for better contrast with white text */
-[data-theme="dark"] .play-button {
-    background: #3b82f6;
-}
-
-[data-theme="dark"] .play-button:hover {
-    background: #2563eb;
-}
+/* Play button styles now in components-audio.css */
 
 /* Playback controls row (for user audio) */
 .playback-controls {
@@ -229,66 +190,7 @@
     min-width: 0;
 }
 
-/* Gain control */
-.gain-control {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-}
-
-.gain-control .control-label {
-    font-size: 0.75rem;
-    color: var(--color-text-muted);
-    margin-bottom: 0;
-}
-
-.gain-row {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-}
-
-.gain-slider {
-    flex: 1;
-    height: 6px;
-    -webkit-appearance: none;
-    appearance: none;
-    background: var(--color-control-bg);
-    border-radius: 3px;
-    outline: none;
-}
-
-.gain-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--color-accent);
-    cursor: pointer;
-    transition: transform var(--transition-fast);
-}
-
-.gain-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
-}
-
-.gain-slider::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--color-accent);
-    cursor: pointer;
-    border: none;
-}
-
-.gain-text {
-    font-size: 0.75rem;
-    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
-    color: var(--color-text-muted);
-    min-width: 45px;
-    text-align: right;
-}
+/* Gain control styles now in components-audio.css */
 
 
 /* Source button group */
@@ -350,120 +252,7 @@
     display: none;
 }
 
-/* Upload area */
-.upload-area {
-    border: 2px dashed var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-md);
-    text-align: center;
-    transition: all var(--transition-fast);
-}
-
-.upload-area:hover,
-.upload-area.drag-over {
-    border-color: var(--color-accent);
-    background: var(--color-accent-light);
-}
-
-.upload-label {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--spacing-xs);
-    cursor: pointer;
-    color: var(--color-text-muted);
-    font-size: 0.8125rem;
-}
-
-.upload-label svg {
-    color: var(--color-accent);
-}
-
-
-/* Progress bar and time display */
-.progress-container {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    flex: 1;
-}
-
-.progress-bar {
-    flex: 1;
-    height: 6px;
-    background: var(--color-border);
-    border-radius: 3px;
-    cursor: pointer;
-    position: relative;
-    overflow: visible;
-    transition: height var(--transition-fast);
-}
-
-.progress-bar:hover {
-    height: 8px;
-    background: #d1d5db;
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--color-accent), #3b82f6);
-    border-radius: 3px;
-    width: 0%;
-    transition: width 0.1s linear;
-}
-
-.time-display {
-    font-size: 0.75rem;
-    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
-    color: var(--color-text-muted);
-    min-width: 3rem;
-    text-align: center;
-}
-
-/* Compact upload area (shown after file upload) */
-.upload-area-compact {
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0.5rem;
-    flex-shrink: 0;
-}
-
-.upload-area-compact label {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-}
-
-.upload-area-compact .upload-icon {
-    margin: 0;
-    color: var(--color-accent);
-}
-
-
-/* Playback info positioning */
-.playback-info {
-    margin-left: var(--spacing-sm);
-    margin-right: var(--spacing-xs);
-    flex-shrink: 0;
-}
-
-.playback-info .info-tooltip {
-    left: 0;
-    transform: none;
-}
-
-.playback-info .info-tooltip::before,
-.playback-info .info-tooltip::after {
-    left: 12px;
-    transform: none;
-}
+/* Upload area, progress bar, and playback info styles now in components-audio.css */
 
 /* Phase Scenarios grid - 2x2 layout */
 .scenario-grid {
@@ -603,120 +392,9 @@
     min-width: 60px;
 }
 
-/* Info tooltip styles */
-.info-trigger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    border: 1.5px solid var(--color-text-muted);
-    color: var(--color-text-muted);
-    font-size: 0.7rem;
-    font-weight: 600;
-    cursor: help;
-    margin-left: var(--spacing-xs);
-    position: relative;
-    transition: all var(--transition-fast);
-    vertical-align: middle;
-}
+/* Info tooltip styles now in components-audio.css */
 
-.info-trigger:hover,
-.info-trigger:focus {
-    border-color: var(--color-accent);
-    color: var(--color-accent);
-    outline: none;
-}
-
-.info-tooltip {
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
-    width: 280px;
-    padding: var(--spacing-sm);
-    background: var(--color-card-bg);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-lg);
-    font-size: 0.8rem;
-    font-weight: 400;
-    line-height: 1.5;
-    color: var(--color-text);
-    text-align: left;
-    z-index: 100;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity var(--transition-fast), visibility var(--transition-fast);
-}
-
-/* Arrow */
-.info-tooltip::before {
-    content: '';
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 6px solid transparent;
-    border-bottom-color: var(--color-border);
-}
-
-.info-tooltip::after {
-    content: '';
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 5px solid transparent;
-    border-bottom-color: var(--color-card-bg);
-}
-
-/* Show on hover/focus */
-.info-trigger:hover .info-tooltip,
-.info-trigger:focus .info-tooltip {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Left-aligned tooltip */
-.info-tooltip.tooltip-left {
-    left: -8px;
-    transform: none;
-}
-
-.info-tooltip.tooltip-left::before,
-.info-tooltip.tooltip-left::after {
-    left: 16px;
-    transform: none;
-}
-
-/* Right-aligned tooltip */
-.info-tooltip.tooltip-right {
-    left: auto;
-    right: -8px;
-    transform: none;
-}
-
-.info-tooltip.tooltip-right::before,
-.info-tooltip.tooltip-right::after {
-    left: auto;
-    right: 16px;
-    transform: none;
-}
-
-/* Control group and label */
-.control-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-}
-
-.control-label {
-    font-size: 0.75rem;
-    color: var(--color-text-muted);
-    font-weight: 500;
-}
+/* Control group and label styles now in components-audio.css */
 
 /* Background content for educational sections */
 .background-content {
@@ -819,50 +497,9 @@
     background: rgba(37, 99, 235, 0.15);
 }
 
-/* Action button styles */
-.action-button {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    background: var(--color-control-bg);
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    color: var(--color-text);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-}
+/* Action button styles now in components-audio.css */
 
-.action-button:hover {
-    border-color: var(--color-text-muted);
-    background: var(--color-card-bg);
-}
-
-.action-button-primary {
-    background: var(--color-accent);
-    border-color: var(--color-accent);
-    color: white;
-}
-
-.action-button-primary:hover {
-    background: var(--color-accent-hover);
-    border-color: var(--color-accent-hover);
-}
-
-/* Dark mode for primary button */
-[data-theme="dark"] .action-button-primary {
-    background: #3b82f6;
-    border-color: #3b82f6;
-}
-
-[data-theme="dark"] .action-button-primary:hover {
-    background: #2563eb;
-    border-color: #2563eb;
-}
-
-/* Demo running state */
+/* Demo running state - local alias */
 .action-button.demo-running {
     background: var(--color-error);
     border-color: var(--color-error);
@@ -870,8 +507,8 @@
 }
 
 .action-button.demo-running:hover {
-    background: #dc2626;
-    border-color: #dc2626;
+    background: var(--color-error-hover);
+    border-color: var(--color-error-hover);
 }
 
 .action-button .demo-icon {

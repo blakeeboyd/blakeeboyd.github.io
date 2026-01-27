@@ -45,119 +45,29 @@
     gap: var(--spacing-md);
 }
 
-/* Play button */
+/* Play button - extends components-audio.css .play-button */
 .play-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
     width: 48px;
     height: 48px;
-    border-radius: 50%;
-    background: var(--color-accent);
-    border: none;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    flex-shrink: 0;
 }
 
 .play-button:hover {
-    background: var(--color-accent-hover);
     transform: scale(1.05);
-}
-
-.play-button:active {
-    transform: scale(0.95);
 }
 
 .play-button svg {
     width: 24px;
     height: 24px;
-    color: white;
 }
 
-.play-button .icon-pause {
-    display: none;
-}
-
-.play-button.playing .icon-play {
-    display: none;
-}
-
-.play-button.playing .icon-pause {
-    display: block;
-}
-
-/* Dark mode: use darker blue for better contrast with white text */
-[data-theme="dark"] .play-button {
-    background: #3b82f6;
-}
-
-[data-theme="dark"] .play-button:hover {
-    background: #2563eb;
-}
-
-/* Gain control */
+/* Gain control - extends components-audio.css */
 .gain-control {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
     flex: 1;
     justify-content: flex-end;
 }
 
-.gain-control .control-label {
-    font-size: 0.75rem;
-    color: var(--color-text-muted);
-    margin-bottom: 0;
-}
-
 .gain-row {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
     height: 28px; /* Match freq-input-group height */
-}
-
-.gain-slider {
-    flex: 1;
-    height: 6px;
-    -webkit-appearance: none;
-    appearance: none;
-    background: var(--color-control-bg);
-    border-radius: 3px;
-    outline: none;
-}
-
-.gain-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--color-accent);
-    cursor: pointer;
-    transition: transform var(--transition-fast);
-}
-
-.gain-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
-}
-
-.gain-slider::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--color-accent);
-    cursor: pointer;
-    border: none;
-}
-
-.gain-text {
-    font-size: 0.75rem;
-    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
-    color: var(--color-text-muted);
-    min-width: 45px;
-    text-align: right;
 }
 
 /* Frequency control */
@@ -264,7 +174,7 @@
     gap: 6px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
     .harmonics-grid {
         grid-template-columns: repeat(4, 1fr);
     }
@@ -647,7 +557,7 @@
     min-height: 60px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 640px) {
     .controls-row {
         flex-direction: column;
     }
@@ -668,120 +578,9 @@
     background: #000;
 }
 
-/* Info tooltip styles (reuse from moylanEQ) */
-.info-trigger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    border: 1.5px solid var(--color-text-muted);
-    color: var(--color-text-muted);
-    font-size: 0.7rem;
-    font-weight: 600;
-    cursor: help;
-    margin-left: var(--spacing-xs);
-    position: relative;
-    transition: all var(--transition-fast);
-    vertical-align: middle;
-}
+/* Info tooltip styles now in components-audio.css */
 
-.info-trigger:hover,
-.info-trigger:focus {
-    border-color: var(--color-accent);
-    color: var(--color-accent);
-    outline: none;
-}
-
-.info-tooltip {
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
-    width: 280px;
-    padding: var(--spacing-sm);
-    background: var(--color-card-bg);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-lg);
-    font-size: 0.8rem;
-    font-weight: 400;
-    line-height: 1.5;
-    color: var(--color-text);
-    text-align: left;
-    z-index: 100;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity var(--transition-fast), visibility var(--transition-fast);
-}
-
-/* Arrow */
-.info-tooltip::before {
-    content: '';
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 6px solid transparent;
-    border-bottom-color: var(--color-border);
-}
-
-.info-tooltip::after {
-    content: '';
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 5px solid transparent;
-    border-bottom-color: var(--color-card-bg);
-}
-
-/* Show on hover/focus */
-.info-trigger:hover .info-tooltip,
-.info-trigger:focus .info-tooltip {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Left-aligned tooltip */
-.info-tooltip.tooltip-left {
-    left: -8px;
-    transform: none;
-}
-
-.info-tooltip.tooltip-left::before,
-.info-tooltip.tooltip-left::after {
-    left: 16px;
-    transform: none;
-}
-
-/* Right-aligned tooltip */
-.info-tooltip.tooltip-right {
-    left: auto;
-    right: -8px;
-    transform: none;
-}
-
-.info-tooltip.tooltip-right::before,
-.info-tooltip.tooltip-right::after {
-    left: auto;
-    right: 16px;
-    transform: none;
-}
-
-/* Control group for fundamental section */
-.control-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-}
-
-.control-label {
-    font-size: 0.75rem;
-    color: var(--color-text-muted);
-    font-weight: 500;
-}
+/* Control group and label styles now in components-audio.css */
 
 /* Background content for educational sections */
 .background-content {

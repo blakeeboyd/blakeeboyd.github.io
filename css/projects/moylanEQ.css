@@ -61,18 +61,10 @@
     color: white;
 }
 
-/* Dark mode: use darker blue for better contrast with white text */
-[data-theme="dark"] .source-button.active {
-    background: #3b82f6;
-    border-color: #3b82f6;
-    color: white;
-}
+/* Dark mode override moved to components-audio.css */
 
-/* Gain row layout */
+/* Gain row layout - extends components-audio.css .gain-row */
 .gain-row {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
     padding: var(--spacing-sm);
     background: var(--color-control-bg);
     border-radius: var(--radius-md);
@@ -95,7 +87,6 @@
 
 .gain-row .gain-text {
     min-width: 50px;
-    text-align: right;
 }
 
 /* Disabled state for gain control when source is muted */
@@ -148,7 +139,7 @@
 }
 
 /* Responsive: stack on smaller screens */
-@media (max-width: 1000px) {
+@media (max-width: 1024px) {
     .audio-controls-row {
         flex-direction: column;
     }
@@ -167,9 +158,8 @@
     justify-content: flex-start;
 }
 
-.control-group {
-    display: flex;
-    flex-direction: column;
+/* Extends .control-group from components-audio.css with moylanEQ specifics */
+.eq-controls .control-group {
     align-items: center;
     gap: 0.375rem;
     padding: var(--spacing-sm);
@@ -180,7 +170,7 @@
     transition: border-color var(--transition-fast), background-color var(--transition-fast);
 }
 
-.control-group:hover {
+.eq-controls .control-group:hover {
     border-color: var(--color-border);
 }
 
@@ -189,8 +179,7 @@
     border: 1px solid var(--color-accent);
 }
 
-.control-label {
-    font-size: 0.75rem;
+.eq-controls .control-label {
     font-weight: 600;
     color: var(--color-text);
     text-transform: uppercase;
@@ -351,11 +340,9 @@
     height: 6px;
 }
 
+/* .gain-text styles now in components-audio.css - local override for weight */
 .gain-text {
-    font-size: 0.75rem;
     font-weight: 500;
-    color: var(--color-text-muted);
-    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
 }
 
 /* Console card (hidden by default) */
@@ -502,75 +489,9 @@
     display: flex;
 }
 
-.play-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 42px;
-    height: 42px;
-    padding: 0;
-    background: var(--color-accent);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: background-color var(--transition-normal), transform var(--transition-fast), box-shadow var(--transition-normal);
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
-}
+/* .play-button styles now in components-audio.css */
 
-.play-button:hover {
-    background: var(--color-accent-hover);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
-}
-
-.play-button:active {
-    transform: scale(0.95);
-    box-shadow: 0 1px 4px rgba(37, 99, 235, 0.3);
-}
-
-.play-button svg {
-    flex-shrink: 0;
-}
-
-/* Progress bar and time display */
-.progress-container {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    flex: 1;
-}
-
-.progress-bar {
-    flex: 1;
-    height: 6px;
-    background: var(--color-border);
-    border-radius: 3px;
-    cursor: pointer;
-    position: relative;
-    overflow: visible;
-    transition: height var(--transition-fast);
-}
-
-.progress-bar:hover {
-    height: 8px;
-    background: #d1d5db;
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--color-accent), #3b82f6);
-    border-radius: 3px;
-    width: 0%;
-    transition: width 0.1s linear;
-}
-
-.time-display {
-    font-size: 0.75rem;
-    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
-    color: var(--color-text-muted);
-    min-width: 3rem;
-    text-align: center;
-}
+/* Progress bar and time display now in components-audio.css */
 
 /* Loop controls container */
 .loop-controls {
@@ -672,125 +593,9 @@
     display: none;
 }
 
-/* Info Icon + Tooltip */
-.info-trigger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    border: 1.5px solid var(--color-text-muted);
-    color: var(--color-text-muted);
-    font-size: 0.7rem;
-    font-weight: 600;
-    cursor: help;
-    margin-left: var(--spacing-xs);
-    position: relative;
-    transition: all var(--transition-fast);
-    vertical-align: middle;
-}
+/* Info tooltip styles now in components-audio.css */
 
-.info-trigger:hover,
-.info-trigger:focus {
-    border-color: var(--color-accent);
-    color: var(--color-accent);
-    outline: none;
-}
-
-.info-tooltip {
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
-    width: 280px;
-    padding: var(--spacing-sm);
-    background: var(--color-card-bg);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-lg);
-    font-size: 0.8rem;
-    font-weight: 400;
-    line-height: 1.5;
-    color: var(--color-text);
-    text-align: left;
-    z-index: 100;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity var(--transition-fast), visibility var(--transition-fast);
-}
-
-/* Arrow */
-.info-tooltip::before {
-    content: '';
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 6px solid transparent;
-    border-bottom-color: var(--color-border);
-}
-
-.info-tooltip::after {
-    content: '';
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 5px solid transparent;
-    border-bottom-color: var(--color-card-bg);
-}
-
-/* Show on hover/focus */
-.info-trigger:hover .info-tooltip,
-.info-trigger:focus .info-tooltip {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Right-aligned tooltip for Frequency Bands */
-.info-tooltip.tooltip-right {
-    left: auto;
-    right: -8px;
-    transform: none;
-}
-
-.info-tooltip.tooltip-right::before,
-.info-tooltip.tooltip-right::after {
-    left: auto;
-    right: 16px;
-    transform: none;
-}
-
-/* Left-aligned tooltip for Audio Source */
-.info-tooltip.tooltip-left {
-    left: -8px;
-    transform: none;
-}
-
-.info-tooltip.tooltip-left::before,
-.info-tooltip.tooltip-left::after {
-    left: 16px;
-    transform: none;
-}
-
-/* Playback info positioning */
-.playback-info {
-    margin-left: var(--spacing-sm);
-    margin-right: var(--spacing-xs);
-    flex-shrink: 0;
-}
-
-.playback-info .info-tooltip {
-    left: 0;
-    transform: none;
-}
-
-.playback-info .info-tooltip::before,
-.playback-info .info-tooltip::after {
-    left: 12px;
-    transform: none;
-}
+/* Playback info styles now in components-audio.css */
 
 /* MoylanEQ responsive adjustments */
 @media (max-width: 640px) {

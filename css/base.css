@@ -13,6 +13,7 @@
 }
 
 :root {
+    /* Core colors */
     --color-bg: #f8f9fa;
     --color-text: #1a1a1a;
     --color-text-muted: #5b6370;
@@ -26,21 +27,45 @@
     --color-error: #ef4444;
     --color-accent-hover: #1d4ed8;
     --color-success-hover: #059669;
+
+    /* Additional color variants for consistency */
+    --color-accent-medium: #3b82f6;
+    --color-error-hover: #dc2626;
+    --color-warning-hover: #d97706;
+    --color-dark-bg: #0a0a0a;
+
+    /* Typography */
     --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+    /* Layout */
     --max-width: 1400px;
+
+    /* Spacing */
     --spacing-xs: 0.5rem;
     --spacing-sm: 1rem;
     --spacing-md: 1.5rem;
     --spacing-lg: 2rem;
     --spacing-xl: 4rem;
+
+    /* Shadows */
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+    /* Border radius */
     --radius-sm: 0.375rem;
     --radius-md: 0.5rem;
     --radius-lg: 0.75rem;
+
+    /* Transitions */
     --transition-fast: 0.15s ease;
     --transition-normal: 0.2s ease;
+
+    /* Breakpoints (reference for media queries):
+     * Mobile: 640px
+     * Tablet: 1024px
+     * Wide: 1400px
+     */
 }
 
 /* Dark mode theme */

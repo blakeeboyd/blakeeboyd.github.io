@@ -158,14 +158,7 @@
     border-color: var(--color-text-muted);
 }
 
-/* Dark mode: use darker blue for better contrast with white text */
-[data-theme="dark"] .source-buttons button.active,
-[data-theme="dark"] .mode-buttons button.active {
-    background: #3b82f6;
-    border-color: #3b82f6;
-    color: white;
-}
-
+/* Dark mode button overrides handled by components-audio.css, only target button needs local override */
 [data-theme="dark"] .mode-buttons button[data-mode="target"].active {
     background: #22c55e;
     border-color: #22c55e;

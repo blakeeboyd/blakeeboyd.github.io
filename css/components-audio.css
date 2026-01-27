@@ -1,0 +1,779 @@
+/* ===========================================
+   Shared Audio Components
+   Consolidated styles for audio project UI elements
+   =========================================== */
+
+/* ===========================================
+   Info Tooltip System
+   =========================================== */
+
+.info-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--color-text-muted);
+    color: var(--color-text-muted);
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: help;
+    margin-left: var(--spacing-xs);
+    position: relative;
+    transition: all var(--transition-fast);
+    vertical-align: middle;
+}
+
+.info-trigger:hover,
+.info-trigger:focus {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    outline: none;
+}
+
+.info-tooltip {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 280px;
+    padding: var(--spacing-sm);
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    font-size: 0.8rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--color-text);
+    text-align: left;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-fast), visibility var(--transition-fast);
+}
+
+/* Tooltip arrow */
+.info-tooltip::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-bottom-color: var(--color-border);
+}
+
+.info-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-bottom-color: var(--color-card-bg);
+}
+
+/* Show on hover/focus */
+.info-trigger:hover .info-tooltip,
+.info-trigger:focus .info-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Left-aligned tooltip */
+.info-tooltip.tooltip-left {
+    left: -8px;
+    transform: none;
+}
+
+.info-tooltip.tooltip-left::before,
+.info-tooltip.tooltip-left::after {
+    left: 16px;
+    transform: none;
+}
+
+/* Right-aligned tooltip */
+.info-tooltip.tooltip-right {
+    left: auto;
+    right: -8px;
+    transform: none;
+}
+
+.info-tooltip.tooltip-right::before,
+.info-tooltip.tooltip-right::after {
+    left: auto;
+    right: 16px;
+    transform: none;
+}
+
+/* ===========================================
+   Play Button
+   =========================================== */
+
+.play-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: var(--color-accent);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color var(--transition-normal), transform var(--transition-fast), box-shadow var(--transition-normal);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+    flex-shrink: 0;
+}
+
+/* Default size */
+.play-button {
+    width: 42px;
+    height: 42px;
+}
+
+/* Large variant */
+.play-button--large {
+    width: 48px;
+    height: 48px;
+}
+
+.play-button:hover {
+    background: var(--color-accent-hover);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+
+.play-button:active {
+    transform: scale(0.95);
+    box-shadow: 0 1px 4px rgba(37, 99, 235, 0.3);
+}
+
+.play-button svg {
+    flex-shrink: 0;
+}
+
+/* Play/pause icon states */
+.play-button .icon-pause {
+    display: none;
+}
+
+.play-button.playing .icon-play {
+    display: none;
+}
+
+.play-button.playing .icon-pause {
+    display: block;
+}
+
+/* Dark mode: better contrast with white text */
+[data-theme="dark"] .play-button {
+    background: #3b82f6;
+}
+
+[data-theme="dark"] .play-button:hover {
+    background: #2563eb;
+}
+
+/* ===========================================
+   Slider Controls (Gain, Frequency, etc.)
+   =========================================== */
+
+.slider-control {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    cursor: pointer;
+    background: var(--color-control-bg);
+    outline: none;
+}
+
+.slider-control:focus {
+    outline: none;
+}
+
+.slider-control:focus-visible {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Webkit (Chrome, Safari, Edge) slider thumb */
+.slider-control::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--color-accent);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    transition: transform var(--transition-fast);
+}
+
+.slider-control::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* Firefox slider thumb */
+.slider-control::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--color-accent);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    transition: transform var(--transition-fast);
+}
+
+.slider-control::-moz-range-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* Firefox slider track */
+.slider-control::-moz-range-track {
+    background: var(--color-control-bg);
+    border-radius: 3px;
+    height: 6px;
+}
+
+/* Gain row layout */
+.gain-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.gain-slider {
+    flex: 1;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--color-control-bg);
+    border-radius: 3px;
+    outline: none;
+}
+
+.gain-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    cursor: pointer;
+    transition: transform var(--transition-fast);
+}
+
+.gain-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.gain-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    cursor: pointer;
+    border: none;
+}
+
+.gain-text {
+    font-size: 0.75rem;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    color: var(--color-text-muted);
+    min-width: 45px;
+    text-align: right;
+}
+
+/* Gain control wrapper */
+.gain-control {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.gain-control .control-label {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-bottom: 0;
+}
+
+/* ===========================================
+   Control Groups and Labels
+   =========================================== */
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.control-label {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+}
+
+/* Inline control group variant */
+.control-group.inline {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: 0;
+    background: transparent;
+    border: none;
+    min-width: auto;
+}
+
+.control-group.inline .control-label {
+    margin-bottom: 0;
+    font-size: 0.75rem;
+}
+
+/* Card header inline layout */
+.card-header-inline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+/* ===========================================
+   Progress Bar and Time Display
+   =========================================== */
+
+.progress-container {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    flex: 1;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--color-border);
+    border-radius: 3px;
+    cursor: pointer;
+    position: relative;
+    overflow: visible;
+    transition: height var(--transition-fast);
+}
+
+.progress-bar:hover {
+    height: 8px;
+    background: #d1d5db;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-accent), #3b82f6);
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.1s linear;
+}
+
+.time-display {
+    font-size: 0.75rem;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    color: var(--color-text-muted);
+    min-width: 3rem;
+    text-align: center;
+}
+
+/* ===========================================
+   Upload Area
+   =========================================== */
+
+.upload-area {
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    text-align: center;
+    transition: all var(--transition-fast);
+    cursor: pointer;
+}
+
+.upload-area:hover,
+.upload-area.drag-over {
+    border-color: var(--color-accent);
+    background: var(--color-accent-light);
+}
+
+.upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xs);
+    cursor: pointer;
+    color: var(--color-text-muted);
+    font-size: 0.8125rem;
+}
+
+.upload-label svg {
+    color: var(--color-accent);
+}
+
+/* Compact upload area (shown after file upload) */
+.upload-area-compact {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    flex-shrink: 0;
+}
+
+.upload-area-compact label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.upload-area-compact .upload-icon {
+    margin: 0;
+    color: var(--color-accent);
+}
+
+/* Dark mode */
+[data-theme="dark"] .upload-area:hover,
+[data-theme="dark"] .upload-area.drag-over {
+    background: rgba(37, 99, 235, 0.1);
+}
+
+/* ===========================================
+   Source Buttons
+   =========================================== */
+
+.source-buttons {
+    display: flex;
+    gap: var(--spacing-xs);
+    flex-wrap: wrap;
+}
+
+.source-button {
+    flex: 1;
+    min-width: 80px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    background: var(--color-control-bg);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.source-button:hover {
+    border-color: var(--color-text-muted);
+}
+
+.source-button.active {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+}
+
+/* Dark mode: better contrast with white text */
+[data-theme="dark"] .source-button.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+/* ===========================================
+   Action Buttons
+   =========================================== */
+
+.action-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background: var(--color-control-bg);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.action-button:hover {
+    border-color: var(--color-text-muted);
+    background: var(--color-card-bg);
+}
+
+.action-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Primary action button */
+.action-button-primary {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+}
+
+.action-button-primary:hover {
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+    color: white;
+}
+
+/* Dark mode for primary button */
+[data-theme="dark"] .action-button-primary {
+    background: #3b82f6;
+    border-color: #3b82f6;
+}
+
+[data-theme="dark"] .action-button-primary:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+/* Secondary action button (green) */
+.action-button-secondary {
+    background: var(--color-success);
+    border-color: var(--color-success);
+    color: white;
+}
+
+.action-button-secondary:hover {
+    background: var(--color-success-hover);
+    border-color: var(--color-success-hover);
+    color: white;
+}
+
+/* Running state (red) for demos */
+.action-button.running,
+.action-button-primary.running,
+.action-button-secondary.running {
+    background: var(--color-error);
+    border-color: var(--color-error);
+    color: white;
+}
+
+.action-button.running:hover,
+.action-button-primary.running:hover,
+.action-button-secondary.running:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+}
+
+/* ===========================================
+   Demo Section
+   =========================================== */
+
+.demo-section {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+}
+
+.demo-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: 0.5rem 1rem;
+    background: var(--color-control-bg);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.demo-button:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.demo-button:hover .demo-icon {
+    stroke: var(--color-accent);
+}
+
+.demo-button.running {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+}
+
+.demo-button.running .demo-icon {
+    stroke: white;
+}
+
+.demo-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.demo-icon {
+    transition: stroke var(--transition-fast);
+}
+
+/* Demo status display */
+.demo-status {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: 0.5rem 1rem;
+    background: var(--color-accent-light);
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-md);
+    animation: pulse-border 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-border {
+    0%, 100% { border-color: var(--color-accent); }
+    50% { border-color: rgba(37, 99, 235, 0.4); }
+}
+
+.demo-status.hidden {
+    display: none;
+}
+
+.demo-status-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-accent);
+}
+
+/* Dark mode adjustments for demo */
+[data-theme="dark"] .demo-status {
+    background: rgba(37, 99, 235, 0.15);
+}
+
+/* ===========================================
+   Playback Controls
+   =========================================== */
+
+.playback-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.playback-controls.hidden {
+    display: none;
+}
+
+/* Playback divider */
+.playback-divider {
+    width: 1px;
+    height: 32px;
+    background: var(--color-border);
+    margin: 0 var(--spacing-xs);
+}
+
+/* Playback info positioning */
+.playback-info {
+    margin-left: var(--spacing-sm);
+    margin-right: var(--spacing-xs);
+    flex-shrink: 0;
+}
+
+.playback-info .info-tooltip {
+    left: 0;
+    transform: none;
+}
+
+.playback-info .info-tooltip::before,
+.playback-info .info-tooltip::after {
+    left: 12px;
+    transform: none;
+}
+
+/* ===========================================
+   Background/Educational Content
+   =========================================== */
+
+.background-content {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--color-text);
+}
+
+.background-content p {
+    margin-bottom: var(--spacing-sm);
+}
+
+.background-content p:last-child {
+    margin-bottom: 0;
+}
+
+.background-content h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: var(--spacing-md) 0 var(--spacing-xs);
+}
+
+.background-content ul,
+.background-content ol {
+    margin: var(--spacing-xs) 0 var(--spacing-sm) 1.5rem;
+    padding: 0;
+}
+
+.background-content li {
+    margin-bottom: 0.25rem;
+}
+
+.background-content .note {
+    background: var(--color-control-bg);
+    border-left: 3px solid var(--color-accent);
+    padding: var(--spacing-sm);
+    margin: var(--spacing-sm) 0;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 0.875rem;
+}
+
+/* Definition styling */
+.background-content dfn {
+    font-style: normal;
+    font-weight: 600;
+    color: var(--color-accent);
+}
+
+/* ===========================================
+   Section Divider
+   =========================================== */
+
+.section-divider {
+    width: 1px;
+    background: var(--color-border);
+    align-self: stretch;
+    min-height: 60px;
+}
+
+@media (max-width: 640px) {
+    .section-divider {
+        width: 100%;
+        height: 1px;
+        min-height: 1px;
+    }
+}
+
+/* ===========================================
+   Hidden Utility
+   =========================================== */
+
+.hidden {
+    display: none !important;
+}
