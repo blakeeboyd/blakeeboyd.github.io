@@ -36,6 +36,7 @@
     let slideDuration = 20;    // Seconds per slide (global default)
 
     // DOM Elements
+    const pageHeader = document.getElementById('page-header');
     const uploadSection = document.getElementById('upload-section');
     const previewSection = document.getElementById('preview-section');
     const slideshowSection = document.getElementById('slideshow-section');
@@ -83,11 +84,9 @@
     const presenterEndBtn = document.getElementById('presenter-end-btn');
     const presenterStartBtn = document.getElementById('presenter-start-btn');
     const presenterPauseBtn = document.getElementById('presenter-pause-btn');
-    const presenterSkipBtn = document.getElementById('presenter-skip-btn');
-    const presenterGridBtn = document.getElementById('presenter-grid-btn');
-    const presenterGridOverlay = document.getElementById('presenter-grid-overlay');
-    const presenterGrid = document.getElementById('presenter-grid');
-    const presenterGridClose = document.getElementById('presenter-grid-close');
+    const presenterNavGroup = document.getElementById('presenter-nav-group');
+    const presenterPrevBtn = document.getElementById('presenter-prev-btn');
+    const presenterNextBtn = document.getElementById('presenter-next-btn');
 
     // Notes elements
     const notesPanel = document.getElementById('notes-panel');
@@ -123,10 +122,15 @@
     const presenterFilmstrip = document.getElementById('presenter-filmstrip');
 
     // Timer overlay elements (practice mode)
-    const showTimerOverlayCheckbox = document.getElementById('show-timer-overlay');
     const timerOverlay = document.getElementById('timer-overlay');
     const timerOverlayValue = document.getElementById('timer-overlay-value');
     const timerTogglePractice = document.getElementById('timer-toggle-practice');
+
+    // Practice mode ready overlay
+    const practiceReadyOverlay = document.getElementById('practice-ready-overlay');
+    const practiceReadyBackground = document.getElementById('practice-ready-background');
+    const practiceSlideCount = document.getElementById('practice-slide-count');
+    const practiceStartBtn = document.getElementById('practice-start-btn');
 
     // Navigation arrows (practice mode)
     const navPrev = document.getElementById('nav-prev');
@@ -138,6 +142,18 @@
     // Image display mode
     const displayFitRadio = document.getElementById('display-fit');
     const displayFillRadio = document.getElementById('display-fill');
+    const displayNativeRadio = document.getElementById('display-native');
+
+    // Presentation mode toggle
+    const modePracticeRadio = document.getElementById('mode-practice');
+
+    // Update start button labels based on selected mode
+    function updateStartButtonLabels() {
+        const isPresentMode = modePresentRadio.checked;
+        const modeLabel = isPresentMode ? 'Present' : 'Practice';
+        startBtn.textContent = `Start ${modeLabel} Mode`;
+        // startFromBtn text is updated in updateStartFromButton() with slide number
+    }
 
     // Natural sort comparison for filenames
     function naturalSort(a, b) {
@@ -252,6 +268,7 @@
 
     // Show preview section with thumbnails
     function showPreview() {
+        pageHeader.hidden = true;
         uploadSection.hidden = true;
         previewSection.hidden = false;
         completeSection.hidden = true;
@@ -770,7 +787,9 @@
     // Update the "Start from" button visibility and text
     function updateStartFromButton() {
         if (selectedIndex !== null) {
-            startFromBtn.textContent = `Start from Slide ${selectedIndex + 1}`;
+            const isPresentMode = modePresentRadio.checked;
+            const modeLabel = isPresentMode ? 'Present' : 'Practice';
+            startFromBtn.textContent = `${modeLabel} from Slide ${selectedIndex + 1}`;
             startFromBtn.hidden = false;
         } else {
             startFromBtn.hidden = true;
@@ -879,7 +898,9 @@
             exportedAt: new Date().toISOString(),
             settings: {
                 slideDuration: slideDuration,
-                displayMode: getDisplayMode()
+                displayMode: getDisplayMode(),
+                showTimerOverlay: timerTogglePractice.checked,
+                presentationMode: modePresentRadio.checked ? 'present' : 'practice'
             },
             titleSlide: titleSlide,
             slides: images
@@ -914,6 +935,15 @@
                 const displayMode = config.settings?.displayMode || 'fit';
                 displayFitRadio.checked = displayMode === 'fit';
                 displayFillRadio.checked = displayMode === 'fill';
+                displayNativeRadio.checked = displayMode === 'native';
+
+                // Apply timer overlay preference (default to false for backward compatibility)
+                timerTogglePractice.checked = config.settings?.showTimerOverlay || false;
+
+                // Apply presentation mode preference (default to practice for backward compatibility)
+                const presentationMode = config.settings?.presentationMode || 'practice';
+                document.getElementById('mode-practice').checked = presentationMode === 'practice';
+                modePresentRadio.checked = presentationMode === 'present';
 
                 // Apply title slide
                 titleSlide = config.titleSlide || null;
@@ -924,8 +954,9 @@
                     duration: slide.duration || null
                 }));
 
-                // Show preview
+                // Show preview and update button labels
                 updateTitleSlideUI();
+                updateStartButtonLabels();
                 showPreview();
             } catch (err) {
                 alert('Invalid configuration file: ' + err.message);
@@ -934,7 +965,10 @@
         reader.readAsText(file);
     }
 
-    // Start slideshow from a specific index
+    // Pending start index for practice mode (used after ready overlay)
+    let pendingStartIndex = 0;
+
+    // Start slideshow from a specific index (shows ready overlay first)
     function startSlideshowFrom(startIndex) {
         if (images.length === 0) return;
 
@@ -945,21 +979,67 @@
         }
 
         hideUndoToast();
+        pendingStartIndex = startIndex;
+        showPracticeReadyOverlay(startIndex);
+    }
 
-        currentIndex = startIndex;
+    // Show the practice ready overlay
+    function showPracticeReadyOverlay(startIndex) {
+        previewSection.hidden = true;
+        slideshowSection.hidden = false;
+        completeSection.hidden = true;
+
+        // Show ready overlay
+        practiceReadyOverlay.hidden = false;
+
+        // Clear any previous background image
+        practiceReadyBackground.innerHTML = '';
+
+        // Show title slide or first slide as background
+        const backgroundImage = titleSlide ? titleSlide.dataUrl : images[startIndex].dataUrl;
+        const img = document.createElement('img');
+        img.src = backgroundImage;
+        img.alt = 'Preview';
+        practiceReadyBackground.appendChild(img);
+
+        // Update slide count message
+        const totalSlides = images.length;
+        let message = '';
+        if (startIndex === 0) {
+            message = `${totalSlides} slides`;
+        } else {
+            message = `Starting from slide ${startIndex + 1} of ${totalSlides}`;
+        }
+        if (titleSlide) {
+            message += ' (with title slide)';
+        }
+        practiceSlideCount.textContent = message;
+
+        // Initialize controls bar display
+        slideCounter.textContent = `${startIndex + 1} / ${totalSlides}`;
+        pauseIndicator.hidden = true;
+        progressFill.style.width = '0%';
+        slideTimerDisplay.textContent = getSlideDuration(startIndex);
+        elapsedTimeDisplay.textContent = '0:00';
+        totalTimeDisplay.textContent = formatTime(calculateTotalTime());
+
+        // Apply image display mode
+        applyDisplayMode();
+    }
+
+    // Begin practice presentation (called when user clicks Start on ready overlay)
+    function beginPracticePresentation() {
+        practiceReadyOverlay.hidden = true;
+
+        currentIndex = pendingStartIndex;
         isPaused = false;
         pausedTimeRemaining = 0;
         pausedElapsedOnSlide = 0;
         presentationStartTime = Date.now();
-
-        previewSection.hidden = true;
-        slideshowSection.hidden = false;
-        completeSection.hidden = true;
         pauseIndicator.hidden = true;
 
-        // Show/hide timer overlay based on checkbox and sync toggle
-        timerOverlay.hidden = !showTimerOverlayCheckbox.checked;
-        timerTogglePractice.checked = showTimerOverlayCheckbox.checked;
+        // Timer overlay: respect user's checkbox state (preserve their preference)
+        timerOverlay.hidden = !timerTogglePractice.checked;
 
         // Apply image display mode
         applyDisplayMode();
@@ -968,7 +1048,7 @@
         elapsedTimeDisplay.textContent = '0:00';
         totalTimeDisplay.textContent = formatTime(calculateTotalTime());
 
-        showSlide(startIndex);
+        showSlide(pendingStartIndex);
     }
 
     // Show lightbox with image preview
@@ -985,7 +1065,7 @@
         document.body.style.overflow = '';
     }
 
-    // Start the slideshow
+    // Start the slideshow (shows ready overlay first)
     function startSlideshow() {
         if (images.length === 0) return;
 
@@ -996,30 +1076,8 @@
         }
 
         hideUndoToast();
-
-        currentIndex = 0;
-        isPaused = false;
-        pausedTimeRemaining = 0;
-        pausedElapsedOnSlide = 0;
-        presentationStartTime = Date.now();
-
-        previewSection.hidden = true;
-        slideshowSection.hidden = false;
-        completeSection.hidden = true;
-        pauseIndicator.hidden = true;
-
-        // Show/hide timer overlay based on checkbox and sync toggle
-        timerOverlay.hidden = !showTimerOverlayCheckbox.checked;
-        timerTogglePractice.checked = showTimerOverlayCheckbox.checked;
-
-        // Apply image display mode
-        applyDisplayMode();
-
-        // Initialize elapsed/total time display
-        elapsedTimeDisplay.textContent = '0:00';
-        totalTimeDisplay.textContent = formatTime(calculateTotalTime());
-
-        showSlide(0);
+        pendingStartIndex = 0;
+        showPracticeReadyOverlay(0);
     }
 
     // Display a specific slide
@@ -1194,20 +1252,36 @@
     function exitSlideshow() {
         clearTimers();
         isPaused = false;
+        practiceReadyOverlay.hidden = true;
         slideshowSection.hidden = true;
         previewSection.hidden = false;
     }
 
     // Apply image display mode to slide containers
     function applyDisplayMode() {
-        const isFill = displayFillRadio.checked;
-        const objectFit = isFill ? 'cover' : 'contain';
-        currentSlide.style.objectFit = objectFit;
+        const mode = getDisplayMode();
+        if (mode === 'native') {
+            // Native: show at original size, centered
+            currentSlide.style.objectFit = 'none';
+            currentSlide.style.width = 'auto';
+            currentSlide.style.height = 'auto';
+            currentSlide.style.maxWidth = '100%';
+            currentSlide.style.maxHeight = '100%';
+        } else {
+            // Fit or Fill: use object-fit
+            currentSlide.style.objectFit = mode === 'fill' ? 'cover' : 'contain';
+            currentSlide.style.width = '100%';
+            currentSlide.style.height = '100%';
+            currentSlide.style.maxWidth = '';
+            currentSlide.style.maxHeight = '';
+        }
     }
 
     // Get current display mode value
     function getDisplayMode() {
-        return displayFillRadio.checked ? 'fill' : 'fit';
+        if (displayFillRadio.checked) return 'fill';
+        if (displayNativeRadio.checked) return 'native';
+        return 'fit';
     }
 
     // End slideshow and show completion
@@ -1236,6 +1310,7 @@
         selectedIndex = null;
         undoStack = [];
 
+        pageHeader.hidden = false;
         uploadSection.hidden = false;
         previewSection.hidden = true;
         slideshowSection.hidden = true;
@@ -1439,10 +1514,9 @@
         showExternalSlide(currentIndex);
         // Update presenter view to show "waiting to start" state
         presenterTime.textContent = formatTime(slideDuration);
-        // Show start button, hide pause/skip
+        // Show start button, hide nav group
         presenterStartBtn.hidden = false;
-        presenterPauseBtn.hidden = true;
-        presenterSkipBtn.hidden = true;
+        presenterNavGroup.hidden = true;
     }
 
     // Begin the slideshow (called when user clicks Start in main window)
@@ -1452,11 +1526,10 @@
             presentationWindow.postMessage({ type: 'start' }, '*');
         }
 
-        // Hide start button, show pause/skip/grid
+        // Hide start button, show nav group
         presenterStartBtn.hidden = true;
-        presenterPauseBtn.hidden = false;
-        presenterSkipBtn.hidden = false;
-        presenterGridBtn.hidden = false;
+        presenterNavGroup.hidden = false;
+        updatePresenterNavArrows();
 
         // Set presentation start time and total time display
         presentationStartTime = Date.now();
@@ -1576,6 +1649,7 @@
             currentSlideDuration = getSlideDuration(nextIndex) * 1000;
             showExternalSlide(nextIndex);
             startExternalSlideTimer();
+            updatePresenterNavArrows();
         }
     }
 
@@ -1607,9 +1681,72 @@
         }
     }
 
-    // Skip to next slide in external presentation
-    function skipExternalSlide() {
-        advanceExternalSlide();
+    // Navigate to next slide in external presentation (manual, preserves pause state)
+    function goToNextExternalSlide() {
+        if (currentIndex < images.length - 1) {
+            const wasPaused = isPaused;
+            clearTimers();
+
+            const nextIndex = currentIndex + 1;
+
+            // Adjust presentation start time for elapsed display
+            presentationStartTime = Date.now() - getElapsedTimeBeforeSlide(nextIndex);
+            currentSlideDuration = getSlideDuration(nextIndex) * 1000;
+            pausedTimeRemaining = currentSlideDuration;
+
+            showExternalSlide(nextIndex);
+
+            // Only start timer if we weren't paused
+            if (!wasPaused) {
+                isPaused = false;
+                pausedTimeRemaining = 0;
+                presenterPauseBtn.textContent = 'Pause';
+                startExternalSlideTimer();
+            } else {
+                // Stay paused but update the display
+                isPaused = true;
+                presenterPauseBtn.textContent = 'Resume';
+                presenterTime.textContent = formatTime(Math.ceil(currentSlideDuration / 1000));
+                presenterProgressFill.style.width = '0%';
+            }
+            updatePresenterNavArrows();
+        }
+    }
+
+    // Navigate to previous slide in external presentation
+    function goToPreviousExternalSlide() {
+        if (currentIndex > 0) {
+            const wasPaused = isPaused;
+            clearTimers();
+
+            // Adjust presentation start time for elapsed display
+            presentationStartTime = Date.now() - getElapsedTimeBeforeSlide(currentIndex - 1);
+            currentSlideDuration = getSlideDuration(currentIndex - 1) * 1000;
+            pausedTimeRemaining = currentSlideDuration; // Full slide duration for new slide
+
+            showExternalSlide(currentIndex - 1);
+
+            // Only start timer if we weren't paused
+            if (!wasPaused) {
+                isPaused = false;
+                pausedTimeRemaining = 0;
+                presenterPauseBtn.textContent = 'Pause';
+                startExternalSlideTimer();
+            } else {
+                // Stay paused but update the display
+                isPaused = true;
+                presenterPauseBtn.textContent = 'Resume';
+                presenterTime.textContent = formatTime(Math.ceil(currentSlideDuration / 1000));
+                presenterProgressFill.style.width = '0%';
+            }
+            updatePresenterNavArrows();
+        }
+    }
+
+    // Update presenter navigation arrow states
+    function updatePresenterNavArrows() {
+        presenterPrevBtn.disabled = currentIndex === 0;
+        presenterNextBtn.disabled = currentIndex === images.length - 1;
     }
 
     // Show completion screen
@@ -1688,56 +1825,33 @@
         }
     }
 
-    // ========================================
-    // Presenter Grid View (Jump to Slide)
-    // ========================================
-
-    // Show the grid overlay with all slides
-    function showPresenterGrid() {
-        // Render thumbnails
-        presenterGrid.innerHTML = images.map((img, i) => `
-            <div class="pk-presenter-grid-item ${i === currentIndex ? 'current' : ''}" data-index="${i}">
-                <img src="${img.dataUrl}" alt="Slide ${i + 1}">
-                <span class="pk-presenter-grid-number">${i + 1}</span>
-            </div>
-        `).join('');
-
-        presenterGridOverlay.hidden = false;
-
-        // Add click handlers to each thumbnail
-        presenterGrid.querySelectorAll('.pk-presenter-grid-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const index = parseInt(item.dataset.index, 10);
-                jumpToSlide(index);
-                hidePresenterGrid();
-            });
-        });
-    }
-
-    // Hide the grid overlay
-    function hidePresenterGrid() {
-        presenterGridOverlay.hidden = true;
-    }
-
-    // Toggle the grid overlay
-    function togglePresenterGrid() {
-        if (presenterGridOverlay.hidden) {
-            showPresenterGrid();
-        } else {
-            hidePresenterGrid();
-        }
-    }
-
-    // Jump to a specific slide during external presentation
+    // Jump to a specific slide during external presentation (used by filmstrip, preserves pause state)
     function jumpToSlide(index) {
+        const wasPaused = isPaused;
         clearTimers();
-        isPaused = false;
-        pausedTimeRemaining = 0;
+
         currentSlideDuration = getSlideDuration(index) * 1000;
-        presenterPauseBtn.textContent = 'Pause';
+        pausedTimeRemaining = currentSlideDuration;
+
+        // Adjust presentation start time for elapsed display
+        presentationStartTime = Date.now() - getElapsedTimeBeforeSlide(index);
 
         showExternalSlide(index);
-        startExternalSlideTimer();
+
+        // Only start timer if we weren't paused
+        if (!wasPaused) {
+            isPaused = false;
+            pausedTimeRemaining = 0;
+            presenterPauseBtn.textContent = 'Pause';
+            startExternalSlideTimer();
+        } else {
+            // Stay paused but update the display
+            isPaused = true;
+            presenterPauseBtn.textContent = 'Resume';
+            presenterTime.textContent = formatTime(Math.ceil(currentSlideDuration / 1000));
+            presenterProgressFill.style.width = '0%';
+        }
+        updatePresenterNavArrows();
     }
 
     // Event Listeners
@@ -1795,9 +1909,8 @@
     presenterCloseWindowBtn.addEventListener('click', toggleExternalWindow);
     presenterStartBtn.addEventListener('click', beginExternalSlideshow);
     presenterPauseBtn.addEventListener('click', toggleExternalPause);
-    presenterSkipBtn.addEventListener('click', skipExternalSlide);
-    presenterGridBtn.addEventListener('click', showPresenterGrid);
-    presenterGridClose.addEventListener('click', hidePresenterGrid);
+    presenterPrevBtn.addEventListener('click', goToPreviousExternalSlide);
+    presenterNextBtn.addEventListener('click', goToNextExternalSlide);
 
     // Lightbox events - close on any click
     lightbox.addEventListener('click', hideLightbox);
@@ -1841,11 +1954,22 @@
     navPrev.addEventListener('click', goToPreviousSlide);
     navNext.addEventListener('click', goToNextSlide);
 
+    // Practice mode start button (on ready overlay)
+    practiceStartBtn.addEventListener('click', beginPracticePresentation);
+
     // Timer toggle in practice mode controls
     timerTogglePractice.addEventListener('change', () => {
         timerOverlay.hidden = !timerTogglePractice.checked;
-        // Sync back to preview checkbox
-        showTimerOverlayCheckbox.checked = timerTogglePractice.checked;
+    });
+
+    // Presentation mode toggle - update button labels when mode changes
+    modePracticeRadio.addEventListener('change', () => {
+        updateStartButtonLabels();
+        updateStartFromButton();
+    });
+    modePresentRadio.addEventListener('change', () => {
+        updateStartButtonLabels();
+        updateStartFromButton();
     });
 
     // Edit slides button on completion screen
@@ -1867,13 +1991,6 @@
             return;
         }
 
-        // Handle presenter grid overlay
-        if (!presenterGridOverlay.hidden && e.code === 'Escape') {
-            e.preventDefault();
-            hidePresenterGrid();
-            return;
-        }
-
         // Handle undo (Ctrl/Cmd+Z) when in preview section
         if (!previewSection.hidden && (e.metaKey || e.ctrlKey) && e.code === 'KeyZ' && !e.shiftKey) {
             e.preventDefault();
@@ -1892,18 +2009,19 @@
                         e.preventDefault();
                         toggleExternalPause();
                         return;
+                    case 'ArrowLeft':
+                    case 'ArrowUp':
+                        // Don't interfere with text navigation
+                        if (isTyping) return;
+                        e.preventDefault();
+                        goToPreviousExternalSlide();
+                        return;
                     case 'ArrowRight':
                     case 'ArrowDown':
                         // Don't interfere with text navigation
                         if (isTyping) return;
                         e.preventDefault();
-                        skipExternalSlide();
-                        return;
-                    case 'KeyG':
-                        // Don't trigger grid when typing
-                        if (isTyping) return;
-                        e.preventDefault();
-                        togglePresenterGrid();
+                        goToNextExternalSlide();
                         return;
                     case 'Escape':
                         e.preventDefault();
@@ -1915,6 +2033,20 @@
 
         // Only handle slideshow controls when slideshow is visible
         if (slideshowSection.hidden) return;
+
+        // Handle practice ready overlay
+        if (!practiceReadyOverlay.hidden) {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                beginPracticePresentation();
+                return;
+            } else if (e.code === 'Escape') {
+                e.preventDefault();
+                exitSlideshow();
+                return;
+            }
+            return; // Don't process other keys when on ready overlay
+        }
 
         if (e.code === 'Space') {
             e.preventDefault();
@@ -1990,5 +2122,8 @@
 
     // Initialize drag-to-adjust on number inputs
     setupDragToAdjust(slideDurationOverride);
+
+    // Initialize button labels based on default mode selection
+    updateStartButtonLabels();
 
 })();
