@@ -671,12 +671,25 @@
             font-size: 0.875rem;
         }
 
+        /* Practice mode content area (slide + notes side by side) */
+        .pk-practice-content {
+            flex: 1;
+            display: flex;
+            min-height: 0;
+            overflow: hidden;
+        }
+
         .pk-slide-container {
             flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
+        }
+
+        /* When notes are visible, slide takes less space */
+        .pk-practice-content:has(.pk-practice-notes-panel:not([hidden])) .pk-slide-container {
+            flex: 0 0 70%;
         }
 
         .pk-slide-container img {
@@ -1614,25 +1627,38 @@
             animation: timer-pulse 0.5s ease-in-out infinite;
         }
 
-        /* Practice mode notes panel */
+        /* Practice mode notes panel (right side) */
         .pk-practice-notes-panel {
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(8px);
-            padding: var(--spacing-md) var(--spacing-lg);
-            max-height: 120px;
-            overflow-y: auto;
+            flex: 0 0 30%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .pk-practice-notes-header {
+            padding: var(--spacing-sm) var(--spacing-md);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
         }
 
         .pk-practice-notes-text {
+            flex: 1;
             color: rgba(255, 255, 255, 0.9);
             font-size: 1rem;
-            line-height: 1.5;
+            line-height: 1.6;
             margin: 0;
+            padding: var(--spacing-md);
             white-space: pre-wrap;
+            overflow-y: auto;
         }
 
-        .pk-practice-notes-text:empty::before,
-        .pk-practice-notes-panel:not([hidden]) .pk-practice-notes-text:empty::after {
+        .pk-practice-notes-text:empty::before {
             content: 'No notes for this slide';
             color: rgba(255, 255, 255, 0.4);
             font-style: italic;
@@ -1777,6 +1803,19 @@
 
             .pk-presenter-controls {
                 justify-content: center;
+            }
+
+            /* Practice notes: stack vertically on small screens */
+            .pk-practice-content {
+                flex-direction: column;
+            }
+
+            .pk-practice-content:has(.pk-practice-notes-panel:not([hidden])) .pk-slide-container {
+                flex: 0 0 60%;
+            }
+
+            .pk-practice-notes-panel {
+                flex: 1;
             }
         }
     </style>
@@ -2036,27 +2075,31 @@
                     <p class="pk-practice-ready-hint">Press Space or click Start to begin</p>
                 </div>
             </div>
-            <div class="pk-slide-container">
-                <img id="current-slide" src="" alt="Presentation slide">
-                <!-- Timer overlay (optional, practice mode only) -->
-                <div id="timer-overlay" class="pk-timer-overlay" hidden>
-                    <span id="timer-overlay-value">20</span>
+            <!-- Main content area (slide + optional notes) -->
+            <div class="pk-practice-content">
+                <div class="pk-slide-container">
+                    <img id="current-slide" src="" alt="Presentation slide">
+                    <!-- Timer overlay (optional, practice mode only) -->
+                    <div id="timer-overlay" class="pk-timer-overlay" hidden>
+                        <span id="timer-overlay-value">20</span>
+                    </div>
+                    <!-- Navigation arrows (practice mode only) -->
+                    <button id="nav-prev" class="pk-nav-arrow pk-nav-prev" aria-label="Previous slide">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <button id="nav-next" class="pk-nav-arrow pk-nav-next" aria-label="Next slide">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
                 </div>
-                <!-- Navigation arrows (practice mode only) -->
-                <button id="nav-prev" class="pk-nav-arrow pk-nav-prev" aria-label="Previous slide">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <polyline points="15 18 9 12 15 6"></polyline>
-                    </svg>
-                </button>
-                <button id="nav-next" class="pk-nav-arrow pk-nav-next" aria-label="Next slide">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                </button>
-            </div>
-            <!-- Notes panel (practice mode only) -->
-            <div id="practice-notes-panel" class="pk-practice-notes-panel" hidden>
-                <p id="practice-notes-text" class="pk-practice-notes-text">No notes for this slide</p>
+                <!-- Notes panel (practice mode only) - shown on right side -->
+                <div id="practice-notes-panel" class="pk-practice-notes-panel" hidden>
+                    <div class="pk-practice-notes-header">Notes</div>
+                    <p id="practice-notes-text" class="pk-practice-notes-text">No notes for this slide</p>
+                </div>
             </div>
             <div class="pk-controls">
                 <div class="pk-slide-info">
