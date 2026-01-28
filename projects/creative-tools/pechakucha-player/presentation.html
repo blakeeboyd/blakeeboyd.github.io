@@ -341,6 +341,10 @@
                 slideDuration = data.settings?.slideDuration || 20;
                 currentIndex = data.startIndex || 0;
 
+                // Apply display mode
+                const displayMode = data.settings?.displayMode || 'fit';
+                currentSlide.style.objectFit = displayMode === 'fill' ? 'cover' : 'contain';
+
                 // Show ready overlay instead of starting immediately
                 waitingOverlay.hidden = true;
                 readyOverlay.hidden = false;

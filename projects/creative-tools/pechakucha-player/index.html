@@ -1417,6 +1417,18 @@
             display: flex;
         }
 
+        /* Image display mode selector */
+        .pk-display-mode {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .pk-display-mode-label {
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+        }
+
         /* Timer overlay on slide */
         .pk-timer-overlay {
             position: absolute;
@@ -1604,6 +1616,18 @@
                     <input type="checkbox" id="show-timer-overlay">
                     <span>Show timer on slide</span>
                 </label>
+                <div class="pk-display-mode">
+                    <span class="pk-display-mode-label">Image display</span>
+                    <div class="pk-mode-toggle" role="radiogroup" aria-label="Image display mode">
+                        <input type="radio" id="display-fit" name="display-mode" value="fit" checked>
+                        <label for="display-fit">Fit</label>
+                        <input type="radio" id="display-fill" name="display-mode" value="fill">
+                        <label for="display-fill">Fill</label>
+                    </div>
+                    <span class="info-trigger" tabindex="0" aria-label="More information about image display modes">?
+                        <span class="info-tooltip"><strong>Fit:</strong> Shows the entire image with black bars if needed.<br><strong>Fill:</strong> Fills the screen, cropping edges if the aspect ratio doesn't match.</span>
+                    </span>
+                </div>
                 <div class="pk-action-buttons">
                     <button id="start-btn" class="action-button">Start Presentation</button>
                     <button id="start-from-btn" class="action-button" hidden>Start from Slide 1</button>

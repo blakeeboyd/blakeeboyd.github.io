@@ -135,6 +135,10 @@
     // Completion screen buttons
     const editBtn = document.getElementById('edit-btn');
 
+    // Image display mode
+    const displayFitRadio = document.getElementById('display-fit');
+    const displayFillRadio = document.getElementById('display-fill');
+
     // Natural sort comparison for filenames
     function naturalSort(a, b) {
         return a.name.localeCompare(b.name, undefined, {
@@ -874,7 +878,8 @@
             version: 1,
             exportedAt: new Date().toISOString(),
             settings: {
-                slideDuration: slideDuration
+                slideDuration: slideDuration,
+                displayMode: getDisplayMode()
             },
             titleSlide: titleSlide,
             slides: images
@@ -904,6 +909,11 @@
 
                 // Apply settings
                 slideDuration = config.settings?.slideDuration || DEFAULT_SLIDE_DURATION;
+
+                // Apply display mode
+                const displayMode = config.settings?.displayMode || 'fit';
+                displayFitRadio.checked = displayMode === 'fit';
+                displayFillRadio.checked = displayMode === 'fill';
 
                 // Apply title slide
                 titleSlide = config.titleSlide || null;
@@ -950,6 +960,9 @@
         // Show/hide timer overlay based on checkbox and sync toggle
         timerOverlay.hidden = !showTimerOverlayCheckbox.checked;
         timerTogglePractice.checked = showTimerOverlayCheckbox.checked;
+
+        // Apply image display mode
+        applyDisplayMode();
 
         // Initialize elapsed/total time display
         elapsedTimeDisplay.textContent = '0:00';
@@ -998,6 +1011,9 @@
         // Show/hide timer overlay based on checkbox and sync toggle
         timerOverlay.hidden = !showTimerOverlayCheckbox.checked;
         timerTogglePractice.checked = showTimerOverlayCheckbox.checked;
+
+        // Apply image display mode
+        applyDisplayMode();
 
         // Initialize elapsed/total time display
         elapsedTimeDisplay.textContent = '0:00';
@@ -1180,6 +1196,18 @@
         isPaused = false;
         slideshowSection.hidden = true;
         previewSection.hidden = false;
+    }
+
+    // Apply image display mode to slide containers
+    function applyDisplayMode() {
+        const isFill = displayFillRadio.checked;
+        const objectFit = isFill ? 'cover' : 'contain';
+        currentSlide.style.objectFit = objectFit;
+    }
+
+    // Get current display mode value
+    function getDisplayMode() {
+        return displayFillRadio.checked ? 'fill' : 'fit';
     }
 
     // End slideshow and show completion
@@ -1397,7 +1425,8 @@
             images: images,
             titleSlide: titleSlide,
             settings: {
-                slideDuration: slideDuration
+                slideDuration: slideDuration,
+                displayMode: getDisplayMode()
             },
             startIndex: currentIndex,
             requestFullscreen: shouldFullscreen
