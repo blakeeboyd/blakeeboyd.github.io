@@ -26,6 +26,9 @@
     let selectedIndex = null;  // Currently selected thumbnail index
     let undoStack = [];        // Stack of undoable actions: { type, ...data }
     let toastTimer = null;     // Timer for auto-hiding toast
+    let lightboxPreviousFocus = null; // Element that had focus before lightbox opened
+    let audioContext = null;   // Web Audio API context for beeps
+    let lastBeepSecond = null; // Track which second we last beeped on (to avoid duplicates)
 
     // External presentation state
     let presentationWindow = null;
@@ -125,6 +128,15 @@
     const timerOverlay = document.getElementById('timer-overlay');
     const timerOverlayValue = document.getElementById('timer-overlay-value');
     const timerTogglePractice = document.getElementById('timer-toggle-practice');
+
+    // Practice mode notes panel
+    const practiceNotesPanel = document.getElementById('practice-notes-panel');
+    const practiceNotesText = document.getElementById('practice-notes-text');
+    const notesTogglePractice = document.getElementById('notes-toggle-practice');
+
+    // Audio warnings toggle
+    const audioTogglePractice = document.getElementById('audio-toggle-practice');
+    const audioTogglePresenter = document.getElementById('audio-toggle-presenter');
 
     // Practice mode ready overlay
     const practiceReadyOverlay = document.getElementById('practice-ready-overlay');
@@ -288,6 +300,7 @@
             if (img.duration) classes += ' has-custom-duration';
             thumb.className = classes;
             thumb.draggable = true;
+            thumb.tabIndex = 0; // Make focusable for keyboard reordering
             thumb.dataset.index = index;
             thumb.innerHTML = `
                 <img src="${img.dataUrl}" alt="Slide ${index + 1}">
@@ -331,6 +344,17 @@
             thumb.addEventListener('dragleave', handleDragLeave);
             thumb.addEventListener('drop', handleDrop);
             thumb.addEventListener('dragend', handleDragEnd);
+
+            // Keyboard reordering with arrow keys
+            thumb.addEventListener('keydown', (e) => {
+                if (e.code === 'ArrowUp' || e.code === 'ArrowLeft') {
+                    e.preventDefault();
+                    moveSlideUp(index);
+                } else if (e.code === 'ArrowDown' || e.code === 'ArrowRight') {
+                    e.preventDefault();
+                    moveSlideDown(index);
+                }
+            });
 
             thumbnails.appendChild(thumb);
         });
@@ -650,6 +674,54 @@
         performReorder();
     }
 
+    // Move slide up (toward beginning) via keyboard
+    function moveSlideUp(index) {
+        if (index <= 0 || index >= images.length) return;
+
+        // Swap with previous slide
+        const [slide] = images.splice(index, 1);
+        images.splice(index - 1, 0, slide);
+
+        // Update selection if needed
+        if (selectedIndex === index) {
+            selectedIndex = index - 1;
+        } else if (selectedIndex === index - 1) {
+            selectedIndex = index;
+        }
+
+        // Re-render and focus the moved thumbnail
+        showPreview();
+        focusThumbnail(index - 1);
+    }
+
+    // Move slide down (toward end) via keyboard
+    function moveSlideDown(index) {
+        if (index < 0 || index >= images.length - 1) return;
+
+        // Swap with next slide
+        const [slide] = images.splice(index, 1);
+        images.splice(index + 1, 0, slide);
+
+        // Update selection if needed
+        if (selectedIndex === index) {
+            selectedIndex = index + 1;
+        } else if (selectedIndex === index + 1) {
+            selectedIndex = index;
+        }
+
+        // Re-render and focus the moved thumbnail
+        showPreview();
+        focusThumbnail(index + 1);
+    }
+
+    // Focus a specific thumbnail by index
+    function focusThumbnail(index) {
+        const allThumbs = thumbnails.querySelectorAll('.pk-thumbnail');
+        if (allThumbs[index]) {
+            allThumbs[index].focus();
+        }
+    }
+
     // Delete an image
     function deleteImage(index) {
         // Save to undo stack before removing
@@ -900,6 +972,8 @@
                 slideDuration: slideDuration,
                 displayMode: getDisplayMode(),
                 showTimerOverlay: timerTogglePractice.checked,
+                showNotesPanel: notesTogglePractice.checked,
+                enableAudioWarnings: audioTogglePractice.checked,
                 presentationMode: modePresentRadio.checked ? 'present' : 'practice'
             },
             titleSlide: titleSlide,
@@ -939,6 +1013,13 @@
 
                 // Apply timer overlay preference (default to false for backward compatibility)
                 timerTogglePractice.checked = config.settings?.showTimerOverlay || false;
+
+                // Apply notes panel preference (default to false for backward compatibility)
+                notesTogglePractice.checked = config.settings?.showNotesPanel || false;
+
+                // Apply audio warnings preference (default to false for backward compatibility)
+                audioTogglePractice.checked = config.settings?.enableAudioWarnings || false;
+                audioTogglePresenter.checked = config.settings?.enableAudioWarnings || false;
 
                 // Apply presentation mode preference (default to practice for backward compatibility)
                 const presentationMode = config.settings?.presentationMode || 'practice';
@@ -1041,6 +1122,9 @@
         // Timer overlay: respect user's checkbox state (preserve their preference)
         timerOverlay.hidden = !timerTogglePractice.checked;
 
+        // Notes panel: respect user's checkbox state
+        practiceNotesPanel.hidden = !notesTogglePractice.checked;
+
         // Apply image display mode
         applyDisplayMode();
 
@@ -1053,16 +1137,28 @@
 
     // Show lightbox with image preview
     function showLightbox(index) {
+        // Store current focus for restoration
+        lightboxPreviousFocus = document.activeElement;
+
         lightboxImage.src = images[index].dataUrl;
         lightboxImage.alt = `Slide ${index + 1} preview`;
         lightbox.hidden = false;
         document.body.style.overflow = 'hidden';
+
+        // Move focus to close button for keyboard accessibility
+        lightboxClose.focus();
     }
 
     // Hide lightbox
     function hideLightbox() {
         lightbox.hidden = true;
         document.body.style.overflow = '';
+
+        // Restore focus to the element that opened the lightbox
+        if (lightboxPreviousFocus && typeof lightboxPreviousFocus.focus === 'function') {
+            lightboxPreviousFocus.focus();
+            lightboxPreviousFocus = null;
+        }
     }
 
     // Start the slideshow (shows ready overlay first)
@@ -1092,6 +1188,9 @@
         currentSlide.alt = `Slide ${index + 1} of ${images.length}`;
         slideCounter.textContent = `${index + 1} / ${images.length}`;
 
+        // Update practice mode notes panel
+        practiceNotesText.textContent = images[index].notes || '';
+
         // Update navigation arrow states
         updateNavArrows();
 
@@ -1114,6 +1213,7 @@
             // New slide: set both to full duration, reset elapsed
             fullSlideDuration = getSlideDuration(currentIndex) * 1000;
             currentSlideDuration = fullSlideDuration;
+            resetAudioWarnings();
             pausedElapsedOnSlide = 0;
         }
 
@@ -1136,6 +1236,71 @@
         updateProgress();
     }
 
+    // Apply time warning classes to an element based on remaining seconds
+    function applyTimeWarningClass(element, remainingSeconds) {
+        // Remove all warning classes first
+        element.classList.remove('warning', 'warning-yellow', 'warning-red', 'warning-critical');
+
+        // Apply appropriate warning class
+        if (remainingSeconds <= 1) {
+            element.classList.add('warning-critical');
+        } else if (remainingSeconds <= 3) {
+            element.classList.add('warning-red');
+        } else if (remainingSeconds <= 5) {
+            element.classList.add('warning-yellow');
+        }
+    }
+
+    // Play an audio beep for time warnings
+    function playBeep(count = 1) {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        const playOneBeep = (delay = 0) => {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = 880; // A5 note
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.15, audioContext.currentTime + delay);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + delay + 0.1);
+
+            oscillator.start(audioContext.currentTime + delay);
+            oscillator.stop(audioContext.currentTime + delay + 0.1);
+        };
+
+        for (let i = 0; i < count; i++) {
+            playOneBeep(i * 0.15); // 150ms between beeps
+        }
+    }
+
+    // Check and play audio warnings based on remaining seconds
+    function checkAudioWarnings(remainingSeconds, isPresenterMode = false) {
+        const audioEnabled = isPresenterMode ? audioTogglePresenter.checked : audioTogglePractice.checked;
+        if (!audioEnabled) return;
+
+        // Only beep once per second, and only at 5s and 3s marks
+        if (remainingSeconds === lastBeepSecond) return;
+
+        if (remainingSeconds === 5) {
+            playBeep(1); // Single beep at 5 seconds
+            lastBeepSecond = 5;
+        } else if (remainingSeconds === 3) {
+            playBeep(2); // Double beep at 3 seconds
+            lastBeepSecond = 3;
+        }
+    }
+
+    // Reset audio warning state for new slide
+    function resetAudioWarnings() {
+        lastBeepSecond = null;
+    }
+
     // Update progress bar and slide timer
     function updateProgress() {
         const elapsedSinceStart = Date.now() - slideStartTime;
@@ -1152,7 +1317,11 @@
         // Update timer overlay if visible
         if (!timerOverlay.hidden) {
             timerOverlayValue.textContent = remainingSeconds;
+            applyTimeWarningClass(timerOverlayValue, remainingSeconds);
         }
+
+        // Check and play audio warnings (practice mode)
+        checkAudioWarnings(remainingSeconds, false);
 
         // Update elapsed time since presentation started
         if (presentationStartTime) {
@@ -1290,9 +1459,9 @@
         slideshowSection.hidden = true;
         completeSection.hidden = false;
 
-        // Calculate stats
+        // Calculate stats using per-slide durations
         const totalSlides = images.length;
-        const totalSeconds = totalSlides * slideDuration;
+        const totalSeconds = calculateTotalTime();
 
         finalSlideCount.textContent = totalSlides;
         finalDuration.textContent = formatTime(totalSeconds);
@@ -1427,7 +1596,9 @@
 
         images.forEach((img, index) => {
             const thumb = document.createElement('div');
-            thumb.className = 'pk-presenter-filmstrip-thumb';
+            let classes = 'pk-presenter-filmstrip-thumb';
+            if (img.duration) classes += ' has-custom-duration';
+            thumb.className = classes;
             thumb.dataset.index = index;
 
             const image = document.createElement('img');
@@ -1592,8 +1763,14 @@
         clearTimers();
 
         slideStartTime = Date.now();
+        const isResuming = pausedTimeRemaining > 0;
         // Use pausedTimeRemaining if we have it, otherwise per-slide duration
-        currentSlideDuration = pausedTimeRemaining > 0 ? pausedTimeRemaining : getSlideDuration(currentIndex) * 1000;
+        currentSlideDuration = isResuming ? pausedTimeRemaining : getSlideDuration(currentIndex) * 1000;
+
+        // Reset audio warnings for new slides (not when resuming)
+        if (!isResuming) {
+            resetAudioWarnings();
+        }
 
         // Timer for advancing slides
         slideTimer = setTimeout(() => {
@@ -1622,12 +1799,11 @@
             presenterElapsed.textContent = formatTime(totalElapsed);
         }
 
-        // Warning color when < 5 seconds
-        if (remainingSeconds <= 5) {
-            presenterTime.classList.add('warning');
-        } else {
-            presenterTime.classList.remove('warning');
-        }
+        // Apply traffic light warning colors
+        applyTimeWarningClass(presenterTime, remainingSeconds);
+
+        // Check and play audio warnings (presenter mode)
+        checkAudioWarnings(remainingSeconds, true);
 
         if (!isPaused && remaining > 0) {
             progressTimer = requestAnimationFrame(updateExternalProgress);
@@ -1754,9 +1930,9 @@
         presenterSection.hidden = true;
         completeSection.hidden = false;
 
-        // Calculate stats
+        // Calculate stats using per-slide durations
         const totalSlides = images.length;
-        const totalSeconds = totalSlides * slideDuration;
+        const totalSeconds = calculateTotalTime();
 
         finalSlideCount.textContent = totalSlides;
         finalDuration.textContent = formatTime(totalSeconds);
@@ -1916,6 +2092,16 @@
     lightbox.addEventListener('click', hideLightbox);
     lightboxClose.addEventListener('click', hideLightbox);
 
+    // Focus trap for lightbox - keep Tab within the lightbox
+    lightbox.addEventListener('keydown', (e) => {
+        if (e.code !== 'Tab') return;
+
+        // Since the close button is the only focusable element in the lightbox,
+        // prevent Tab from leaving the lightbox
+        e.preventDefault();
+        lightboxClose.focus();
+    });
+
     // Notes panel events
     notesCloseBtn.addEventListener('click', () => {
         saveCurrentNotes();
@@ -1960,6 +2146,11 @@
     // Timer toggle in practice mode controls
     timerTogglePractice.addEventListener('change', () => {
         timerOverlay.hidden = !timerTogglePractice.checked;
+    });
+
+    // Notes toggle in practice mode controls
+    notesTogglePractice.addEventListener('change', () => {
+        practiceNotesPanel.hidden = !notesTogglePractice.checked;
     });
 
     // Presentation mode toggle - update button labels when mode changes

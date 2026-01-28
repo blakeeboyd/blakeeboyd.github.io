@@ -1049,8 +1049,23 @@
             line-height: 1;
         }
 
-        .pk-presenter-time.warning {
+        .pk-presenter-time.warning,
+        .pk-presenter-time.warning-yellow {
             color: var(--color-warning);
+        }
+
+        .pk-presenter-time.warning-red {
+            color: var(--color-error);
+        }
+
+        .pk-presenter-time.warning-critical {
+            color: var(--color-error);
+            animation: timer-pulse 0.5s ease-in-out infinite;
+        }
+
+        @keyframes timer-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
 
         .pk-presenter-time-secondary {
@@ -1173,6 +1188,18 @@
 
         .pk-presenter-filmstrip-thumb.past {
             opacity: 0.5;
+        }
+
+        .pk-presenter-filmstrip-thumb.has-custom-duration::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 8px;
+            height: 8px;
+            background: var(--color-warning);
+            border-radius: 50%;
+            z-index: 1;
         }
 
         .pk-presenter-filmstrip-thumb img {
@@ -1574,6 +1601,43 @@
             line-height: 1;
         }
 
+        .pk-timer-overlay span.warning-yellow {
+            color: rgba(245, 158, 11, 0.6);
+        }
+
+        .pk-timer-overlay span.warning-red {
+            color: rgba(239, 68, 68, 0.6);
+        }
+
+        .pk-timer-overlay span.warning-critical {
+            color: rgba(239, 68, 68, 0.8);
+            animation: timer-pulse 0.5s ease-in-out infinite;
+        }
+
+        /* Practice mode notes panel */
+        .pk-practice-notes-panel {
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            padding: var(--spacing-md) var(--spacing-lg);
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .pk-practice-notes-text {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            line-height: 1.5;
+            margin: 0;
+            white-space: pre-wrap;
+        }
+
+        .pk-practice-notes-text:empty::before,
+        .pk-practice-notes-panel:not([hidden]) .pk-practice-notes-text:empty::after {
+            content: 'No notes for this slide';
+            color: rgba(255, 255, 255, 0.4);
+            font-style: italic;
+        }
+
         /* Navigation arrows */
         .pk-nav-arrow {
             position: absolute;
@@ -1924,6 +1988,10 @@
                             </div>
                             <button id="presenter-close-window-btn" class="action-button secondary">Audience Window</button>
                             <button id="presenter-end-btn" class="action-button secondary">Edit Slides</button>
+                            <label class="pk-checkbox-label pk-timer-toggle pk-presenter-audio-toggle">
+                                <input type="checkbox" id="audio-toggle-presenter">
+                                <span>Audio cues</span>
+                            </label>
                         </div>
                     </div>
 
@@ -1986,6 +2054,10 @@
                     </svg>
                 </button>
             </div>
+            <!-- Notes panel (practice mode only) -->
+            <div id="practice-notes-panel" class="pk-practice-notes-panel" hidden>
+                <p id="practice-notes-text" class="pk-practice-notes-text">No notes for this slide</p>
+            </div>
             <div class="pk-controls">
                 <div class="pk-slide-info">
                     <span id="slide-counter">1 / 20</span>
@@ -2004,7 +2076,15 @@
                 </div>
                 <label class="pk-checkbox-label pk-timer-toggle">
                     <input type="checkbox" id="timer-toggle-practice">
-                    <span>Timer overlay</span>
+                    <span>Timer</span>
+                </label>
+                <label class="pk-checkbox-label pk-timer-toggle">
+                    <input type="checkbox" id="notes-toggle-practice">
+                    <span>Notes</span>
+                </label>
+                <label class="pk-checkbox-label pk-timer-toggle">
+                    <input type="checkbox" id="audio-toggle-practice">
+                    <span>Audio cues</span>
                 </label>
                 <span class="pk-controls-hint">Space: pause · Esc: exit</span>
             </div>
