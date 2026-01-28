@@ -1641,8 +1641,15 @@
     function jumpToExternalSlide(index) {
         if (index < 0 || index >= images.length) return;
 
+        const wasPaused = isPaused;
+
         // Clear current timer
         clearTimers();
+
+        // Adjust presentation start time for elapsed display
+        presentationStartTime = Date.now() - getElapsedTimeBeforeSlide(index);
+        currentSlideDuration = getSlideDuration(index) * 1000;
+        pausedTimeRemaining = currentSlideDuration;
 
         // Update current index and show slide
         currentIndex = index;
@@ -1651,12 +1658,21 @@
 
         // Restart timer if presentation is running (not waiting to start)
         if (presenterStartBtn.hidden) {
-            isPaused = false;
-            pausedTimeRemaining = 0;
-            currentSlideDuration = getSlideDuration(index) * 1000;
-            presenterPauseBtn.textContent = 'Pause';
-            startExternalSlideTimer();
+            // Only start timer if we weren't paused
+            if (!wasPaused) {
+                isPaused = false;
+                pausedTimeRemaining = 0;
+                presenterPauseBtn.textContent = 'Pause';
+                startExternalSlideTimer();
+            } else {
+                // Stay paused but update the display
+                isPaused = true;
+                presenterPauseBtn.textContent = 'Resume';
+                presenterTime.textContent = formatTime(Math.ceil(currentSlideDuration / 1000));
+                presenterProgressFill.style.width = '0%';
+            }
         }
+        updatePresenterNavArrows();
     }
 
     // Send initialization data to presentation window
@@ -1999,35 +2015,6 @@
             clearInterval(windowCheckTimer);
             windowCheckTimer = null;
         }
-    }
-
-    // Jump to a specific slide during external presentation (used by filmstrip, preserves pause state)
-    function jumpToSlide(index) {
-        const wasPaused = isPaused;
-        clearTimers();
-
-        currentSlideDuration = getSlideDuration(index) * 1000;
-        pausedTimeRemaining = currentSlideDuration;
-
-        // Adjust presentation start time for elapsed display
-        presentationStartTime = Date.now() - getElapsedTimeBeforeSlide(index);
-
-        showExternalSlide(index);
-
-        // Only start timer if we weren't paused
-        if (!wasPaused) {
-            isPaused = false;
-            pausedTimeRemaining = 0;
-            presenterPauseBtn.textContent = 'Pause';
-            startExternalSlideTimer();
-        } else {
-            // Stay paused but update the display
-            isPaused = true;
-            presenterPauseBtn.textContent = 'Resume';
-            presenterTime.textContent = formatTime(Math.ceil(currentSlideDuration / 1000));
-            presenterProgressFill.style.width = '0%';
-        }
-        updatePresenterNavArrows();
     }
 
     // Event Listeners
