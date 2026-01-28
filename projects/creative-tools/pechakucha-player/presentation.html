@@ -371,6 +371,16 @@
                 if (!document.hasFocus()) {
                     startFadeTimer();
                 }
+
+                // Auto-fullscreen if requested (user has extended display)
+                if (data.requestFullscreen) {
+                    // Small delay to ensure window is ready
+                    setTimeout(() => {
+                        document.documentElement.requestFullscreen().catch(err => {
+                            console.warn('Auto-fullscreen failed:', err);
+                        });
+                    }, 100);
+                }
             }
 
             // Fade timer functions

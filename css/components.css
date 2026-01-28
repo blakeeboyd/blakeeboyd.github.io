@@ -564,6 +564,7 @@
     padding: 0.25rem 0.5rem;
     background: var(--color-bg);
     border-radius: 0.25rem;
+    white-space: nowrap;
 }
 
 .badge.wip {

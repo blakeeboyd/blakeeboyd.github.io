@@ -43,7 +43,7 @@
 
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('file-input');
-    const slideDurationInput = document.getElementById('slide-duration');
+    const DEFAULT_SLIDE_DURATION = 20;
 
     const slideNotice = document.getElementById('slide-notice');
     const thumbnails = document.getElementById('thumbnails');
@@ -126,10 +126,14 @@
     const showTimerOverlayCheckbox = document.getElementById('show-timer-overlay');
     const timerOverlay = document.getElementById('timer-overlay');
     const timerOverlayValue = document.getElementById('timer-overlay-value');
+    const timerTogglePractice = document.getElementById('timer-toggle-practice');
 
     // Navigation arrows (practice mode)
     const navPrev = document.getElementById('nav-prev');
     const navNext = document.getElementById('nav-next');
+
+    // Completion screen buttons
+    const editBtn = document.getElementById('edit-btn');
 
     // Natural sort comparison for filenames
     function naturalSort(a, b) {
@@ -180,8 +184,8 @@
             return;
         }
 
-        // Read settings
-        slideDuration = parseInt(slideDurationInput.value, 10) || 20;
+        // Set default slide duration
+        slideDuration = DEFAULT_SLIDE_DURATION;
 
         // Process each file
         images = [];
@@ -880,7 +884,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `pechakucha-${Date.now()}.json`;
+        a.download = 'pechakucha-settings.json';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -899,8 +903,7 @@
                 }
 
                 // Apply settings
-                slideDuration = config.settings?.slideDuration || 20;
-                slideDurationInput.value = slideDuration;
+                slideDuration = config.settings?.slideDuration || DEFAULT_SLIDE_DURATION;
 
                 // Apply title slide
                 titleSlide = config.titleSlide || null;
@@ -933,9 +936,6 @@
 
         hideUndoToast();
 
-        // Read settings again in case they changed
-        slideDuration = parseInt(slideDurationInput.value, 10) || 20;
-
         currentIndex = startIndex;
         isPaused = false;
         pausedTimeRemaining = 0;
@@ -947,8 +947,9 @@
         completeSection.hidden = true;
         pauseIndicator.hidden = true;
 
-        // Show/hide timer overlay based on checkbox
+        // Show/hide timer overlay based on checkbox and sync toggle
         timerOverlay.hidden = !showTimerOverlayCheckbox.checked;
+        timerTogglePractice.checked = showTimerOverlayCheckbox.checked;
 
         // Initialize elapsed/total time display
         elapsedTimeDisplay.textContent = '0:00';
@@ -983,9 +984,6 @@
 
         hideUndoToast();
 
-        // Read settings again in case they changed
-        slideDuration = parseInt(slideDurationInput.value, 10) || 20;
-
         currentIndex = 0;
         isPaused = false;
         pausedTimeRemaining = 0;
@@ -997,8 +995,9 @@
         completeSection.hidden = true;
         pauseIndicator.hidden = true;
 
-        // Show/hide timer overlay based on checkbox
+        // Show/hide timer overlay based on checkbox and sync toggle
         timerOverlay.hidden = !showTimerOverlayCheckbox.checked;
+        timerTogglePractice.checked = showTimerOverlayCheckbox.checked;
 
         // Initialize elapsed/total time display
         elapsedTimeDisplay.textContent = '0:00';
@@ -1271,9 +1270,6 @@
 
         hideUndoToast();
 
-        // Read settings
-        slideDuration = parseInt(slideDurationInput.value, 10) || 20;
-
         // Try to open on second screen first, fall back to regular window
         if (hasWindowManagementAPI() && isExtendedDisplay()) {
             presentationWindow = await openOnSecondScreen();
@@ -1393,6 +1389,9 @@
     function sendInitToPresentation() {
         if (!presentationWindow) return;
 
+        // Check if we're on an extended display (second screen)
+        const shouldFullscreen = isExtendedDisplay();
+
         presentationWindow.postMessage({
             type: 'init',
             images: images,
@@ -1400,7 +1399,8 @@
             settings: {
                 slideDuration: slideDuration
             },
-            startIndex: currentIndex
+            startIndex: currentIndex,
+            requestFullscreen: shouldFullscreen
         }, '*');
 
         // Render the filmstrip
@@ -1812,6 +1812,19 @@
     navPrev.addEventListener('click', goToPreviousSlide);
     navNext.addEventListener('click', goToNextSlide);
 
+    // Timer toggle in practice mode controls
+    timerTogglePractice.addEventListener('change', () => {
+        timerOverlay.hidden = !timerTogglePractice.checked;
+        // Sync back to preview checkbox
+        showTimerOverlayCheckbox.checked = timerTogglePractice.checked;
+    });
+
+    // Edit slides button on completion screen
+    editBtn.addEventListener('click', () => {
+        completeSection.hidden = true;
+        previewSection.hidden = false;
+    });
+
     // Keyboard controls
     document.addEventListener('keydown', (e) => {
         // Ignore keyboard shortcuts when typing in an input or textarea
@@ -1947,7 +1960,6 @@
     }
 
     // Initialize drag-to-adjust on number inputs
-    setupDragToAdjust(slideDurationInput);
     setupDragToAdjust(slideDurationOverride);
 
 })();

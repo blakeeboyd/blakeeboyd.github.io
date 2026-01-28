@@ -160,6 +160,11 @@
             margin-bottom: var(--spacing-xs);
         }
 
+        .pk-section-label .info-tooltip {
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
         /* Title Slide Slot */
         .pk-title-slide-slot {
             aspect-ratio: 16 / 9;
@@ -1390,6 +1395,19 @@
             color: var(--color-text);
         }
 
+        /* Timer toggle in practice mode controls (dark background) */
+        .pk-timer-toggle {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .pk-timer-toggle:hover {
+            color: rgba(255, 255, 255, 1);
+        }
+
+        .pk-timer-toggle input[type="checkbox"] {
+            accent-color: #fff;
+        }
+
         #timer-overlay-option {
             display: none;
         }
@@ -1486,16 +1504,6 @@
                 <p class="pk-dropzone-text">or</p>
                 <input type="file" id="file-input" class="pk-file-input" multiple accept="image/*,.json,application/json">
                 <label for="file-input" class="action-button">Choose Files</label>
-            </div>
-
-            <div class="pk-settings">
-                <div class="pk-setting">
-                    <label for="slide-duration">Seconds per slide</label>
-                    <input type="number" id="slide-duration" value="20" min="1" max="120">
-                    <span class="info-trigger" tabindex="0" aria-label="More information about seconds per slide">?
-                        <span class="info-tooltip tooltip-left">The classic PechaKucha format uses 20 seconds per slide, but you can adjust this for practice (e.g., 10 seconds for faster pacing) or custom presentations.</span>
-                    </span>
-                </div>
             </div>
 
             <div class="pk-about">
@@ -1707,7 +1715,7 @@
             <div class="pk-controls">
                 <div class="pk-slide-info">
                     <span id="slide-counter">1 / 20</span>
-                    <span id="pause-indicator" class="pk-pause-indicator" hidden>PAUSED</span>
+                    <span id="pause-indicator" class="pk-pause-indicator" hidden>Paused</span>
                 </div>
                 <div class="pk-progress-container">
                     <div class="pk-progress-bar">
@@ -1720,6 +1728,10 @@
                     <span class="pk-time-separator">/</span>
                     <span id="total-time" class="pk-total-time">6:40</span>
                 </div>
+                <label class="pk-checkbox-label pk-timer-toggle">
+                    <input type="checkbox" id="timer-toggle-practice">
+                    <span>Timer</span>
+                </label>
                 <span class="pk-controls-hint">Space: pause · Esc: exit</span>
             </div>
         </section>
@@ -1739,6 +1751,7 @@
             </div>
             <div class="pk-actions">
                 <button id="restart-btn" class="action-button">Present Again</button>
+                <button id="edit-btn" class="action-button secondary">Edit Slides</button>
                 <button id="new-btn" class="action-button secondary">New Presentation</button>
             </div>
         </section>
