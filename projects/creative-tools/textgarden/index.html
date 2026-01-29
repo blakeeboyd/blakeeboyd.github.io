@@ -1,0 +1,3848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TextGarden - A tree-structured writing tool for organizing ideas horizontally">
+    <title>TextGarden - Blake Boyd</title>
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake Boyd">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="../../../js/theme.js"></script>
+    <style>
+        :root {
+            --color-bg: #f8f9fa;
+            --color-text: #1a1a1a;
+            --color-text-muted: #666666;
+            --color-accent: #2563eb;
+            --color-accent-light: #dbeafe;
+            --color-border: #e5e5e5;
+            --color-card-bg: #ffffff;
+            --color-error: #ef4444;
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --column-width: 320px;
+            --card-gap: 8px;
+            --toolbar-height: 48px;
+        }
+
+        [data-theme="dusk"] {
+            --color-bg: #c8c8c8;
+            --color-text: #1a1a1a;
+            --color-text-muted: #5a5a5a;
+            --color-accent: #2563eb;
+            --color-accent-light: rgba(37, 99, 235, 0.12);
+            --color-border: #a8a8a8;
+            --color-card-bg: #e8e8e8;
+        }
+
+        [data-theme="twilight"] {
+            --color-bg: #111827;
+            --color-text: #f3f4f6;
+            --color-text-muted: #9ca3af;
+            --color-accent: #3b82f6;
+            --color-accent-light: rgba(59, 130, 246, 0.15);
+            --color-border: #374151;
+            --color-card-bg: #1f2937;
+        }
+
+        [data-theme="night"] {
+            --color-bg: #0a0a0a;
+            --color-text: #e5e5e5;
+            --color-text-muted: #a0a0a0;
+            --color-accent: #3b82f6;
+            --color-accent-light: rgba(59, 130, 246, 0.15);
+            --color-border: #2a2a2a;
+            --color-card-bg: #141414;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.5;
+        }
+
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            height: var(--toolbar-height);
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 8px;
+            background: var(--color-card-bg);
+            flex-shrink: 0;
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .toolbar-group + .toolbar-group {
+            margin-left: 8px;
+            padding-left: 12px;
+            border-left: 1px solid var(--color-border);
+        }
+
+        .toolbar-spacer {
+            flex: 1;
+        }
+
+        .toolbar button {
+            padding: 6px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            background: var(--color-card-bg);
+            color: var(--color-text);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s ease;
+        }
+
+        .toolbar button:hover {
+            background: var(--color-bg);
+            border-color: var(--color-accent);
+        }
+
+        .toolbar button svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .doc-title {
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .doc-title.unsaved::after {
+            content: " *";
+            color: var(--color-accent);
+        }
+
+        /* Session timer */
+        .session-timer-container {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-right: 12px;
+        }
+
+        .session-timer {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            font-variant-numeric: tabular-nums;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: background-color 0.15s;
+        }
+
+        .session-timer:hover {
+            background-color: var(--color-border);
+        }
+
+        .session-timer::before {
+            content: "⏱ ";
+        }
+
+        .session-timer.timer-paused {
+            opacity: 0.6;
+        }
+
+        .session-timer.timer-paused::after {
+            content: " ⏸";
+        }
+
+        .session-timer.timer-warning {
+            color: var(--color-warning);
+            font-weight: 500;
+        }
+
+        .session-timer.timer-complete {
+            color: var(--color-success);
+            font-weight: 500;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .session-timer-container:hover .timer-controls {
+            opacity: 1;
+        }
+
+        .timer-control-btn {
+            background: none;
+            border: none;
+            padding: 4px;
+            cursor: pointer;
+            color: var(--color-text-muted);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .timer-control-btn:hover {
+            background-color: var(--color-border);
+            color: var(--color-text);
+        }
+
+        .timer-control-btn svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        /* Timer options in dropdown */
+        .doc-dropdown-nested {
+            padding-left: 20px;
+            margin-top: 4px;
+        }
+
+        .doc-dropdown-radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .doc-dropdown-radio {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8125rem;
+            color: var(--color-text);
+            cursor: pointer;
+            padding: 4px 0;
+        }
+
+        .doc-dropdown-radio input[type="radio"] {
+            margin: 0;
+        }
+
+        /* Word goal progress */
+        .word-goal-progress {
+            font-size: 0.75rem;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .word-goal-bar {
+            width: 60px;
+            height: 6px;
+            background: var(--color-border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .word-goal-fill {
+            height: 100%;
+            background: var(--color-accent);
+            transition: width 0.3s ease;
+            border-radius: 3px;
+        }
+
+        .word-goal-fill.complete {
+            background: #22c55e;
+        }
+
+        .word-goal-text {
+            color: var(--color-text-muted);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .word-goal-text.complete {
+            color: #22c55e;
+        }
+
+        /* Save indicator */
+        .save-indicator {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            margin-right: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .save-indicator.visible {
+            opacity: 1;
+        }
+
+        .save-indicator::before {
+            content: "✓ ";
+            color: #22c55e;
+        }
+
+        /* Document stats */
+        .doc-stats {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            margin-right: 12px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Search */
+        .search-group {
+            flex-shrink: 0;
+        }
+
+        .search-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            width: 14px;
+            height: 14px;
+            color: var(--color-text-muted);
+            pointer-events: none;
+        }
+
+        .search-input {
+            width: 180px;
+            padding: 6px 28px 6px 32px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            background: var(--color-bg);
+            color: var(--color-text);
+            font-size: 0.8125rem;
+            font-family: inherit;
+            transition: all 0.15s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            width: 240px;
+        }
+
+        .search-input::placeholder {
+            color: var(--color-text-muted);
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 4px;
+            width: 22px;
+            height: 22px;
+            padding: 0;
+            border: none;
+            border-radius: 4px;
+            background: transparent;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-clear:hover {
+            background: var(--color-border);
+            color: var(--color-text);
+        }
+
+        .search-clear svg {
+            width: 14px;
+            height: 14px;
+            display: block;
+            flex-shrink: 0;
+        }
+
+        .search-results {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            margin-left: 8px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .search-results:empty {
+            display: none;
+        }
+
+        /* Search highlight */
+        .card.search-match {
+            background: var(--color-accent-light);
+        }
+
+        .card.search-match .card-content mark {
+            background: #fef08a;
+            color: #1a1a1a;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        [data-theme="twilight"] .card.search-match .card-content mark,
+        [data-theme="night"] .card.search-match .card-content mark {
+            background: #854d0e;
+            color: #fef9c3;
+        }
+
+        /* Documents dropdown */
+        .doc-dropdown {
+            position: relative;
+        }
+
+        .doc-title-btn {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            background: transparent;
+            color: var(--color-text);
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .doc-title-btn:hover {
+            background: var(--color-bg);
+        }
+
+        .dropdown-arrow {
+            width: 14px;
+            height: 14px;
+            color: var(--color-text-muted);
+        }
+
+        .doc-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 4px;
+            min-width: 240px;
+            max-width: 320px;
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .doc-dropdown-header {
+            padding: 8px 12px;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--color-text-muted);
+            background: var(--color-bg);
+        }
+
+        .recent-docs-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .no-recent-docs {
+            padding: 16px 12px;
+            text-align: center;
+            color: var(--color-text-muted);
+            font-size: 0.8125rem;
+        }
+
+        .recent-doc-item {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 10px 12px;
+            border: none;
+            background: transparent;
+            color: var(--color-text);
+            font-size: 0.8125rem;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .recent-doc-item:hover {
+            background: var(--color-bg);
+        }
+
+        .recent-doc-item.current {
+            background: var(--color-accent-light);
+        }
+
+        .recent-doc-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .recent-doc-name {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .recent-doc-meta {
+            font-size: 0.6875rem;
+            color: var(--color-text-muted);
+            margin-top: 2px;
+        }
+
+        .recent-doc-delete {
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            margin-left: 8px;
+            border: none;
+            border-radius: 4px;
+            background: transparent;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.15s ease;
+        }
+
+        .recent-doc-item:hover .recent-doc-delete {
+            opacity: 1;
+        }
+
+        .recent-doc-delete:hover {
+            background: var(--color-error);
+            color: white;
+        }
+
+        .recent-doc-delete svg {
+            width: 14px;
+            height: 14px;
+            display: block;
+            flex-shrink: 0;
+        }
+
+        .doc-dropdown-divider {
+            height: 1px;
+            background: var(--color-border);
+        }
+
+        .doc-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 10px 12px;
+            border: none;
+            background: transparent;
+            color: var(--color-text);
+            font-size: 0.8125rem;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .doc-dropdown-item:hover {
+            background: var(--color-bg);
+        }
+
+        .doc-dropdown-item svg {
+            width: 16px;
+            height: 16px;
+            color: var(--color-text-muted);
+        }
+
+        .doc-dropdown-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            font-size: 0.875rem;
+            color: var(--color-text);
+            cursor: pointer;
+        }
+
+        .doc-dropdown-toggle:hover {
+            background: var(--color-bg);
+        }
+
+        .doc-dropdown-toggle input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--color-accent);
+            cursor: pointer;
+        }
+
+        .doc-dropdown-input {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 12px 8px 36px;
+            font-size: 0.8125rem;
+            color: var(--color-text-muted);
+        }
+
+        .doc-dropdown-input input[type="number"] {
+            width: 80px;
+            padding: 4px 8px;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            background: var(--color-bg);
+            color: var(--color-text);
+            font-size: 0.8125rem;
+            font-family: inherit;
+        }
+
+        .doc-dropdown-input input[type="number"]:focus {
+            outline: none;
+            border-color: var(--color-accent);
+        }
+
+        .doc-dropdown-select {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 6px 12px;
+            font-size: 0.8125rem;
+            color: var(--color-text);
+        }
+
+        .doc-dropdown-select select {
+            padding: 4px 8px;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            background: var(--color-bg);
+            color: var(--color-text);
+            font-size: 0.8125rem;
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        .doc-dropdown-select select:focus {
+            outline: none;
+            border-color: var(--color-accent);
+        }
+
+        /* Column resize handle */
+        .column {
+            position: relative;
+        }
+
+        .column-resize-handle {
+            position: absolute;
+            top: 0;
+            right: -3px;
+            width: 6px;
+            height: 100%;
+            cursor: col-resize;
+            background: transparent;
+            z-index: 10;
+            transition: background 0.15s ease;
+        }
+
+        .column-resize-handle:hover,
+        .column-resize-handle.dragging {
+            background: var(--color-accent);
+        }
+
+        .column.resizing {
+            user-select: none;
+        }
+
+        body.resizing-column {
+            cursor: col-resize !important;
+            user-select: none;
+        }
+
+        body.resizing-column * {
+            cursor: col-resize !important;
+        }
+
+        /* Collapsed columns */
+        .column.collapsed {
+            width: 48px !important;
+            min-width: 48px !important;
+            cursor: pointer;
+        }
+
+        .column.collapsed .column-header {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            padding: 12px 8px;
+            white-space: nowrap;
+        }
+
+        .column.collapsed .column-content {
+            display: none;
+        }
+
+        .column.collapsed .column-resize-handle {
+            display: none;
+        }
+
+        .column.collapsed:hover {
+            background: var(--color-accent-light);
+        }
+
+        .collapse-toggle {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            padding: 0;
+            border: none;
+            border-radius: 4px;
+            background: transparent;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.15s ease;
+            z-index: 5;
+        }
+
+        .column-header:hover .collapse-toggle {
+            opacity: 1;
+        }
+
+        .collapse-toggle:hover {
+            background: var(--color-bg);
+            color: var(--color-text);
+        }
+
+        .collapse-toggle svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        .column.collapsed .collapse-toggle {
+            position: relative;
+            top: 0;
+            right: 0;
+            margin-top: 8px;
+            opacity: 1;
+        }
+
+        /* Breadcrumb navigation */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 16px;
+            background: var(--color-card-bg);
+            border-bottom: 1px solid var(--color-border);
+            font-size: 0.8125rem;
+            overflow-x: auto;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .breadcrumb::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .breadcrumb::-webkit-scrollbar-thumb {
+            background: var(--color-border);
+            border-radius: 2px;
+        }
+
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--color-text-muted);
+        }
+
+        .breadcrumb-link {
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--color-text-muted);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .breadcrumb-link:hover {
+            background: var(--color-bg);
+            color: var(--color-text);
+        }
+
+        .breadcrumb-current {
+            color: var(--color-text);
+            font-weight: 500;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .breadcrumb-separator {
+            color: var(--color-text-muted);
+            font-size: 0.75rem;
+        }
+
+        /* Toolbar icon button */
+        .toolbar-btn-icon {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            background: var(--color-card-bg);
+            color: var(--color-text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+
+        .toolbar-btn-icon:hover {
+            background: var(--color-bg);
+            border-color: var(--color-accent);
+            color: var(--color-accent);
+        }
+
+        .toolbar-btn-icon svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Fullscreen mode */
+        .app.fullscreen-mode .toolbar {
+            opacity: 0;
+            transform: translateY(-100%);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .app.fullscreen-mode:hover .toolbar,
+        .app.fullscreen-mode .toolbar:focus-within {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .app.fullscreen-mode .shortcuts-hint {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .app.fullscreen-mode:hover .shortcuts-hint {
+            opacity: 0.7;
+        }
+
+        /* Fullscreen button icon change */
+        .fullscreen-exit-icon {
+            display: none;
+        }
+
+        :fullscreen .fullscreen-enter-icon,
+        :-webkit-full-screen .fullscreen-enter-icon {
+            display: none;
+        }
+
+        :fullscreen .fullscreen-exit-icon,
+        :-webkit-full-screen .fullscreen-exit-icon {
+            display: block;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+                font-size: 12pt;
+            }
+
+            .app {
+                display: block;
+                height: auto;
+            }
+
+            .toolbar,
+            .shortcuts-hint,
+            .toast,
+            .expanded-editor-overlay,
+            .column-resize-handle,
+            .collapse-toggle,
+            .card-expand-btn,
+            .add-card-btn,
+            .drop-indicator {
+                display: none !important;
+            }
+
+            .main {
+                display: block;
+                overflow: visible;
+            }
+
+            .columns {
+                display: block;
+                overflow: visible;
+            }
+
+            .column {
+                width: 100% !important;
+                min-width: 100% !important;
+                border: none;
+                page-break-inside: avoid;
+                margin-bottom: 24pt;
+            }
+
+            .column.collapsed {
+                display: block !important;
+                width: 100% !important;
+            }
+
+            .column.collapsed .column-content {
+                display: block !important;
+            }
+
+            .column-header {
+                font-size: 14pt;
+                font-weight: bold;
+                border-bottom: 2pt solid #000;
+                margin-bottom: 12pt;
+                padding: 6pt 0;
+                background: none;
+                writing-mode: horizontal-tb !important;
+            }
+
+            .column-content {
+                padding: 0;
+            }
+
+            .card {
+                border: 1pt solid #ccc;
+                margin-bottom: 12pt;
+                padding: 12pt;
+                page-break-inside: avoid;
+                background: white !important;
+            }
+
+            .card.selected,
+            .card.in-path,
+            .card.dimmed,
+            .card.search-match {
+                border-color: #ccc;
+                border-style: solid;
+                box-shadow: none;
+                opacity: 1;
+            }
+
+            .card::after {
+                display: none !important;
+            }
+
+            .card-content {
+                font-size: 11pt;
+                line-height: 1.5;
+            }
+
+            .card-content h1 { font-size: 18pt; }
+            .card-content h2 { font-size: 16pt; }
+            .card-content h3 { font-size: 14pt; }
+            .card-content h4 { font-size: 12pt; }
+
+            .card-content a {
+                color: black;
+                text-decoration: underline;
+            }
+
+            .card-content code {
+                background: #f0f0f0;
+            }
+
+            .card-content pre {
+                background: #f0f0f0;
+                border: 1pt solid #ccc;
+            }
+        }
+
+        /* Print preview modal */
+        .print-preview-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            padding: 32px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+
+        .print-preview-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .print-preview-modal {
+            background: var(--color-card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .print-preview-modal h3 {
+            margin-bottom: 16px;
+            font-size: 1.125rem;
+        }
+
+        .print-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .print-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .print-option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+
+        .print-option label {
+            font-size: 0.875rem;
+        }
+
+        .print-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .print-actions button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .print-cancel {
+            background: transparent;
+            border: 1px solid var(--color-border);
+            color: var(--color-text);
+        }
+
+        .print-cancel:hover {
+            background: var(--color-bg);
+        }
+
+        .print-confirm {
+            background: var(--color-accent);
+            border: none;
+            color: white;
+        }
+
+        .print-confirm:hover {
+            opacity: 0.9;
+        }
+
+        @media print {
+            .print-no-headers .column-header {
+                display: none !important;
+            }
+        }
+
+        /* Shortcuts modal */
+        .shortcuts-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            padding: 32px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+
+        .shortcuts-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .shortcuts-modal {
+            background: var(--color-card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .shortcuts-modal h3 {
+            margin-bottom: 20px;
+            font-size: 1.125rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .shortcuts-close {
+            background: transparent;
+            border: none;
+            padding: 4px;
+            cursor: pointer;
+            color: var(--color-text-muted);
+            border-radius: 4px;
+        }
+
+        .shortcuts-close:hover {
+            background: var(--color-bg);
+            color: var(--color-text);
+        }
+
+        .shortcuts-close svg {
+            width: 20px;
+            height: 20px;
+            display: block;
+        }
+
+        .shortcuts-section {
+            margin-bottom: 20px;
+        }
+
+        .shortcuts-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .shortcuts-section h4 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--color-text-muted);
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .shortcuts-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px 24px;
+        }
+
+        .shortcut-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 0.875rem;
+        }
+
+        .shortcut-keys {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .shortcut-keys kbd {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 0.75rem;
+            font-family: inherit;
+            color: var(--color-text-muted);
+        }
+
+        .shortcut-desc {
+            color: var(--color-text);
+        }
+
+        .shortcuts-footer {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--color-border);
+            text-align: center;
+        }
+
+        .guide-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--color-accent);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .guide-link:hover {
+            text-decoration: underline;
+        }
+
+        .guide-link svg {
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 500px) {
+            .shortcuts-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Analysis modal (word frequency, reading level) */
+        .analysis-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            padding: 32px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+
+        .analysis-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .analysis-modal {
+            background: var(--color-card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .analysis-modal h3 {
+            margin-bottom: 20px;
+            font-size: 1.125rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .analysis-close {
+            background: transparent;
+            border: none;
+            padding: 4px;
+            cursor: pointer;
+            color: var(--color-text-muted);
+            border-radius: 4px;
+        }
+
+        .analysis-close:hover {
+            background: var(--color-bg);
+            color: var(--color-text);
+        }
+
+        .analysis-close svg {
+            width: 20px;
+            height: 20px;
+            display: block;
+        }
+
+        .analysis-content {
+            font-size: 0.875rem;
+        }
+
+        .word-freq-list {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px 16px;
+            margin-top: 12px;
+        }
+
+        .word-freq-word {
+            font-family: monospace;
+        }
+
+        .word-freq-count {
+            color: var(--color-text-muted);
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .word-freq-bar {
+            grid-column: span 2;
+            height: 4px;
+            background: var(--color-border);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+
+        .word-freq-bar-fill {
+            height: 100%;
+            background: var(--color-accent);
+            border-radius: 2px;
+        }
+
+        .reading-level-score {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--color-accent);
+            text-align: center;
+            margin: 16px 0;
+        }
+
+        .reading-level-desc {
+            text-align: center;
+            color: var(--color-text-muted);
+            margin-bottom: 20px;
+        }
+
+        .reading-level-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .reading-level-stat {
+            text-align: center;
+        }
+
+        .reading-level-stat-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .reading-level-stat-label {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+        }
+
+        /* Dropdown divider */
+        .doc-dropdown-divider {
+            height: 1px;
+            background: var(--color-border);
+            margin: 4px 0;
+        }
+
+        /* Search modal */
+        .search-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            z-index: 3000;
+            padding: 80px 32px 32px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+
+        .search-modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .search-modal {
+            background: var(--color-card-bg);
+            border-radius: 12px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 70vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .search-modal-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .search-modal-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--color-text-muted);
+            flex-shrink: 0;
+        }
+
+        .search-modal-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+            font-family: inherit;
+            color: var(--color-text);
+            outline: none;
+        }
+
+        .search-modal-input::placeholder {
+            color: var(--color-text-muted);
+        }
+
+        .search-modal-close {
+            background: transparent;
+            border: none;
+            padding: 4px;
+            cursor: pointer;
+            color: var(--color-text-muted);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-modal-close:hover {
+            background: var(--color-bg);
+            color: var(--color-text);
+        }
+
+        .search-modal-close svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .search-modal-results {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .search-modal-empty {
+            padding: 32px 16px;
+            text-align: center;
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
+        }
+
+        .search-result-item {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            text-align: left;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.1s ease;
+        }
+
+        .search-result-item:hover,
+        .search-result-item.selected {
+            background: var(--color-bg);
+        }
+
+        .search-result-item.selected {
+            outline: 2px solid var(--color-accent);
+            outline-offset: -2px;
+        }
+
+        .search-result-path {
+            font-size: 0.7rem;
+            color: var(--color-text-muted);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .search-result-path span {
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .search-result-path .path-separator {
+            color: var(--color-border);
+        }
+
+        .search-result-title {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: 4px;
+        }
+
+        .search-result-title mark {
+            background: var(--color-accent-light);
+            color: var(--color-accent);
+            border-radius: 2px;
+            padding: 0 2px;
+        }
+
+        .search-result-content {
+            font-size: 0.875rem;
+            color: var(--color-text);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .search-result-content mark {
+            background: var(--color-accent-light);
+            color: var(--color-accent);
+            border-radius: 2px;
+            padding: 0 2px;
+        }
+
+        .search-modal-footer {
+            padding: 10px 16px;
+            border-top: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+        }
+
+        .search-modal-hints {
+            display: flex;
+            gap: 16px;
+        }
+
+        .search-modal-hints kbd {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 3px;
+            padding: 1px 4px;
+            font-size: 0.7rem;
+            font-family: inherit;
+        }
+
+        /* Templates modal */
+        .templates-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            padding: 32px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+
+        .templates-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .templates-modal {
+            background: var(--color-card-bg);
+            border-radius: 12px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .templates-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .templates-header h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .templates-close {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+
+        .templates-close:hover {
+            background: var(--color-bg);
+            color: var(--color-text);
+        }
+
+        .templates-close svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .templates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .template-card {
+            background: var(--color-bg);
+            border: 2px solid var(--color-border);
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: left;
+        }
+
+        .template-card:hover {
+            border-color: var(--color-accent);
+            background: var(--color-accent-light);
+        }
+
+        .template-icon {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .template-name {
+            font-weight: 600;
+            font-size: 0.9375rem;
+            margin-bottom: 4px;
+        }
+
+        .template-description {
+            font-size: 0.8125rem;
+            color: var(--color-text-muted);
+            line-height: 1.4;
+        }
+
+        @media (max-width: 600px) {
+            .templates-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Theme toggle and dropdown */
+        .theme-dropdown {
+            position: relative;
+        }
+
+        .theme-toggle {
+            padding: 6px !important;
+            border-radius: 6px !important;
+        }
+
+        .theme-toggle svg {
+            display: none;
+        }
+
+        .theme-icon-light { display: block !important; }
+        [data-theme="dusk"] .theme-icon-light { display: none !important; }
+        [data-theme="dusk"] .theme-icon-dusk { display: block !important; }
+        [data-theme="twilight"] .theme-icon-light { display: none !important; }
+        [data-theme="twilight"] .theme-icon-twilight { display: block !important; }
+        [data-theme="night"] .theme-icon-light { display: none !important; }
+        [data-theme="night"] .theme-icon-night { display: block !important; }
+
+        .theme-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 4px;
+            min-width: 120px;
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .theme-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 10px 12px;
+            border: none;
+            background: transparent;
+            color: var(--color-text);
+            font-size: 0.8125rem;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .theme-option:hover {
+            background: var(--color-bg);
+        }
+
+        .theme-option.active {
+            background: var(--color-accent-light);
+            color: var(--color-accent);
+        }
+
+        .theme-option svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        /* Main content area */
+        .main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Columns container */
+        .columns {
+            display: flex;
+            flex: 1;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Individual column */
+        .column {
+            width: var(--column-width);
+            min-width: var(--column-width);
+            height: 100%;
+            border-right: 1px solid var(--color-border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .column-header {
+            padding: 8px 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--color-border);
+            background: var(--color-bg);
+            flex-shrink: 0;
+        }
+
+        .column-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--card-gap);
+            display: flex;
+            flex-direction: column;
+            gap: var(--card-gap);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--color-card-bg);
+            border: 2px solid var(--color-border);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+
+        .card:hover:not(.selected):not(.dimmed) {
+            border-color: var(--color-text-muted);
+            background: var(--color-bg);
+        }
+
+        .card.selected {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px var(--color-accent-light);
+            background: var(--color-card-bg);
+        }
+
+        .card.in-path {
+            opacity: 0.6;
+            border-style: dashed;
+            box-shadow: none;
+        }
+
+        .card.dimmed {
+            opacity: 0.4;
+            border-color: var(--color-border);
+        }
+
+        .card.dimmed:hover {
+            opacity: 0.7;
+        }
+
+        .card.has-children::after {
+            content: "";
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-left: 6px solid var(--color-text-muted);
+            opacity: 0.5;
+        }
+
+        .card.selected.has-children::after {
+            border-left-color: var(--color-accent);
+            opacity: 1;
+        }
+
+        /* Card child count badge */
+        .card-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            background: var(--color-accent);
+            color: white;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .card.dimmed .card-badge {
+            opacity: 0.5;
+        }
+
+        /* Drag and drop styles */
+        .card.dragging {
+            opacity: 0.4;
+            cursor: grabbing;
+            transform: scale(0.98);
+            box-shadow: none;
+        }
+
+        /* Drop indicator line - appears between cards */
+        .drop-indicator {
+            height: 2px;
+            background: var(--color-accent);
+            border-radius: 1px;
+            margin: 2px 0;
+            position: relative;
+            z-index: 10;
+            opacity: 0.7;
+        }
+
+        .drop-indicator::before,
+        .drop-indicator::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            background: var(--color-accent);
+            border-radius: 50%;
+            opacity: 0.8;
+        }
+
+        .drop-indicator::before {
+            left: -3px;
+        }
+
+        .drop-indicator::after {
+            right: -3px;
+        }
+
+        /* Column drop zone highlight */
+        .column.drag-over .column-content {
+            background: var(--color-accent-light);
+            border: 2px dashed var(--color-accent);
+            border-radius: 8px;
+        }
+
+        .card[draggable="true"] {
+            cursor: grab;
+        }
+
+        .card[draggable="true"]:active {
+            cursor: grabbing;
+        }
+
+        /* Card title */
+        .card-title {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 0.5em;
+            padding-bottom: 0.5em;
+            border-bottom: 1px solid var(--color-border);
+            color: var(--color-text);
+        }
+
+        .card-title:only-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .card-content {
+            font-size: 0.875rem;
+            line-height: 1.6;
+            min-height: 1.6em;
+        }
+
+        /* Empty card placeholder - only show when no title and no content */
+        .card-content:empty::before {
+            content: "Empty card";
+            color: var(--color-text-muted);
+            font-style: italic;
+        }
+
+        .card-title + .card-content:empty::before {
+            content: none;
+        }
+
+        /* Markdown content styling */
+        .card-content h1,
+        .card-content h2,
+        .card-content h3,
+        .card-content h4,
+        .card-content h5,
+        .card-content h6 {
+            margin: 0 0 0.5em 0;
+            line-height: 1.3;
+        }
+
+        .card-content h1 { font-size: 1.25rem; }
+        .card-content h2 { font-size: 1.125rem; }
+        .card-content h3 { font-size: 1rem; }
+        .card-content h4,
+        .card-content h5,
+        .card-content h6 { font-size: 0.875rem; }
+
+        .card-content p {
+            margin: 0 0 0.75em 0;
+        }
+
+        .card-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .card-content ul,
+        .card-content ol {
+            margin: 0 0 0.75em 0;
+            padding-left: 1.5em;
+        }
+
+        .card-content li {
+            margin-bottom: 0.25em;
+        }
+
+        .card-content code {
+            background: var(--color-bg);
+            padding: 0.125em 0.375em;
+            border-radius: 3px;
+            font-size: 0.8125rem;
+            font-family: monospace;
+        }
+
+        .card-content pre {
+            background: var(--color-bg);
+            padding: 0.75em;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 0 0 0.75em 0;
+        }
+
+        .card-content pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .card-content a {
+            color: var(--color-accent);
+            text-decoration: none;
+        }
+
+        .card-content a:hover {
+            text-decoration: underline;
+        }
+
+        .card-content blockquote {
+            border-left: 3px solid var(--color-accent);
+            padding-left: 1em;
+            margin: 0 0 0.75em 0;
+            color: var(--color-text-muted);
+        }
+
+        /* Card editing */
+        .card.editing {
+            padding: 0;
+        }
+
+        .card-title-editor {
+            width: 100%;
+            padding: 10px 12px;
+            border: none;
+            border-bottom: 1px solid var(--color-border);
+            border-radius: 6px 6px 0 0;
+            font-family: var(--font-family);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            line-height: 1.4;
+            background: var(--color-card-bg);
+            color: var(--color-text);
+        }
+
+        .card-title-editor:focus {
+            outline: none;
+            border-bottom-color: var(--color-accent);
+        }
+
+        .card-title-editor::placeholder {
+            font-weight: 400;
+            color: var(--color-text-muted);
+        }
+
+        .card-editor {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px 12px;
+            border: none;
+            border-radius: 0 0 6px 6px;
+            font-family: monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            resize: vertical;
+            background: var(--color-card-bg);
+            color: var(--color-text);
+        }
+
+        .card-editor:focus {
+            outline: none;
+        }
+
+        /* Card links [[title]] */
+        .card-link {
+            color: var(--color-accent);
+            text-decoration: none;
+            background: var(--color-accent-light);
+            padding: 1px 4px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .card-link:hover {
+            background: var(--color-accent);
+            color: white;
+        }
+
+        .card-link-broken {
+            color: var(--color-text-muted);
+            background: var(--color-border);
+            padding: 1px 4px;
+            border-radius: 3px;
+            text-decoration: line-through;
+            cursor: not-allowed;
+        }
+
+        /* Add card button */
+        .add-card-btn {
+            background: transparent;
+            border: 2px dashed var(--color-border);
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: center;
+        }
+
+        .add-card-btn:hover {
+            border-color: var(--color-accent);
+            color: var(--color-accent);
+            background: var(--color-accent-light);
+        }
+
+        /* Empty state */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 32px;
+            text-align: center;
+            color: var(--color-text-muted);
+        }
+
+        .empty-state h2 {
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+            color: var(--color-text);
+        }
+
+        .empty-state p {
+            margin-bottom: 24px;
+            max-width: 300px;
+        }
+
+        .empty-state button {
+            padding: 12px 24px;
+            background: var(--color-accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.15s ease;
+        }
+
+        .empty-state button:hover {
+            opacity: 0.9;
+        }
+
+        /* Hidden file input */
+        .file-input {
+            display: none;
+        }
+
+        /* Keyboard shortcuts help */
+        .shortcuts-hint {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            padding: 8px 12px;
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            opacity: 0.7;
+            transition: opacity 0.15s ease;
+        }
+
+        .shortcuts-hint:hover {
+            opacity: 1;
+        }
+
+        .shortcuts-hint kbd {
+            background: var(--color-bg);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.6875rem;
+        }
+
+        /* Drag feedback */
+        .card.dragging {
+            opacity: 0.5;
+        }
+
+        .card.drag-over {
+            border-top: 3px solid var(--color-accent);
+        }
+
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            padding: 12px 24px;
+            background: var(--color-text);
+            color: var(--color-bg);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.visible {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* Card preview tooltip */
+        .card-preview {
+            position: fixed;
+            z-index: 1500;
+            max-width: 280px;
+            max-height: 200px;
+            padding: 12px;
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .card-preview-content {
+            font-size: 0.8125rem;
+            line-height: 1.5;
+            color: var(--color-text);
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 8;
+            -webkit-box-orient: vertical;
+        }
+
+        .card-preview-content p {
+            margin: 0 0 0.5em 0;
+        }
+
+        .card-preview-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .card-preview-children {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--color-border);
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+        }
+
+        .card-preview-child {
+            padding: 4px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-preview-child::before {
+            content: "→ ";
+            opacity: 0.5;
+        }
+
+        /* Header warning popup */
+        .header-warning-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+
+        .header-warning-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .header-warning-popup {
+            background: var(--color-card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .header-warning-popup h3 {
+            margin: 0 0 12px 0;
+            font-size: 1.125rem;
+            color: var(--color-text);
+        }
+
+        .header-warning-popup p {
+            margin: 0 0 12px 0;
+            font-size: 0.9375rem;
+            color: var(--color-text-muted);
+            line-height: 1.5;
+        }
+
+        .header-warning-popup ul {
+            margin: 0 0 16px 0;
+            padding-left: 20px;
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            line-height: 1.6;
+        }
+
+        .header-warning-popup li {
+            margin-bottom: 4px;
+        }
+
+        .header-warning-btn {
+            display: block;
+            width: 100%;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            background: var(--color-accent);
+            color: white;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .header-warning-btn:hover {
+            background: var(--color-accent-hover);
+        }
+
+        /* Quick capture button */
+        .quick-capture-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            background: var(--color-accent);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+            z-index: 100;
+        }
+
+        .quick-capture-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+        }
+
+        .quick-capture-btn:active {
+            transform: scale(0.95);
+        }
+
+        .quick-capture-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Hide quick capture in fullscreen mode */
+        body.fullscreen-active .quick-capture-btn {
+            display: none;
+        }
+
+        /* Zen Mode - uses expanded editor in fullscreen with minimal UI */
+        body.zen-mode .expanded-editor-header,
+        body.zen-mode .expanded-editor-toolbar {
+            display: none !important;
+        }
+
+        /* Zen mode structure bar */
+        .zen-structure-bar {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 8px 20px;
+            background: var(--color-bg);
+            border-bottom: 1px solid var(--color-border);
+            opacity: 0.4;
+            transition: opacity 0.2s ease;
+        }
+
+        body.zen-mode .zen-structure-bar {
+            display: flex;
+        }
+
+        .zen-structure-bar:hover {
+            opacity: 1;
+        }
+
+        .zen-breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+        }
+
+        .zen-breadcrumb-item {
+            padding: 2px 8px;
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .zen-breadcrumb-item:hover {
+            border-color: var(--color-accent);
+            color: var(--color-text);
+        }
+
+        .zen-breadcrumb-item.current {
+            background: var(--color-accent);
+            border-color: var(--color-accent);
+            color: white;
+        }
+
+        .zen-breadcrumb-sep {
+            color: var(--color-text-muted);
+            opacity: 0.5;
+        }
+
+        .zen-structure-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: 8px;
+        }
+
+        .zen-structure-btn {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            font-size: 0.7rem;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .zen-structure-btn:hover {
+            border-color: var(--color-accent);
+            color: var(--color-text);
+            background: var(--color-bg);
+        }
+
+        .zen-structure-btn svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        .zen-structure-btn kbd {
+            font-size: 0.65rem;
+            padding: 1px 4px;
+            background: var(--color-bg);
+            border-radius: 2px;
+            opacity: 0.7;
+        }
+
+        body.zen-mode .expanded-editor-footer {
+            opacity: 0.3;
+            transition: opacity 0.2s ease;
+        }
+
+        body.zen-mode .expanded-editor-footer:hover {
+            opacity: 1;
+        }
+
+        /* Zen mode text width options */
+        body.zen-mode .expanded-editor-write-pane {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        body.zen-mode.zen-width-narrow .expanded-editor-write-pane {
+            max-width: 520px;
+        }
+
+        body.zen-mode.zen-width-medium .expanded-editor-write-pane {
+            max-width: 680px;
+        }
+
+        body.zen-mode.zen-width-wide .expanded-editor-write-pane {
+            max-width: 860px;
+        }
+
+        body.zen-mode .expanded-editor-input {
+            max-width: 100%;
+            /* Hide scrollbar but keep scroll functionality */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge */
+        }
+
+        body.zen-mode .expanded-editor-input::-webkit-scrollbar {
+            display: none; /* Chrome/Safari/Opera */
+        }
+
+        /* Focus fade effect in Zen mode - creates spotlight on center */
+        body.zen-mode.focus-fade .expanded-editor-write-pane {
+            position: relative;
+        }
+
+        body.zen-mode.focus-fade .expanded-editor-write-pane::before,
+        body.zen-mode.focus-fade .expanded-editor-write-pane::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 30%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        body.zen-mode.focus-fade .expanded-editor-write-pane::before {
+            top: 0;
+            background: linear-gradient(
+                to bottom,
+                var(--color-card-bg) 0%,
+                rgba(var(--focus-fade-rgb, 255, 255, 255), 0.7) 60%,
+                transparent 100%
+            );
+        }
+
+        body.zen-mode.focus-fade .expanded-editor-write-pane::after {
+            bottom: 0;
+            background: linear-gradient(
+                to top,
+                var(--color-card-bg) 0%,
+                rgba(var(--focus-fade-rgb, 255, 255, 255), 0.7) 60%,
+                transparent 100%
+            );
+        }
+
+        /* Focus fade RGB values for different themes */
+        :root {
+            --focus-fade-rgb: 255, 255, 255;
+        }
+
+        [data-theme="dusk"] {
+            --focus-fade-rgb: 232, 232, 232;
+        }
+
+        [data-theme="twilight"] {
+            --focus-fade-rgb: 31, 41, 55;
+        }
+
+        [data-theme="night"] {
+            --focus-fade-rgb: 20, 20, 20;
+        }
+
+        /* Expand button on selected cards */
+        .card-expand-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            background: var(--color-card-bg);
+            color: var(--color-text-muted);
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            z-index: 1;
+        }
+
+        .card-expand-btn:hover {
+            border-color: var(--color-accent);
+            color: var(--color-accent);
+            background: var(--color-accent-light);
+        }
+
+        .card-expand-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .card.selected .card-expand-btn {
+            display: flex;
+        }
+
+        /* Expanded editor modal */
+        .expanded-editor-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 32px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+
+        .expanded-editor-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .expanded-editor {
+            width: 100%;
+            max-width: 1200px;
+            height: 85vh;
+            background: var(--color-card-bg);
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.95);
+            transition: transform 0.2s ease;
+        }
+
+        .expanded-editor-overlay.visible .expanded-editor {
+            transform: scale(1);
+        }
+
+        .expanded-editor-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--color-border);
+            flex-shrink: 0;
+        }
+
+        .expanded-editor-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
+        }
+
+        .expanded-editor-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .expanded-editor-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            background: var(--color-card-bg);
+            color: var(--color-text);
+            font-size: 0.8125rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s ease;
+        }
+
+        .expanded-editor-btn:hover {
+            background: var(--color-bg);
+            border-color: var(--color-accent);
+        }
+
+        .expanded-editor-btn.primary {
+            background: var(--color-accent);
+            border-color: var(--color-accent);
+            color: white;
+        }
+
+        .expanded-editor-btn.primary:hover {
+            opacity: 0.9;
+        }
+
+        .expanded-editor-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* Markdown toolbar */
+        .expanded-editor-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 20px;
+            border-bottom: 1px solid var(--color-border);
+            background: var(--color-bg);
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+
+        .expanded-editor-toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .expanded-editor-toolbar-group + .expanded-editor-toolbar-group {
+            margin-left: 8px;
+            padding-left: 12px;
+            border-left: 1px solid var(--color-border);
+        }
+
+        .md-toolbar-btn {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            background: transparent;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .md-toolbar-btn:hover {
+            background: var(--color-card-bg);
+            border-color: var(--color-border);
+            color: var(--color-text);
+        }
+
+        .md-toolbar-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .md-toolbar-btn.text-btn {
+            width: auto;
+            padding: 0 8px;
+            font-family: monospace;
+        }
+
+        .expanded-editor-body {
+            flex: 1;
+            display: flex;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .expanded-editor-write-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .expanded-editor-input {
+            flex: 1;
+            width: 100%;
+            padding: 20px;
+            border: none;
+            font-family: monospace;
+            font-size: 1rem;
+            line-height: 1.8;
+            resize: none;
+            background: var(--color-card-bg);
+            color: var(--color-text);
+            overflow-y: auto;
+        }
+
+        .expanded-editor-input:focus {
+            outline: none;
+        }
+
+        .expanded-editor-preview {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            border-left: 1px solid var(--color-border);
+            background: var(--color-bg);
+        }
+
+        .expanded-editor-preview .card-content {
+            font-size: 1rem;
+            line-height: 1.8;
+            max-width: 65ch;
+        }
+
+        .expanded-editor-footer {
+            padding: 10px 20px;
+            border-top: 1px solid var(--color-border);
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .expanded-editor-footer kbd {
+            background: var(--color-bg);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.6875rem;
+        }
+
+        .expanded-editor-wordcount {
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Editor view mode controls */
+        .expanded-editor-view-controls {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-right: auto;
+            margin-left: 16px;
+        }
+
+        .view-mode-btn {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            background: transparent;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+
+        .view-mode-btn:hover {
+            background: var(--color-bg);
+            border-color: var(--color-border);
+            color: var(--color-text);
+        }
+
+        .view-mode-btn.active {
+            background: var(--color-accent-light);
+            border-color: var(--color-accent);
+            color: var(--color-accent);
+        }
+
+        .view-mode-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .view-mode-divider {
+            width: 1px;
+            height: 20px;
+            background: var(--color-border);
+            margin: 0 8px;
+        }
+
+        /* Preview hidden state */
+        .expanded-editor-overlay.preview-hidden .expanded-editor-preview {
+            display: none;
+        }
+
+        .expanded-editor-overlay.preview-hidden .expanded-editor-write-pane {
+            flex: 1;
+        }
+
+        /* Fullscreen mode */
+        .expanded-editor-overlay.fullscreen {
+            padding: 0;
+        }
+
+        .expanded-editor-overlay.fullscreen .expanded-editor {
+            max-width: none;
+            height: 100vh;
+            border-radius: 0;
+        }
+
+        /* Split view mode - editor takes half, tree view visible */
+        .expanded-editor-overlay.split-left {
+            padding: 0;
+            background: transparent;
+            pointer-events: none;
+            justify-content: flex-start;
+        }
+
+        .expanded-editor-overlay.split-left .expanded-editor {
+            width: 50%;
+            max-width: none;
+            height: 100vh;
+            border-radius: 0;
+            pointer-events: auto;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .expanded-editor-overlay.split-right {
+            padding: 0;
+            background: transparent;
+            pointer-events: none;
+            justify-content: flex-end;
+        }
+
+        .expanded-editor-overlay.split-right .expanded-editor {
+            width: 50%;
+            max-width: none;
+            height: 100vh;
+            border-radius: 0;
+            pointer-events: auto;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Compress main toolbar when expanded editor is open in split mode */
+        body.editor-split-active .app {
+            pointer-events: auto;
+        }
+
+        body.editor-split-active .toolbar {
+            padding: 0 8px;
+            gap: 2px;
+        }
+
+        body.editor-split-active .toolbar button {
+            padding: 4px 6px;
+            font-size: 0.75rem;
+        }
+
+        body.editor-split-active .toolbar button span {
+            display: none;
+        }
+
+        body.editor-split-active .toolbar-group {
+            gap: 2px;
+        }
+
+        body.editor-split-active .toolbar-group + .toolbar-group {
+            margin-left: 2px;
+            padding-left: 6px;
+        }
+
+        body.editor-split-active .toolbar-btn-icon {
+            width: 28px;
+            height: 28px;
+        }
+
+        body.editor-split-active .doc-title {
+            max-width: 100px;
+            font-size: 0.75rem;
+        }
+
+        body.editor-split-active .doc-title-btn {
+            padding: 4px 8px;
+        }
+
+        body.editor-split-active .doc-stats {
+            display: none;
+        }
+
+        body.editor-split-active .shortcuts-hint {
+            display: none;
+        }
+
+        body.editor-split-active .toolbar-spacer {
+            flex: 1;
+            min-width: 16px;
+        }
+
+        @media (max-width: 900px) {
+            .expanded-editor-overlay {
+                padding: 16px;
+            }
+
+            .expanded-editor {
+                height: 95vh;
+            }
+
+            .expanded-editor-body {
+                flex-direction: column;
+            }
+
+            .expanded-editor-preview {
+                border-left: none;
+                border-top: 1px solid var(--color-border);
+                flex: 0 0 35%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .expanded-editor-toolbar-group + .expanded-editor-toolbar-group {
+                margin-left: 4px;
+                padding-left: 8px;
+            }
+
+            .md-toolbar-btn {
+                width: 28px;
+                height: 28px;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            :root {
+                --column-width: 280px;
+            }
+
+            .toolbar {
+                padding: 0 8px;
+            }
+
+            .toolbar button span {
+                display: none;
+            }
+
+            .doc-title {
+                display: none;
+            }
+
+            .shortcuts-hint {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header class="toolbar">
+            <div class="toolbar-group">
+                <button id="new-btn" title="New document (Ctrl+N)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="12" y1="18" x2="12" y2="12"></line>
+                        <line x1="9" y1="15" x2="15" y2="15"></line>
+                    </svg>
+                    <span>New</span>
+                </button>
+                <button id="templates-btn" title="Start from template">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                        <line x1="9" y1="21" x2="9" y2="9"></line>
+                    </svg>
+                    <span>Templates</span>
+                </button>
+                <button id="import-btn" title="Import markdown (Ctrl+O)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <span>Import</span>
+                </button>
+                <button id="export-btn" title="Save as JSON (⌘S)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>Save</span>
+                </button>
+                <button id="print-btn" title="Print / Export PDF (Ctrl+P)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                        <rect x="6" y="14" width="12" height="8"></rect>
+                    </svg>
+                    <span>Print</span>
+                </button>
+            </div>
+
+            <div class="toolbar-group">
+                <button id="undo-btn" title="Undo (Ctrl+Z)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="1 4 1 10 7 10"></polyline>
+                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                    </svg>
+                </button>
+                <button id="redo-btn" title="Redo (Ctrl+Shift+Z)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="toolbar-group">
+                <button id="nav-back-btn" title="Go back (Alt+←)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </button>
+                <button id="nav-forward-btn" title="Go forward (Alt+→)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </div>
+
+            <button id="search-btn" class="toolbar-btn-icon" title="Search cards (Ctrl+F)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </button>
+
+            <div class="toolbar-spacer"></div>
+
+            <div id="session-timer-container" class="session-timer-container" hidden>
+                <span id="session-timer" class="session-timer"></span>
+                <div class="timer-controls">
+                    <button id="timer-pause-btn" class="timer-control-btn" title="Pause/Resume (click timer)">
+                        <svg class="timer-icon-pause" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
+                            <rect x="6" y="4" width="4" height="16"></rect>
+                            <rect x="14" y="4" width="4" height="16"></rect>
+                        </svg>
+                        <svg class="timer-icon-play" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="12" height="12" hidden>
+                            <polygon points="5,3 19,12 5,21"></polygon>
+                        </svg>
+                    </button>
+                    <button id="timer-reset-btn" class="timer-control-btn" title="Reset timer">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                            <path d="M3 3v5h5"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <span id="word-goal-progress" class="word-goal-progress" hidden></span>
+            <span id="save-indicator" class="save-indicator" hidden>Saved</span>
+            <span id="doc-stats" class="doc-stats"></span>
+            <div class="doc-dropdown">
+                <button id="doc-title-btn" class="doc-title-btn">
+                    <span id="doc-title" class="doc-title">Untitled</span>
+                    <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+                <div id="doc-dropdown-menu" class="doc-dropdown-menu" hidden>
+                    <div class="doc-dropdown-header">Recent Documents</div>
+                    <div id="recent-docs-list" class="recent-docs-list">
+                        <div class="no-recent-docs">No recent documents</div>
+                    </div>
+                    <div class="doc-dropdown-divider"></div>
+                    <button id="rename-doc-btn" class="doc-dropdown-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        Rename Document
+                    </button>
+                    <button id="save-copy-btn" class="doc-dropdown-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        Save as Copy
+                    </button>
+                    <div class="doc-dropdown-divider"></div>
+                    <button id="export-md-btn" class="doc-dropdown-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Download Markdown
+                    </button>
+                    <div class="doc-dropdown-divider"></div>
+                    <div class="doc-dropdown-header">Settings</div>
+                    <label class="doc-dropdown-toggle">
+                        <input type="checkbox" id="zen-fullscreen-toggle" checked>
+                        <span>Zen mode browser fullscreen</span>
+                    </label>
+                    <div class="doc-dropdown-select">
+                        <label for="zen-width-select">Zen mode text width</label>
+                        <select id="zen-width-select">
+                            <option value="narrow">Narrow</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="wide">Wide</option>
+                        </select>
+                    </div>
+                    <label class="doc-dropdown-toggle">
+                        <input type="checkbox" id="zen-typewriter-toggle" checked>
+                        <span>Zen mode center cursor</span>
+                    </label>
+                    <label class="doc-dropdown-toggle">
+                        <input type="checkbox" id="typewriter-scroll-toggle" checked>
+                        <span>Typewriter scrolling</span>
+                    </label>
+                    <label class="doc-dropdown-toggle">
+                        <input type="checkbox" id="show-card-badges-toggle">
+                        <span>Show card child counts</span>
+                    </label>
+                    <label class="doc-dropdown-toggle">
+                        <input type="checkbox" id="word-goal-toggle">
+                        <span>Session word goal</span>
+                    </label>
+                    <div id="word-goal-input-wrapper" class="doc-dropdown-input" hidden>
+                        <input type="number" id="word-goal-input" min="100" max="10000" step="100" value="500" placeholder="500">
+                        <span>words</span>
+                    </div>
+                    <label class="doc-dropdown-toggle">
+                        <input type="checkbox" id="session-timer-toggle">
+                        <span>Show session timer</span>
+                    </label>
+                    <div id="timer-options" class="doc-dropdown-nested" hidden>
+                        <div class="doc-dropdown-radio-group">
+                            <label class="doc-dropdown-radio">
+                                <input type="radio" name="timer-mode" value="stopwatch" checked>
+                                <span>Stopwatch (count up)</span>
+                            </label>
+                            <label class="doc-dropdown-radio">
+                                <input type="radio" name="timer-mode" value="pomodoro">
+                                <span>Pomodoro (countdown)</span>
+                            </label>
+                        </div>
+                        <div id="pomodoro-duration-wrapper" class="doc-dropdown-input" hidden>
+                            <select id="pomodoro-duration-select">
+                                <option value="15">15 min</option>
+                                <option value="20">20 min</option>
+                                <option value="25" selected>25 min</option>
+                                <option value="30">30 min</option>
+                                <option value="45">45 min</option>
+                                <option value="60">60 min</option>
+                            </select>
+                        </div>
+                    </div>
+                    <label class="doc-dropdown-toggle">
+                        <input type="checkbox" id="focus-fade-toggle">
+                        <span>Focus fade (Zen mode)</span>
+                    </label>
+                    <label class="doc-dropdown-toggle">
+                        <input type="checkbox" id="card-preview-toggle">
+                        <span>Card preview on hover</span>
+                    </label>
+                    <div class="doc-dropdown-divider"></div>
+                    <div class="doc-dropdown-header">Writing Analysis</div>
+                    <button id="word-frequency-btn" class="doc-dropdown-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                        </svg>
+                        Word Frequency
+                    </button>
+                    <button id="reading-level-btn" class="doc-dropdown-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                        </svg>
+                        Reading Level
+                    </button>
+                    <div class="doc-dropdown-divider"></div>
+                    <button id="export-settings-btn" class="doc-dropdown-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                        Export Settings
+                    </button>
+                    <button id="import-settings-btn" class="doc-dropdown-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        Import Settings
+                    </button>
+                </div>
+            </div>
+
+            <button id="shortcuts-btn" class="toolbar-btn-icon" title="Keyboard shortcuts (?)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+            </button>
+
+            <button id="zen-btn" class="toolbar-btn-icon" title="Zen mode (Z)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 16v-4"></path>
+                    <path d="M12 8h.01"></path>
+                </svg>
+            </button>
+
+            <button id="fullscreen-btn" class="toolbar-btn-icon" title="Fullscreen (F11)">
+                <svg class="fullscreen-enter-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <polyline points="9 21 3 21 3 15"></polyline>
+                    <line x1="21" y1="3" x2="14" y2="10"></line>
+                    <line x1="3" y1="21" x2="10" y2="14"></line>
+                </svg>
+                <svg class="fullscreen-exit-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="4 14 10 14 10 20"></polyline>
+                    <polyline points="20 10 14 10 14 4"></polyline>
+                    <line x1="14" y1="10" x2="21" y2="3"></line>
+                    <line x1="3" y1="21" x2="10" y2="14"></line>
+                </svg>
+            </button>
+
+            <div class="theme-dropdown">
+                <button class="theme-toggle" id="theme-toggle" title="Change theme">
+                    <!-- Light: sun -->
+                    <svg class="theme-icon-light" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    <!-- Dusk: sun with horizon -->
+                    <svg class="theme-icon-dusk" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 10V2"></path>
+                        <path d="m4.93 10.93 1.41 1.41"></path>
+                        <path d="M2 18h2"></path>
+                        <path d="M20 18h2"></path>
+                        <path d="m19.07 10.93-1.41 1.41"></path>
+                        <path d="M22 22H2"></path>
+                        <path d="M16 18a4 4 0 0 0-8 0"></path>
+                    </svg>
+                    <!-- Twilight: crescent moon -->
+                    <svg class="theme-icon-twilight" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <!-- Night: moon with stars -->
+                    <svg class="theme-icon-night" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+                        <path d="M19 3v4"></path>
+                        <path d="M21 5h-4"></path>
+                    </svg>
+                </button>
+                <div id="theme-dropdown-menu" class="theme-dropdown-menu" hidden>
+                    <button class="theme-option" data-theme="light">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                        Light
+                    </button>
+                    <button class="theme-option" data-theme="dusk">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 10V2"></path>
+                            <path d="m4.93 10.93 1.41 1.41"></path>
+                            <path d="M2 18h2"></path>
+                            <path d="M20 18h2"></path>
+                            <path d="m19.07 10.93-1.41 1.41"></path>
+                            <path d="M22 22H2"></path>
+                            <path d="M16 18a4 4 0 0 0-8 0"></path>
+                        </svg>
+                        Dusk
+                    </button>
+                    <button class="theme-option" data-theme="twilight">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                        Twilight
+                    </button>
+                    <button class="theme-option" data-theme="night">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+                            <path d="M19 3v4"></path>
+                            <path d="M21 5h-4"></path>
+                        </svg>
+                        Night
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <nav id="breadcrumb" class="breadcrumb" hidden>
+            <!-- Breadcrumb navigation rendered dynamically -->
+        </nav>
+
+        <main class="main">
+            <div id="columns" class="columns">
+                <!-- Columns are rendered dynamically -->
+            </div>
+        </main>
+    </div>
+
+    <input type="file" id="file-input" class="file-input" accept=".md,.txt,.markdown">
+    <input type="file" id="settings-file-input" class="file-input" accept=".json">
+
+    <div class="shortcuts-hint">
+        <kbd>Enter</kbd> edit &nbsp; <kbd>⌘Enter</kbd> add below &nbsp; <kbd>Tab</kbd> add child &nbsp; <kbd>Shift+↑↓←→</kbd> move card &nbsp; <kbd>e</kbd> expand &nbsp; <kbd>?</kbd> all shortcuts
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <!-- Card preview tooltip -->
+    <div id="card-preview" class="card-preview" hidden>
+        <div class="card-preview-content"></div>
+    </div>
+
+    <!-- Header warning popup -->
+    <div id="header-warning-overlay" class="header-warning-overlay">
+        <div class="header-warning-popup">
+            <h3>Headers aren't available in cards</h3>
+            <p>In TextGarden, the tree structure replaces traditional headers. Each card's position in the hierarchy determines its heading level:</p>
+            <ul>
+                <li><strong>Column 1</strong> cards become H1 headers</li>
+                <li><strong>Column 2</strong> cards become H2 headers</li>
+                <li><strong>Column 3</strong> cards become H3 headers</li>
+                <li>...and so on</li>
+            </ul>
+            <p>Use the <strong>Title</strong> field above the content to set the card's header text, or create child cards to add sub-sections.</p>
+            <button id="header-warning-dismiss" class="header-warning-btn">Got it</button>
+        </div>
+    </div>
+
+    <!-- Quick capture button -->
+    <button id="quick-capture-btn" class="quick-capture-btn" title="Quick capture (`)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+    </button>
+
+    <!-- Search modal -->
+    <div id="search-modal-overlay" class="search-modal-overlay">
+        <div class="search-modal">
+            <div class="search-modal-header">
+                <svg class="search-modal-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="search-modal-input" class="search-modal-input" placeholder="Search cards...">
+                <button id="search-modal-close" class="search-modal-close">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div id="search-modal-results" class="search-modal-results">
+                <div class="search-modal-empty">Type to search your cards</div>
+            </div>
+            <div class="search-modal-footer">
+                <div class="search-modal-hints">
+                    <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+                    <span><kbd>Enter</kbd> select</span>
+                    <span><kbd>Esc</kbd> close</span>
+                </div>
+                <span id="search-modal-count"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expanded editor modal -->
+    <div id="expanded-editor-overlay" class="expanded-editor-overlay">
+        <div class="expanded-editor">
+            <!-- Zen mode structure bar (only visible in zen mode) -->
+            <div id="zen-structure-bar" class="zen-structure-bar">
+                <div id="zen-breadcrumb" class="zen-breadcrumb">
+                    <!-- Populated dynamically -->
+                </div>
+                <div class="zen-structure-actions">
+                    <button id="zen-add-sibling" class="zen-structure-btn" title="Add sibling card below (Shift+Tab)">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span>Sibling</span>
+                        <kbd>⇧⇥</kbd>
+                    </button>
+                    <button id="zen-add-child" class="zen-structure-btn" title="Add child card (Tab)">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                        <span>Child</span>
+                        <kbd>⇥</kbd>
+                    </button>
+                </div>
+            </div>
+            <div class="expanded-editor-header">
+                <span class="expanded-editor-title">Edit Card</span>
+                <div class="expanded-editor-view-controls">
+                    <!-- Preview toggle -->
+                    <button id="toggle-preview-btn" class="view-mode-btn active" title="Toggle preview">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                    <div class="view-mode-divider"></div>
+                    <!-- Size modes -->
+                    <button id="editor-mode-default" class="view-mode-btn active" data-mode="default" title="Default size">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        </svg>
+                    </button>
+                    <button id="editor-mode-fullscreen" class="view-mode-btn" data-mode="fullscreen" title="Fullscreen">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <polyline points="9 21 3 21 3 15"></polyline>
+                            <line x1="21" y1="3" x2="14" y2="10"></line>
+                            <line x1="3" y1="21" x2="10" y2="14"></line>
+                        </svg>
+                    </button>
+                    <button id="editor-mode-split-left" class="view-mode-btn" data-mode="split-left" title="Split view (left)">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="12" y1="3" x2="12" y2="21"></line>
+                            <rect x="4" y="4" width="7" height="16" fill="currentColor" opacity="0.2" stroke="none"></rect>
+                        </svg>
+                    </button>
+                    <button id="editor-mode-split-right" class="view-mode-btn" data-mode="split-right" title="Split view (right)">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="12" y1="3" x2="12" y2="21"></line>
+                            <rect x="13" y="4" width="7" height="16" fill="currentColor" opacity="0.2" stroke="none"></rect>
+                        </svg>
+                    </button>
+                </div>
+                <div class="expanded-editor-actions">
+                    <button id="expanded-editor-cancel" class="expanded-editor-btn">
+                        Cancel
+                    </button>
+                    <button id="expanded-editor-save" class="expanded-editor-btn primary">
+                        Save
+                    </button>
+                </div>
+            </div>
+            <div class="expanded-editor-toolbar">
+                <div class="expanded-editor-toolbar-group">
+                    <button class="md-toolbar-btn text-btn" data-md="heading1" title="Heading 1">H1</button>
+                    <button class="md-toolbar-btn text-btn" data-md="heading2" title="Heading 2">H2</button>
+                    <button class="md-toolbar-btn text-btn" data-md="heading3" title="Heading 3">H3</button>
+                </div>
+                <div class="expanded-editor-toolbar-group">
+                    <button class="md-toolbar-btn" data-md="bold" title="Bold (Ctrl+B)">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
+                            <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
+                        </svg>
+                    </button>
+                    <button class="md-toolbar-btn" data-md="italic" title="Italic (Ctrl+I)">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="4" x2="10" y2="4"></line>
+                            <line x1="14" y1="20" x2="5" y2="20"></line>
+                            <line x1="15" y1="4" x2="9" y2="20"></line>
+                        </svg>
+                    </button>
+                    <button class="md-toolbar-btn" data-md="strikethrough" title="Strikethrough">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 4H9a3 3 0 0 0-3 3c0 1.4 1 3 3 3h6"></path>
+                            <path d="M8 20h7a3 3 0 0 0 3-3c0-1.4-1-3-3-3H4"></path>
+                            <line x1="4" y1="12" x2="20" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="expanded-editor-toolbar-group">
+                    <button class="md-toolbar-btn" data-md="link" title="Link (Ctrl+K)">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                        </svg>
+                    </button>
+                    <button class="md-toolbar-btn" data-md="code" title="Inline code">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="16 18 22 12 16 6"></polyline>
+                            <polyline points="8 6 2 12 8 18"></polyline>
+                        </svg>
+                    </button>
+                </div>
+                <div class="expanded-editor-toolbar-group">
+                    <button class="md-toolbar-btn" data-md="bulletlist" title="Bullet list">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="8" y1="6" x2="21" y2="6"></line>
+                            <line x1="8" y1="12" x2="21" y2="12"></line>
+                            <line x1="8" y1="18" x2="21" y2="18"></line>
+                            <circle cx="4" cy="6" r="1" fill="currentColor"></circle>
+                            <circle cx="4" cy="12" r="1" fill="currentColor"></circle>
+                            <circle cx="4" cy="18" r="1" fill="currentColor"></circle>
+                        </svg>
+                    </button>
+                    <button class="md-toolbar-btn" data-md="numberedlist" title="Numbered list">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="10" y1="6" x2="21" y2="6"></line>
+                            <line x1="10" y1="12" x2="21" y2="12"></line>
+                            <line x1="10" y1="18" x2="21" y2="18"></line>
+                            <text x="3" y="8" font-size="8" fill="currentColor" stroke="none">1</text>
+                            <text x="3" y="14" font-size="8" fill="currentColor" stroke="none">2</text>
+                            <text x="3" y="20" font-size="8" fill="currentColor" stroke="none">3</text>
+                        </svg>
+                    </button>
+                    <button class="md-toolbar-btn" data-md="blockquote" title="Blockquote">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21z"></path>
+                            <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v4z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="expanded-editor-body">
+                <div class="expanded-editor-write-pane">
+                    <textarea id="expanded-editor-input" class="expanded-editor-input" placeholder="Write your content here..."></textarea>
+                </div>
+                <div id="expanded-editor-preview" class="expanded-editor-preview">
+                    <div class="card-title" style="display: none;"></div>
+                    <div class="card-content"></div>
+                </div>
+            </div>
+            <div class="expanded-editor-footer">
+                <span><kbd>Ctrl+Enter</kbd> save &nbsp; <kbd>Esc</kbd> cancel</span>
+                <span id="expanded-editor-wordcount" class="expanded-editor-wordcount"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Templates Modal -->
+    <div id="templates-overlay" class="templates-overlay">
+        <div class="templates-modal">
+            <div class="templates-header">
+                <h3>Start from Template</h3>
+                <button id="templates-close" class="templates-close">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="templates-grid" id="templates-grid">
+                <!-- Templates will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Print Preview Modal -->
+    <div id="print-preview-overlay" class="print-preview-overlay">
+        <div class="print-preview-modal">
+            <h3>Print / Export PDF</h3>
+            <div class="print-options">
+                <div class="print-option">
+                    <input type="checkbox" id="print-all-columns" checked>
+                    <label for="print-all-columns">Include all columns (even collapsed)</label>
+                </div>
+                <div class="print-option">
+                    <input type="checkbox" id="print-headers" checked>
+                    <label for="print-headers">Show column headers</label>
+                </div>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 16px;">
+                Tip: In the print dialog, choose "Save as PDF" to export as a PDF file.
+            </p>
+            <div class="print-actions">
+                <button id="print-cancel" class="print-cancel">Cancel</button>
+                <button id="print-confirm" class="print-confirm">Print</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="shortcuts-overlay" class="shortcuts-overlay">
+        <div class="shortcuts-modal">
+            <h3>
+                Help
+                <button id="shortcuts-close" class="shortcuts-close">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </h3>
+
+            <div class="shortcuts-section">
+                <h4>Documentation</h4>
+                <p style="font-size: 0.875rem; color: var(--color-text-muted); margin-bottom: 12px;">
+                    Learn how to use TextGarden with the full guide covering all features, concepts, and workflows.
+                </p>
+                <a href="guide.html" class="guide-link" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.875rem; font-weight: 500;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                    </svg>
+                    Open Full Guide
+                </a>
+            </div>
+
+            <div class="shortcuts-section">
+                <h4>Navigation</h4>
+                <div class="shortcuts-list">
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Navigate up/down</span>
+                        <span class="shortcut-keys"><kbd>↑</kbd> <kbd>↓</kbd></span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Navigate left/right</span>
+                        <span class="shortcut-keys"><kbd>←</kbd> <kbd>→</kbd></span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Clear selection</span>
+                        <span class="shortcut-keys"><kbd>Esc</kbd></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="shortcuts-section">
+                <h4>Creating Cards</h4>
+                <div class="shortcuts-list">
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Add sibling below</span>
+                        <span class="shortcut-keys"><kbd>⌘</kbd> <kbd>Enter</kbd></span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Add sibling above</span>
+                        <span class="shortcut-keys"><kbd>⌘</kbd> <kbd>Shift</kbd> <kbd>Enter</kbd></span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Add child card</span>
+                        <span class="shortcut-keys"><kbd>Tab</kbd></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="shortcuts-section">
+                <h4>Moving Cards</h4>
+                <div class="shortcuts-list">
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Move card up/down</span>
+                        <span class="shortcut-keys"><kbd>Shift</kbd> <kbd>↑</kbd> <kbd>↓</kbd></span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Move up hierarchy</span>
+                        <span class="shortcut-keys"><kbd>Shift</kbd> <kbd>←</kbd></span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Move into sibling above</span>
+                        <span class="shortcut-keys"><kbd>Shift</kbd> <kbd>→</kbd></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="shortcuts-section">
+                <h4>Editing</h4>
+                <div class="shortcuts-list">
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Edit card</span>
+                        <span class="shortcut-keys"><kbd>Enter</kbd></span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Expand editor</span>
+                        <span class="shortcut-keys"><kbd>e</kbd></span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Delete card</span>
+                        <span class="shortcut-keys"><kbd>Del</kbd> / <kbd>Backspace</kbd></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="shortcuts-section">
+                <h4>While Editing</h4>
+                <div class="shortcuts-list">
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Save and stop editing</span>
+                        <span class="shortcut-keys"><kbd>⌘</kbd> <kbd>Enter</kbd></span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Cancel editing</span>
+                        <span class="shortcut-keys"><kbd>Esc</kbd></span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Split card at cursor</span>
+                        <span class="shortcut-keys"><kbd>⌘</kbd> <kbd>\</kbd></span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Merge with card above</span>
+                        <span class="shortcut-keys"><kbd>⌘</kbd> <kbd>Backspace</kbd></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="shortcuts-section" style="margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--color-border);">
+                <p style="font-size: 0.75rem; color: var(--color-text-muted); line-height: 1.5;">
+                    TextGarden is inspired by <a href="https://gingkowriter.com" target="_blank" rel="noopener" style="color: var(--color-accent);">Gingko Writer</a>.
+                    If you find this style of writing helpful, please consider supporting the original creators.
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Analysis Modal (for word frequency, reading level) -->
+    <div id="analysis-overlay" class="analysis-overlay">
+        <div class="analysis-modal">
+            <h3 id="analysis-title">
+                Analysis
+                <button id="analysis-close" class="analysis-close">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </h3>
+            <div id="analysis-content" class="analysis-content"></div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
