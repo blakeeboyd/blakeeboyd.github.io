@@ -2,6 +2,16 @@
 
 A personal website hosted on GitHub Pages at blakeeboyd.github.io.
 
+## Design Philosophy
+
+**Gall's Law**: A complex system that works is invariably found to have evolved from a simple system that worked. A complex system designed from scratch never works and cannot be patched up to make it work. You have to start over with a working simple system.
+
+When building new features:
+1. First check if existing code can be extended or repurposed
+2. Start with the simplest working implementation
+3. Add complexity only when the simple version proves insufficient
+4. Prefer composing existing pieces over creating new abstractions
+
 ## Project Structure
 
 ```
