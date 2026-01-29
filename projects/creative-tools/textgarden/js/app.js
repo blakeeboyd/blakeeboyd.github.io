@@ -4857,31 +4857,144 @@
             };
         }
 
-        // Update the breadcrumb display based on cursor position
+        // Build a map of all headers in the document with their positions
+        function getZenHeaderMap() {
+            const text = expandedInput.value;
+            const lines = text.split('\n');
+            const headers = [];
+            let charPos = 0;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                const headerMatch = line.match(/^(#{1,6})\s*(.*)$/);
+
+                if (headerMatch) {
+                    const level = headerMatch[1].length;
+                    const titleText = headerMatch[2].trim();
+                    const indexMatch = titleText.match(/\(?([\d.]+)\)?$/);
+                    if (indexMatch) {
+                        headers.push({
+                            index: indexMatch[1],
+                            level: level,
+                            title: titleText,
+                            charPos: charPos
+                        });
+                    }
+                }
+                charPos += line.length + 1;
+            }
+            return headers;
+        }
+
+        // Navigate to a specific header by index
+        function zenNavigateTo(index) {
+            const headers = getZenHeaderMap();
+            const target = headers.find(h => h.index === index);
+            if (target) {
+                // Position cursor at the start of the header content (after the header line)
+                const text = expandedInput.value;
+                const lines = text.split('\n');
+                let charPos = 0;
+
+                for (let i = 0; i < lines.length; i++) {
+                    if (charPos === target.charPos) {
+                        // Found the header line, move to the line after it
+                        const nextLineStart = charPos + lines[i].length + 1;
+                        expandedInput.setSelectionRange(nextLineStart, nextLineStart);
+                        expandedInput.focus();
+                        break;
+                    }
+                    charPos += lines[i].length + 1;
+                }
+
+                updateZenBreadcrumb();
+                if (state.zenTypewriter) {
+                    zenTypewriterScroll();
+                }
+            }
+        }
+
+        // Update the mini-map display based on cursor position
         function updateZenBreadcrumb() {
             if (!state.zenMode || !zenBreadcrumb) return;
 
             const pos = getZenCursorPosition();
             if (!pos) return;
 
-            // Parse index into path parts (e.g., "1.2.3" -> ["1", "1.2", "1.2.3"])
-            const parts = pos.index.split('.');
-            const pathParts = [];
-            for (let i = 0; i < parts.length; i++) {
-                pathParts.push(parts.slice(0, i + 1).join('.'));
-            }
+            const headers = getZenHeaderMap();
+            const currentIndex = pos.index;
+            const currentParts = currentIndex.split('.');
 
-            // Build breadcrumb HTML
-            let html = '';
-            pathParts.forEach((part, i) => {
-                if (i > 0) {
-                    html += '<span class="zen-breadcrumb-sep">→</span>';
-                }
-                const isCurrent = i === pathParts.length - 1;
-                html += `<span class="zen-breadcrumb-item${isCurrent ? ' current' : ''}" data-index="${part}">${part}</span>`;
+            // Find parent index (e.g., "1.2" from "1.2.3")
+            const parentIndex = currentParts.length > 1
+                ? currentParts.slice(0, -1).join('.')
+                : null;
+
+            // Find siblings (same parent, same level)
+            const siblings = headers.filter(h => {
+                if (h.level !== pos.level) return false;
+                const hParts = h.index.split('.');
+                const hParent = hParts.slice(0, -1).join('.');
+                return hParent === (parentIndex || '');
             });
 
+            // Find direct children (one level deeper, starts with current index)
+            const children = headers.filter(h => {
+                if (h.level !== pos.level + 1) return false;
+                return h.index.startsWith(currentIndex + '.');
+            }).slice(0, 3); // Limit to 3 children
+
+            // Build mini-map HTML
+            let html = '<div class="zen-minimap">';
+
+            // Parent row (if exists)
+            if (parentIndex) {
+                const parent = headers.find(h => h.index === parentIndex);
+                if (parent) {
+                    html += '<div class="zen-minimap-row zen-minimap-parent">';
+                    html += `<span class="zen-minimap-item" data-index="${parentIndex}" title="${parent.title}">${parentIndex}</span>`;
+                    html += '</div>';
+                    html += '<div class="zen-minimap-connector">│</div>';
+                }
+            }
+
+            // Siblings row (current level)
+            html += '<div class="zen-minimap-row zen-minimap-siblings">';
+            siblings.forEach((sib, i) => {
+                if (i > 0) {
+                    html += '<span class="zen-minimap-sep">·</span>';
+                }
+                const isCurrent = sib.index === currentIndex;
+                html += `<span class="zen-minimap-item${isCurrent ? ' current' : ''}" data-index="${sib.index}" title="${sib.title}">${sib.index}</span>`;
+            });
+            html += '</div>';
+
+            // Children row (if any)
+            if (children.length > 0) {
+                html += '<div class="zen-minimap-connector">│</div>';
+                html += '<div class="zen-minimap-row zen-minimap-children">';
+                children.forEach((child, i) => {
+                    if (i > 0) {
+                        html += '<span class="zen-minimap-sep">·</span>';
+                    }
+                    html += `<span class="zen-minimap-item" data-index="${child.index}" title="${child.title}">${child.index}</span>`;
+                });
+                if (headers.filter(h => h.level === pos.level + 1 && h.index.startsWith(currentIndex + '.')).length > 3) {
+                    html += '<span class="zen-minimap-more">…</span>';
+                }
+                html += '</div>';
+            }
+
+            html += '</div>';
             zenBreadcrumb.innerHTML = html;
+
+            // Add click handlers for navigation
+            zenBreadcrumb.querySelectorAll('.zen-minimap-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const index = item.dataset.index;
+                    zenNavigateTo(index);
+                });
+            });
 
             // Disable child button if at max depth (level 6)
             if (zenAddChildBtn) {
@@ -4994,13 +5107,31 @@
 
             // Create new header with proper spacing
             const headerPrefix = '#'.repeat(pos.level);
+
+            // Check if there's a header after insertPos and count existing newlines before it
+            const textAfter = text.substring(insertPos);
+            const headerAfterMatch = textAfter.match(/^(\s*)(#{1,6}\s)/);
+
+            // Only add extra spacing if there's a header after AND not enough blank lines
+            let extraSpacing = '';
+            if (headerAfterMatch) {
+                const whitespaceBeforeHeader = headerAfterMatch[1];
+                const existingNewlines = (whitespaceBeforeHeader.match(/\n/g) || []).length;
+                // We want at least 2 newlines (one blank line) between content and next header
+                // Our newHeader ends with \n\n, so we need existingNewlines to be >= 2
+                if (existingNewlines < 2) {
+                    extraSpacing = '\n'.repeat(2 - existingNewlines);
+                }
+            }
+
+            // Structure: \n\n{header}\n\n[cursor here]{extra if needed}
             const newHeader = `\n\n${headerPrefix} ${newIndex}\n\n`;
 
             // Insert at the calculated position
-            const newText = text.substring(0, insertPos) + newHeader + text.substring(insertPos);
+            const newText = text.substring(0, insertPos) + newHeader + extraSpacing + text.substring(insertPos);
             expandedInput.value = newText;
 
-            // Position cursor after the new header (ready to type)
+            // Position cursor on the blank line after header (before extra spacing)
             const newCursorPos = insertPos + newHeader.length;
             expandedInput.setSelectionRange(newCursorPos, newCursorPos);
             expandedInput.focus();
@@ -5101,13 +5232,30 @@
 
             // Create new header at child level with proper spacing
             const headerPrefix = '#'.repeat(pos.level + 1);
+
+            // Check if there's a header after insertPos and count existing newlines before it
+            const textAfter = text.substring(insertPos);
+            const headerAfterMatch = textAfter.match(/^(\s*)(#{1,6}\s)/);
+
+            // Only add extra spacing if there's a header after AND not enough blank lines
+            let extraSpacing = '';
+            if (headerAfterMatch) {
+                const whitespaceBeforeHeader = headerAfterMatch[1];
+                const existingNewlines = (whitespaceBeforeHeader.match(/\n/g) || []).length;
+                // We want at least 2 newlines (one blank line) between content and next header
+                if (existingNewlines < 2) {
+                    extraSpacing = '\n'.repeat(2 - existingNewlines);
+                }
+            }
+
+            // Structure: \n\n{header}\n\n[cursor here]{extra if needed}
             const newHeader = `\n\n${headerPrefix} ${newIndex}\n\n`;
 
             // Insert at end of current card's own content
-            const newText = text.substring(0, insertPos) + newHeader + text.substring(insertPos);
+            const newText = text.substring(0, insertPos) + newHeader + extraSpacing + text.substring(insertPos);
             expandedInput.value = newText;
 
-            // Position cursor after the new header (ready to type)
+            // Position cursor on the blank line after header (before extra spacing)
             const newCursorPos = insertPos + newHeader.length;
             expandedInput.setSelectionRange(newCursorPos, newCursorPos);
             expandedInput.focus();

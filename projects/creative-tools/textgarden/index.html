@@ -2404,8 +2404,8 @@
             display: none;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            padding: 8px 20px;
+            gap: 16px;
+            padding: 10px 20px;
             background: var(--color-bg);
             border-bottom: 1px solid var(--color-border);
             opacity: 0.4;
@@ -2423,34 +2423,70 @@
         .zen-breadcrumb {
             display: flex;
             align-items: center;
-            gap: 4px;
             font-size: 0.75rem;
             color: var(--color-text-muted);
         }
 
-        .zen-breadcrumb-item {
+        /* Mini-map styles */
+        .zen-minimap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .zen-minimap-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .zen-minimap-parent {
+            opacity: 0.7;
+        }
+
+        .zen-minimap-children {
+            opacity: 0.7;
+            font-size: 0.7rem;
+        }
+
+        .zen-minimap-connector {
+            color: var(--color-text-muted);
+            opacity: 0.4;
+            font-size: 0.6rem;
+            line-height: 1;
+        }
+
+        .zen-minimap-item {
             padding: 2px 8px;
             background: var(--color-card-bg);
             border: 1px solid var(--color-border);
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.15s;
+            white-space: nowrap;
         }
 
-        .zen-breadcrumb-item:hover {
+        .zen-minimap-item:hover {
             border-color: var(--color-accent);
             color: var(--color-text);
         }
 
-        .zen-breadcrumb-item.current {
+        .zen-minimap-item.current {
             background: var(--color-accent);
             border-color: var(--color-accent);
             color: white;
         }
 
-        .zen-breadcrumb-sep {
+        .zen-minimap-sep {
             color: var(--color-text-muted);
-            opacity: 0.5;
+            opacity: 0.4;
+        }
+
+        .zen-minimap-more {
+            color: var(--color-text-muted);
+            opacity: 0.6;
+            padding: 0 4px;
         }
 
         .zen-structure-actions {
