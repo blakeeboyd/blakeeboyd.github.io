@@ -389,6 +389,7 @@
    =========================================== */
 
 .upload-area {
+    position: relative;
     border: 2px dashed var(--color-border);
     border-radius: var(--radius-md);
     padding: var(--spacing-md);

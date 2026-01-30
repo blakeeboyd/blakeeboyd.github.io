@@ -166,6 +166,7 @@
 
 /* Upload Area */
 .upload-area {
+    position: relative;
     margin-top: var(--spacing-sm);
     padding: var(--spacing-md);
     border: 2px dashed var(--color-border);

@@ -79,6 +79,14 @@
             margin-bottom: 3rem;
         }
 
+        .back-links {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+
         .back-link {
             display: inline-flex;
             align-items: center;
@@ -86,12 +94,14 @@
             color: var(--color-accent);
             text-decoration: none;
             font-weight: 500;
-            font-size: 0.875rem;
-            margin-bottom: 1.5rem;
         }
 
         .back-link:hover {
             text-decoration: underline;
+        }
+
+        .back-link-separator {
+            color: var(--color-text-muted);
         }
 
         .guide-header h1 {
@@ -214,12 +224,18 @@
         <site-nav base="../../../"></site-nav>
 
         <main>
-            <a href="./" class="back-link">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 12H5M12 19l-7-7 7-7"/>
-                </svg>
-                Back to PechaKucha Player
-            </a>
+            <div class="back-links">
+                <a href="../../../projects.html" class="back-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Projects
+                </a>
+                <span class="back-link-separator">/</span>
+                <a href="./" class="back-link">
+                    PechaKucha Player
+                </a>
+            </div>
 
             <header class="guide-header">
                 <h1>PechaKucha Player Guide</h1>
