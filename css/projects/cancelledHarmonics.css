@@ -167,16 +167,16 @@
     gap: var(--spacing-sm);
 }
 
-/* Harmonics grid - 8x2 grid for 16 harmonics */
+/* Harmonics grid - 10x2 grid for 20 harmonics */
 .harmonics-grid {
     display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 6px;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 4px;
 }
 
 @media (max-width: 1024px) {
     .harmonics-grid {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(5, 1fr);
     }
 }
 
@@ -192,14 +192,14 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2px;
-    padding: 6px 4px;
+    gap: 1px;
+    padding: 4px 2px;
     background: var(--color-control-bg);
-    border: 2px solid var(--color-border);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all var(--transition-fast);
-    min-height: 48px;
+    min-height: 40px;
 }
 
 .harmonic-button:hover {
@@ -269,7 +269,7 @@
 
 /* Harmonic button content */
 .harmonic-number {
-    font-size: 1rem;
+    font-size: 0.875rem;
     font-weight: 600;
     color: var(--color-text);
     line-height: 1;
@@ -280,7 +280,7 @@
 }
 
 .harmonic-freq {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     color: var(--color-text-muted);
     font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
     line-height: 1;
@@ -314,7 +314,7 @@
 }
 
 .harmonic-amp {
-    font-size: 0.6rem;
+    font-size: 0.55rem;
     color: var(--color-text-muted);
     line-height: 1;
 }

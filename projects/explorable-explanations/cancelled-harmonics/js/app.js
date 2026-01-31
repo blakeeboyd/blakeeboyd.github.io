@@ -16,7 +16,7 @@ const state = {
     harmonicAmplitudes: [], // Base amplitudes for current waveform
     isPlaying: false,
     fundamentalFreq: 200,
-    numHarmonics: 16,
+    numHarmonics: 20,
     animationId: null,
     maxDisplayFreq: 8000, // Hz (covers 16th harmonic of 500 Hz fundamental)
     autoDemoRunning: false,
@@ -339,8 +339,9 @@ let preDemoState = null;
 
 /**
  * Run the ASA demonstration sequence
- * - Uses harmonics 1-10 (mutes 11-16)
- * - For each harmonic: toggle on/off 3 times, then 2s silence
+ * - All 20 harmonics are enabled for the full tone
+ * - Toggles harmonics 1-10 on/off 3 times each
+ * - For each harmonic: toggle on/off 3 times, then silence
  */
 async function runAutoDemo() {
     if (state.autoDemoRunning) {
@@ -374,12 +375,9 @@ async function runAutoDemo() {
             startAudio();
         }
 
-        // Setup: Enable harmonics 1-10, mute 11-16
-        for (let i = 0; i < 10; i++) {
+        // Setup: Enable all 20 harmonics for full tone
+        for (let i = 0; i < state.numHarmonics; i++) {
             setHarmonicState(i, true);
-        }
-        for (let i = 10; i < state.numHarmonics; i++) {
-            setHarmonicState(i, false);
         }
 
         // Initial pause to let user hear the full tone
