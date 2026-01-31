@@ -1040,7 +1040,9 @@
                 updateStartButtonLabels();
                 showPreview();
             } catch (err) {
-                alert('Invalid configuration file: ' + err.message);
+                if (typeof notify === 'function') {
+                    notify('Invalid configuration file: ' + err.message, 'error');
+                }
             }
         };
         reader.readAsText(file);
@@ -1553,7 +1555,9 @@
         }
 
         if (!presentationWindow) {
-            alert('Unable to open presentation window. Please check your popup blocker settings.');
+            if (typeof notify === 'function') {
+                notify('Unable to open presentation window. Please check your popup blocker settings.', 'error');
+            }
             return;
         }
 

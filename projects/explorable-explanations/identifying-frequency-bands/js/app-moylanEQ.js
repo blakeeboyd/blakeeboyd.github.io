@@ -754,14 +754,18 @@ function loadRNBOScript(version) {
 
       // Validate file type
       if (!file.type.startsWith("audio/")) {
-        console.error("Please select an audio file");
+        if (typeof notify === 'function') {
+          notify("Please select a valid audio file.", "error");
+        }
         return;
       }
 
       // Validate file size (100MB limit)
       const MAX_FILE_SIZE = 100 * 1024 * 1024;
       if (file.size > MAX_FILE_SIZE) {
-        alert("File is too large. Maximum size is 100MB.");
+        if (typeof notify === 'function') {
+          notify("File is too large. Maximum size is 100MB.", "error");
+        }
         return;
       }
 

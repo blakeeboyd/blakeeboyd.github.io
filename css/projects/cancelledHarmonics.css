@@ -174,7 +174,13 @@
     gap: 4px;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
+    .harmonics-grid {
+        grid-template-columns: repeat(10, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
     .harmonics-grid {
         grid-template-columns: repeat(5, 1fr);
     }
@@ -200,6 +206,8 @@
     cursor: pointer;
     transition: all var(--transition-fast);
     min-height: 40px;
+    min-width: 0; /* Allow shrinking below content size in grid */
+    overflow: hidden;
 }
 
 .harmonic-button:hover {
@@ -284,6 +292,10 @@
     color: var(--color-text-muted);
     font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
     line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 /* Auto Demo row below harmonics grid */
@@ -317,6 +329,7 @@
     font-size: 0.55rem;
     color: var(--color-text-muted);
     line-height: 1;
+    white-space: nowrap;
 }
 
 /* Harmonics header actions */

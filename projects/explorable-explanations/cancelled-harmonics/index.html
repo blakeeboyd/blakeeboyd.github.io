@@ -57,13 +57,13 @@
                         <div class="playback-section">
                             <div class="card-header">
                                 <h2 class="card-title">Playback
-                                    <span class="info-trigger" tabindex="0" aria-label="Playback information">
+                                    <button type="button" class="info-trigger" aria-label="Playback information">
                                         i
                                         <span class="info-tooltip tooltip-left" role="tooltip">
                                             <strong>Start/Stop:</strong> Toggle audio playback.<br><br>
                                             <strong>Master Gain:</strong> Adjust overall volume from -70dB to 0dB.
                                         </span>
-                                    </span>
+                                    </button>
                                 </h2>
                             </div>
                             <div class="playback-controls">
@@ -92,14 +92,14 @@
                         <div class="fundamental-section">
                             <div class="card-header">
                                 <h2 class="card-title">Fundamental Frequency
-                                    <span class="info-trigger" tabindex="0" aria-label="Fundamental frequency information">
+                                    <button type="button" class="info-trigger" aria-label="Fundamental frequency information">
                                         i
                                         <span class="info-tooltip" role="tooltip">
                                             <strong>Fundamental Frequency:</strong> The base frequency of the complex tone.<br><br>
                                             All harmonics are integer multiples of this frequency (2f, 3f, 4f, etc.).<br><br>
                                             Default: 200 Hz (per ASA demo)
                                         </span>
-                                    </span>
+                                    </button>
                                 </h2>
                             </div>
                             <div class="freq-control">
@@ -119,19 +119,19 @@
                 <div class="card">
                     <div class="card-header card-header-inline">
                         <h2 class="card-title">Harmonics
-                            <span class="info-trigger" tabindex="0" aria-label="Harmonics information">
+                            <button type="button" class="info-trigger" aria-label="Harmonics information">
                                 i
                                 <span class="info-tooltip" role="tooltip">
                                     <strong>Click to toggle:</strong> Each button represents a harmonic.<br><br>
                                     <strong>Active (blue):</strong> Harmonic is sounding<br>
                                     <strong>Inactive (gray):</strong> Harmonic is muted
                                 </span>
-                            </span>
+                            </button>
                         </h2>
                         <div class="harmonics-actions">
                             <div class="waveform-section">
                                 <span class="waveform-label">Waveform
-                                    <span class="info-trigger" tabindex="0" aria-label="Waveform information">
+                                    <button type="button" class="info-trigger" aria-label="Waveform information">
                                         i
                                         <span class="info-tooltip tooltip-left" role="tooltip">
                                             <strong>Waveform presets</strong> set the harmonic amplitudes:<br><br>
@@ -140,7 +140,7 @@
                                             • <strong>Square:</strong> odd harmonics, 1/n<br>
                                             • <strong>Sawtooth:</strong> all harmonics, 1/n
                                         </span>
-                                    </span>
+                                    </button>
                                 </span>
                                 <div class="waveform-buttons">
                                     <button type="button" id="wave-sine" class="action-button wave-button" title="Sine (fundamental only)">Sine</button>
@@ -161,22 +161,22 @@
                         <div class="demo-button-group">
                             <button type="button" id="auto-demo" class="action-button action-button-primary">Auto Demo</button>
                             <span class="demo-description">Hear each harmonic separate from the complex tone</span>
-                            <span class="info-trigger" tabindex="0" aria-label="Auto Demo information">
+                            <button type="button" class="info-trigger" aria-label="Auto Demo information">
                                 i
                                 <span class="info-tooltip tooltip-left" role="tooltip">
                                     <strong>Auto Demo</strong> replicates the ASA demonstration sequence. For harmonics 1-10, it toggles each on and off three times with silence between, helping you hear how each component separates from the complex tone.
                                 </span>
-                            </span>
+                            </button>
                         </div>
                         <div class="demo-button-group">
                             <button type="button" id="random-build" class="action-button action-button-secondary">Random Build</button>
                             <span class="demo-description">Build a sawtooth from scratch</span>
-                            <span class="info-trigger" tabindex="0" aria-label="Random Build information">
+                            <button type="button" class="info-trigger" aria-label="Random Build information">
                                 i
                                 <span class="info-tooltip tooltip-left" role="tooltip">
                                     <strong>Random Build</strong> is just for fun! It starts with silence and randomly adds harmonics one by one until the full sawtooth timbre emerges.
                                 </span>
-                            </span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -185,7 +185,7 @@
                 <div class="card">
                     <div class="card-header card-header-inline">
                         <h2 class="card-title">Spectrogram
-                            <span class="info-trigger" tabindex="0" aria-label="Spectrogram information">
+                            <button type="button" class="info-trigger" aria-label="Spectrogram information">
                                 i
                                 <span class="info-tooltip" role="tooltip">
                                     <strong>Real-time visualization</strong> of frequency content.<br><br>
@@ -194,7 +194,7 @@
                                     Color: amplitude (blue=quiet, red=loud)<br><br>
                                     Each horizontal line represents one harmonic.
                                 </span>
-                            </span>
+                            </button>
                         </h2>
                         <div class="spectrogram-controls">
                             <div class="control-group inline">

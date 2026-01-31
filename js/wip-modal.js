@@ -146,11 +146,70 @@
 
         document.body.appendChild(overlay);
 
-        // Add click handler to close button
+        const modal = overlay.querySelector('.wip-modal');
         const confirmBtn = overlay.querySelector('.wip-confirm-btn');
-        confirmBtn.addEventListener('click', function() {
+        const contactLink = overlay.querySelector('.wip-modal-body a');
+
+        // Store the element that had focus before modal opened
+        const previouslyFocused = document.activeElement;
+
+        // Get all focusable elements in the modal
+        const focusableElements = [contactLink, confirmBtn].filter(Boolean);
+        const firstFocusable = focusableElements[0];
+        const lastFocusable = focusableElements[focusableElements.length - 1];
+
+        // Close modal function
+        function closeModal() {
             overlay.remove();
+            // Restore focus to previously focused element
+            if (previouslyFocused && previouslyFocused.focus) {
+                previouslyFocused.focus();
+            }
+        }
+
+        // Add click handler to close button
+        confirmBtn.addEventListener('click', closeModal);
+
+        // Add Escape key handler
+        function handleKeydown(e) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                closeModal();
+                return;
+            }
+
+            // Focus trap: Tab and Shift+Tab cycle within modal
+            if (e.key === 'Tab') {
+                if (e.shiftKey) {
+                    // Shift+Tab: if on first element, go to last
+                    if (document.activeElement === firstFocusable) {
+                        e.preventDefault();
+                        lastFocusable.focus();
+                    }
+                } else {
+                    // Tab: if on last element, go to first
+                    if (document.activeElement === lastFocusable) {
+                        e.preventDefault();
+                        firstFocusable.focus();
+                    }
+                }
+            }
+        }
+
+        document.addEventListener('keydown', handleKeydown);
+
+        // Clean up event listener when modal is removed
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                mutation.removedNodes.forEach(function(node) {
+                    if (node === overlay) {
+                        document.removeEventListener('keydown', handleKeydown);
+                        observer.disconnect();
+                    }
+                });
+            });
         });
+        observer.observe(document.body, { childList: true });
 
         // Focus the button for accessibility
         confirmBtn.focus();

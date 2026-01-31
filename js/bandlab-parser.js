@@ -726,15 +726,28 @@ function copyToClipboard() {
     if (!jsonOutput) return;
     const text = JSON.stringify(jsonOutput, null, 2);
     navigator.clipboard.writeText(text).then(() => {
-        alert("Copied to clipboard!");
+        if (typeof notify === 'function') {
+            notify('Copied to clipboard!', 'success');
+        }
     }).catch(() => {
+        // Fallback for older browsers
         const textarea = document.createElement("textarea");
         textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
         document.body.appendChild(textarea);
         textarea.select();
-        document.execCommand("copy");
+        try {
+            document.execCommand("copy");
+            if (typeof notify === 'function') {
+                notify('Copied to clipboard!', 'success');
+            }
+        } catch (err) {
+            if (typeof notify === 'function') {
+                notify('Failed to copy to clipboard', 'error');
+            }
+        }
         document.body.removeChild(textarea);
-        alert("Copied to clipboard!");
     });
 }
 

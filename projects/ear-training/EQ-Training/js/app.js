@@ -1234,7 +1234,17 @@ async function handleAudioFile(file) {
     // Validate file size (100MB limit)
     const MAX_FILE_SIZE = 100 * 1024 * 1024;
     if (file.size > MAX_FILE_SIZE) {
-        alert('File is too large. Maximum size is 100MB.');
+        if (typeof notify === 'function') {
+            notify('File is too large. Maximum size is 100MB.', 'error');
+        }
+        return;
+    }
+
+    // Validate MIME type
+    if (!file.type.startsWith('audio/')) {
+        if (typeof notify === 'function') {
+            notify('Please select a valid audio file.', 'error');
+        }
         return;
     }
 
@@ -1256,7 +1266,9 @@ async function handleAudioFile(file) {
         }
     } catch (error) {
         console.error('Error loading audio file:', error);
-        alert('Could not load audio file. Please try a different file.');
+        if (typeof notify === 'function') {
+            notify('Could not load audio file. Please try a different file.', 'error');
+        }
     }
 }
 

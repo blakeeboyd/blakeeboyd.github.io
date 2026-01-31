@@ -15,9 +15,12 @@
     height: 18px;
     border-radius: 50%;
     border: 1.5px solid var(--color-text-muted);
+    background: transparent;
+    padding: 0;
     color: var(--color-text-muted);
     font-size: 0.7rem;
     font-weight: 600;
+    font-family: inherit;
     cursor: help;
     margin-left: var(--spacing-xs);
     position: relative;

@@ -46,6 +46,11 @@
             <section class="contact-form-section">
                 <div id="form-status" class="form-status" aria-live="polite"></div>
                 <form class="contact-form" id="contact-form">
+                    <!-- Honeypot field - hidden from users, catches bots -->
+                    <div class="form-group" style="position: absolute; left: -9999px;" aria-hidden="true">
+                        <label class="form-label" for="contact-website">Website</label>
+                        <input type="text" id="contact-website" name="website" class="form-input" tabindex="-1" autocomplete="off">
+                    </div>
                     <div class="form-group">
                         <label class="form-label" for="contact-name">Name</label>
                         <input type="text" id="contact-name" name="entry.2017708535" class="form-input" required placeholder="Your name">
