@@ -849,25 +849,3 @@ function generateBandLabIdentifier(packName) {
     return identifier;
 }
 
-// Helper function to extract pack ID from various URL formats
-function extractPackIdFromUrl(url) {
-    try {
-        const urlObj = new URL(url);
-        const pathParts = urlObj.pathname.split('/').filter(Boolean);
-
-        // Handle BandLab URLs: /sounds/packs/[pack-id]
-        if (pathParts.includes('packs') || pathParts.includes('sounds')) {
-            return pathParts[pathParts.length - 1];
-        }
-
-        // Fallback: use the last path segment
-        if (pathParts.length > 0) {
-            return pathParts[pathParts.length - 1];
-        }
-
-        // Last resort: use the hostname
-        return urlObj.hostname.replace(/\./g, '-');
-    } catch (err) {
-        return 'unknown-pack';
-    }
-}

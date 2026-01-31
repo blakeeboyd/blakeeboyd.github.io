@@ -56,7 +56,7 @@
                     <div class="card meter-card">
                         <div class="card-header">
                             <h2 class="card-title">Correlation Meter
-                                <span class="info-trigger" tabindex="0" aria-label="Correlation meter information">
+                                <button type="button" class="info-trigger" aria-label="Correlation meter information">
                                     i
                                     <span class="info-tooltip" role="tooltip">
                                         <strong>Scatter Display:</strong> Each dot represents an L/R sample pair. Dots toward the top are in-phase, bottom are out-of-phase.<br><br>
@@ -64,7 +64,7 @@
                                         <strong>0 (sides):</strong> Uncorrelated / independent L/R (blue zone).<br><br>
                                         <strong>-1 (bottom):</strong> Out of phase / cancels in mono (red zone).
                                     </span>
-                                </span>
+                                </button>
                             </h2>
                         </div>
                         <div class="correlation-meter-container">
@@ -80,7 +80,7 @@
                     <div class="card scenarios-card">
                         <div class="card-header">
                             <h2 class="card-title">Phase Scenarios
-                                <span class="info-trigger" tabindex="0" aria-label="Phase scenarios information">
+                                <button type="button" class="info-trigger" aria-label="Phase scenarios information">
                                     i
                                     <span class="info-tooltip" role="tooltip">
                                         <strong>Correlated:</strong> Same signal to both channels (like a centered mono source).<br><br>
@@ -88,19 +88,19 @@
                                         <strong>Same Polarity:</strong> Both channels have matching polarity.<br><br>
                                         <strong>Inverted Polarity:</strong> Right channel polarity is flipped (multiplied by -1).
                                     </span>
-                                </span>
+                                </button>
                             </h2>
                             <div class="output-mode-group">
                                 <button type="button" class="output-mode-button active" data-output="stereo">Stereo</button>
                                 <button type="button" class="output-mode-button" data-output="mono">Mono</button>
-                                <span class="info-trigger" tabindex="0" aria-label="Output mode information">
+                                <button type="button" class="info-trigger" aria-label="Output mode information">
                                     i
                                     <span class="info-tooltip" role="tooltip">
                                         <strong>Stereo:</strong> Normal stereo output to left and right speakers.<br><br>
                                         <strong>Mono:</strong> Sums L+R after polarity processing.<br><br>
                                         With Correlated + Inverted, the center content cancels completely - demonstrating why phase correlation matters for mono compatibility.
                                     </span>
-                                </span>
+                                </button>
                             </div>
                         </div>
                         <div class="scenario-grid">
@@ -175,7 +175,7 @@
                     <div class="card source-card">
                         <div class="card-header">
                             <h2 class="card-title">Audio Source
-                                <span class="info-trigger" tabindex="0" aria-label="Audio source information">
+                                <button type="button" class="info-trigger" aria-label="Audio source information">
                                     i
                                     <span class="info-tooltip tooltip-right" role="tooltip">
                                         <strong>Mute:</strong> No audio output.<br><br>
@@ -183,7 +183,7 @@
                                         <strong>User Audio:</strong> Upload your own stereo audio file to hear how phase affects real content.<br><br>
                                         <strong>Gain:</strong> Separate volume settings are remembered for Pink Noise (-24dB) and User Audio (-12dB).
                                     </span>
-                                </span>
+                                </button>
                             </h2>
                         </div>
                         <div class="source-controls-vertical">
@@ -213,12 +213,12 @@
                             Auto Demo
                         </button>
                         <span class="demo-note">Uses pink noise</span>
-                        <span class="info-trigger" tabindex="0" aria-label="Auto Demo information">
+                        <button type="button" class="info-trigger" aria-label="Auto Demo information">
                             i
                             <span class="info-tooltip tooltip-left" role="tooltip">
                                 <strong>Auto Demo</strong> plays pink noise through all four phase scenarios, switching between stereo and mono for each. Each state plays for 4 seconds. Watch the correlation meter and listen for changes in spatial perception and volume.
                             </span>
-                        </span>
+                        </button>
                         <div id="demo-status" class="demo-status hidden">
                             <span class="demo-status-text" id="demo-status-text">Correlated + Same Polarity (Stereo): Identical signals create a phantom center between speakers.</span>
                         </div>

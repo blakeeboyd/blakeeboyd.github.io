@@ -26,15 +26,14 @@ document.getElementById('contact-form').addEventListener('submit', function(e) {
     submitButton.textContent = 'Sending...';
     statusDiv.textContent = 'Sending your message...';
 
+    // Note: With mode: 'no-cors', we cannot read the response or detect errors.
+    // The request always resolves with an opaque response, so we assume success.
+    // This is a limitation of cross-origin Google Forms submissions.
     fetch('https://docs.google.com/forms/d/e/1FAIpQLSftQC3-QlgIvA3_dVFKJoeNN-k6B6CdDjzE6X74oGA-Uhg5Ww/formResponse', {
         method: 'POST',
         body: formData,
         mode: 'no-cors'
     }).then(function() {
-        form.classList.add('hidden');
-        document.getElementById('form-success').classList.remove('hidden');
-        statusDiv.textContent = 'Message sent successfully!';
-    }).catch(function() {
         form.classList.add('hidden');
         document.getElementById('form-success').classList.remove('hidden');
         statusDiv.textContent = 'Message sent successfully!';

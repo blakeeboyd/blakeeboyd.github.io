@@ -14,27 +14,6 @@
 (function() {
     'use strict';
 
-    // Determine the base path for links based on script location
-    function getBasePath() {
-        const scripts = document.getElementsByTagName('script');
-        for (let i = 0; i < scripts.length; i++) {
-            const src = scripts[i].src;
-            if (src.includes('wip-modal.js')) {
-                // Count how many directories deep we are from root
-                const match = src.match(/^(.*?)js\/wip-modal\.js/);
-                if (match) {
-                    const path = match[1];
-                    // Extract relative path from current page to root
-                    const url = new URL(path);
-                    const pathname = url.pathname;
-                    // Return the base path
-                    return pathname.endsWith('/') ? pathname : pathname + '/';
-                }
-            }
-        }
-        return '/';
-    }
-
     // Get the contact page URL relative to current page
     function getContactUrl() {
         const siteNav = document.querySelector('site-nav');

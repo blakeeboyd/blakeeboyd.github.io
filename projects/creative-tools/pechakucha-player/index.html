@@ -1860,9 +1860,9 @@
                 <!-- Title Slide Section -->
                 <div class="pk-title-slide-section">
                     <div class="pk-section-label">Title Slide (optional)
-                        <span class="info-trigger" tabindex="0" aria-label="More information about title slide">?
+                        <button type="button" class="info-trigger" aria-label="More information about title slide">?
                             <span class="info-tooltip tooltip-left">To set a title slide, click any slide thumbnail below to select it, then click "Set as Title Slide." The title slide will display first before the timed presentation begins.</span>
-                        </span>
+                        </button>
                     </div>
                     <div id="title-slide-slot" class="pk-title-slide-slot">
                         <span id="title-slot-hint" class="pk-slot-hint">None</span>
@@ -1876,9 +1876,9 @@
                 <!-- Slides Section -->
                 <div class="pk-slides-section">
                     <div class="pk-section-label">Presentation Slides
-                        <span class="info-trigger" tabindex="0" aria-label="More information about presentation slides">?
+                        <button type="button" class="info-trigger" aria-label="More information about presentation slides">?
                             <span class="info-tooltip tooltip-left">Drag to reorder slides. Click a slide to add speaker notes. Hover over thumbnails to see preview and delete buttons.</span>
-                        </span>
+                        </button>
                     </div>
                     <div id="thumbnails" class="pk-thumbnail-grid"></div>
                 </div>
@@ -1895,9 +1895,9 @@
                     <label for="slide-duration-override">Duration</label>
                     <input type="number" id="slide-duration-override" min="1" max="120">
                     <span class="pk-notes-duration-unit">seconds</span>
-                    <span class="info-trigger" tabindex="0" aria-label="More information about slide duration">?
+                    <button type="button" class="info-trigger" aria-label="More information about slide duration">?
                         <span class="info-tooltip">Override the default duration for this slide. Leave empty to use the global setting.</span>
-                    </span>
+                    </button>
                 </div>
                 <button id="set-title-btn" class="action-button secondary">Set as Title Slide</button>
             </div>
@@ -1916,9 +1916,9 @@
                                 <input type="radio" id="mode-present" name="presentation-mode" value="present">
                                 <label for="mode-present">Present</label>
                             </div>
-                            <span class="info-trigger" tabindex="0" aria-label="More information about presentation modes">?
+                            <button type="button" class="info-trigger" aria-label="More information about presentation modes">?
                                 <span class="info-tooltip"><strong>Practice:</strong> Single-screen fullscreen view for rehearsing.<br><strong>Present:</strong> Opens a separate window for your audience while you see presenter view with notes and timer. Best with two screens.</span>
-                            </span>
+                            </button>
                         </div>
                     </div>
 
@@ -1933,9 +1933,9 @@
                                 <input type="radio" id="display-native" name="display-mode" value="native">
                                 <label for="display-native">Native</label>
                             </div>
-                            <span class="info-trigger" tabindex="0" aria-label="More information about image display modes">?
+                            <button type="button" class="info-trigger" aria-label="More information about image display modes">?
                                 <span class="info-tooltip"><strong>Fit:</strong> Shows the entire image with black bars if needed.<br><strong>Fill:</strong> Fills the screen, cropping edges if the aspect ratio doesn't match.<br><strong>Native:</strong> Shows the image at its original size, centered.</span>
-                            </span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1956,9 +1956,9 @@
                             <span class="pk-text-button">Import Settings</span>
                             <input type="file" id="import-input" accept=".json,application/json">
                         </label>
-                        <span class="info-trigger" tabindex="0" aria-label="More information about export and import">?
+                        <button type="button" class="info-trigger" aria-label="More information about export and import">?
                             <span class="info-tooltip"><strong>Export:</strong> Save slide order, notes, and settings as a JSON file.<br><strong>Import:</strong> Load a previously exported JSON file to restore your presentation setup.</span>
-                        </span>
+                        </button>
                     </div>
                 </div>
             </div>

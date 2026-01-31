@@ -53,7 +53,7 @@
                         <div class="audio-source-section">
                             <div class="card-header">
                                 <h2 class="card-title">Audio Source
-                                    <span class="info-trigger" tabindex="0" aria-label="Audio source information">
+                                    <button type="button" class="info-trigger" aria-label="Audio source information">
                                         i
                                         <span class="info-tooltip tooltip-left" role="tooltip">
                                             <strong>Source:</strong> Choose your audio input.<br><br>
@@ -62,7 +62,7 @@
                                             <strong>User Audio</strong> – Upload your own file<br><br>
                                             <strong>Gain:</strong> Adjust volume from -70dB to +6dB
                                         </span>
-                                    </span>
+                                    </button>
                                 </h2>
                             </div>
                             <div class="source-controls">
@@ -84,14 +84,14 @@
                         <div class="frequency-bands-section">
                             <div class="card-header card-header-inline">
                                 <h2 class="card-title">Frequency Bands <span class="card-title-info">See Moylan p. 106</span>
-                                    <span class="info-trigger" tabindex="0" aria-label="Frequency bands information">
+                                    <button type="button" class="info-trigger" aria-label="Frequency bands information">
                                         i
                                         <span class="info-tooltip tooltip-right" role="tooltip">
                                             <strong>M (Mute):</strong> Removes that frequency band from the output.<br><br>
                                             <strong>S (Solo):</strong> Isolates that band—only it will be heard. Multiple bands can be soloed together.<br><br>
                                             <strong>Filters On/Off:</strong> Master toggle to bypass all filtering and hear the original signal.
                                         </span>
-                                    </span>
+                                    </button>
                                 </h2>
                                 <div class="toggle-with-label">
                                     <span class="toggle-label">Filters On/Off</span>
@@ -179,7 +179,7 @@
                                     <rect x="14" y="4" width="4" height="16"></rect>
                                 </svg>
                             </button>
-                            <span class="info-trigger playback-info" tabindex="0" aria-label="Playback controls information">
+                            <button type="button" class="info-trigger playback-info" aria-label="Playback controls information">
                                 i
                                 <span class="info-tooltip" role="tooltip">
                                     <strong>Play/Pause:</strong> Start or stop audio playback.<br><br>
@@ -187,7 +187,7 @@
                                     <strong>Loop:</strong> Enable to repeat a section. Drag the handles or enter times to set loop points.<br><br>
                                     <strong>Upload:</strong> Click the icon on the right to load a different file.
                                 </span>
-                            </span>
+                            </button>
                             <div class="progress-container">
                                 <span class="time-display" id="current-time">0:00</span>
                                 <div class="progress-bar" id="progress-bar">
@@ -237,13 +237,13 @@
                             </svg>
                             Run Demo
                         </button>
-                        <span class="info-trigger" tabindex="0" aria-label="Demo information">
+                        <button type="button" class="info-trigger" aria-label="Demo information">
                             i
                             <span class="info-tooltip" role="tooltip">
                                 <strong>Demo Mode:</strong> Automatically cycles through each frequency band, soloing them one at a time for 3 seconds.<br><br>
                                 This helps you learn the characteristic sound of each band before analyzing your own audio.
                             </span>
-                        </span>
+                        </button>
                         <div class="demo-status hidden" id="demo-status">
                             <span class="demo-status-text" id="demo-status-text">Soloing "Low" Band</span>
                         </div>
