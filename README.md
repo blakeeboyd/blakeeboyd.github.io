@@ -72,6 +72,22 @@ Gamified ear training for matching hidden EQ curves.
 
 ### Creative Tools
 
+#### PechaKucha Player
+
+A web-based presentation player for the PechaKucha format (auto-advancing slides).
+
+**Features:**
+- Drag-and-drop image upload with reordering
+- Configurable slide duration (default 20 seconds)
+- Practice mode (single-screen fullscreen) and Present mode (dual-screen with presenter view)
+- Speaker notes per slide with optional per-slide duration overrides
+- Title slide support (untimed intro slide)
+- Audio countdown cues
+- Export/import presentation settings as JSON
+- Real-time timer with progress indication
+
+[View Project](https://blakeeboyd.github.io/projects/creative-tools/pechakucha-player/)
+
 #### BandLab JSON Parser
 
 A browser-based tool for parsing BandLab sample pack pages into structured JSON metadata.
@@ -116,6 +132,7 @@ npx serve
 ├── images/                    # Site images
 └── projects/
     ├── creative-tools/
+    │   ├── pechakucha-player/
     │   └── bandlab-parser/
     ├── explorable-explanations/
     │   ├── identifying-frequency-bands/
