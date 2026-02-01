@@ -41,6 +41,12 @@ When building new features:
 ├── images/                 # Site images
 └── projects/
     ├── creative-tools/
+    │   ├── pechakucha-player/
+    │   │   ├── index.html      # Player main page (uses .container.wide)
+    │   │   ├── presentation.html # External presentation window
+    │   │   ├── guide.html      # User guide
+    │   │   └── js/
+    │   │       └── app.js      # Pure JavaScript, no dependencies
     │   └── bandlab-parser/
     │       ├── index.html      # Parser main page (uses .container.wide)
     │       └── bookmarklet.html # Bookmarklet setup instructions
@@ -155,6 +161,77 @@ The modal:
 **To disable:** Simply remove the `<script>` tag from the page's `<head>`.
 
 ## Projects
+
+### PechaKucha Player
+
+A web-based presentation player for the PechaKucha format where slides auto-advance on a timer. Supports both practice mode (single-screen) and presentation mode (dual-screen with presenter view).
+
+**Location:** `projects/creative-tools/pechakucha-player/`
+
+**Key Features:**
+- Drag-and-drop image upload with thumbnail reordering
+- Configurable default slide duration (1-60 seconds, default 20)
+- Per-slide duration overrides
+- Optional title slide (untimed, displays before presentation starts)
+- Speaker notes per slide (visible in presenter view and practice mode)
+- Two presentation modes:
+  - Practice: Single-screen fullscreen view for rehearsing
+  - Present: Opens separate audience window with presenter view showing timer, notes, and next slide
+- Audio countdown cues (beeps at 3, 2, 1 seconds)
+- Keyboard controls (Space: pause, Arrow keys: navigate, Escape: exit)
+- Export/import presentation settings as JSON (preserves slide order, notes, durations)
+- Lightbox preview for individual slides
+- Undo support for slide deletion
+
+**Technical Stack:**
+- Pure JavaScript (no external dependencies)
+- Web Audio API for countdown beeps
+- Inline CSS (no external stylesheet)
+- BroadcastChannel API for presenter/audience window communication
+- Drag-and-drop API for slide reordering
+
+**State Management:**
+```javascript
+let images = [];           // Array of { name, dataUrl, notes, duration }
+let titleSlide = null;     // { name, dataUrl, notes } | null
+let currentIndex = 0;
+let isPaused = false;
+let isExternalPresentation = false;
+let presentationWindow = null;
+```
+
+**Presentation Flow:**
+1. Upload images via drag-drop or file picker
+2. Reorder slides by dragging thumbnails
+3. Click slide to add notes or set custom duration
+4. Optionally set a title slide (click slide → "Set as Title Slide")
+5. Choose Practice or Present mode
+6. Start presentation (Space or click Start)
+7. Slides auto-advance; pause with Space; exit with Escape
+
+**Presenter View (Present Mode):**
+- Left column: Current slide with progress bar, timer, navigation controls
+- Right column: Next slide preview, editable notes
+- Bottom: Slide filmstrip for quick navigation
+
+**Export Format:**
+```json
+{
+  "version": 1,
+  "defaultDuration": 20,
+  "displayMode": "fit",
+  "titleSlide": { "name": "...", "notes": "" },
+  "slides": [
+    { "name": "slide1.jpg", "notes": "Speaker notes", "duration": null }
+  ]
+}
+```
+
+**Key Files:**
+- `index.html` - Main page with inline styles
+- `presentation.html` - External audience window (minimal, receives updates via BroadcastChannel)
+- `guide.html` - User documentation
+- `js/app.js` - Complete application logic
 
 ### BandLab Parser
 
