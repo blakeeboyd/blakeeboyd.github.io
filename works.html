@@ -20,7 +20,7 @@
     <meta name="twitter:description" content="A curated selection of compositions and creative work by Blake Boyd">
     <meta name="twitter:image" content="https://blakeeboyd.github.io/images/social-card.jpg">
     <meta name="theme-color" content="#2563eb">
-    <meta name="author" content="Blake Boyd">
+    <meta name="author" content="Blake Emerson Boyd">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="manifest" href="manifest.json">
@@ -33,9 +33,128 @@
     <script src="js/theme.js"></script>
     <script src="js/nav-component.js" defer></script>
     <script src="js/media-controller.js" defer></script>
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "Works - Blake Boyd",
+        "description": "A curated selection of compositions and creative work by Blake Boyd",
+        "url": "https://blakeeboyd.github.io/works.html",
+        "author": {
+            "@type": "Person",
+            "name": "Blake Emerson Boyd",
+            "url": "https://blakeeboyd.github.io/"
+        },
+        "mainEntity": {
+            "@type": "ItemList",
+            "itemListElement": [
+                {
+                    "@type": "MusicAlbum",
+                    "name": "Specific Ambiguities",
+                    "byArtist": { "@type": "Person", "name": "Blake Emerson Boyd" },
+                    "datePublished": "2022",
+                    "description": "A live recording of the dissertation concert performed at the University of California, Irvine"
+                },
+                {
+                    "@type": "MusicComposition",
+                    "name": "Framework Etudes: No. 2 (Around)",
+                    "composer": { "@type": "Person", "name": "Blake Emerson Boyd" },
+                    "description": "Disklavier realization created in Max/MSP"
+                },
+                {
+                    "@type": "MusicComposition",
+                    "name": "a candle at night is not at optical infinity",
+                    "composer": { "@type": "Person", "name": "Blake Emerson Boyd" },
+                    "description": "For cello quartet and quadraphonic electronics"
+                },
+                {
+                    "@type": "MusicComposition",
+                    "name": "Pathways",
+                    "composer": { "@type": "Person", "name": "Blake Emerson Boyd" },
+                    "description": "For two violins, written for Miolina"
+                },
+                {
+                    "@type": "MusicComposition",
+                    "name": "close is a kind of far",
+                    "composer": { "@type": "Person", "name": "Blake Emerson Boyd" },
+                    "description": "For solo viola, written for Meitar Ensemble"
+                }
+            ]
+        }
+    }
+    </script>
+    <style>
+        .works-layout {
+            display: grid;
+            grid-template-columns: 1fr 200px;
+            gap: 3rem;
+            align-items: start;
+        }
+
+        .works-content {
+            min-width: 0;
+        }
+
+        .toc-sidebar {
+            position: sticky;
+            top: 2rem;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-header {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-list a {
+            display: block;
+            font-size: 0.8125rem;
+            color: var(--color-text-muted);
+            text-decoration: none;
+            padding: 0.25rem 0;
+            transition: color 0.15s ease;
+        }
+
+        .toc-list a:hover {
+            color: var(--color-text);
+        }
+
+        .toc-list a.active {
+            color: var(--color-text);
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .works-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .toc-sidebar {
+                position: relative;
+                top: 0;
+                order: -1;
+                margin-bottom: 2rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container wide">
         <site-nav></site-nav>
 
         <main>
@@ -44,167 +163,200 @@
                 <p class="subtitle">A curated selection of compositions and creative work.</p>
             </section>
 
-            <nav class="toc" aria-label="Table of contents">
-                <ul>
-                    <li><a href="#albums">Albums</a></li>
-                    <li><a href="#compositions">Compositions</a></li>
-                    <li><a href="#performances">Performances</a></li>
-                    <li><a href="#audio-engineering">Audio Engineering</a></li>
-                </ul>
-            </nav>
+            <div class="works-layout">
+                <div class="works-content">
+                    <section class="works-section">
+                        <h2 id="albums" class="works-section-title">Albums</h2>
+                    </section>
 
-            <section class="works-section">
-                <h2 id="albums" class="works-section-title">Albums</h2>
-            </section>
+                    <section class="work-item">
+                        <h3>Specific Ambiguities</h3>
+                        <p class="work-description">A live recording of my dissertation concert performed on February 25, 2022 at the University of California, Irvine. The album follows one piece as it returns again and again, each time performed by a different member of the ensemble until they play it together at the end. These repetitions are interspersed with other works featuring Cross-Domain Notation: interactive scores, computer musicians, and a jazz quartet.</p>
+                        <div class="audio-embed">
+                            <iframe
+                                src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/specific-ambiguities/sets/specific-ambiguities&color=%232563eb&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false"
+                                title="Specific Ambiguities"
+                                frameborder="0"
+                                allow="autoplay"
+                                scrolling="no">
+                            </iframe>
+                        </div>
+                    </section>
 
-            <section class="work-item">
-                <h3>Specific Ambiguities</h3>
-                <p class="work-description">A live recording of my dissertation concert performed on February 25, 2022 at the University of California, Irvine. The album follows one piece as it returns again and again, each time performed by a different member of the ensemble until they play it together at the end. These repetitions are interspersed with other works featuring Cross-Domain Notation: interactive scores, computer musicians, and a jazz quartet.</p>
-                <div class="audio-embed">
-                    <iframe
-                        src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/specific-ambiguities/sets/specific-ambiguities&color=%232563eb&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false"
-                        title="Specific Ambiguities"
-                        frameborder="0"
-                        allow="autoplay"
-                        scrolling="no">
-                    </iframe>
+                    <section class="works-section">
+                        <h2 id="compositions" class="works-section-title">Compositions</h2>
+                    </section>
+
+                    <section class="work-item">
+                        <h3><em>Framework Etudes: No. 2 (Around)</em> (Disklavier Realization)</h3>
+                        <p class="work-description">The Framework Etudes ask performers to provide their own conceptual framework for the meaning of notation. In this realization, created in Max/MSP and performed on Disklavier, the computer takes on the role of the musician: interpreting the score and playing the instrument.</p>
+                        <div class="video-embed">
+                            <iframe
+                                src="https://www.youtube.com/embed/lmq1JuPFQ_U"
+                                title="Framework Etudes: No. 2 (Around) - Disklavier Realization"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                referrerpolicy="strict-origin-when-cross-origin"
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                    </section>
+
+                    <section class="work-item">
+                        <h3><em>a candle at night is not at optical infinity</em> for cello quartet and quadraphonic electronics</h3>
+                        <p class="work-description">Moths evolved to navigate by distant celestial light, but a candle's diverging rays transform their reliable compass into a logarithmic spiral toward destruction. The piece explores how a behavior that once had survival value can misfire when context shifts. Written for <a href="https://www.teregulovcello.com/" target="_blank" rel="noopener">Eduard Teregulov</a>.</p>
+                        <div class="video-embed">
+                            <iframe
+                                src="https://www.youtube.com/embed/ekFYdS5ZL6o?start=564"
+                                title="a candle at night is not at optical infinity"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                referrerpolicy="strict-origin-when-cross-origin"
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                    </section>
+
+                    <section class="work-item">
+                        <h3><em>Pathways</em> for two violins</h3>
+                        <p class="work-description">This work is based on the harmonic series of each of the violin's four strings, navigated through an organizational structure and paired with different performance techniques. Written for and performed by Mioi Takeda and Lynn Bechtold of <a href="https://www.miolinanyc.com/" target="_blank" rel="noopener">Miolina</a> at The Cell Theatre, NYC.</p>
+                        <div class="video-embed">
+                            <iframe
+                                src="https://www.youtube.com/embed/PImb2z3Ns9Y"
+                                title="Pathways for Two Violins (2020) for Miolina"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                referrerpolicy="strict-origin-when-cross-origin"
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                    </section>
+
+                    <section class="work-item">
+                        <h3><em>close is a kind of far</em> for solo viola</h3>
+                        <p class="work-description">Written as part of CEME 2019 for Moshe Aharonov of <a href="https://www.meitar.net/" target="_blank" rel="noopener">Meitar Ensemble</a>. The title was changed after performance.</p>
+                        <div class="video-embed">
+                            <iframe
+                                src="https://www.youtube.com/embed/0RZcpXsJ71A?start=14"
+                                title="close is a kind of far"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                referrerpolicy="strict-origin-when-cross-origin"
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                    </section>
+
+                    <section class="works-section">
+                        <h2 id="performances" class="works-section-title">Performances</h2>
+                    </section>
+
+                    <section class="work-item">
+                        <h3><em>Group Talk</em> by Tomoko Ozawa</h3>
+                        <p class="work-description">A suite of three pieces which model possible situations in conversation by a group of individuals who come from different cultural and musical backgrounds. The composition weaves together pre-composed and improvised sections, with performers selecting materials or improvising within established frameworks. Written by <a href="https://tomokoozawa.com/phd" target="_blank" rel="noopener">Tomoko Ozawa</a>. I played violin and recorded this concert.</p>
+                        <div class="video-embed">
+                            <iframe
+                                src="https://www.youtube.com/embed/jzkG7oqE8NA?list=PLW0x_RYsGAvD396c_DkZ2VW_-yFh8TswW"
+                                title="Group Talk by Tomoko Ozawa"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                referrerpolicy="strict-origin-when-cross-origin"
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                    </section>
+
+                    <section class="works-section">
+                        <h2 id="audio-engineering" class="works-section-title">Audio Engineering</h2>
+                    </section>
+
+                    <section class="work-item">
+                        <h3>The Gedanken Room</h3>
+                        <p class="work-description">A film-recital by composer-director <a href="https://www.imdb.com/title/tt14443510/" target="_blank" rel="noopener">Omar Costa Hamido</a> exploring the implications of quantum computing for music composition and improvisation. The work presents four pieces performed by improvisers in jazz, contemporary, and electronic music, while the visual narrative addresses human-computer interactions and telematics. I served as audio engineer for this project.</p>
+                        <div class="video-embed">
+                            <iframe
+                                src="https://player.vimeo.com/video/557356303"
+                                title="The Gedanken Room (2021)"
+                                frameborder="0"
+                                allow="autoplay; fullscreen; picture-in-picture"
+                                referrerpolicy="strict-origin-when-cross-origin"
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                    </section>
+
+                    <section class="work-item">
+                        <h3>Towers</h3>
+                        <p class="work-description">An avant-garde jazz album by drummer and composer <a href="https://orendarecords.bandcamp.com/album/towers" target="_blank" rel="noopener">Atticus Reynolds</a>, featuring original compositions performed by LA jazz musicians. I served as recording engineer.</p>
+                        <div class="audio-embed bandcamp tall">
+                            <iframe
+                                src="https://bandcamp.com/EmbeddedPlayer/album=3474514528/size=large/bgcol=ffffff/linkcol=0687f5/artwork=small/transparent=true/"
+                                title="Towers by Atticus Reynolds"
+                                frameborder="0"
+                                seamless>
+                                <a href="https://orendarecords.bandcamp.com/album/towers">Towers by Atticus Reynolds</a>
+                            </iframe>
+                        </div>
+                    </section>
+
+                    <section class="work-item">
+                        <h3>Brother Speedo</h3>
+                        <p class="work-description">A psych pop and roll album by Florida-based band <a href="https://hellojoyce.bandcamp.com/album/brother-speedo" target="_blank" rel="noopener">Hello Joyce</a>. I served as mix and mastering engineer.</p>
+                        <div class="audio-embed bandcamp">
+                            <iframe
+                                src="https://bandcamp.com/EmbeddedPlayer/album=1903181288/size=large/bgcol=ffffff/linkcol=0687f5/artwork=small/transparent=true/"
+                                title="Brother Speedo by Hello Joyce"
+                                frameborder="0"
+                                seamless>
+                                <a href="https://hellojoyce.bandcamp.com/album/brother-speedo">Brother Speedo by Hello Joyce</a>
+                            </iframe>
+                        </div>
+                    </section>
                 </div>
-            </section>
 
-            <section class="works-section">
-                <h2 id="compositions" class="works-section-title">Compositions</h2>
-            </section>
-
-            <section class="work-item">
-                <h3><em>Framework Etudes: No. 2 (Around)</em> (Disklavier Realization)</h3>
-                <p class="work-description">The Framework Etudes ask performers to provide their own conceptual framework for the meaning of notation. In this realization, created in Max/MSP and performed on Disklavier, the computer takes on the role of the musician: interpreting the score and playing the instrument.</p>
-                <div class="video-embed">
-                    <iframe
-                        src="https://www.youtube.com/embed/lmq1JuPFQ_U"
-                        title="Framework Etudes: No. 2 (Around) - Disklavier Realization"
-                        frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        referrerpolicy="strict-origin-when-cross-origin"
-                        allowfullscreen>
-                    </iframe>
-                </div>
-            </section>
-
-            <section class="work-item">
-                <h3><em>a candle at night is not at optical infinity</em> for cello quartet and quadraphonic electronics</h3>
-                <p class="work-description">Moths evolved to navigate by distant celestial light, but a candle's diverging rays transform their reliable compass into a logarithmic spiral toward destruction. The piece explores how a behavior that once had survival value can misfire when context shifts. Written for <a href="https://www.teregulovcello.com/" target="_blank" rel="noopener">Eduard Teregulov</a>.</p>
-                <div class="video-embed">
-                    <iframe
-                        src="https://www.youtube.com/embed/ekFYdS5ZL6o?start=564"
-                        title="a candle at night is not at optical infinity"
-                        frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        referrerpolicy="strict-origin-when-cross-origin"
-                        allowfullscreen>
-                    </iframe>
-                </div>
-            </section>
-
-            <section class="work-item">
-                <h3><em>Pathways</em> for two violins</h3>
-                <p class="work-description">This work is based on the harmonic series of each of the violin's four strings, navigated through an organizational structure and paired with different performance techniques. Written for and performed by Mioi Takeda and Lynn Bechtold of <a href="https://www.miolinanyc.com/" target="_blank" rel="noopener">Miolina</a> at The Cell Theatre, NYC.</p>
-                <div class="video-embed">
-                    <iframe
-                        src="https://www.youtube.com/embed/PImb2z3Ns9Y"
-                        title="Pathways for Two Violins (2020) for Miolina"
-                        frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        referrerpolicy="strict-origin-when-cross-origin"
-                        allowfullscreen>
-                    </iframe>
-                </div>
-            </section>
-
-            <section class="work-item">
-                <h3><em>close is a kind of far</em> for solo viola</h3>
-                <p class="work-description">Written as part of CEME 2019 for Moshe Aharonov of <a href="https://www.meitar.net/" target="_blank" rel="noopener">Meitar Ensemble</a>. The title was changed after performance.</p>
-                <div class="video-embed">
-                    <iframe
-                        src="https://www.youtube.com/embed/0RZcpXsJ71A?start=14"
-                        title="close is a kind of far"
-                        frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        referrerpolicy="strict-origin-when-cross-origin"
-                        allowfullscreen>
-                    </iframe>
-                </div>
-            </section>
-
-            <section class="works-section">
-                <h2 id="performances" class="works-section-title">Performances</h2>
-            </section>
-
-            <section class="work-item">
-                <h3><em>Group Talk</em> by Tomoko Ozawa</h3>
-                <p class="work-description">A suite of three pieces which model possible situations in conversation by a group of individuals who come from different cultural and musical backgrounds. The composition weaves together pre-composed and improvised sections, with performers selecting materials or improvising within established frameworks. Written by <a href="https://tomokoozawa.com/phd" target="_blank" rel="noopener">Tomoko Ozawa</a>. I played violin and recorded this concert.</p>
-                <div class="video-embed">
-                    <iframe
-                        src="https://www.youtube.com/embed/jzkG7oqE8NA?list=PLW0x_RYsGAvD396c_DkZ2VW_-yFh8TswW"
-                        title="Group Talk by Tomoko Ozawa"
-                        frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        referrerpolicy="strict-origin-when-cross-origin"
-                        allowfullscreen>
-                    </iframe>
-                </div>
-            </section>
-
-            <section class="works-section">
-                <h2 id="audio-engineering" class="works-section-title">Audio Engineering</h2>
-            </section>
-
-            <section class="work-item">
-                <h3>The Gedanken Room</h3>
-                <p class="work-description">A film-recital by composer-director <a href="https://www.imdb.com/title/tt14443510/" target="_blank" rel="noopener">Omar Costa Hamido</a> exploring the implications of quantum computing for music composition and improvisation. The work presents four pieces performed by improvisers in jazz, contemporary, and electronic music, while the visual narrative addresses human-computer interactions and telematics. I served as audio engineer for this project.</p>
-                <div class="video-embed">
-                    <iframe
-                        src="https://player.vimeo.com/video/557356303"
-                        title="The Gedanken Room (2021)"
-                        frameborder="0"
-                        allow="autoplay; fullscreen; picture-in-picture"
-                        referrerpolicy="strict-origin-when-cross-origin"
-                        allowfullscreen>
-                    </iframe>
-                </div>
-            </section>
-
-            <section class="work-item">
-                <h3>Towers</h3>
-                <p class="work-description">An avant-garde jazz album by drummer and composer <a href="https://orendarecords.bandcamp.com/album/towers" target="_blank" rel="noopener">Atticus Reynolds</a>, featuring original compositions performed by LA jazz musicians. I served as recording engineer.</p>
-                <div class="audio-embed bandcamp tall">
-                    <iframe
-                        src="https://bandcamp.com/EmbeddedPlayer/album=3474514528/size=large/bgcol=ffffff/linkcol=0687f5/artwork=small/transparent=true/"
-                        title="Towers by Atticus Reynolds"
-                        frameborder="0"
-                        seamless>
-                        <a href="https://orendarecords.bandcamp.com/album/towers">Towers by Atticus Reynolds</a>
-                    </iframe>
-                </div>
-            </section>
-
-            <section class="work-item">
-                <h3>Brother Speedo</h3>
-                <p class="work-description">A psych pop and roll album by Florida-based band <a href="https://hellojoyce.bandcamp.com/album/brother-speedo" target="_blank" rel="noopener">Hello Joyce</a>. I served as mix and mastering engineer.</p>
-                <div class="audio-embed bandcamp">
-                    <iframe
-                        src="https://bandcamp.com/EmbeddedPlayer/album=1903181288/size=large/bgcol=ffffff/linkcol=0687f5/artwork=small/transparent=true/"
-                        title="Brother Speedo by Hello Joyce"
-                        frameborder="0"
-                        seamless>
-                        <a href="https://hellojoyce.bandcamp.com/album/brother-speedo">Brother Speedo by Hello Joyce</a>
-                    </iframe>
-                </div>
-            </section>
+                <aside class="toc-sidebar" aria-label="Table of contents">
+                    <h2 class="toc-header">Contents</h2>
+                    <ul class="toc-list">
+                        <li><a href="#albums">Albums</a></li>
+                        <li><a href="#compositions">Compositions</a></li>
+                        <li><a href="#performances">Performances</a></li>
+                        <li><a href="#audio-engineering">Audio Engineering</a></li>
+                    </ul>
+                </aside>
+            </div>
         </main>
 
         <footer>
-            <p>&copy; 2025 Blake Boyd</p>
+            <p>&copy; <script>document.write(new Date().getFullYear())</script> Blake Boyd</p>
         </footer>
     </div>
+
+    <script>
+    // Highlight active TOC link based on scroll position
+    (function() {
+        var sections = document.querySelectorAll('.works-section-title');
+        var tocLinks = document.querySelectorAll('.toc-list a');
+
+        if (!sections.length || !tocLinks.length) return;
+
+        function updateActive() {
+            var scrollPos = window.scrollY + 100;
+            var current = '';
+
+            sections.forEach(function(section) {
+                if (section.getBoundingClientRect().top + window.scrollY <= scrollPos) {
+                    current = section.id;
+                }
+            });
+
+            tocLinks.forEach(function(link) {
+                link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+            });
+        }
+
+        window.addEventListener('scroll', updateActive, { passive: true });
+        updateActive();
+    })();
+    </script>
 </body>
 </html>

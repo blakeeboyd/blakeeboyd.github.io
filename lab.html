@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Lab - Blake Boyd</title>
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake Emerson Boyd">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="js/theme.js"></script>
+    <script src="js/nav-component.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <site-nav></site-nav>
+
+        <main>
+            <section class="hero">
+                <h1>Lab</h1>
+                <p class="subtitle">Experiments, prototypes, and works in progress. You found the back room.</p>
+            </section>
+
+            <section class="projects">
+                <div class="projects-grid">
+                    <div class="project-card">
+                        <div class="project-icon">
+                            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 10H3"></path>
+                                <path d="M21 6H3"></path>
+                                <path d="M21 14H3"></path>
+                                <path d="M17 18H3"></path>
+                            </svg>
+                        </div>
+                        <div class="project-content">
+                            <h2 class="project-title">TextGarden <span class="badge wip">Under Construction</span></h2>
+                            <p class="project-description">A tree-structured writing tool inspired by <a href="https://gingkowriter.com" target="_blank" rel="noopener">Gingko Writer</a>, organizing ideas horizontally in columns with markdown export.</p>
+                            <a href="projects/creative-tools/textgarden/" class="project-link">View Project</a>
+                        </div>
+                    </div>
+                    <a href="projects/ear-training/EQ-Training/" class="project-card">
+                        <div class="project-icon">
+                            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 20h.01"></path>
+                                <path d="M7 20v-4"></path>
+                                <path d="M12 20v-8"></path>
+                                <path d="M17 20V8"></path>
+                                <path d="M22 4v16"></path>
+                            </svg>
+                        </div>
+                        <div class="project-content">
+                            <h2 class="project-title">EQ Matching <span class="badge wip">Under Construction</span></h2>
+                            <p class="project-description">Ear training game: listen to a hidden EQ curve applied to audio and try to recreate it by adjusting your own parametric EQ.</p>
+                            <span class="project-link">View Project</span>
+                        </div>
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; <script>document.write(new Date().getFullYear())</script> Blake Boyd</p>
+        </footer>
+    </div>
+</body>
+</html>
