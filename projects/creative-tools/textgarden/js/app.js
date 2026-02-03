@@ -48,7 +48,8 @@
         timerPausedAt: null,         // Time when timer was paused
         timerElapsedBeforePause: 0,  // Elapsed time before pause (for pomodoro)
         focusFade: false,            // Whether to use focus fade in Zen mode
-        cardPreviewEnabled: false    // Whether to show card preview on hover
+        cardPreviewEnabled: false,   // Whether to show card preview on hover
+        zenDepthIndent: true         // Whether to indent cards by depth in Zen mode
     };
 
     // =========================================================================
@@ -270,32 +271,6 @@
                 analysisOverlay.classList.remove('visible');
             }
         };
-    }
-
-    // Header warning popup
-    let headerWarningShown = false;
-    const headerWarningOverlay = document.getElementById('header-warning-overlay');
-    const headerWarningDismiss = document.getElementById('header-warning-dismiss');
-
-    function showHeaderWarning() {
-        if (headerWarningShown) return;
-        headerWarningShown = true;
-        headerWarningOverlay.classList.add('visible');
-    }
-
-    function hideHeaderWarning() {
-        headerWarningOverlay.classList.remove('visible');
-    }
-
-    headerWarningDismiss.addEventListener('click', hideHeaderWarning);
-    headerWarningOverlay.addEventListener('click', (e) => {
-        if (e.target === headerWarningOverlay) hideHeaderWarning();
-    });
-
-    function checkForHeaders(text) {
-        // Check if text contains markdown header patterns at the start of a line
-        // Matches: # Header, ## Header, ### Header, etc.
-        return /^#{1,6}\s+\S/m.test(text);
     }
 
     // =========================================================================
@@ -568,27 +543,6 @@
 
     const MAX_DEPTH = 6; // Intentional constraint to prevent overgrown gardens
     const LEVEL_NAMES = ['Roots', 'Stems', 'Branches', 'Twigs', 'Buds', 'Leaves'];
-
-    function quickCapture() {
-        // Add a new card to Roots without changing current selection
-        const newNode = createNode();
-        saveState();
-        state.tree.unshift(newNode); // Add to beginning of roots
-
-        // Select and edit the new card
-        state.selectedPath = [newNode.id];
-        pushToFocusHistory(state.selectedPath);
-        render();
-        startEditing(newNode.id);
-
-        // Scroll to show the first column
-        setTimeout(() => {
-            const firstColumn = columnsContainer.querySelector('.column');
-            if (firstColumn) {
-                firstColumn.scrollIntoView({ behavior: 'smooth', inline: 'start' });
-            }
-        }, 50);
-    }
 
     function addChild() {
         if (state.selectedPath.length === 0) {
@@ -1174,11 +1128,39 @@
             stopEditing();
         }
 
+        // If expanded editor is open (not zen mode), sync content to tree before anything else
+        if (state.expandedEditingId && !state.zenMode) {
+            const currentResult = findNode(state.tree, state.expandedEditingId);
+            if (currentResult) {
+                const editorContent = expandedInput.value;
+                if (currentResult.node.content !== editorContent) {
+                    saveState();
+                    currentResult.node.content = editorContent;
+                }
+            }
+        }
+
         // Remove current card if empty before navigating away
         const removedId = removeEmptySelectedCard();
         if (removedId && removedId === id) {
             // User clicked on the empty card itself, don't proceed
             return;
+        }
+
+        // If expanded editor is open, switch to the clicked card
+        if (state.expandedEditingId && !state.zenMode && state.expandedEditingId !== id) {
+            state.expandedEditingId = id;
+            const newResult = findNode(state.tree, id);
+            if (newResult) {
+                expandedInput.value = newResult.node.content;
+                updateExpandedPreview();
+                setTimeout(() => {
+                    expandedInput.focus();
+                    const len = expandedInput.value.length;
+                    expandedInput.setSelectionRange(len, len);
+                    expandedInput.scrollTop = expandedInput.scrollHeight;
+                }, 50);
+            }
         }
 
         // Build the path to this card
@@ -1380,10 +1362,26 @@
         expandedInput.value = result.node.content;
         updateExpandedPreview();
 
-        // Apply body class for split mode toolbar compression
+        // Apply body classes for split mode toolbar compression and column offset
         if (state.editorViewMode === 'split-left' || state.editorViewMode === 'split-right') {
             document.body.classList.add('editor-split-active');
+            document.body.classList.add(state.editorViewMode === 'split-left' ? 'editor-split-left' : 'editor-split-right');
         }
+
+        // Ensure this card is selected in the tree
+        if (state.selectedPath[state.selectedPath.length - 1] !== id) {
+            const ancestors = getAncestorIds(state.tree, id) || [];
+            state.selectedPath = [...ancestors, id];
+            render();
+        }
+
+        // Scroll the card into view in the columns
+        setTimeout(() => {
+            const cardEl = columnsContainer.querySelector(`.card[data-id="${id}"]`);
+            if (cardEl) {
+                cardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+            }
+        }, 100);
 
         expandedOverlay.classList.add('visible');
         // Delay focus to ensure overlay transition completes and element is fully visible
@@ -1418,8 +1416,8 @@
         state.expandedEditingId = null;
         expandedOverlay.classList.remove('visible');
 
-        // Remove body class for split mode when editor is closed
-        document.body.classList.remove('editor-split-active');
+        // Remove body classes for split mode when editor is closed
+        document.body.classList.remove('editor-split-active', 'editor-split-left', 'editor-split-right');
     }
 
     function updateExpandedPreview() {
@@ -1427,37 +1425,16 @@
         const previewContent = expandedPreview.querySelector('.card-content');
         let content = expandedInput.value;
 
-        // In zen mode, render headers normally (they represent tree structure)
-        if (state.zenMode) {
-            previewTitle.style.display = 'none';
-            previewContent.innerHTML = renderZenMarkdown(content);
+        // Show title if the card has one
+        const result = state.expandedEditingId ? findNode(state.tree, state.expandedEditingId) : null;
+        if (result && result.node.title && result.node.title.trim()) {
+            previewTitle.textContent = result.node.title;
+            previewTitle.style.display = 'block';
         } else {
-            // Show title if the card has one
-            const result = state.expandedEditingId ? findNode(state.tree, state.expandedEditingId) : null;
-            if (result && result.node.title && result.node.title.trim()) {
-                previewTitle.textContent = result.node.title;
-                previewTitle.style.display = 'block';
-            } else {
-                previewTitle.style.display = 'none';
-            }
-            previewContent.innerHTML = renderMarkdown(content);
+            previewTitle.style.display = 'none';
         }
+        previewContent.innerHTML = renderMarkdown(content);
         updateWordCount();
-    }
-
-    function renderZenMarkdown(content) {
-        // In zen mode, headers should render as headers (not stripped to bold)
-        if (!content.trim()) return '';
-
-        try {
-            marked.setOptions({
-                breaks: true,
-                gfm: true
-            });
-            return marked.parse(content);
-        } catch (e) {
-            return content.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        }
     }
 
     function updateWordCount() {
@@ -2099,16 +2076,102 @@
         return tree;
     }
 
-    // Save document as markdown (primary save format)
-    function saveDocument() {
-        const md = treeToMarkdown(state.tree);
-        const blob = new Blob([md], { type: 'text/markdown' });
+    // Convert tree to markdown with HTML comment markers for structure
+    function treeToCommentMarkdown(tree, depth = 1) {
+        let md = '';
+
+        for (let i = 0; i < tree.length; i++) {
+            const node = tree[i];
+            const title = node.title ? node.title.trim() : '';
+            const content = node.content ? node.content.trim() : '';
+
+            // Escape quotes in title for the comment attribute
+            const escapedTitle = title.replace(/"/g, '&quot;');
+            md += `<!-- textgarden:node depth="${depth}" title="${escapedTitle}" -->\n`;
+
+            if (content) {
+                md += content + '\n';
+            }
+            md += '\n';
+
+            if (node.children.length > 0) {
+                md += treeToCommentMarkdown(node.children, depth + 1);
+            }
+        }
+
+        return md;
+    }
+
+    // Parse markdown with HTML comment markers back into tree
+    function commentMarkdownToTree(md) {
+        const lines = md.split('\n');
+        const tree = [];
+        const stack = [{ level: 0, children: tree }];
+        let currentTitle = '';
+        let currentContent = [];
+        let currentLevel = 1;
+
+        const commentRegex = /^<!-- textgarden:node depth="(\d+)" title="(.*?)" -->$/;
+
+        function flushContent() {
+            if (currentTitle !== '' || currentContent.some(l => l.trim())) {
+                const content = currentContent.join('\n').trim();
+                // Unescape quotes in title
+                const unescapedTitle = currentTitle.replace(/&quot;/g, '"');
+                const node = createNode(unescapedTitle, content);
+
+                while (stack.length > 1 && stack[stack.length - 1].level >= currentLevel) {
+                    stack.pop();
+                }
+
+                stack[stack.length - 1].children.push(node);
+                stack.push({ level: currentLevel, children: node.children });
+            }
+            currentTitle = '';
+            currentContent = [];
+        }
+
+        for (const line of lines) {
+            const commentMatch = line.match(commentRegex);
+
+            if (commentMatch) {
+                flushContent();
+                currentLevel = Math.min(parseInt(commentMatch[1], 10), MAX_DEPTH);
+                currentTitle = commentMatch[2];
+            } else {
+                // Only start collecting content after we've seen at least one marker
+                if (currentTitle !== '' || currentContent.length > 0 || stack.length > 1) {
+                    currentContent.push(line);
+                } else if (line.trim()) {
+                    currentContent.push(line);
+                    currentLevel = 1;
+                }
+            }
+        }
+
+        flushContent();
+        return tree;
+    }
+
+    // Save document as JSON (primary save format, lossless)
+    function saveDocumentAsJSON() {
+        const data = {
+            version: 1,
+            type: 'textgarden-document',
+            filename: state.filename,
+            tree: state.tree,
+            selectedPath: state.selectedPath,
+            exportedAt: new Date().toISOString()
+        };
+
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
 
         const a = document.createElement('a');
         a.href = url;
-        const baseName = state.filename.replace(/\.(md|txt|markdown)$/, '');
-        a.download = `${baseName}.md`;
+        const baseName = state.filename.replace(/\.(md|txt|markdown|json)$/, '');
+        a.download = `${baseName}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -2117,6 +2180,24 @@
         state.hasUnsavedChanges = false;
         updateTitle();
         showToast('Saved to ' + a.download);
+    }
+
+    // Export document as markdown (secondary format, for sharing)
+    function exportAsMarkdown() {
+        const md = treeToCommentMarkdown(state.tree);
+        const blob = new Blob([md], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        const baseName = state.filename.replace(/\.(md|txt|markdown|json)$/, '');
+        a.download = `${baseName}.md`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showToast('Exported to ' + a.download);
     }
 
     // Export settings as JSON (separate from document)
@@ -2149,42 +2230,43 @@
         showToast('Settings exported');
     }
 
-    // Import settings from JSON file
+    // Apply parsed settings data to state
+    function applySettings(data) {
+        if (data.settings.columnWidths) {
+            state.columnWidths = data.settings.columnWidths;
+        }
+        if (data.settings.collapsedColumns) {
+            state.collapsedColumns = new Set(data.settings.collapsedColumns);
+        }
+        if (data.settings.editorPreviewHidden !== undefined) {
+            state.editorPreviewHidden = data.settings.editorPreviewHidden;
+            applyEditorPreviewState();
+        }
+        if (data.settings.editorMode) {
+            state.editorViewMode = data.settings.editorMode;
+            applyEditorMode(state.editorViewMode);
+        }
+        if (data.settings.zenBrowserFullscreen !== undefined) {
+            state.zenBrowserFullscreen = data.settings.zenBrowserFullscreen;
+            localStorage.setItem('textgarden-zen-fullscreen', state.zenBrowserFullscreen);
+            const toggle = document.getElementById('zen-fullscreen-toggle');
+            if (toggle) toggle.checked = state.zenBrowserFullscreen;
+        }
+        render();
+        showToast('Settings imported');
+    }
+
+    // Import settings from JSON file (used by dedicated settings import button)
     function importSettings(file) {
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
                 const data = JSON.parse(e.target.result);
-
                 if (data.type !== 'textgarden-settings' || !data.settings) {
                     showToast('Error: Not a valid settings file');
                     return;
                 }
-
-                // Apply settings
-                if (data.settings.columnWidths) {
-                    state.columnWidths = data.settings.columnWidths;
-                }
-                if (data.settings.collapsedColumns) {
-                    state.collapsedColumns = new Set(data.settings.collapsedColumns);
-                }
-                if (data.settings.editorPreviewHidden !== undefined) {
-                    state.editorPreviewHidden = data.settings.editorPreviewHidden;
-                    applyEditorPreviewState();
-                }
-                if (data.settings.editorMode) {
-                    state.editorViewMode = data.settings.editorMode;
-                    applyEditorMode(state.editorViewMode);
-                }
-                if (data.settings.zenBrowserFullscreen !== undefined) {
-                    state.zenBrowserFullscreen = data.settings.zenBrowserFullscreen;
-                    localStorage.setItem('textgarden-zen-fullscreen', state.zenBrowserFullscreen);
-                    const toggle = document.getElementById('zen-fullscreen-toggle');
-                    if (toggle) toggle.checked = state.zenBrowserFullscreen;
-                }
-
-                render();
-                showToast('Settings imported');
+                applySettings(data);
             } catch (err) {
                 showToast('Error: Invalid settings file');
             }
@@ -2192,37 +2274,77 @@
         reader.readAsText(file);
     }
 
+    // Load document data into state (shared by JSON import and markdown import)
+    function loadDocumentData(tree, filename) {
+        state.tree = tree;
+        state.filename = filename;
+        state.selectedPath = [];
+        state.hasUnsavedChanges = false;
+        state.undoStack = [];
+        state.redoStack = [];
+        currentDocId = generateDocId();
+        saveDocumentToRecent();
+        updateTitle();
+        render();
+    }
+
     function importFile(file) {
-        // Check if this is a settings file
-        if (file.name.endsWith('.json')) {
-            importSettings(file);
-            return;
-        }
-
-        if (state.tree.length > 0 && state.hasUnsavedChanges) {
-            if (!confirm('You have unsaved changes. Opening a file will replace the current document. Continue?')) {
-                return;
-            }
-        }
-
         const reader = new FileReader();
         reader.onload = (e) => {
             const content = e.target.result;
 
-            // Parse markdown file
-            state.tree = markdownToTree(content);
-            state.filename = file.name.replace(/\.(md|txt|markdown)$/, '');
+            if (file.name.endsWith('.json')) {
+                try {
+                    const data = JSON.parse(content);
 
-            state.selectedPath = [];
-            state.hasUnsavedChanges = false;
-            state.undoStack = [];
-            state.redoStack = [];
+                    // Settings file
+                    if (data.type === 'textgarden-settings' && data.settings) {
+                        applySettings(data);
+                        return;
+                    }
 
-            currentDocId = generateDocId();
-            saveDocumentToRecent();
+                    // Document file
+                    if (data.type === 'textgarden-document' && data.tree) {
+                        if (state.tree.length > 0 && state.hasUnsavedChanges) {
+                            if (!confirm('You have unsaved changes. Opening a file will replace the current document. Continue?')) {
+                                return;
+                            }
+                        }
+                        state.tree = data.tree;
+                        state.filename = data.filename || file.name.replace(/\.json$/, '');
+                        state.selectedPath = data.selectedPath || [];
+                        state.hasUnsavedChanges = false;
+                        state.undoStack = [];
+                        state.redoStack = [];
+                        currentDocId = generateDocId();
+                        saveDocumentToRecent();
+                        updateTitle();
+                        render();
+                        showToast('Opened ' + state.filename);
+                        return;
+                    }
 
-            updateTitle();
-            render();
+                    showToast('Error: Unrecognized JSON file format');
+                } catch (err) {
+                    showToast('Error: Invalid JSON file');
+                }
+                return;
+            }
+
+            // Markdown/text file
+            if (state.tree.length > 0 && state.hasUnsavedChanges) {
+                if (!confirm('You have unsaved changes. Opening a file will replace the current document. Continue?')) {
+                    return;
+                }
+            }
+
+            // Check for comment-based format, fall back to heading-based
+            const hasCommentMarkers = content.includes('<!-- textgarden:node ');
+            const tree = hasCommentMarkers
+                ? commentMarkdownToTree(content)
+                : markdownToTree(content);
+
+            loadDocumentData(tree, file.name.replace(/\.(md|txt|markdown)$/, ''));
             showToast('Opened ' + file.name);
         };
         reader.readAsText(file);
@@ -2247,6 +2369,14 @@
         searchInput.value = '';
         searchResults.textContent = '';
         searchClear.hidden = true;
+
+        // Persist the empty state immediately so autosave doesn't restore old data
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            tree: state.tree,
+            filename: state.filename,
+            selectedPath: state.selectedPath,
+            docId: currentDocId
+        }));
 
         updateTitle();
         render();
@@ -2281,6 +2411,7 @@
                 if (settings.pomodoroDuration !== undefined) state.pomodoroDuration = settings.pomodoroDuration;
                 if (settings.focusFade !== undefined) state.focusFade = settings.focusFade;
                 if (settings.cardPreviewEnabled !== undefined) state.cardPreviewEnabled = settings.cardPreviewEnabled;
+                if (settings.zenDepthIndent !== undefined) state.zenDepthIndent = settings.zenDepthIndent;
                 if (settings.editorPreviewHidden !== undefined) state.editorPreviewHidden = settings.editorPreviewHidden;
                 if (settings.editorViewMode !== undefined) state.editorViewMode = settings.editorViewMode;
                 return true;
@@ -2310,6 +2441,7 @@
                 pomodoroDuration: state.pomodoroDuration,
                 focusFade: state.focusFade,
                 cardPreviewEnabled: state.cardPreviewEnabled,
+                zenDepthIndent: state.zenDepthIndent,
                 editorPreviewHidden: state.editorPreviewHidden,
                 editorViewMode: state.editorViewMode
             };
@@ -2787,17 +2919,11 @@
         if (!content.trim()) return '';
 
         try {
-            // Strip markdown headers - tree levels provide the hierarchy
-            // Convert "# Header" or "## Header" etc. to just "Header" (bold)
-            let processed = content.replace(/^(#{1,6})\s+(.+)$/gm, '**$2**');
-
-            // Configure marked for safe rendering
             marked.setOptions({
                 breaks: true,
                 gfm: true
             });
-            let html = marked.parse(processed);
-            // Process card links after markdown rendering
+            let html = marked.parse(content);
             html = renderCardLinks(html);
             return html;
         } catch (e) {
@@ -2914,14 +3040,10 @@
             textarea.addEventListener('blur', handleBlur);
             textarea.addEventListener('focus', handleFocus);
 
-            // Auto-resize textarea and check for headers
+            // Auto-resize textarea
             textarea.addEventListener('input', () => {
                 textarea.style.height = 'auto';
                 textarea.style.height = textarea.scrollHeight + 'px';
-                // Check for markdown headers and show warning
-                if (checkForHeaders(textarea.value)) {
-                    showHeaderWarning();
-                }
             });
 
             card.appendChild(titleInput);
@@ -3284,149 +3406,373 @@
         }
     }
 
-    function getCardIndex(node, parentIndex = '') {
-        // Generate Lineage-style index (1.1.2) for a card
-        const result = findNode(state.tree, node.id);
-        if (!result) return parentIndex || '1';
+    // =========================================================================
+    // Zen Stacked Textareas - each card gets its own textarea
+    // =========================================================================
 
-        const siblingIndex = result.index + 1;
-        return parentIndex ? `${parentIndex}.${siblingIndex}` : `${siblingIndex}`;
-    }
+    const zenCardsContainer = document.getElementById('zen-cards-container');
 
-    function getCardTitle(node) {
-        // Use the title field if present
-        if (node.title && node.title.trim()) {
-            return node.title.trim();
-        }
-        // Fallback: extract first line from content for backwards compatibility
-        const firstLine = node.content.split('\n')[0].trim();
-        if (firstLine) {
-            // Remove any existing markdown formatting for clean title
-            return firstLine.replace(/^[#*_`]+\s*/, '').replace(/[#*_`]+$/, '');
-        }
-        return null;
-    }
-
-    function subtreeToMarkdown(node, depth = 1, index = '1') {
-        // Convert a node and its children to markdown with headers
-        const headerPrefix = '#'.repeat(Math.min(depth, 6));
-        // Always include index; if title exists, format as "Title (index)"
-        const title = (node.title && node.title.trim())
-            ? `${node.title.trim()} (${index})`
-            : index;
-
-        let md = `${headerPrefix} ${title}\n\n`;
-
-        // Add content (the content field now only contains body content)
-        const content = node.content.trim();
-        if (content) {
-            md += content + '\n\n';
-        }
-
-        // Recursively add children
+    // Flatten a subtree into an ordered array of {node, depth, index} for rendering
+    function flattenSubtree(node, depth = 1, index = '1') {
+        const result = [{ node, depth, index }];
         node.children.forEach((child, i) => {
             const childIndex = `${index}.${i + 1}`;
-            md += subtreeToMarkdown(child, depth + 1, childIndex);
+            result.push(...flattenSubtree(child, depth + 1, childIndex));
         });
-
-        return md;
+        return result;
     }
 
-    function markdownToSubtree(markdown, cursorPosition = null) {
-        // Parse markdown back into tree structure based on headers
-        // If cursorPosition is provided, also track which card the cursor is in
-        const lines = markdown.split('\n');
-        const root = { id: state.zenRootId, title: '', content: '', children: [] };
-        const stack = [{ node: root, level: 0 }];
+    // Get the currently focused zen card's node ID
+    function getActiveZenCardId() {
+        const active = zenCardsContainer.querySelector('.zen-card-active');
+        return active ? active.dataset.id : null;
+    }
 
-        let currentContent = [];
-        let currentTitle = '';
-        let charPosition = 0;
-        let cursorCardId = root.id;  // Default to root if cursor is before first header
+    // Get all zen card elements in order
+    function getZenCards() {
+        return Array.from(zenCardsContainer.querySelectorAll('.zen-card'));
+    }
 
-        function flushContent() {
-            if (stack.length > 0) {
-                const current = stack[stack.length - 1].node;
-                // Set title and content separately
-                if (currentTitle) {
-                    current.title = currentTitle;
-                }
-                if (currentContent.length > 0) {
-                    current.content = currentContent.join('\n').trim();
-                }
-            }
-            currentContent = [];
-            currentTitle = '';
+    // Get the zen card element for a given node ID
+    function getZenCardById(id) {
+        return zenCardsContainer.querySelector(`.zen-card[data-id="${id}"]`);
+    }
+
+    // Auto-resize a textarea to fit its content
+    function autoResizeZenTextarea(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    // Build a single zen-card DOM element
+    function buildZenCardElement(node, depth, index) {
+        const card = document.createElement('div');
+        card.className = 'zen-card';
+        card.dataset.id = node.id;
+        card.dataset.depth = depth;
+        card.dataset.index = index;
+
+        const title = (node.title && node.title.trim()) ? node.title.trim() : '';
+
+        // Separator bar
+        const separator = document.createElement('div');
+        separator.className = 'zen-card-separator';
+
+        const indexSpan = document.createElement('span');
+        indexSpan.className = 'zen-card-index';
+        indexSpan.textContent = index;
+        separator.appendChild(indexSpan);
+
+        const titleSpan = document.createElement('span');
+        titleSpan.className = 'zen-card-title';
+        titleSpan.textContent = title;
+        separator.appendChild(titleSpan);
+
+        // Hover action buttons
+        const actions = document.createElement('div');
+        actions.className = 'zen-card-actions';
+
+        const siblingBtn = document.createElement('button');
+        siblingBtn.className = 'zen-card-action';
+        siblingBtn.textContent = '+ sibling';
+        siblingBtn.title = 'Add sibling card (Shift+Tab)';
+        siblingBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            zenAddSiblingAfter(node.id);
+        });
+        actions.appendChild(siblingBtn);
+
+        if (depth < 6) {
+            const childBtn = document.createElement('button');
+            childBtn.className = 'zen-card-action';
+            childBtn.textContent = '+ child';
+            childBtn.title = 'Add child card (Tab)';
+            childBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                zenAddChildTo(node.id);
+            });
+            actions.appendChild(childBtn);
         }
 
-        for (const line of lines) {
-            // Match headers with optional text after (allows empty headers like "## ")
-            const headerMatch = line.match(/^(#{1,6})\s*(.*)$/);
+        separator.appendChild(actions);
 
-            if (headerMatch) {
-                flushContent();
+        // Click separator to focus this card's textarea
+        separator.addEventListener('click', () => {
+            const textarea = card.querySelector('.zen-card-editor');
+            if (textarea) textarea.focus();
+        });
 
-                const level = headerMatch[1].length;
-                let rawTitle = headerMatch[2].trim();
+        card.appendChild(separator);
 
-                // Parse title: could be "Title (1.2.3)", just "1.2.3", or empty
-                // Strip trailing index in parentheses if present: "Title (1.2.3)" -> "Title"
-                // If it's just an index like "1.2.3" or "1", treat as no title
-                const indexOnlyMatch = rawTitle.match(/^[\d.]+$/);
-                const titleWithIndexMatch = rawTitle.match(/^(.+?)\s*\([\d.]+\)$/);
+        // Textarea for card content
+        const textarea = document.createElement('textarea');
+        textarea.className = 'zen-card-editor';
+        textarea.value = node.content || '';
+        textarea.placeholder = 'Write here...';
+        textarea.rows = 1;
 
-                if (indexOnlyMatch) {
-                    // Just an index, no real title
-                    currentTitle = '';
-                } else if (titleWithIndexMatch) {
-                    // "Title (1.2.3)" format - extract just the title
-                    currentTitle = titleWithIndexMatch[1].trim();
-                } else {
-                    // Regular title without index suffix
-                    currentTitle = rawTitle;
-                }
+        // Auto-resize on input
+        textarea.addEventListener('input', () => {
+            autoResizeZenTextarea(textarea);
+            state.hasUnsavedChanges = true;
+        });
 
-                // Pop stack until we find parent level
-                while (stack.length > 1 && stack[stack.length - 1].level >= level) {
-                    stack.pop();
-                }
+        // Track active card on focus
+        textarea.addEventListener('focus', () => {
+            // Remove active from all cards
+            getZenCards().forEach(c => c.classList.remove('zen-card-active'));
+            card.classList.add('zen-card-active');
+            updateZenBreadcrumb();
+        });
 
-                // Create new node
-                const parent = stack[stack.length - 1].node;
-                const isRoot = level === 1 && parent === root;
+        // Arrow key navigation between textareas
+        textarea.addEventListener('keydown', (e) => {
+            handleZenCardKeydown(e, textarea, card);
+        });
 
-                if (isRoot) {
-                    // First h1 is the root node itself
-                    root.title = currentTitle;
-                    stack[stack.length - 1] = { node: root, level: 1 };
-                    // Track if cursor is in this card
-                    if (cursorPosition !== null && cursorPosition >= charPosition) {
-                        cursorCardId = root.id;
-                    }
-                } else {
-                    const newNode = {
-                        id: crypto.randomUUID(),
-                        title: currentTitle,
-                        content: '',
-                        children: []
-                    };
-                    parent.children.push(newNode);
-                    stack.push({ node: newNode, level: level });
-                    // Track if cursor is in this card
-                    if (cursorPosition !== null && cursorPosition >= charPosition) {
-                        cursorCardId = newNode.id;
-                    }
-                }
+        card.appendChild(textarea);
+        return card;
+    }
+
+    // Handle keydown in a zen card textarea
+    function handleZenCardKeydown(e, textarea, card) {
+        const isMod = e.ctrlKey || e.metaKey;
+
+        // Tab = add child, Shift+Tab = add sibling
+        if (e.key === 'Tab' && state.zenMode) {
+            e.preventDefault();
+            e.stopPropagation();
+            const nodeId = card.dataset.id;
+            if (e.shiftKey) {
+                zenAddSiblingAfter(nodeId);
             } else {
-                currentContent.push(line);
+                zenAddChildTo(nodeId);
             }
-            // Track character position (line length + newline)
-            charPosition += line.length + 1;
+            return;
         }
 
-        flushContent();
+        // Cmd/Ctrl+M = toggle map
+        if (e.key === 'm' && isMod && state.zenMode) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleZenMap();
+            return;
+        }
 
-        return { tree: root, cursorCardId };
+        // Escape = exit zen mode
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            closeExpandedEditor(false);
+            return;
+        }
+
+        // Markdown shortcuts
+        if (e.key === 'b' && isMod) {
+            e.preventDefault();
+            insertMarkdownInZen(textarea, 'bold');
+            return;
+        }
+        if (e.key === 'i' && isMod) {
+            e.preventDefault();
+            insertMarkdownInZen(textarea, 'italic');
+            return;
+        }
+        if (e.key === 'k' && isMod) {
+            e.preventDefault();
+            insertMarkdownInZen(textarea, 'link');
+            return;
+        }
+
+        // Arrow navigation between cards
+        if (e.key === 'ArrowUp') {
+            const cursorPos = textarea.selectionStart;
+            const textBefore = textarea.value.substring(0, cursorPos);
+            const isFirstLine = !textBefore.includes('\n');
+            if (isFirstLine) {
+                e.preventDefault();
+                focusPreviousZenCard(card, true);
+            }
+        } else if (e.key === 'ArrowDown') {
+            const cursorPos = textarea.selectionStart;
+            const textAfter = textarea.value.substring(cursorPos);
+            const isLastLine = !textAfter.includes('\n');
+            if (isLastLine) {
+                e.preventDefault();
+                focusNextZenCard(card, false);
+            }
+        }
+
+        // Typewriter scroll after cursor movement
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+            setTimeout(() => {
+                if (state.zenMode && state.zenTypewriter) {
+                    zenTypewriterScroll();
+                }
+            }, 0);
+        }
+    }
+
+    // Insert markdown formatting in a specific zen textarea
+    function insertMarkdownInZen(textarea, type) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const text = textarea.value;
+        const selected = text.substring(start, end);
+
+        let before = '', after = '';
+        if (type === 'bold') { before = '**'; after = '**'; }
+        else if (type === 'italic') { before = '*'; after = '*'; }
+        else if (type === 'link') { before = '['; after = '](url)'; }
+
+        const newText = text.substring(0, start) + before + selected + after + text.substring(end);
+        textarea.value = newText;
+
+        if (selected) {
+            textarea.setSelectionRange(start + before.length, start + before.length + selected.length);
+        } else {
+            textarea.setSelectionRange(start + before.length, start + before.length);
+        }
+        textarea.focus();
+        autoResizeZenTextarea(textarea);
+    }
+
+    // Focus the previous zen card's textarea (cursor at end)
+    function focusPreviousZenCard(currentCard, atEnd) {
+        const cards = getZenCards();
+        const idx = cards.indexOf(currentCard);
+        if (idx > 0) {
+            const prevCard = cards[idx - 1];
+            const prevTextarea = prevCard.querySelector('.zen-card-editor');
+            if (prevTextarea) {
+                prevTextarea.focus();
+                if (atEnd) {
+                    const len = prevTextarea.value.length;
+                    prevTextarea.setSelectionRange(len, len);
+                }
+            }
+        }
+    }
+
+    // Focus the next zen card's textarea (cursor at start)
+    function focusNextZenCard(currentCard, atStart) {
+        const cards = getZenCards();
+        const idx = cards.indexOf(currentCard);
+        if (idx < cards.length - 1) {
+            const nextCard = cards[idx + 1];
+            const nextTextarea = nextCard.querySelector('.zen-card-editor');
+            if (nextTextarea) {
+                nextTextarea.focus();
+                if (atStart) {
+                    nextTextarea.setSelectionRange(0, 0);
+                } else {
+                    nextTextarea.setSelectionRange(0, 0);
+                }
+            }
+        }
+    }
+
+    // Render all zen cards from the subtree
+    function renderZenCards(rootNode, selectedCardId) {
+        zenCardsContainer.innerHTML = '';
+        const flattened = flattenSubtree(rootNode);
+
+        flattened.forEach(({ node, depth, index }) => {
+            const cardEl = buildZenCardElement(node, depth, index);
+            zenCardsContainer.appendChild(cardEl);
+        });
+
+        // Auto-resize all textareas
+        zenCardsContainer.querySelectorAll('.zen-card-editor').forEach(ta => {
+            autoResizeZenTextarea(ta);
+        });
+
+        // Focus the selected card
+        const targetId = selectedCardId || rootNode.id;
+        const targetCard = getZenCardById(targetId);
+        if (targetCard) {
+            const textarea = targetCard.querySelector('.zen-card-editor');
+            if (textarea) {
+                textarea.focus();
+                const len = textarea.value.length;
+                textarea.setSelectionRange(len, len);
+            }
+        }
+    }
+
+    // Collect edits from zen textareas back into the tree
+    function collectZenEdits() {
+        const cards = getZenCards();
+        cards.forEach(cardEl => {
+            const nodeId = cardEl.dataset.id;
+            const textarea = cardEl.querySelector('.zen-card-editor');
+            if (!textarea) return;
+
+            const result = findNode(state.tree, nodeId);
+            if (result) {
+                result.node.content = textarea.value;
+            }
+        });
+    }
+
+    // Add a sibling card after the specified node in the tree, then re-render zen
+    function zenAddSiblingAfter(nodeId) {
+        if (!state.zenMode) return;
+
+        // Can't add a sibling to the zen root (it would be outside the editing scope)
+        if (nodeId === state.zenRootId) {
+            showToast('Cannot add sibling to root card in Zen mode');
+            return;
+        }
+
+        // First, collect current edits so we don't lose anything
+        collectZenEdits();
+
+        const result = findNode(state.tree, nodeId);
+        if (!result || !result.parent) return;
+
+        saveState();
+
+        // Create new sibling after this node
+        const newNode = createNode();
+        const insertIndex = result.index + 1;
+        result.parent.children.splice(insertIndex, 0, newNode);
+
+        state.hasUnsavedChanges = true;
+
+        // Re-render zen cards and focus the new card
+        const rootResult = findNode(state.tree, state.zenRootId);
+        if (rootResult) {
+            renderZenCards(rootResult.node, newNode.id);
+        }
+    }
+
+    // Add a child card to the specified node, then re-render zen
+    function zenAddChildTo(nodeId) {
+        if (!state.zenMode) return;
+
+        const result = findNode(state.tree, nodeId);
+        if (!result) return;
+
+        // Check max depth
+        const depth = parseInt(getZenCardById(nodeId)?.dataset.depth || '1', 10);
+        if (depth >= 6) return;
+
+        // Collect current edits
+        collectZenEdits();
+
+        saveState();
+
+        const newNode = createNode();
+        result.node.children.push(newNode);
+
+        state.hasUnsavedChanges = true;
+
+        // Re-render zen cards and focus the new card
+        const rootResult = findNode(state.tree, state.zenRootId);
+        if (rootResult) {
+            renderZenCards(rootResult.node, newNode.id);
+        }
     }
 
     function buildPathToNode(tree, targetId, currentPath = []) {
@@ -3451,15 +3797,8 @@
         // Get the currently selected card ID (deepest in path)
         const selectedCardId = state.selectedPath[state.selectedPath.length - 1];
 
-        // Convert subtree to markdown document, tracking position of selected card
-        let cursorPosition = 0;
-        const markdown = subtreeToMarkdownWithCursor(rootResult.node, 1, '1', selectedCardId, { pos: 0, found: false });
-        cursorPosition = markdown.cursorPos;
-
-        // Use expanded editor overlay
-        const content = markdown.text.trim();
-        expandedInput.value = content;
-        updateExpandedPreview();
+        // Render stacked textareas from the subtree
+        renderZenCards(rootResult.node, selectedCardId);
 
         // Zen mode is always fullscreen in the app
         expandedOverlay.classList.add('fullscreen');
@@ -3467,96 +3806,44 @@
 
         // Request browser fullscreen if setting is enabled
         if (state.zenBrowserFullscreen && !document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(() => {
-                // Fullscreen request failed (e.g., user gesture required), continue anyway
-            });
+            document.documentElement.requestFullscreen().catch(() => {});
         }
 
         setTimeout(() => {
-            expandedInput.focus();
-            // Position cursor at end of selected card's content
-            const pos = Math.min(cursorPosition, content.length);
-            expandedInput.setSelectionRange(pos, pos);
-
             // Update the structure bar breadcrumb
             if (window.updateZenBreadcrumb) {
                 window.updateZenBreadcrumb();
             }
 
-            // Trigger initial scroll to center cursor
+            // Trigger initial scroll to center the focused card
             if (state.zenTypewriter) {
                 zenTypewriterScroll();
             }
         }, 50);
     }
 
-    function subtreeToMarkdownWithCursor(node, depth, index, targetId, tracker) {
-        // Convert a node and its children to markdown, tracking cursor position for target
-        const headerPrefix = '#'.repeat(Math.min(depth, 6));
-        // Always include index; if title exists, format as "Title (index)"
-        const title = (node.title && node.title.trim())
-            ? `${node.title.trim()} (${index})`
-            : index;
-
-        let md = `${headerPrefix} ${title}\n\n`;
-        tracker.pos += md.length;
-
-        // Add content
-        const content = node.content.trim();
-        if (content) {
-            md += content + '\n\n';
-            // If this is the target card, mark cursor position at end of its content
-            if (node.id === targetId) {
-                tracker.found = true;
-                tracker.cursorPos = tracker.pos + content.length;
-            }
-            tracker.pos += content.length + 2; // +2 for \n\n
-        } else {
-            // Empty content - cursor goes where content would be (after header + newlines)
-            if (node.id === targetId) {
-                tracker.found = true;
-                tracker.cursorPos = tracker.pos; // Right after the \n\n, ready for content
-            }
-        }
-
-        // Recursively add children
-        node.children.forEach((child, i) => {
-            const childIndex = `${index}.${i + 1}`;
-            const childMd = subtreeToMarkdownWithCursor(child, depth + 1, childIndex, targetId, tracker);
-            md += childMd.text;
-        });
-
-        return { text: md, cursorPos: tracker.cursorPos || 0 };
-    }
-
     function exitZenMode() {
         if (!state.zenMode) return;
 
-        // Get cursor position before parsing
-        const cursorPosition = expandedInput.selectionStart;
+        // Collect edits from stacked textareas back into the tree
+        const activeCardId = getActiveZenCardId();
+        saveState(); // For undo
+        collectZenEdits();
+        state.hasUnsavedChanges = true;
 
-        // Parse markdown back to tree and update, tracking which card the cursor is in
-        const { tree: newSubtree, cursorCardId } = markdownToSubtree(expandedInput.value, cursorPosition);
-
-        // Find and replace the original root node
-        const rootResult = findNode(state.tree, state.zenRootId);
-        const zenRootId = state.zenRootId;  // Save before clearing
-        if (rootResult) {
-            saveState(); // For undo
-            rootResult.node.title = newSubtree.title;
-            rootResult.node.content = newSubtree.content;
-            rootResult.node.children = newSubtree.children;
-            state.hasUnsavedChanges = true;
-        }
+        const zenRootId = state.zenRootId;
 
         state.zenMode = false;
         state.zenRootId = null;
         document.body.classList.remove('zen-mode');
         document.body.classList.remove('zen-width-narrow', 'zen-width-medium', 'zen-width-wide');
 
-        // Reset padding applied by zen typewriter
-        expandedInput.style.paddingTop = '';
-        expandedInput.style.paddingBottom = '';
+        // Collapse expanded map if open
+        const zenBar = document.getElementById('zen-structure-bar');
+        if (zenBar) zenBar.classList.remove('map-expanded');
+
+        // Clear the stacked textareas
+        zenCardsContainer.innerHTML = '';
 
         // Restore previous editor mode
         if (state.preZenEditorMode) {
@@ -3576,16 +3863,19 @@
         }
 
         // Set selection to the card where the cursor was
-        // First, build path to the zen root from the main tree
         const pathToRoot = buildPathToNode(state.tree, zenRootId) || [];
+        const cursorCardId = activeCardId || zenRootId;
 
         if (cursorCardId === zenRootId) {
-            // Cursor was in the root card
             state.selectedPath = pathToRoot;
         } else {
-            // Cursor was in a child card - find path within the subtree
-            const subPath = buildPathToNode(rootResult.node.children, cursorCardId) || [];
-            state.selectedPath = [...pathToRoot, ...subPath];
+            const rootResult = findNode(state.tree, zenRootId);
+            if (rootResult) {
+                const subPath = buildPathToNode(rootResult.node.children, cursorCardId) || [];
+                state.selectedPath = [...pathToRoot, ...subPath];
+            } else {
+                state.selectedPath = pathToRoot;
+            }
         }
 
         // Re-render to show updated cards
@@ -4023,12 +4313,11 @@
         // Toolbar buttons
         document.getElementById('new-btn').addEventListener('click', newDocument);
         document.getElementById('import-btn').addEventListener('click', () => fileInput.click());
-        document.getElementById('export-btn').addEventListener('click', saveDocument);
+        document.getElementById('export-btn').addEventListener('click', saveDocumentAsJSON);
         document.getElementById('undo-btn').addEventListener('click', undo);
         document.getElementById('redo-btn').addEventListener('click', redo);
         document.getElementById('nav-back-btn').addEventListener('click', navigateFocusBack);
         document.getElementById('nav-forward-btn').addEventListener('click', navigateFocusForward);
-        document.getElementById('quick-capture-btn').addEventListener('click', quickCapture);
 
         // Search button
         searchBtn.addEventListener('click', showSearchModal);
@@ -4081,7 +4370,7 @@
         renameDocBtn.addEventListener('click', renameDocument);
         saveCopyBtn.addEventListener('click', saveAsCopy);
         exportMdBtn.addEventListener('click', () => {
-            saveDocument();
+            exportAsMarkdown();
             closeDocDropdown();
         });
 
@@ -4230,6 +4519,18 @@
 
         // Start session timer interval
         setInterval(updateSessionTimer, 1000);
+
+        // Zen depth indent toggle
+        const zenDepthIndentToggle = document.getElementById('zen-depth-indent-toggle');
+        zenDepthIndentToggle.checked = state.zenDepthIndent;
+        if (state.zenDepthIndent) {
+            document.body.classList.add('zen-depth-indent');
+        }
+        zenDepthIndentToggle.addEventListener('change', (e) => {
+            state.zenDepthIndent = e.target.checked;
+            saveSettings();
+            document.body.classList.toggle('zen-depth-indent', state.zenDepthIndent);
+        });
 
         // Focus fade toggle
         const focusFadeToggle = document.getElementById('focus-fade-toggle');
@@ -4493,7 +4794,7 @@
                 case 's':
                     if (isMod) {
                         e.preventDefault();
-                        saveDocument();
+                        saveDocumentAsJSON();
                     }
                     break;
                 case 'z':
@@ -4635,12 +4936,6 @@
                         showShortcutsDialog();
                     }
                     break;
-                case '`':
-                    if (!state.editingId && !isMod) {
-                        e.preventDefault();
-                        quickCapture();
-                    }
-                    break;
             }
         });
 
@@ -4732,6 +5027,14 @@
             }
         });
 
+        // Forward scroll events from overlay backdrop to columns container
+        expandedOverlay.addEventListener('wheel', (e) => {
+            // Only forward if scrolling on the backdrop itself (not inside the editor)
+            if (e.target === expandedOverlay) {
+                columnsContainer.scrollLeft += e.deltaX || e.deltaY;
+            }
+        }, { passive: true });
+
         // Live preview update
         expandedInput.addEventListener('input', updateExpandedPreview);
 
@@ -4760,45 +5063,40 @@
             textarea.scrollTop = Math.max(0, targetScrollTop);
         }
 
-        // Zen mode typewriter - keeps cursor line vertically centered
-        // Approach: Use fixed large padding (half viewport) at top and bottom
-        // This creates scroll space so any line can be centered
+        // Zen mode typewriter - scrolls the active card's textarea toward vertical center
         function zenTypewriterScroll() {
             if (!state.zenMode || !state.zenTypewriter) return;
 
-            const textarea = expandedInput;
+            const activeCard = zenCardsContainer.querySelector('.zen-card-active');
+            if (!activeCard) return;
+
+            const textarea = activeCard.querySelector('.zen-card-editor');
+            if (!textarea) return;
+
+            // Scroll the active card's textarea into the center of the container
+            const container = zenCardsContainer;
+            const containerRect = container.getBoundingClientRect();
+            const textareaRect = textarea.getBoundingClientRect();
+
+            // Get cursor position within the textarea
             const styles = getComputedStyle(textarea);
             let lineHeight = parseFloat(styles.lineHeight);
             if (isNaN(lineHeight) || lineHeight < 10) {
                 const fontSize = parseFloat(styles.fontSize) || 16;
-                lineHeight = fontSize * (parseFloat(styles.lineHeight) || 1.8);
+                lineHeight = fontSize * 1.8;
             }
 
-            const viewportHeight = textarea.clientHeight;
-            const halfViewport = viewportHeight / 2;
+            const cursorPos = textarea.selectionStart;
+            const textBefore = textarea.value.substring(0, cursorPos);
+            const cursorLine = textBefore.split('\n').length - 1;
+            const cursorOffsetInTextarea = cursorLine * lineHeight;
 
-            // Ensure padding is set (creates scroll space for centering first/last lines)
-            const currentPaddingTop = parseFloat(styles.paddingTop) || 0;
-            if (currentPaddingTop < halfViewport) {
-                textarea.style.paddingTop = halfViewport + 'px';
-                textarea.style.paddingBottom = halfViewport + 'px';
-            }
+            // Target: center the cursor line in the container
+            const targetScrollTop = (textareaRect.top - containerRect.top + container.scrollTop)
+                + cursorOffsetInTextarea
+                - (containerRect.height / 2);
 
-            // Calculate cursor line position
-            const cursorPosition = textarea.selectionStart;
-            const textBeforeCursor = textarea.value.substring(0, cursorPosition);
-            const cursorLineIndex = textBeforeCursor.split('\n').length - 1;
-
-            // Pixel position of cursor line from top of content (after padding)
-            const cursorLineTop = cursorLineIndex * lineHeight;
-
-            // Scroll position to center this line:
-            // We want: paddingTop + cursorLineTop - scrollTop = halfViewport
-            // So: scrollTop = paddingTop + cursorLineTop - halfViewport
-            // With paddingTop = halfViewport: scrollTop = cursorLineTop
-            const scrollTo = cursorLineTop;
-
-            textarea.scrollTop = scrollTo;
+            container.scrollTop = Math.max(0, targetScrollTop);
         }
 
         // Expose for use in openZenEditor
@@ -4812,144 +5110,78 @@
         const zenAddSiblingBtn = document.getElementById('zen-add-sibling');
         const zenAddChildBtn = document.getElementById('zen-add-child');
 
-        // Parse the current position from cursor in Zen mode
-        function getZenCursorPosition() {
-            if (!state.zenMode) return null;
-
-            const text = expandedInput.value;
-            const cursorPos = expandedInput.selectionStart;
-            const textBefore = text.substring(0, cursorPos);
-            const lines = textBefore.split('\n');
-
-            // Find the most recent header before cursor
-            let currentLevel = 1;
-            let currentIndex = '1';
-            let headerLineStart = 0;
-
-            const allLines = text.split('\n');
-            let charPos = 0;
-
-            for (let i = 0; i < allLines.length; i++) {
-                const line = allLines[i];
-                const headerMatch = line.match(/^(#{1,6})\s*(.*)$/);
-
-                if (headerMatch) {
-                    if (charPos <= cursorPos) {
-                        currentLevel = headerMatch[1].length;
-                        // Extract index from title (could be "Title (1.2.3)" or just "1.2.3")
-                        const titleText = headerMatch[2].trim();
-                        const indexMatch = titleText.match(/\(?([\d.]+)\)?$/);
-                        if (indexMatch) {
-                            currentIndex = indexMatch[1];
-                        }
-                        headerLineStart = charPos;
-                    } else {
-                        break;
-                    }
-                }
-                charPos += line.length + 1;
-            }
-
+        // Get the active zen card's metadata (index, depth, id)
+        function getActiveZenCardInfo() {
+            const active = zenCardsContainer.querySelector('.zen-card-active');
+            if (!active) return null;
             return {
-                level: currentLevel,
-                index: currentIndex,
-                headerLineStart: headerLineStart
+                id: active.dataset.id,
+                index: active.dataset.index,
+                depth: parseInt(active.dataset.depth, 10),
+                element: active
             };
         }
 
-        // Build a map of all headers in the document with their positions
-        function getZenHeaderMap() {
-            const text = expandedInput.value;
-            const lines = text.split('\n');
-            const headers = [];
-            let charPos = 0;
-
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-                const headerMatch = line.match(/^(#{1,6})\s*(.*)$/);
-
-                if (headerMatch) {
-                    const level = headerMatch[1].length;
-                    const titleText = headerMatch[2].trim();
-                    const indexMatch = titleText.match(/\(?([\d.]+)\)?$/);
-                    if (indexMatch) {
-                        headers.push({
-                            index: indexMatch[1],
-                            level: level,
-                            title: titleText,
-                            charPos: charPos
-                        });
-                    }
-                }
-                charPos += line.length + 1;
-            }
-            return headers;
+        // Build a card list from the current zen DOM for breadcrumb/map
+        function getZenCardList() {
+            return getZenCards().map(card => ({
+                id: card.dataset.id,
+                index: card.dataset.index,
+                depth: parseInt(card.dataset.depth, 10),
+                title: card.querySelector('.zen-card-title').textContent || card.dataset.index
+            }));
         }
 
-        // Navigate to a specific header by index
+        // Navigate to a specific card by its index
         function zenNavigateTo(index) {
-            const headers = getZenHeaderMap();
-            const target = headers.find(h => h.index === index);
-            if (target) {
-                // Position cursor at the start of the header content (after the header line)
-                const text = expandedInput.value;
-                const lines = text.split('\n');
-                let charPos = 0;
-
-                for (let i = 0; i < lines.length; i++) {
-                    if (charPos === target.charPos) {
-                        // Found the header line, move to the line after it
-                        const nextLineStart = charPos + lines[i].length + 1;
-                        expandedInput.setSelectionRange(nextLineStart, nextLineStart);
-                        expandedInput.focus();
-                        break;
-                    }
-                    charPos += lines[i].length + 1;
+            const card = zenCardsContainer.querySelector(`.zen-card[data-index="${index}"]`);
+            if (card) {
+                const textarea = card.querySelector('.zen-card-editor');
+                if (textarea) {
+                    textarea.focus();
+                    textarea.setSelectionRange(0, 0);
                 }
-
-                updateZenBreadcrumb();
                 if (state.zenTypewriter) {
                     zenTypewriterScroll();
                 }
             }
         }
 
-        // Update the mini-map display based on cursor position
+        // Update the mini-map display based on active card
         function updateZenBreadcrumb() {
             if (!state.zenMode || !zenBreadcrumb) return;
 
-            const pos = getZenCursorPosition();
-            if (!pos) return;
+            const info = getActiveZenCardInfo();
+            if (!info) return;
 
-            const headers = getZenHeaderMap();
-            const currentIndex = pos.index;
+            const cards = getZenCardList();
+            const currentIndex = info.index;
             const currentParts = currentIndex.split('.');
 
-            // Find parent index (e.g., "1.2" from "1.2.3")
+            // Find parent index
             const parentIndex = currentParts.length > 1
                 ? currentParts.slice(0, -1).join('.')
                 : null;
 
-            // Find siblings (same parent, same level)
-            const siblings = headers.filter(h => {
-                if (h.level !== pos.level) return false;
-                const hParts = h.index.split('.');
-                const hParent = hParts.slice(0, -1).join('.');
-                return hParent === (parentIndex || '');
+            // Find siblings
+            const siblings = cards.filter(c => {
+                if (c.depth !== info.depth) return false;
+                const cParts = c.index.split('.');
+                const cParent = cParts.slice(0, -1).join('.');
+                return cParent === (parentIndex || '');
             });
 
-            // Find direct children (one level deeper, starts with current index)
-            const children = headers.filter(h => {
-                if (h.level !== pos.level + 1) return false;
-                return h.index.startsWith(currentIndex + '.');
-            }).slice(0, 3); // Limit to 3 children
+            // Find direct children
+            const children = cards.filter(c => {
+                if (c.depth !== info.depth + 1) return false;
+                return c.index.startsWith(currentIndex + '.');
+            }).slice(0, 3);
 
             // Build mini-map HTML
             let html = '<div class="zen-minimap">';
 
-            // Parent row (if exists)
             if (parentIndex) {
-                const parent = headers.find(h => h.index === parentIndex);
+                const parent = cards.find(c => c.index === parentIndex);
                 if (parent) {
                     html += '<div class="zen-minimap-row zen-minimap-parent">';
                     html += `<span class="zen-minimap-item" data-index="${parentIndex}" title="${parent.title}">${parentIndex}</span>`;
@@ -4958,28 +5190,23 @@
                 }
             }
 
-            // Siblings row (current level)
             html += '<div class="zen-minimap-row zen-minimap-siblings">';
             siblings.forEach((sib, i) => {
-                if (i > 0) {
-                    html += '<span class="zen-minimap-sep">·</span>';
-                }
+                if (i > 0) html += '<span class="zen-minimap-sep">·</span>';
                 const isCurrent = sib.index === currentIndex;
                 html += `<span class="zen-minimap-item${isCurrent ? ' current' : ''}" data-index="${sib.index}" title="${sib.title}">${sib.index}</span>`;
             });
             html += '</div>';
 
-            // Children row (if any)
             if (children.length > 0) {
                 html += '<div class="zen-minimap-connector">│</div>';
                 html += '<div class="zen-minimap-row zen-minimap-children">';
                 children.forEach((child, i) => {
-                    if (i > 0) {
-                        html += '<span class="zen-minimap-sep">·</span>';
-                    }
+                    if (i > 0) html += '<span class="zen-minimap-sep">·</span>';
                     html += `<span class="zen-minimap-item" data-index="${child.index}" title="${child.title}">${child.index}</span>`;
                 });
-                if (headers.filter(h => h.level === pos.level + 1 && h.index.startsWith(currentIndex + '.')).length > 3) {
+                const allChildren = cards.filter(c => c.depth === info.depth + 1 && c.index.startsWith(currentIndex + '.'));
+                if (allChildren.length > 3) {
                     html += '<span class="zen-minimap-more">…</span>';
                 }
                 html += '</div>';
@@ -4988,347 +5215,129 @@
             html += '</div>';
             zenBreadcrumb.innerHTML = html;
 
-            // Add click handlers for navigation
+            // Click handlers for navigation
             zenBreadcrumb.querySelectorAll('.zen-minimap-item').forEach(item => {
                 item.addEventListener('click', () => {
-                    const index = item.dataset.index;
-                    zenNavigateTo(index);
+                    zenNavigateTo(item.dataset.index);
                 });
             });
 
-            // Disable child button if at max depth (level 6)
+            // Disable child button at max depth
             if (zenAddChildBtn) {
-                zenAddChildBtn.disabled = pos.level >= 6;
-                zenAddChildBtn.style.opacity = pos.level >= 6 ? '0.4' : '1';
+                zenAddChildBtn.disabled = info.depth >= 6;
+                zenAddChildBtn.style.opacity = info.depth >= 6 ? '0.4' : '1';
+            }
+
+            updateZenExpandedMap();
+        }
+
+        // Expanded map toggle and rendering
+        const zenMapToggle = document.getElementById('zen-map-toggle');
+        const zenExpandedMap = document.getElementById('zen-expanded-map');
+        const zenStructureBar = document.getElementById('zen-structure-bar');
+
+        function toggleZenMap() {
+            if (!state.zenMode) return;
+            zenStructureBar.classList.toggle('map-expanded');
+            if (zenStructureBar.classList.contains('map-expanded')) {
+                updateZenExpandedMap();
             }
         }
 
-        // Add a sibling card (same level) after current section (including all its children)
-        function zenAddSibling() {
-            if (!state.zenMode) return;
-
-            const pos = getZenCursorPosition();
-            if (!pos) return;
-
-            const text = expandedInput.value;
-            const lines = text.split('\n');
-
-            // Find parent prefix (e.g., "1.2" from "1.2.3") to find all siblings
-            const indexParts = pos.index.split('.');
-            const parentPrefix = indexParts.slice(0, -1).join('.');
-
-            // Two-pass approach:
-            // Pass 1: Find highest sibling number
-            // Pass 2: Find where current section ends (starting from current header)
-
-            let charPos = 0;
-            let highestSiblingNum = 0;
-            let currentHeaderStart = -1;
-
-            // Pass 1: Scan all headers to find highest sibling and current header position
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-                const headerMatch = line.match(/^(#{1,6})\s*(.*)$/);
-
-                if (headerMatch) {
-                    const level = headerMatch[1].length;
-                    const titleText = headerMatch[2].trim();
-                    const indexMatch = titleText.match(/\(?([\d.]+)\)?$/);
-
-                    if (indexMatch) {
-                        const headerIndex = indexMatch[1];
-
-                        // Track current header position
-                        if (headerIndex === pos.index) {
-                            currentHeaderStart = charPos;
-                        }
-
-                        // Track highest sibling number
-                        if (level === pos.level) {
-                            const headerParts = headerIndex.split('.');
-                            const headerParent = headerParts.slice(0, -1).join('.');
-
-                            if (headerParent === parentPrefix || (parentPrefix === '' && headerParts.length === 1)) {
-                                const siblingNum = parseInt(headerParts[headerParts.length - 1], 10);
-                                if (siblingNum > highestSiblingNum) {
-                                    highestSiblingNum = siblingNum;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                charPos += line.length + 1;
-            }
-
-            // Pass 2: Starting from after current header, find where section ends
-            let insertPos = text.length;
-            if (currentHeaderStart >= 0) {
-                charPos = 0;
-                let passedCurrentHeader = false;
-
-                for (let i = 0; i < lines.length; i++) {
-                    const line = lines[i];
-
-                    // Check if we've passed the current header line
-                    if (charPos >= currentHeaderStart && !passedCurrentHeader) {
-                        // Skip the header line itself
-                        if (line.match(/^#{1,6}\s/)) {
-                            passedCurrentHeader = true;
-                            charPos += line.length + 1;
-                            continue;
-                        }
-                    }
-
-                    if (passedCurrentHeader) {
-                        const headerMatch = line.match(/^(#{1,6})\s/);
-                        if (headerMatch) {
-                            const level = headerMatch[1].length;
-                            // Found next header at same or higher level - insert before it
-                            if (level <= pos.level) {
-                                insertPos = charPos;
-                                break;
-                            }
-                        }
-                    }
-
-                    charPos += line.length + 1;
-                }
-            }
-
-            // Trim trailing newlines from insert position, but keep at least one
-            while (insertPos > 0 && text[insertPos - 1] === '\n' && text[insertPos - 2] === '\n') {
-                insertPos--;
-            }
-
-            // Calculate next sibling index (highest sibling + 1)
-            const newNum = highestSiblingNum + 1;
-            const newIndex = parentPrefix ? `${parentPrefix}.${newNum}` : `${newNum}`;
-
-            // Create new header with proper spacing
-            const headerPrefix = '#'.repeat(pos.level);
-
-            // Check if there's a header after insertPos and count existing newlines before it
-            const textAfter = text.substring(insertPos);
-            const headerAfterMatch = textAfter.match(/^(\s*)(#{1,6}\s)/);
-
-            // Only add extra spacing if there's a header after AND not enough blank lines
-            let extraSpacing = '';
-            if (headerAfterMatch) {
-                const whitespaceBeforeHeader = headerAfterMatch[1];
-                const existingNewlines = (whitespaceBeforeHeader.match(/\n/g) || []).length;
-                // We want at least 2 newlines (one blank line) between content and next header
-                // Our newHeader ends with \n\n, so we need existingNewlines to be >= 2
-                if (existingNewlines < 2) {
-                    extraSpacing = '\n'.repeat(2 - existingNewlines);
-                }
-            }
-
-            // Structure: \n\n{header}\n\n[cursor here]{extra if needed}
-            const newHeader = `\n\n${headerPrefix} ${newIndex}\n\n`;
-
-            // Insert at the calculated position
-            const newText = text.substring(0, insertPos) + newHeader + extraSpacing + text.substring(insertPos);
-            expandedInput.value = newText;
-
-            // Position cursor on the blank line after header (before extra spacing)
-            const newCursorPos = insertPos + newHeader.length;
-            expandedInput.setSelectionRange(newCursorPos, newCursorPos);
-            expandedInput.focus();
-
-            updateZenBreadcrumb();
-            updateExpandedPreview();
-            if (state.zenTypewriter) {
-                zenTypewriterScroll();
-            }
+        if (zenMapToggle) {
+            zenMapToggle.addEventListener('click', toggleZenMap);
         }
 
-        // Add a child card (deeper level) at end of current section's own content
-        function zenAddChild() {
-            if (!state.zenMode) return;
+        function updateZenExpandedMap() {
+            if (!zenExpandedMap || !zenStructureBar.classList.contains('map-expanded')) return;
 
-            const pos = getZenCursorPosition();
-            if (!pos || pos.level >= 6) return; // Max depth check
+            const cards = getZenCardList();
+            const info = getActiveZenCardInfo();
+            if (!info || cards.length === 0) return;
 
-            const text = expandedInput.value;
-            const lines = text.split('\n');
+            const currentIndex = info.index;
+            const currentParts = currentIndex.split('.');
 
-            // Use headerLineStart from getZenCursorPosition - it already knows where current header is
-            const currentHeaderStart = pos.headerLineStart;
-
-            // Pass 1: Find highest child number
-            let charPos = 0;
-            let highestChildNum = 0;
-
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-                const headerMatch = line.match(/^(#{1,6})\s*(.*)$/);
-
-                if (headerMatch) {
-                    const level = headerMatch[1].length;
-                    const titleText = headerMatch[2].trim();
-                    const indexMatch = titleText.match(/\(?([\d.]+)\)?$/);
-
-                    if (indexMatch) {
-                        const headerIndex = indexMatch[1];
-
-                        // Track highest child number (direct children only)
-                        if (level === pos.level + 1 && headerIndex.startsWith(pos.index + '.')) {
-                            const childParts = headerIndex.split('.');
-                            const childNum = parseInt(childParts[childParts.length - 1], 10);
-                            if (childNum > highestChildNum) {
-                                highestChildNum = childNum;
-                            }
-                        }
-                    }
-                }
-
-                charPos += line.length + 1;
+            const ancestorIndices = new Set();
+            for (let i = 1; i < currentParts.length; i++) {
+                ancestorIndices.add(currentParts.slice(0, i).join('.'));
             }
 
-            // Pass 2: Find insert position - after ALL existing children/descendants of current card
-            // We want to insert at the END of all children, so we skip past any header
-            // that is deeper than the current level (children, grandchildren, etc.)
-            // and stop only when we hit a header at the same level or shallower (a sibling or uncle)
-            charPos = 0;
-            let passedCurrentHeader = false;
-            let insertPos = text.length;
+            const maxLevel = Math.max(...cards.map(c => c.depth));
 
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-                const lineStart = charPos;
+            let html = '<div class="zen-map-columns">';
+            for (let level = 1; level <= maxLevel; level++) {
+                const levelCards = cards.filter(c => c.depth === level);
+                if (levelCards.length === 0) continue;
 
-                // Skip until we reach the current header
-                if (!passedCurrentHeader) {
-                    if (lineStart === currentHeaderStart && line.match(/^#{1,6}\s/)) {
-                        passedCurrentHeader = true;
-                    }
-                    charPos += line.length + 1;
-                    continue;
-                }
+                html += '<div class="zen-map-column">';
+                html += `<div class="zen-map-column-header">Level ${level}</div>`;
 
-                // After passing current header, look for headers at same level or shallower
-                const headerMatch = line.match(/^(#{1,6})\s/);
-                if (headerMatch) {
-                    const headerLevel = headerMatch[1].length;
-                    // Stop at any header at same level as current (sibling) or shallower (uncle/ancestor)
-                    // This skips past all children and grandchildren
-                    if (headerLevel <= pos.level) {
-                        insertPos = lineStart;
-                        break;
-                    }
-                }
+                levelCards.forEach(c => {
+                    const isCurrent = c.index === currentIndex;
+                    const isAncestor = ancestorIndices.has(c.index);
+                    let cls = 'zen-map-card';
+                    if (isCurrent) cls += ' current';
+                    else if (isAncestor) cls += ' ancestor';
 
-                charPos += line.length + 1;
+                    const displayTitle = c.title || c.index;
+                    html += `<div class="${cls}" data-index="${c.index}" title="${c.title}">${c.index} ${displayTitle}</div>`;
+                });
+
+                html += '</div>';
             }
+            html += '</div>';
+            zenExpandedMap.innerHTML = html;
 
-            // Trim trailing newlines from insert position
-            while (insertPos > 0 && text[insertPos - 1] === '\n' && insertPos > 1 && text[insertPos - 2] === '\n') {
-                insertPos--;
-            }
+            zenExpandedMap.querySelectorAll('.zen-map-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    zenNavigateTo(card.dataset.index);
+                    updateZenExpandedMap();
+                });
+            });
 
-            // Calculate child index (highest child + 1)
-            const newIndex = `${pos.index}.${highestChildNum + 1}`;
-
-            // Create new header at child level with proper spacing
-            const headerPrefix = '#'.repeat(pos.level + 1);
-
-            // Check if there's a header after insertPos and count existing newlines before it
-            const textAfter = text.substring(insertPos);
-            const headerAfterMatch = textAfter.match(/^(\s*)(#{1,6}\s)/);
-
-            // Only add extra spacing if there's a header after AND not enough blank lines
-            let extraSpacing = '';
-            if (headerAfterMatch) {
-                const whitespaceBeforeHeader = headerAfterMatch[1];
-                const existingNewlines = (whitespaceBeforeHeader.match(/\n/g) || []).length;
-                // We want at least 2 newlines (one blank line) between content and next header
-                if (existingNewlines < 2) {
-                    extraSpacing = '\n'.repeat(2 - existingNewlines);
-                }
-            }
-
-            // Structure: \n\n{header}\n\n[cursor here]{extra if needed}
-            const newHeader = `\n\n${headerPrefix} ${newIndex}\n\n`;
-
-            // Insert at end of current card's own content
-            const newText = text.substring(0, insertPos) + newHeader + extraSpacing + text.substring(insertPos);
-            expandedInput.value = newText;
-
-            // Position cursor on the blank line after header (before extra spacing)
-            const newCursorPos = insertPos + newHeader.length;
-            expandedInput.setSelectionRange(newCursorPos, newCursorPos);
-            expandedInput.focus();
-
-            updateZenBreadcrumb();
-            updateExpandedPreview();
-            if (state.zenTypewriter) {
-                zenTypewriterScroll();
+            const currentCard = zenExpandedMap.querySelector('.zen-map-card.current');
+            if (currentCard) {
+                currentCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
             }
         }
 
         // Wire up Zen structure bar buttons
         if (zenAddSiblingBtn) {
-            zenAddSiblingBtn.addEventListener('click', zenAddSibling);
+            zenAddSiblingBtn.addEventListener('click', () => {
+                const activeId = getActiveZenCardId();
+                if (activeId) zenAddSiblingAfter(activeId);
+            });
         }
         if (zenAddChildBtn) {
-            zenAddChildBtn.addEventListener('click', zenAddChild);
+            zenAddChildBtn.addEventListener('click', () => {
+                const activeId = getActiveZenCardId();
+                if (activeId) zenAddChildTo(activeId);
+            });
         }
-
-        // Update breadcrumb on cursor movement in Zen mode
-        expandedInput.addEventListener('click', updateZenBreadcrumb);
-        expandedInput.addEventListener('keyup', (e) => {
-            if (state.zenMode && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter'].includes(e.key)) {
-                updateZenBreadcrumb();
-            }
-        });
 
         // Expose for use when entering Zen mode
         window.updateZenBreadcrumb = updateZenBreadcrumb;
 
-        // Reset padding when exiting zen mode
-        function resetZenPadding() {
-            expandedInput.style.paddingTop = '';
-            expandedInput.style.paddingBottom = '';
-        }
-
+        // Expanded editor event listeners (non-zen mode only)
         expandedInput.addEventListener('input', () => {
-            if (state.zenMode) {
-                zenTypewriterScroll();
-            } else {
-                typewriterScroll();
-            }
+            typewriterScroll();
         });
         expandedInput.addEventListener('click', () => {
-            if (state.zenMode) {
-                zenTypewriterScroll();
-            } else {
-                typewriterScroll();
-            }
+            typewriterScroll();
         });
-        // Use keydown for arrow keys so scrolling happens continuously while holding
         expandedInput.addEventListener('keydown', (e) => {
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-                setTimeout(() => {
-                    if (state.zenMode) {
-                        zenTypewriterScroll();
-                    } else {
-                        typewriterScroll();
-                    }
-                }, 0);
+                setTimeout(() => { typewriterScroll(); }, 0);
             }
         });
         expandedInput.addEventListener('keyup', (e) => {
             if (['Enter', 'Backspace', 'Delete'].includes(e.key)) {
-                if (state.zenMode) {
-                    zenTypewriterScroll();
-                } else {
-                    typewriterScroll();
-                }
+                typewriterScroll();
             }
         });
 
-        // Keyboard shortcuts in expanded editor
+        // Keyboard shortcuts in expanded editor (non-zen mode - zen handles its own via card keydown)
         expandedInput.addEventListener('keydown', (e) => {
             const isMod = e.ctrlKey || e.metaKey;
 
@@ -5336,21 +5345,10 @@
                 e.preventDefault();
                 e.stopPropagation();
                 closeExpandedEditor(false);
-            } else if (e.key === 'Enter' && isMod && !state.zenMode) {
-                // Cmd+Enter saves and closes (only in non-zen mode)
+            } else if (e.key === 'Enter' && isMod) {
                 e.preventDefault();
                 e.stopPropagation();
                 closeExpandedEditor(true);
-            } else if (e.key === 'Tab' && state.zenMode && e.shiftKey) {
-                // Shift+Tab in Zen mode adds sibling card
-                e.preventDefault();
-                e.stopPropagation();
-                zenAddSibling();
-            } else if (e.key === 'Tab' && state.zenMode && !e.shiftKey) {
-                // Tab in Zen mode adds child card
-                e.preventDefault();
-                e.stopPropagation();
-                zenAddChild();
             } else if (e.key === 'b' && isMod) {
                 e.preventDefault();
                 insertMarkdown('bold');
@@ -5361,19 +5359,17 @@
                 e.preventDefault();
                 insertMarkdown('link');
             } else if (e.key === '\\' && isMod) {
-                // Split card at cursor position
                 e.preventDefault();
                 e.stopPropagation();
                 const cursorPos = expandedInput.selectionStart;
                 if (splitCard(cursorPos, expandedInput.value)) {
-                    closeExpandedEditor(false); // Close without saving (already saved in splitCard)
+                    closeExpandedEditor(false);
                 }
             } else if (e.key === 'Backspace' && isMod) {
-                // Merge with previous card
                 e.preventDefault();
                 e.stopPropagation();
                 if (mergeWithPrevious()) {
-                    closeExpandedEditor(false); // Close and re-open will happen via mergeWithPrevious
+                    closeExpandedEditor(false);
                 }
             }
         });
@@ -5439,12 +5435,13 @@
             expandedOverlay.classList.add(mode);
         }
 
-        // Update body class for split mode toolbar compression
+        // Update body class for split mode toolbar compression and column offset
         // Only apply when expanded editor is actually open
         if (state.expandedEditingId) {
-            document.body.classList.remove('editor-split-active');
+            document.body.classList.remove('editor-split-active', 'editor-split-left', 'editor-split-right');
             if (mode === 'split-left' || mode === 'split-right') {
                 document.body.classList.add('editor-split-active');
+                document.body.classList.add(mode === 'split-left' ? 'editor-split-left' : 'editor-split-right');
             }
         }
 
