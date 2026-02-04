@@ -5279,20 +5279,23 @@
                 ids.forEach(id => ancestorIds.add(id));
             }
 
-            // Recursive tree renderer
+            // Render a node as a top-down topology: node on top, children in a row below, connected by lines
             function renderTreeNode(node, index) {
                 const isCurrent = node.id === currentId;
                 const isAncestor = ancestorIds.has(node.id);
-                let cls = 'zen-map-node';
+                let cls = 'zen-topo-node';
                 if (isCurrent) cls += ' current';
                 else if (isAncestor) cls += ' ancestor';
 
                 const displayTitle = (node.title && node.title.trim()) ? node.title.trim() : index;
-                let html = `<div class="zen-map-tree-item">`;
-                html += `<div class="${cls}" data-id="${node.id}" data-index="${index}" title="${displayTitle}">${displayTitle}</div>`;
+                const hasChildren = node.children && node.children.length > 0;
 
-                if (node.children && node.children.length > 0) {
-                    html += `<div class="zen-map-children">`;
+                let html = `<div class="zen-topo-branch">`;
+                html += `<div class="zen-topo-label ${cls}" data-id="${node.id}" data-index="${index}" title="${displayTitle}">${displayTitle}</div>`;
+
+                if (hasChildren) {
+                    html += `<div class="zen-topo-connector"></div>`;
+                    html += `<div class="zen-topo-children">`;
                     node.children.forEach((child, i) => {
                         html += renderTreeNode(child, `${index}.${i + 1}`);
                     });
@@ -5302,10 +5305,10 @@
                 return html;
             }
 
-            const html = `<div class="zen-map-tree">${renderTreeNode(rootResult.node, '1')}</div>`;
+            const html = `<div class="zen-topo-tree">${renderTreeNode(rootResult.node, '1')}</div>`;
             zenExpandedMap.innerHTML = html;
 
-            zenExpandedMap.querySelectorAll('.zen-map-node').forEach(node => {
+            zenExpandedMap.querySelectorAll('.zen-topo-label').forEach(node => {
                 node.addEventListener('click', () => {
                     const targetIndex = node.dataset.index;
                     zenNavigateTo(targetIndex);
@@ -5313,7 +5316,7 @@
                 });
             });
 
-            const currentNode = zenExpandedMap.querySelector('.zen-map-node.current');
+            const currentNode = zenExpandedMap.querySelector('.zen-topo-label.current');
             if (currentNode) {
                 currentNode.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
             }
