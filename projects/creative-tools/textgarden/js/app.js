@@ -3438,6 +3438,21 @@
         return zenCardsContainer.querySelector(`.zen-card[data-id="${id}"]`);
     }
 
+    // Scroll a zen card to the vertical center of the container
+    function zenScrollToCenter(cardEl) {
+        if (!zenCardsContainer || !cardEl) return;
+        const container = zenCardsContainer;
+        const containerRect = container.getBoundingClientRect();
+        const cardRect = cardEl.getBoundingClientRect();
+        const cardCenter = cardRect.top + cardRect.height / 2;
+        const containerCenter = containerRect.top + containerRect.height / 2;
+        const offset = cardCenter - containerCenter;
+        container.scrollTo({
+            top: container.scrollTop + offset,
+            behavior: 'smooth'
+        });
+    }
+
     // Auto-resize a textarea to fit its content
     function autoResizeZenTextarea(textarea) {
         textarea.style.height = 'auto';
@@ -3523,6 +3538,8 @@
             getZenCards().forEach(c => c.classList.remove('zen-card-active'));
             card.classList.add('zen-card-active');
             updateZenBreadcrumb();
+            // Center the focused card in the container
+            zenScrollToCenter(card);
         });
 
         // Arrow key navigation between textareas
@@ -3815,9 +3832,10 @@
                 window.updateZenBreadcrumb();
             }
 
-            // Trigger initial scroll to center the focused card
-            if (state.zenTypewriter) {
-                zenTypewriterScroll();
+            // Center the focused card after layout
+            const activeCard = zenCardsContainer.querySelector('.zen-card-active');
+            if (activeCard) {
+                zenScrollToCenter(activeCard);
             }
         }, 50);
     }
@@ -5141,9 +5159,6 @@
                     textarea.focus();
                     textarea.setSelectionRange(0, 0);
                 }
-                if (state.zenTypewriter) {
-                    zenTypewriterScroll();
-                }
             }
         }
 
@@ -5251,54 +5266,56 @@
         function updateZenExpandedMap() {
             if (!zenExpandedMap || !zenStructureBar.classList.contains('map-expanded')) return;
 
-            const cards = getZenCardList();
+            const rootResult = findNode(state.tree, state.zenRootId);
+            if (!rootResult) return;
+
             const info = getActiveZenCardInfo();
-            if (!info || cards.length === 0) return;
+            const currentId = info ? info.id : null;
 
-            const currentIndex = info.index;
-            const currentParts = currentIndex.split('.');
-
-            const ancestorIndices = new Set();
-            for (let i = 1; i < currentParts.length; i++) {
-                ancestorIndices.add(currentParts.slice(0, i).join('.'));
+            // Build set of ancestor IDs for the active card
+            const ancestorIds = new Set();
+            if (currentId) {
+                const ids = getAncestorIds(state.tree, currentId);
+                ids.forEach(id => ancestorIds.add(id));
             }
 
-            const maxLevel = Math.max(...cards.map(c => c.depth));
+            // Recursive tree renderer
+            function renderTreeNode(node, index) {
+                const isCurrent = node.id === currentId;
+                const isAncestor = ancestorIds.has(node.id);
+                let cls = 'zen-map-node';
+                if (isCurrent) cls += ' current';
+                else if (isAncestor) cls += ' ancestor';
 
-            let html = '<div class="zen-map-columns">';
-            for (let level = 1; level <= maxLevel; level++) {
-                const levelCards = cards.filter(c => c.depth === level);
-                if (levelCards.length === 0) continue;
+                const displayTitle = (node.title && node.title.trim()) ? node.title.trim() : index;
+                let html = `<div class="zen-map-tree-item">`;
+                html += `<div class="${cls}" data-id="${node.id}" data-index="${index}" title="${displayTitle}">${displayTitle}</div>`;
 
-                html += '<div class="zen-map-column">';
-                html += `<div class="zen-map-column-header">Level ${level}</div>`;
-
-                levelCards.forEach(c => {
-                    const isCurrent = c.index === currentIndex;
-                    const isAncestor = ancestorIndices.has(c.index);
-                    let cls = 'zen-map-card';
-                    if (isCurrent) cls += ' current';
-                    else if (isAncestor) cls += ' ancestor';
-
-                    const displayTitle = c.title || c.index;
-                    html += `<div class="${cls}" data-index="${c.index}" title="${c.title}">${c.index} ${displayTitle}</div>`;
-                });
-
-                html += '</div>';
+                if (node.children && node.children.length > 0) {
+                    html += `<div class="zen-map-children">`;
+                    node.children.forEach((child, i) => {
+                        html += renderTreeNode(child, `${index}.${i + 1}`);
+                    });
+                    html += `</div>`;
+                }
+                html += `</div>`;
+                return html;
             }
-            html += '</div>';
+
+            const html = `<div class="zen-map-tree">${renderTreeNode(rootResult.node, '1')}</div>`;
             zenExpandedMap.innerHTML = html;
 
-            zenExpandedMap.querySelectorAll('.zen-map-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    zenNavigateTo(card.dataset.index);
+            zenExpandedMap.querySelectorAll('.zen-map-node').forEach(node => {
+                node.addEventListener('click', () => {
+                    const targetIndex = node.dataset.index;
+                    zenNavigateTo(targetIndex);
                     updateZenExpandedMap();
                 });
             });
 
-            const currentCard = zenExpandedMap.querySelector('.zen-map-card.current');
-            if (currentCard) {
-                currentCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+            const currentNode = zenExpandedMap.querySelector('.zen-map-node.current');
+            if (currentNode) {
+                currentNode.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
             }
         }
 
