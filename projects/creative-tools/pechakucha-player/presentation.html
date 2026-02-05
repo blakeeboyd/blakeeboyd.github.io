@@ -301,7 +301,8 @@
 
             // Listen for messages from parent window
             window.addEventListener('message', (event) => {
-                // In production, verify origin matches expected parent
+                // Only accept messages from our opener's origin
+                if (event.origin !== window.location.origin) return;
                 const data = event.data;
                 parentWindow = event.source;
 
@@ -330,7 +331,7 @@
             // Send ready message when loaded
             function sendReady() {
                 if (window.opener) {
-                    window.opener.postMessage({ type: 'ready' }, '*');
+                    window.opener.postMessage({ type: 'ready' }, window.location.origin);
                 }
             }
 
@@ -427,7 +428,7 @@
 
                 // Notify parent that we're starting
                 if (window.opener) {
-                    window.opener.postMessage({ type: 'started' }, '*');
+                    window.opener.postMessage({ type: 'started' }, window.location.origin);
                 }
 
                 // Title slide was shown as background during ready state
@@ -497,7 +498,7 @@
             // Notify parent when window is closing
             window.addEventListener('beforeunload', () => {
                 if (window.opener) {
-                    window.opener.postMessage({ type: 'closed' }, '*');
+                    window.opener.postMessage({ type: 'closed' }, window.location.origin);
                 }
             });
 

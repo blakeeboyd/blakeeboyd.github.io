@@ -29,10 +29,18 @@
 }
 
 .info-trigger:hover,
-.info-trigger:focus {
+.info-trigger:focus-visible {
     border-color: var(--color-accent);
     color: var(--color-accent);
+}
+
+.info-trigger:focus {
     outline: none;
+}
+
+.info-trigger:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
 }
 
 .info-tooltip {
@@ -147,6 +155,11 @@
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
 }
 
+.play-button:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
 .play-button:active {
     transform: scale(0.95);
     box-shadow: 0 1px 4px rgba(37, 99, 235, 0.3);
@@ -189,7 +202,6 @@
     border-radius: 3px;
     cursor: pointer;
     background: var(--color-control-bg);
-    outline: none;
 }
 
 .slider-control:focus {
@@ -197,7 +209,8 @@
 }
 
 .slider-control:focus-visible {
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
 }
 
 /* Webkit (Chrome, Safari, Edge) slider thumb */
@@ -255,7 +268,15 @@
     appearance: none;
     background: var(--color-control-bg);
     border-radius: 3px;
+}
+
+.gain-slider:focus {
     outline: none;
+}
+
+.gain-slider:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
 }
 
 .gain-slider::-webkit-slider-thumb {
@@ -481,6 +502,11 @@
     border-color: var(--color-text-muted);
 }
 
+.source-button:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
 .source-button.active {
     background: var(--color-accent);
     border-color: var(--color-accent);
@@ -516,6 +542,11 @@
 .action-button:hover {
     border-color: var(--color-text-muted);
     background: var(--color-card-bg);
+}
+
+.action-button:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
 }
 
 .action-button:disabled {
@@ -607,6 +638,11 @@
 .demo-button:hover {
     border-color: var(--color-accent);
     color: var(--color-accent);
+}
+
+.demo-button:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
 }
 
 .demo-button:hover .demo-icon {

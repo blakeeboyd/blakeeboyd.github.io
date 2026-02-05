@@ -206,6 +206,11 @@
     color: var(--color-text);
 }
 
+.format-button:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
 .format-button.active {
     background: var(--color-accent-light);
     border-color: var(--color-accent);
@@ -247,6 +252,11 @@
 .loop-toggle:hover {
     border-color: var(--color-text-muted);
     color: var(--color-text);
+}
+
+.loop-toggle:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
 }
 
 .loop-toggle.active {
@@ -301,6 +311,11 @@
 .technique-button:hover {
     border-color: var(--color-text-muted);
     background: var(--color-card-bg);
+}
+
+.technique-button:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
 }
 
 .technique-button.active {
@@ -450,6 +465,11 @@
     color: var(--color-text);
 }
 
+.angle-preset:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
 .angle-preset.active {
     background: var(--color-accent-light);
     border-color: var(--color-accent);
@@ -485,6 +505,11 @@
 .pattern-button:hover {
     border-color: var(--color-text-muted);
     background: var(--color-card-bg);
+}
+
+.pattern-button:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
 }
 
 .pattern-button.active {
@@ -579,7 +604,7 @@
    Slider control
    =========================================== */
 
-.slider-control {
+.mic-app .slider-control {
     flex: 1;
     min-width: 0;
     height: 4px;
@@ -587,7 +612,15 @@
     appearance: none;
     background: var(--color-border);
     border-radius: 2px;
+}
+
+.mic-app .slider-control:focus {
     outline: none;
+}
+
+.mic-app .slider-control:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
 }
 
 .slider-control::-webkit-slider-thumb {

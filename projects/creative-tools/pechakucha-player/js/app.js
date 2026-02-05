@@ -39,7 +39,7 @@
     let slideDuration = 20;    // Seconds per slide (global default)
 
     // DOM Elements
-    const pageHeader = document.getElementById('page-header');
+    const pageHeader = document.querySelector('.page-header');
     const uploadSection = document.getElementById('upload-section');
     const previewSection = document.getElementById('preview-section');
     const slideshowSection = document.getElementById('slideshow-section');
@@ -1871,7 +1871,7 @@
             },
             startIndex: currentIndex,
             requestFullscreen: shouldFullscreen
-        }, '*');
+        }, window.location.origin);
 
         // Render the filmstrip
         renderPresenterFilmstrip();
@@ -1889,7 +1889,7 @@
     function beginExternalSlideshow() {
         // Send start command to presentation window
         if (presentationWindow && !presentationWindow.closed) {
-            presentationWindow.postMessage({ type: 'start' }, '*');
+            presentationWindow.postMessage({ type: 'start' }, window.location.origin);
         }
 
         // Hide start button, show nav group
@@ -1949,7 +1949,7 @@
                 type: 'showSlide',
                 index: index,
                 timeRemaining: getSlideDuration(index) * 1000
-            }, '*');
+            }, window.location.origin);
         }
     }
 
@@ -2032,7 +2032,7 @@
             presenterPauseBtn.textContent = 'Pause';
 
             if (presentationWindow && !presentationWindow.closed) {
-                presentationWindow.postMessage({ type: 'resume' }, '*');
+                presentationWindow.postMessage({ type: 'resume' }, window.location.origin);
             }
 
             startExternalSlideTimer();
@@ -2047,7 +2047,7 @@
             pausedTimeRemaining = Math.max(currentSlideDuration - elapsed, 0);
 
             if (presentationWindow && !presentationWindow.closed) {
-                presentationWindow.postMessage({ type: 'pause' }, '*');
+                presentationWindow.postMessage({ type: 'pause' }, window.location.origin);
             }
         }
     }
@@ -2141,7 +2141,7 @@
         window.removeEventListener('message', handlePresentationMessage);
 
         if (presentationWindow && !presentationWindow.closed) {
-            presentationWindow.postMessage({ type: 'end' }, '*');
+            presentationWindow.postMessage({ type: 'end' }, window.location.origin);
             presentationWindow.close();
         }
 

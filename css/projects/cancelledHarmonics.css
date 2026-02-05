@@ -91,7 +91,15 @@
     appearance: none;
     background: var(--color-control-bg);
     border-radius: 3px;
+}
+
+.freq-slider:focus {
     outline: none;
+}
+
+.freq-slider:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
 }
 
 .freq-slider::-webkit-slider-thumb {
@@ -140,6 +148,11 @@
 .freq-input:focus {
     outline: none;
     border-color: var(--color-accent);
+}
+
+.freq-input:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
 }
 
 /* Hide number input spinners */
@@ -560,6 +573,11 @@
 .eq-select:focus {
     outline: none;
     border-color: var(--color-accent);
+}
+
+.eq-select:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
 }
 
 /* Section divider */

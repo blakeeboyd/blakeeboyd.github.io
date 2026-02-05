@@ -470,6 +470,11 @@
     border-color: var(--color-accent);
 }
 
+.band-params input[type="number"]:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
 /* Hidden utility */
 .hidden {
     display: none !important;

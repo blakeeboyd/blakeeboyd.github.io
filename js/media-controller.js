@@ -49,7 +49,20 @@
         window.addEventListener('message', handleMessage);
     }
 
+    // Trusted origins for embedded players
+    const trustedOrigins = [
+        'https://www.youtube.com',
+        'https://player.vimeo.com',
+        'https://w.soundcloud.com',
+        'https://bandcamp.com'
+    ];
+
     function handleMessage(event) {
+        // Validate origin against trusted player domains
+        if (!trustedOrigins.some(origin => event.origin.endsWith(new URL(origin).hostname))) {
+            return;
+        }
+
         let data;
 
         // Parse message data

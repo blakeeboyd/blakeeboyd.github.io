@@ -17,6 +17,7 @@ class SiteNav extends HTMLElement {
     const isHome = !isAbout && !isWorks && !isContact && !isProjects;
 
     this.innerHTML = `
+      <a href="#main-content" class="skip-to-content">Skip to content</a>
       <header>
         <nav>
           <a href="${basePath || '/'}" class="logo">Blake Boyd</a>
@@ -51,9 +52,27 @@ class SiteNav extends HTMLElement {
       </header>
     `;
 
+    // Set footer year (replaces document.write pattern)
+    document.querySelectorAll('.footer-year').forEach(function(el) {
+      el.textContent = new Date().getFullYear();
+    });
+
+    // Store references for cleanup
+    this._listeners = [];
+
     // Initialize after rendering
     this.initThemeToggle();
     this.initHamburger();
+  }
+
+  disconnectedCallback() {
+    // Clean up document-level listeners
+    if (this._listeners) {
+      this._listeners.forEach(function(item) {
+        item.target.removeEventListener(item.type, item.handler);
+      });
+      this._listeners = [];
+    }
   }
 
   initThemeToggle() {
@@ -83,14 +102,16 @@ class SiteNav extends HTMLElement {
         });
       });
 
-      // Close menu when clicking outside
-      document.addEventListener('click', (e) => {
+      // Close menu when clicking outside (document-level, tracked for cleanup)
+      const outsideClickHandler = (e) => {
         if (!this.contains(e.target)) {
           navLinks.classList.remove('open');
           hamburger.classList.remove('open');
           hamburger.setAttribute('aria-expanded', 'false');
         }
-      });
+      };
+      document.addEventListener('click', outsideClickHandler);
+      this._listeners.push({ target: document, type: 'click', handler: outsideClickHandler });
     }
   }
 }

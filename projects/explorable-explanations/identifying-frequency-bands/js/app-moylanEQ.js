@@ -131,6 +131,8 @@ function loadRNBOScript(version) {
         }
         const el = document.createElement("script");
         el.src = "https://c74-public.nyc3.digitaloceanspaces.com/rnbo/" + encodeURIComponent(version) + "/rnbo.min.js";
+        el.integrity = "sha384-IKe9bTla+HhVfqT/Jd+NM2qoO0pr+lxiFpgAK3rtqIKBLo8ecgFVswo548i6/HVk";
+        el.crossOrigin = "anonymous";
         el.onload = resolve;
         el.onerror = function(err) {
             console.log(err);
