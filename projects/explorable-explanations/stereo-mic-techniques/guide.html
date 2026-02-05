@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Guide to stereo microphone techniques: XY, ORTF, Mid-Side, Blumlein, Spaced Pair, and binaural decoding from Ambisonic recordings">
+    <title>Stereo Mic Techniques Guide - Blake Boyd</title>
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake Emerson Boyd">
+    <link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+    <link rel="stylesheet" href="../../../css/base.css">
+    <link rel="stylesheet" href="../../../css/layout.css">
+    <link rel="stylesheet" href="../../../css/components.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="../../../js/theme.js"></script>
+    <script src="../../../js/nav-component.js" defer></script>
+    <style>
+        /* Layout */
+        .guide-layout {
+            display: grid;
+            grid-template-columns: 1fr 200px;
+            gap: 3rem;
+            align-items: start;
+        }
+
+        .guide-content {
+            min-width: 0;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            position: sticky;
+            top: 2rem;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-header {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-list a {
+            display: block;
+            font-size: 0.8125rem;
+            color: var(--color-text-muted);
+            text-decoration: none;
+            padding: 0.25rem 0;
+            transition: color 0.15s ease;
+        }
+
+        .toc-list a:hover {
+            color: var(--color-text);
+        }
+
+        .toc-list a.active {
+            color: var(--color-text);
+            font-weight: 500;
+        }
+
+        /* Header */
+        .guide-header {
+            margin-bottom: 3rem;
+        }
+
+        .back-links {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--color-accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .back-link-separator {
+            color: var(--color-text-muted);
+        }
+
+        .guide-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .guide-header .subtitle {
+            color: var(--color-text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Sections */
+        .guide-section {
+            margin-bottom: 3rem;
+            scroll-margin-top: 2rem;
+        }
+
+        .guide-section h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .guide-section h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        .guide-section p {
+            margin-bottom: 1rem;
+            line-height: 1.7;
+        }
+
+        .guide-section ul, .guide-section ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .guide-section li {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        /* Tables */
+        .technique-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0 1.5rem;
+        }
+
+        .technique-table th,
+        .technique-table td {
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .technique-table th {
+            font-weight: 600;
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
+        }
+
+        .technique-table td:first-child {
+            font-weight: 500;
+        }
+
+        /* Note callout */
+        .note {
+            background: var(--color-control-bg, var(--color-bg));
+            border-left: 3px solid var(--color-accent);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.9375rem;
+        }
+
+        .note p {
+            margin-bottom: 0;
+        }
+
+        /* Tip callout */
+        .tip {
+            background: var(--color-accent-light, #dbeafe);
+            border-left: 3px solid var(--color-accent);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        [data-theme="dark"] .tip {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .tip-label {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--color-accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .tip p {
+            margin-bottom: 0;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .guide-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .toc-sidebar {
+                position: relative;
+                top: 0;
+                order: -1;
+                margin-bottom: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <site-nav base="../../../"></site-nav>
+
+        <main>
+            <div class="back-links">
+                <a href="../../../lab.html" class="back-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Lab
+                </a>
+                <span class="back-link-separator">/</span>
+                <a href="./" class="back-link">
+                    Stereo Mic Techniques
+                </a>
+            </div>
+
+            <header class="guide-header">
+                <h1>Stereo Mic Techniques</h1>
+                <p class="subtitle">A guide to stereo microphone techniques and how they relate to Ambisonic decoding</p>
+            </header>
+
+            <div class="guide-layout">
+                <div class="guide-content">
+                    <section class="guide-section" id="background">
+                        <h2>Background</h2>
+                        <p>Every stereo microphone technique makes a tradeoff between three spatial cues: <strong>level differences</strong> (which ear hears it louder), <strong>time differences</strong> (which ear hears it first), and <strong>spectral differences</strong> (how the sound's timbre changes with direction). Coincident techniques like XY and Blumlein rely entirely on level differences. Near-coincident techniques like ORTF add a small time difference. Spaced pairs rely almost entirely on time differences.</p>
+
+                        <p>This tool uses a first-order Ambisonic recording as its source material. Ambisonics captures the complete 360-degree sound field at a single point using four channels: an omnidirectional pressure signal (W) and three figure-8 directional signals pointing front-back (X), left-right (Y), and up-down (Z). From these four channels, we can mathematically extract what any coincident microphone pair would have captured, because all coincident techniques encode the same spatial information (level differences from directional patterns) that the Ambisonic channels already contain.</p>
+
+                        <table class="technique-table">
+                            <thead>
+                                <tr>
+                                    <th>Technique</th>
+                                    <th>Type</th>
+                                    <th>Spatial Cues</th>
+                                    <th>Ambisonic Decode</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>XY Pair</td>
+                                    <td>Coincident</td>
+                                    <td>Level only</td>
+                                    <td>Exact</td>
+                                </tr>
+                                <tr>
+                                    <td>ORTF</td>
+                                    <td>Near-coincident</td>
+                                    <td>Level + time</td>
+                                    <td>Approximated (spacing simulated with delay)</td>
+                                </tr>
+                                <tr>
+                                    <td>Mid-Side</td>
+                                    <td>Coincident</td>
+                                    <td>Level only</td>
+                                    <td>Exact (direct channel mapping)</td>
+                                </tr>
+                                <tr>
+                                    <td>Blumlein</td>
+                                    <td>Coincident</td>
+                                    <td>Level only</td>
+                                    <td>Exact (native figure-8 mapping)</td>
+                                </tr>
+                                <tr>
+                                    <td>Spaced Pair (AB)</td>
+                                    <td>Spaced</td>
+                                    <td>Time only</td>
+                                    <td>Not possible from first-order Ambisonics</td>
+                                </tr>
+                                <tr>
+                                    <td>Binaural</td>
+                                    <td>HRTF convolution</td>
+                                    <td>Level + time + spectral</td>
+                                    <td>Rendered via Omnitone</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section class="guide-section" id="how-to-use">
+                        <h2>How to Use the Tool</h2>
+
+                        <h3>Audio Source</h3>
+                        <p>Upload a 4-channel WAV or FLAC file in B-format (first-order Ambisonics). The tool supports both AmbiX (ACN/SN3D) and FuMa channel orderings. Toggle between them with the Channel Format buttons.</p>
+                        <ul>
+                            <li><strong>AmbiX:</strong> W, Y, Z, X channel order. The modern standard used by most current Ambisonic software and microphones (Zoom H3-VR, Sennheiser AMBEO, etc.).</li>
+                            <li><strong>FuMa:</strong> W, X, Y, Z channel order. The legacy format from older Ambisonic tools.</li>
+                        </ul>
+                        <p>The gain slider adjusts output level from -70 dB to +6 dB. Start at a comfortable listening level.</p>
+
+                        <h3>Technique Selection</h3>
+                        <p>Select a technique to hear the Ambisonic recording decoded through that virtual microphone configuration. Each technique button shows its name and a brief description. The polar pattern visualization updates to show the pickup pattern of the selected technique.</p>
+
+                        <h3>Parameters</h3>
+                        <p>Some techniques have adjustable parameters:</p>
+                        <ul>
+                            <li><strong>XY:</strong> Stereo angle (60-180 degrees) and microphone pattern (cardioid, hypercardioid, or figure-8).</li>
+                            <li><strong>Mid-Side:</strong> Mid microphone pattern (cardioid, omni, or hypercardioid) and width (0 = mono, 1 = standard, 2 = exaggerated).</li>
+                            <li><strong>Binaural:</strong> Head rotation dial to "turn your head" within the recording.</li>
+                        </ul>
+                        <p>ORTF and Blumlein use fixed configurations with no adjustable parameters.</p>
+
+                        <h3>Keyboard Shortcuts</h3>
+                        <ul>
+                            <li><strong>Space:</strong> Play/pause audio</li>
+                        </ul>
+                    </section>
+
+                    <section class="guide-section" id="xy-pair">
+                        <h2>XY Pair</h2>
+                        <p>The XY technique places two directional microphones at the same point (coincident), angled apart symmetrically. The classic configuration uses two cardioids at 90 degrees, though the angle and pattern can vary. Because the capsules occupy the same point in space, there are no time-of-arrival differences between channels: the stereo image comes entirely from the level differences created by each mic's directional pattern.</p>
+                        <p>XY produces excellent mono compatibility (the signals sum cleanly because there are no phase differences) and a stable, well-defined stereo image. The tradeoff is a narrower sense of spaciousness compared to techniques that include time differences. Wider angles increase the stereo spread but can create a "hole in the middle" where sources between the two mic axes receive less combined pickup.</p>
+                        <div class="note">
+                            <p>The Ambisonic decode is fully accurate for XY. The virtual mic extraction formula directly maps to the B-format channels without any approximation.</p>
+                        </div>
+                    </section>
+
+                    <section class="guide-section" id="ortf">
+                        <h2>ORTF</h2>
+                        <p>Developed by the French broadcasting organization (Office de Radiodiffusion-Television Francaise), ORTF uses two cardioid microphones angled at 110 degrees with their capsules spaced 17cm apart: roughly the distance between human ears. This spacing introduces small inter-channel time differences (up to ~0.5ms) that complement the level differences from the cardioid patterns.</p>
+                        <p>The combination of level and time cues gives ORTF a wider, more natural-sounding stereo image than pure XY, while maintaining good mono compatibility. It is one of the most popular techniques for orchestral and ensemble recording.</p>
+                        <div class="note">
+                            <p>The Ambisonic decode accurately reproduces the 110-degree angle and cardioid pattern. The 17cm spacing is approximated with a fixed inter-channel delay, because the actual spacing creates direction-dependent delays that a single-point Ambisonic recording cannot capture.</p>
+                        </div>
+                    </section>
+
+                    <section class="guide-section" id="mid-side">
+                        <h2>Mid-Side (MS)</h2>
+                        <p>Mid-Side recording uses two coincident microphones with different polar patterns: a forward-facing "mid" mic (typically cardioid, though any pattern works) and a sideways-facing figure-8 "side" mic. The stereo signal is decoded as: Left = Mid + Side, Right = Mid - Side.</p>
+                        <p>The key advantage of MS is continuously variable stereo width after recording. Increasing the side signal's level widens the image; decreasing it narrows toward mono. At zero side level, the output is pure mono from the mid mic. This makes MS popular in broadcast and film, where mono compatibility must be guaranteed.</p>
+                        <p>MS maps directly to the Ambisonic B-format channels. The mid signal is extracted from W and X (the omni and front-back channels), and the side signal is simply the Y channel (left-right figure-8). This is one of the most natural Ambisonic decodes.</p>
+                    </section>
+
+                    <section class="guide-section" id="blumlein">
+                        <h2>Blumlein Pair</h2>
+                        <p>Named after Alan Blumlein, who invented stereo recording in the 1930s, this technique uses two figure-8 (bidirectional) microphones at 90 degrees. Each mic picks up sound equally from front and rear, but with opposite polarity for the rear lobe.</p>
+                        <p>Blumlein produces a remarkably natural and spacious stereo image with precise localization. The figure-8 patterns capture the full ambient field, including reflections from behind the microphones, which gives recordings a strong sense of the acoustic space. The tradeoff is high sensitivity to room acoustics and a narrower "sweet spot" for listener positioning.</p>
+                        <p>Because Ambisonics uses figure-8 patterns natively (the X and Y channels are figure-8s), the Blumlein decode is among the most accurate: the left and right signals are essentially rotated combinations of X and Y, with no approximation.</p>
+                    </section>
+
+                    <section class="guide-section" id="spaced-pair">
+                        <h2>Spaced Pair (AB)</h2>
+                        <p>Spaced pair (also called AB) recording places two microphones (typically omnidirectional) at a distance from each other, usually between 30cm and several meters apart. Unlike coincident techniques, the stereo image comes almost entirely from <strong>time-of-arrival differences</strong>: a sound source to the left reaches the left microphone before the right. The brain interprets these tiny time differences as spatial position.</p>
+                        <p>Spaced pair is valued for its wide, enveloping stereo image and natural reproduction of room ambience. The tradeoff is poor mono compatibility (the time differences create phase cancellation when summed) and less precise localization than coincident techniques. The wider the spacing, the more spacious but less focused the image becomes.</p>
+
+                        <h3>Why Spaced Pair Is Not in This Tool</h3>
+                        <p>First-order Ambisonics captures the sound field at a single point in space. The four B-format channels (W, X, Y, Z) encode how sound arrives from different directions at that one point. From this information, we can reconstruct what any microphone with any polar pattern would pick up at that point, because polar pattern differences produce level differences, which the B-format channels faithfully preserve.</p>
+                        <p>Spaced pair recording, however, depends on what the sound field looks like at two <em>different</em> points in space. The time-of-arrival differences that create the AB stereo image require knowing how the wavefront changes between two positions that could be a meter or more apart. A single-point Ambisonic recording simply does not contain this information. No amount of mathematical processing can recover spatial differences that were never captured.</p>
+
+                        <div class="tip">
+                            <div class="tip-label">Could higher-order Ambisonics help?</div>
+                            <p>Higher-order Ambisonics (HOA) captures more spatial detail but still represents the sound field at a single point with increasing angular resolution. It cannot reconstruct the sound field at a distant point. To simulate spaced pair from Ambisonics, you would need either a very high-order capture (which approximates the near-field behavior through spatial interpolation) or multiple spatially separated Ambisonic captures.</p>
+                        </div>
+                    </section>
+
+                    <section class="guide-section" id="binaural">
+                        <h2>Binaural Decoding</h2>
+                        <p>Binaural audio simulates how sound reaches your eardrums by applying Head-Related Transfer Functions (HRTFs): the frequency-dependent filtering caused by your head, ears, and torso. When heard over headphones, binaural audio creates a convincing illusion of sounds arriving from specific directions in 3D space.</p>
+                        <p>For Ambisonics, binaural decoding convolves the B-format channels with HRTF filters that have been decomposed into spherical harmonics. This is computationally efficient and produces a smooth, natural spatial impression. First-order Ambisonics (4 channels) provides moderate spatial resolution: you can clearly distinguish front from back and left from right, but precise localization of individual sources is limited compared to higher-order recordings.</p>
+                        <p>The head rotation control lets you "turn your head" within the recording. This is a key advantage of Ambisonics over fixed stereo recordings: because the full sound field is captured, the listener can explore different perspectives of the same recording.</p>
+                        <p>This tool uses <a href="https://github.com/GoogleChrome/omnitone" target="_blank" rel="noopener">Google Omnitone</a> for binaural rendering, with HRTF filters measured from a Neumann KU100 dummy head.</p>
+                    </section>
+
+                    <section class="guide-section" id="ambisonic-decoding">
+                        <h2>The Ambisonic Decode Formula</h2>
+                        <p>For coincident virtual mic techniques, the left and right output channels are derived from the B-format signals using the pattern parameter <em>p</em> and the half-angle <em>a</em>:</p>
+                        <ul>
+                            <li><strong>L</strong> = p * W + (1 - p) * [X * cos(a) + Y * sin(a)]</li>
+                            <li><strong>R</strong> = p * W + (1 - p) * [X * cos(a) - Y * sin(a)]</li>
+                        </ul>
+                        <p>The pattern parameter <em>p</em> controls the microphone's polar pattern: 1.0 = omnidirectional, 0.5 = cardioid, 0.25 = hypercardioid, 0 = figure-8. The W channel provides the omnidirectional component, while X and Y provide the directional components. Z (the vertical axis) is not used for horizontal stereo techniques.</p>
+                        <p>For Mid-Side, the formula uses a different structure: the mid signal combines W and X according to the mid pattern, while the side signal is the Y channel scaled by the width parameter.</p>
+                    </section>
+
+                    <section class="guide-section" id="further-reading">
+                        <h2>Further Reading</h2>
+                        <ul>
+                            <li>Bartlett, B., & Bartlett, J. (2013). <em>Practical Recording Techniques</em> (6th ed.). Focal Press. Chapters on stereo miking techniques.</li>
+                            <li>Gerzon, M. A. (1975). "The Design of Precisely Coincident Microphone Arrays for Stereo and Surround Sound." <em>Audio Engineering Society Convention 50</em>.</li>
+                            <li>Zotter, F., & Frank, M. (2019). <em>Ambisonics: A Practical 3D Audio Theory for Recording, Studio Production, Sound Reinforcement, and Virtual Reality</em>. Springer.</li>
+                            <li>Wiggins, B. (2004). "An Investigation into the Real-time Manipulation and Control of Three-dimensional Sound Fields." PhD Thesis, University of Derby.</li>
+                        </ul>
+                    </section>
+                </div>
+
+                <aside class="toc-sidebar">
+                    <h2 class="toc-header">Contents</h2>
+                    <ul class="toc-list">
+                        <li><a href="#background">Background</a></li>
+                        <li><a href="#how-to-use">How to Use the Tool</a></li>
+                        <li><a href="#xy-pair">XY Pair</a></li>
+                        <li><a href="#ortf">ORTF</a></li>
+                        <li><a href="#mid-side">Mid-Side (MS)</a></li>
+                        <li><a href="#blumlein">Blumlein Pair</a></li>
+                        <li><a href="#spaced-pair">Spaced Pair (AB)</a></li>
+                        <li><a href="#binaural">Binaural Decoding</a></li>
+                        <li><a href="#ambisonic-decoding">Decode Formula</a></li>
+                        <li><a href="#further-reading">Further Reading</a></li>
+                    </ul>
+                </aside>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; <script>document.write(new Date().getFullYear())</script> Blake Boyd</p>
+        </footer>
+    </div>
+</body>
+</html>
