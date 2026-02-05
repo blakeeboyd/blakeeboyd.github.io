@@ -47,9 +47,16 @@ When building new features:
     │   │   ├── guide.html      # User guide
     │   │   └── js/
     │   │       └── app.js      # Pure JavaScript, no dependencies
-    │   └── bandlab-parser/
-    │       ├── index.html      # Parser main page (uses .container.wide)
-    │       └── bookmarklet.html # Bookmarklet setup instructions
+    │   ├── bandlab-parser/
+    │   │   ├── index.html      # Parser main page (uses .container.wide)
+    │   │   └── bookmarklet.html # Bookmarklet setup instructions
+    │   └── pairwise-matrix/
+    │       ├── index.html      # Matrix tool (uses .container.wide)
+    │       ├── guide.html      # User guide
+    │       ├── architecture.md # System design documentation
+    │       ├── ideas.md        # Future feature ideas
+    │       └── js/
+    │           └── app.js      # Pure JavaScript, no dependencies
     └── explorable-explanations/
         ├── identifying-frequency-bands/
         │   ├── index.html      # Main page (uses .container.wide)
@@ -231,6 +238,66 @@ let presentationWindow = null;
 - `index.html` - Main page with inline styles
 - `presentation.html` - External audience window (minimal, receives updates via BroadcastChannel)
 - `guide.html` - User documentation
+- `js/app.js` - Complete application logic
+
+### Pairwise Matrix
+
+A prioritization tool that ranks items through head-to-head comparisons. Each item competes against every other item exactly once, and the item with the most wins ranks highest.
+
+**Location:** `projects/creative-tools/pairwise-matrix/`
+
+**Key Features:**
+- Setup flow: enter decision context (e.g., "Which tasks should I do first?") and item names
+- Guided comparison mode: presents one matchup at a time with progress indicator
+- Keyboard shortcuts for fast input (1/← pick left, 2/→ pick right, Backspace undo)
+- Full matrix view showing all comparison results
+- Results ranked by total wins
+- Export options: copy text, download Markdown, download JSON, print
+- Save/load multiple matrices to localStorage
+- Import from previously exported JSON or Markdown
+
+**Technical Stack:**
+- Pure JavaScript (no external dependencies)
+- localStorage for persistence
+- Inline CSS (no external stylesheet)
+
+**State Management:**
+```javascript
+var state = {
+    id: null,
+    context: '',           // Decision question
+    items: [],             // [{id: 'A', label: 'Steak'}, ...]
+    comparisons: {},       // {'A-B': 'A', 'A-C': 'B', ...}
+    comparisonOrder: [],   // [['A','B'], ['A','C'], ...]
+    currentIndex: 0,
+    phase: 'setup'         // 'setup', 'items', 'comparing', 'results'
+};
+```
+
+**Comparison Count Formula:**
+For N items: N × (N-1) / 2 comparisons
+- 4 items → 6 comparisons
+- 6 items → 15 comparisons
+- 10 items → 45 comparisons
+
+**Export Format:**
+```json
+{
+  "version": 1,
+  "type": "pairwise-matrix",
+  "context": "Which tasks should I do first?",
+  "items": [{"id": "A", "label": "Task 1"}, ...],
+  "comparisons": {"A-B": "A", "A-C": "B", ...},
+  "results": [{"id": "A", "label": "Task 1", "wins": 3}, ...],
+  "exportedAt": "2026-02-04T..."
+}
+```
+
+**Key Files:**
+- `index.html` - Main page with inline styles
+- `guide.html` - User documentation
+- `architecture.md` - System design with mermaid diagrams
+- `ideas.md` - Future feature ideas
 - `js/app.js` - Complete application logic
 
 ### BandLab Parser

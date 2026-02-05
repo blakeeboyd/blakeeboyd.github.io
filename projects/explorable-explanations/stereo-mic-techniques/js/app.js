@@ -114,8 +114,8 @@
     var yawDial = document.getElementById('yaw-dial');
     var yawDisplay = document.getElementById('yaw-display');
 
-    // Info bar
-    var techniqueInfoText = document.getElementById('technique-info-text');
+    // Technique description (inside params card)
+    var techniqueDescriptionEl = document.getElementById('technique-description');
 
     // Polar canvas
     var polarCanvas = document.getElementById('polar-canvas');
@@ -124,19 +124,18 @@
     // Format buttons
     var formatButtons = document.querySelectorAll('.format-button');
 
-    // Technique descriptions
-    var guideLink = ' <a href="guide.html" class="guide-link">Complete guide</a>';
+    // Technique descriptions (shown inside params card)
     var techniqueDescriptions = {
-        xy: 'Two directional microphones at the same point, angled apart symmetrically. The stereo image comes entirely from level differences created by each mic\'s directional pattern, with no time-of-arrival differences between channels.' + guideLink,
-        ortf: 'Two cardioids angled at 110\u00B0 with 17cm capsule spacing (roughly the distance between human ears). The combination of level and time cues gives ORTF a wider, more natural-sounding stereo image than pure XY, while maintaining good mono compatibility.' + guideLink,
-        ms: 'A forward-facing mid mic paired with a sideways figure-8 side mic. Left = Mid + Side, Right = Mid \u2212 Side. The key advantage is continuously variable stereo width after recording.' + guideLink,
-        blumlein: 'Two figure-8 microphones at 90\u00B0, capturing the full ambient field including reflections from behind the mics. Produces a remarkably natural and spacious stereo image with precise localization.' + guideLink,
-        binaural: 'Simulates how sound reaches your eardrums by applying Head-Related Transfer Functions (HRTFs). When heard over headphones, binaural audio creates a convincing illusion of sounds arriving from specific directions in 3D space.' + guideLink
+        xy: 'Two directional microphones at the same point, angled apart symmetrically. The stereo image comes entirely from level differences created by each mic\'s directional pattern, with no time-of-arrival differences between channels.',
+        ortf: 'Two cardioids angled at 110\u00B0 with 17cm capsule spacing (roughly the distance between human ears). The combination of level and time cues gives ORTF a wider, more natural-sounding stereo image than pure XY, while maintaining good mono compatibility.',
+        ms: 'A forward-facing mid mic paired with a sideways figure-8 side mic. Left = Mid + Side, Right = Mid \u2212 Side. The key advantage is continuously variable stereo width after recording.',
+        blumlein: 'Two figure-8 microphones at 90\u00B0, capturing the full ambient field including reflections from behind the mics. Produces a remarkably natural and spacious stereo image with precise localization.',
+        binaural: 'Simulates how sound reaches your eardrums by applying Head-Related Transfer Functions (HRTFs). When heard over headphones, binaural audio creates a convincing illusion of sounds arriving from specific directions in 3D space.'
     };
 
     function updateTechniqueInfo(technique) {
-        if (techniqueInfoText && techniqueDescriptions[technique]) {
-            techniqueInfoText.innerHTML = techniqueDescriptions[technique];
+        if (techniqueDescriptionEl && techniqueDescriptions[technique]) {
+            techniqueDescriptionEl.textContent = techniqueDescriptions[technique];
         }
     }
 

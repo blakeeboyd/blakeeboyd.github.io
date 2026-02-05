@@ -193,82 +193,87 @@
                             <h2 class="card-title">Parameters</h2>
                         </div>
 
-                        <!-- XY params -->
-                        <div id="params-xy" class="params-panel">
-                            <div class="control-group">
-                                <label class="control-label" for="xy-angle">Stereo Angle</label>
-                                <div class="angle-preset-group">
-                                    <button type="button" class="angle-preset active" data-angle="90">90°</button>
-                                    <button type="button" class="angle-preset" data-angle="120">120°</button>
-                                    <button type="button" class="angle-preset" data-angle="135">135°</button>
+                        <div class="params-controls-area">
+                            <!-- XY params -->
+                            <div id="params-xy" class="params-panel">
+                                <div class="control-group">
+                                    <label class="control-label" for="xy-angle">Stereo Angle</label>
+                                    <div class="angle-preset-group">
+                                        <button type="button" class="angle-preset active" data-angle="90">90°</button>
+                                        <button type="button" class="angle-preset" data-angle="120">120°</button>
+                                        <button type="button" class="angle-preset" data-angle="135">135°</button>
+                                    </div>
+                                    <div class="gain-row">
+                                        <input type="range" id="xy-angle" class="slider-control" min="60" max="180" value="90" step="1">
+                                        <span class="gain-text" id="xy-angle-display">90°</span>
+                                    </div>
                                 </div>
-                                <div class="gain-row">
-                                    <input type="range" id="xy-angle" class="slider-control" min="60" max="180" value="90" step="1">
-                                    <span class="gain-text" id="xy-angle-display">90°</span>
+                                <div class="control-group">
+                                    <label class="control-label">Mic Pattern</label>
+                                    <div class="pattern-button-group">
+                                        <button type="button" class="pattern-button active" data-p="0.5">Cardioid</button>
+                                        <button type="button" class="pattern-button" data-p="0.25">Hypercardioid</button>
+                                        <button type="button" class="pattern-button" data-p="0">Figure-8</button>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="control-group">
-                                <label class="control-label">Mic Pattern</label>
-                                <div class="pattern-button-group">
-                                    <button type="button" class="pattern-button active" data-p="0.5">Cardioid</button>
-                                    <button type="button" class="pattern-button" data-p="0.25">Hypercardioid</button>
-                                    <button type="button" class="pattern-button" data-p="0">Figure-8</button>
+
+                            <!-- ORTF params -->
+                            <div id="params-ortf" class="params-panel hidden">
+                                <p class="params-fixed">No adjustable parameters. Fixed at 110° with 17cm capsule spacing (~0.5ms inter-channel delay).</p>
+                            </div>
+
+                            <!-- MS params -->
+                            <div id="params-ms" class="params-panel hidden">
+                                <div class="control-group">
+                                    <label class="control-label">Mid Pattern</label>
+                                    <div class="pattern-button-group" id="ms-pattern-group">
+                                        <button type="button" class="pattern-button active" data-mid-p="0.5">Cardioid</button>
+                                        <button type="button" class="pattern-button" data-mid-p="1.0">Omni</button>
+                                        <button type="button" class="pattern-button" data-mid-p="0.25">Hyper</button>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label" for="ms-width">Width</label>
+                                    <div class="gain-row">
+                                        <input type="range" id="ms-width" class="slider-control" min="0" max="200" value="100" step="1">
+                                        <span class="gain-text" id="ms-width-display">1.00</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Blumlein params -->
+                            <div id="params-blumlein" class="params-panel hidden">
+                                <p class="params-fixed">No adjustable parameters. Fixed at two figure-8 (bidirectional) microphones at 90°.</p>
+                            </div>
+
+                            <!-- Binaural params -->
+                            <div id="params-binaural" class="params-panel hidden">
+                                <div class="headphone-notice">
+                                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+                                        <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+                                    </svg>
+                                    <span>Headphones required for binaural listening</span>
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label">Head Rotation</label>
+                                    <div class="yaw-control">
+                                        <canvas id="yaw-dial" width="120" height="120" aria-label="Head rotation dial. Drag to rotate."></canvas>
+                                        <span class="gain-text" id="yaw-display">0°</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- ORTF params -->
-                        <div id="params-ortf" class="params-panel hidden">
-                            <p class="params-fixed">Fixed: two cardioids at 110° with 17cm capsule spacing (~0.5ms inter-channel delay).</p>
-                        </div>
-
-                        <!-- MS params -->
-                        <div id="params-ms" class="params-panel hidden">
-                            <div class="control-group">
-                                <label class="control-label">Mid Pattern</label>
-                                <div class="pattern-button-group" id="ms-pattern-group">
-                                    <button type="button" class="pattern-button active" data-mid-p="0.5">Cardioid</button>
-                                    <button type="button" class="pattern-button" data-mid-p="1.0">Omni</button>
-                                    <button type="button" class="pattern-button" data-mid-p="0.25">Hyper</button>
-                                </div>
-                            </div>
-                            <div class="control-group">
-                                <label class="control-label" for="ms-width">Width</label>
-                                <div class="gain-row">
-                                    <input type="range" id="ms-width" class="slider-control" min="0" max="200" value="100" step="1">
-                                    <span class="gain-text" id="ms-width-display">1.00</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Blumlein params -->
-                        <div id="params-blumlein" class="params-panel hidden">
-                            <p class="params-fixed">Fixed: two figure-8 (bidirectional) microphones at 90°.</p>
-                        </div>
-
-                        <!-- Binaural params -->
-                        <div id="params-binaural" class="params-panel hidden">
-                            <div class="headphone-notice">
-                                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
-                                    <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
-                                </svg>
-                                <span>Headphones required for binaural listening</span>
-                            </div>
-                            <div class="control-group">
-                                <label class="control-label">Head Rotation</label>
-                                <div class="yaw-control">
-                                    <canvas id="yaw-dial" width="120" height="120" aria-label="Head rotation dial. Drag to rotate."></canvas>
-                                    <span class="gain-text" id="yaw-display">0°</span>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- Technique description (updates dynamically) -->
+                        <p id="technique-description" class="technique-description">Two directional microphones at the same point, angled apart symmetrically. The stereo image comes entirely from level differences created by each mic's directional pattern, with no time-of-arrival differences between channels.</p>
                     </div>
                 </div><!-- /.app-grid -->
 
-                <!-- Technique info bar (full width) -->
-                <div class="card info-bar" id="technique-info">
-                    <p id="technique-info-text">Two directional microphones at the same point, angled apart symmetrically. The stereo image comes entirely from level differences created by each mic's directional pattern, with no time-of-arrival differences between channels. <a href="guide.html" class="guide-link">Complete guide</a></p>
+                <!-- Info bar (full width) -->
+                <div class="card info-bar">
+                    <p>This tool decodes first-order Ambisonic recordings into virtual stereo mic configurations.<br>For background on how each technique works, see the <a href="guide.html" class="guide-link">complete guide</a>.</p>
                 </div>
             </div>
         </main>

@@ -365,6 +365,22 @@
     margin-bottom: var(--spacing-sm);
 }
 
+/* Fixed-height area for controls so description stays in place */
+.params-controls-area {
+    min-height: 160px;
+}
+
+/* Technique description inside params card */
+.technique-description {
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: var(--color-text-muted);
+    opacity: 0.7;
+    margin: 0;
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+}
+
 .params-panel {
     display: flex;
     flex-direction: column;
@@ -389,7 +405,7 @@
     margin: 0;
 }
 
-/* Info bar (full-width technique description) */
+/* Info bar (full-width general description + guide link) */
 .info-bar {
     font-size: 0.875rem;
     line-height: 1.6;

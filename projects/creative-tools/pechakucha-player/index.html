@@ -33,8 +33,44 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="../../../js/theme.js"></script>
     <script src="../../../js/nav-component.js" defer></script>
-    <script src="../../../js/wip-modal.js" defer></script>
     <style>
+        /* WIP Notice */
+        .wip-notice {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            background: color-mix(in srgb, var(--color-warning) 10%, transparent);
+            border: 1px solid color-mix(in srgb, var(--color-warning) 30%, transparent);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+        }
+
+        .wip-notice svg {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            color: var(--color-warning);
+        }
+
+        .wip-notice p {
+            margin: 0;
+        }
+
+        .wip-notice p + p {
+            margin-top: 0.5rem;
+        }
+
+        .wip-notice a {
+            color: var(--color-accent);
+            text-decoration: none;
+        }
+
+        .wip-notice a:hover {
+            text-decoration: underline;
+        }
         /* PechaKucha-specific styles */
         .pk-upload-section {
             text-align: center;
@@ -1827,6 +1863,17 @@
         <div id="page-header" class="page-header">
             <h1 class="page-title">PechaKucha Player</h1>
             <p class="page-subtitle">Upload images to create an auto-advancing presentation in the PechaKucha style.</p>
+            <div class="wip-notice">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+                <div>
+                    <p><strong>Work in Progress</strong>: This tool is under active development. Some features may be incomplete or behave unexpectedly.</p>
+                    <p>If you encounter bugs or have feature requests, please <a href="../../../contact.html">get in touch</a>.</p>
+                </div>
+            </div>
         </div>
 
         <!-- Upload Section -->
@@ -1952,12 +1999,14 @@
                     <div class="pk-settings-actions">
                         <button id="export-btn" class="pk-text-button">Export Settings</button>
                         <span class="pk-action-divider">·</span>
+                        <button id="export-pptx-btn" class="pk-text-button">Export PowerPoint</button>
+                        <span class="pk-action-divider">·</span>
                         <label class="pk-import-label">
                             <span class="pk-text-button">Import Settings</span>
                             <input type="file" id="import-input" accept=".json,application/json">
                         </label>
                         <button type="button" class="info-trigger" aria-label="More information about export and import">?
-                            <span class="info-tooltip"><strong>Export:</strong> Save slide order, notes, and settings as a JSON file.<br><strong>Import:</strong> Load a previously exported JSON file to restore your presentation setup.</span>
+                            <span class="info-tooltip"><strong>Export Settings:</strong> Save slide order, notes, and settings as a JSON file.<br><strong>Export PowerPoint:</strong> Download a .pptx file with slides, auto-advance timings, and speaker notes.<br><strong>Import:</strong> Load a previously exported JSON file.</span>
                         </button>
                     </div>
                 </div>
@@ -2155,6 +2204,7 @@
     </div>
 
     <script src="../../../js/notify.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS@3.12.0/dist/pptxgen.bundle.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

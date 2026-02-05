@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="How to use the Pairwise Matrix tool for prioritizing items through head-to-head comparisons">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Pairwise Matrix Guide - Blake Boyd</title>
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake Emerson Boyd">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+    <link rel="manifest" href="../../../manifest.json">
+    <link rel="stylesheet" href="../../../css/base.css">
+    <link rel="stylesheet" href="../../../css/layout.css">
+    <link rel="stylesheet" href="../../../css/components.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="../../../js/theme.js"></script>
+    <script src="../../../js/nav-component.js" defer></script>
+    <style>
+        .guide-layout {
+            display: grid;
+            grid-template-columns: 1fr 200px;
+            gap: 3rem;
+            align-items: start;
+        }
+
+        .guide-content {
+            min-width: 0;
+        }
+
+        .guide-content h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .guide-content h2:first-of-type {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+        }
+
+        .guide-content h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        .guide-content p {
+            margin: 0 0 1rem;
+            line-height: 1.7;
+        }
+
+        .guide-content ul,
+        .guide-content ol {
+            margin: 0 0 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .guide-content li {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        .guide-content code {
+            background: var(--color-bg);
+            padding: 0.125rem 0.375rem;
+            border-radius: 3px;
+            font-size: 0.875em;
+        }
+
+        .guide-content kbd {
+            display: inline-block;
+            padding: 0.125rem 0.5rem;
+            font-size: 0.8125rem;
+            font-family: inherit;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            box-shadow: 0 1px 0 var(--color-border);
+        }
+
+        .example-box {
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin: 1rem 0;
+        }
+
+        .example-box h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin: 0 0 0.75rem;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .example-box p {
+            margin: 0;
+        }
+
+        .comparison-count-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.875rem;
+        }
+
+        .comparison-count-table th,
+        .comparison-count-table td {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--color-border);
+            text-align: center;
+        }
+
+        .comparison-count-table th {
+            background: var(--color-bg);
+            font-weight: 600;
+        }
+
+        .shortcut-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.875rem;
+        }
+
+        .shortcut-table th,
+        .shortcut-table td {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--color-border);
+            text-align: left;
+        }
+
+        .shortcut-table th {
+            background: var(--color-bg);
+            font-weight: 600;
+            width: 40%;
+        }
+
+        .toc-sidebar {
+            position: sticky;
+            top: 2rem;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-header {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.375rem;
+        }
+
+        .toc-list a {
+            display: block;
+            font-size: 0.8125rem;
+            color: var(--color-text-muted);
+            text-decoration: none;
+            padding: 0.25rem 0;
+            transition: color 0.15s ease;
+        }
+
+        .toc-list a:hover {
+            color: var(--color-text);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            text-decoration: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--color-accent);
+        }
+
+        .back-link svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .guide-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .toc-sidebar {
+                position: relative;
+                top: 0;
+                order: -1;
+                margin-bottom: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container wide">
+        <site-nav base="../../../"></site-nav>
+
+        <main>
+            <a href="./" class="back-link">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Back to Pairwise Matrix
+            </a>
+
+            <section class="hero">
+                <h1>Pairwise Matrix Guide</h1>
+                <p class="subtitle">How to prioritize items through head-to-head comparisons.</p>
+            </section>
+
+            <div class="guide-layout">
+                <div class="guide-content">
+                    <h2 id="what">What is Pairwise Comparison?</h2>
+                    <p>Pairwise comparison is a decision-making technique where you compare items two at a time and pick a winner. After comparing every possible pair, you tally the wins. The item with the most wins is your top priority.</p>
+                    <p>This method works because it breaks a complex ranking decision into a series of simple binary choices. Instead of asking "How should I rank these six things?", you answer "Is A more important than B?" repeatedly until a clear order emerges.</p>
+
+                    <div class="example-box">
+                        <h4>Example</h4>
+                        <p>You're planning a wedding menu and need to choose 3 entrees from 6 options: Steak, Chicken, Pasta, Vegetarian, Hamburger, and Curry. Rather than agonize over ranking all six at once, you compare each pair: Is Steak more important than Chicken? Steak or Pasta? And so on. After 15 comparisons, the three with the most wins become your menu.</p>
+                    </div>
+
+                    <h2 id="when">When to Use This</h2>
+                    <p>Pairwise comparison works best when:</p>
+                    <ul>
+                        <li><strong>You have 3-10 items</strong> that need ranking. Fewer than 3 is trivial; more than 10 means many comparisons (45 for 10 items).</li>
+                        <li><strong>The criteria are implicit.</strong> You know what matters, but it's hard to articulate. Gut decisions work here.</li>
+                        <li><strong>You need a clear order.</strong> Not just "these are important" but "this one comes first."</li>
+                        <li><strong>Stakes are moderate.</strong> For life-changing decisions, you might want weighted criteria analysis. For daily task prioritization, pairwise is fast and effective.</li>
+                    </ul>
+
+                    <h3>Comparison Count</h3>
+                    <p>The number of comparisons grows quickly with more items:</p>
+                    <table class="comparison-count-table">
+                        <tr><th>Items</th><th>Comparisons</th></tr>
+                        <tr><td>3</td><td>3</td></tr>
+                        <tr><td>4</td><td>6</td></tr>
+                        <tr><td>5</td><td>10</td></tr>
+                        <tr><td>6</td><td>15</td></tr>
+                        <tr><td>8</td><td>28</td></tr>
+                        <tr><td>10</td><td>45</td></tr>
+                    </table>
+                    <p>For 6 items, 15 comparisons is manageable. For 10, it takes more time but remains practical. Beyond 10-12, consider grouping items first.</p>
+
+                    <h2 id="how">How to Use</h2>
+
+                    <h3>1. Define Your Question</h3>
+                    <p>Start by entering what you're deciding. This context appears during each comparison to keep you focused.</p>
+                    <p>Good questions are specific: "Which tasks should I do first today?" or "Which features should we build next quarter?" Vague questions lead to inconsistent choices.</p>
+
+                    <h3>2. Enter Your Items</h3>
+                    <p>Set the number of items, then name each one. Items are labeled A through Z automatically. Keep names short but distinctive.</p>
+
+                    <h3>3. Compare</h3>
+                    <p>You'll see two items side by side. Click the one that wins based on your question. The tool guides you through every unique pair.</p>
+                    <p>Use keyboard shortcuts for speed: <kbd>1</kbd> or <kbd>←</kbd> picks left, <kbd>2</kbd> or <kbd>→</kbd> picks right.</p>
+                    <p>If you change your mind, click <strong>Undo</strong> or press <kbd>Backspace</kbd>.</p>
+
+                    <h3>4. Review Results</h3>
+                    <p>After all comparisons, you'll see items ranked by wins. The full matrix shows which item won each matchup.</p>
+
+                    <h2 id="results">Working with Results</h2>
+
+                    <h3>Understanding the Matrix</h3>
+                    <p>The comparison matrix shows every matchup result. Each cell indicates which item won that pairing. The "Wins" column shows each item's total victories.</p>
+                    <p>Ties are possible: two items might both beat the same opponents. The ranking shows them in order, but they're effectively equal priority.</p>
+
+                    <h3>Export Options</h3>
+                    <ul>
+                        <li><strong>Copy:</strong> Plain text list for pasting into notes or messages.</li>
+                        <li><strong>Markdown:</strong> Formatted document with the results and matrix table.</li>
+                        <li><strong>JSON:</strong> Full data for re-importing later.</li>
+                        <li><strong>Print:</strong> Opens print dialog for PDF or paper.</li>
+                    </ul>
+
+                    <h3>Saving Matrices</h3>
+                    <p>Click <strong>Save</strong> to store the matrix locally. Saved matrices appear on the setup screen and persist between sessions. This is useful for:</p>
+                    <ul>
+                        <li>Revisiting decisions to see how you thought about them</li>
+                        <li>Comparing results from different time periods</li>
+                        <li>Sharing your methodology (export and send the JSON)</li>
+                    </ul>
+
+                    <h2 id="tips">Tips</h2>
+
+                    <h3>Be Consistent</h3>
+                    <p>Each comparison should apply the same criteria. If you're ranking tasks by urgency, don't suddenly consider effort level. If you find yourself wanting to weigh multiple factors, that's a sign to use a weighted criteria matrix instead.</p>
+
+                    <h3>Trust Your First Instinct</h3>
+                    <p>Pairwise comparison leverages intuition. When you hesitate too long on a matchup, you're overanalyzing. Pick quickly and move on. You can always undo.</p>
+
+                    <h3>Watch for Circular Preferences</h3>
+                    <p>Sometimes A beats B, B beats C, but C beats A. This is normal and reveals that your preferences aren't strictly linear. The final ranking by total wins still gives you a useful order, even with these cycles.</p>
+
+                    <h3>Start Smaller</h3>
+                    <p>If you have many items, first use pairwise comparison to eliminate the bottom half, then run it again on the finalists. Two rounds of 6 items (30 comparisons) is often faster and more accurate than one round of 12 (66 comparisons).</p>
+
+                    <h2 id="privacy">Privacy</h2>
+                    <p>This tool runs entirely in your browser. Your items, comparisons, and results are:</p>
+                    <ul>
+                        <li>Never sent to any server</li>
+                        <li>Stored only in your browser's localStorage (if you click Save)</li>
+                        <li>Deletable at any time (click the trash icon on saved matrices)</li>
+                    </ul>
+                    <p>Exported files stay on your device. The JSON and Markdown exports include only what you entered.</p>
+
+                    <h2 id="shortcuts">Keyboard Shortcuts</h2>
+                    <table class="shortcut-table">
+                        <tr><th>Key</th><th>Action</th></tr>
+                        <tr><td><kbd>1</kbd> or <kbd>←</kbd></td><td>Pick left item</td></tr>
+                        <tr><td><kbd>2</kbd> or <kbd>→</kbd></td><td>Pick right item</td></tr>
+                        <tr><td><kbd>Backspace</kbd></td><td>Undo last comparison</td></tr>
+                        <tr><td><kbd>Escape</kbd></td><td>Cancel and return to setup</td></tr>
+                    </table>
+
+                    <h2 id="ideas">Use Cases</h2>
+                    <p>Beyond the obvious task prioritization, consider:</p>
+                    <ul>
+                        <li><strong>Feature prioritization:</strong> Which features should we build first?</li>
+                        <li><strong>Hiring decisions:</strong> Rank candidates after interviews (one criterion at a time).</li>
+                        <li><strong>Event planning:</strong> Which venues, vendors, or activities matter most?</li>
+                        <li><strong>Personal decisions:</strong> Which hobbies to pursue, which books to read next.</li>
+                        <li><strong>Content planning:</strong> Which blog posts or videos to create first.</li>
+                        <li><strong>Bug triage:</strong> Which issues to fix in the next sprint.</li>
+                    </ul>
+                </div>
+
+                <aside class="toc-sidebar" aria-label="Table of contents">
+                    <h2 class="toc-header">Contents</h2>
+                    <ul class="toc-list">
+                        <li><a href="#what">What is Pairwise Comparison?</a></li>
+                        <li><a href="#when">When to Use This</a></li>
+                        <li><a href="#how">How to Use</a></li>
+                        <li><a href="#results">Working with Results</a></li>
+                        <li><a href="#tips">Tips</a></li>
+                        <li><a href="#privacy">Privacy</a></li>
+                        <li><a href="#shortcuts">Keyboard Shortcuts</a></li>
+                        <li><a href="#ideas">Use Cases</a></li>
+                    </ul>
+                </aside>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; <script>document.write(new Date().getFullYear())</script> Blake Boyd</p>
+        </footer>
+    </div>
+</body>
+</html>

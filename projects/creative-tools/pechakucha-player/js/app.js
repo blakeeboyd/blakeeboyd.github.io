@@ -109,6 +109,7 @@
 
     // Export/Import elements
     const exportBtn = document.getElementById('export-btn');
+    const exportPptxBtn = document.getElementById('export-pptx-btn');
     const importInput = document.getElementById('import-input');
 
     // Presenter progress bar
@@ -989,6 +990,180 @@
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+    }
+
+    // Export presentation as PowerPoint file
+    // PptxGenJS doesn't support auto-advance timing natively, so we post-process
+    // the PPTX file to add the advTm attribute to slide transitions.
+    async function exportPowerPoint() {
+        if (typeof PptxGenJS === 'undefined') {
+            alert('PowerPoint export is not available. Please check your internet connection and reload the page.');
+            return;
+        }
+
+        if (images.length === 0) {
+            alert('No slides to export.');
+            return;
+        }
+
+        const pres = new PptxGenJS();
+
+        // Set presentation properties
+        pres.author = 'PechaKucha Player';
+        pres.title = 'PechaKucha Presentation';
+        pres.subject = 'Auto-generated presentation';
+
+        // Set slide dimensions to 16:9 widescreen
+        pres.defineLayout({ name: 'LAYOUT_16x9', width: 10, height: 5.625 });
+        pres.layout = 'LAYOUT_16x9';
+
+        // Track slide durations for post-processing
+        const slideDurations = [];
+
+        // Add title slide if present
+        if (titleSlide) {
+            const titlePptxSlide = pres.addSlide();
+
+            // Add image covering full slide
+            titlePptxSlide.addImage({
+                data: titleSlide.dataUrl,
+                x: 0,
+                y: 0,
+                w: '100%',
+                h: '100%',
+                sizing: { type: 'cover', w: '100%', h: '100%' }
+            });
+
+            // Add notes if present
+            if (titleSlide.notes) {
+                titlePptxSlide.addNotes(titleSlide.notes);
+            }
+
+            // Title slide: click to advance only (no auto-advance)
+            slideDurations.push(null);
+        }
+
+        // Add each slide
+        images.forEach((img, index) => {
+            const slide = pres.addSlide();
+
+            // Add image covering full slide
+            slide.addImage({
+                data: img.dataUrl,
+                x: 0,
+                y: 0,
+                w: '100%',
+                h: '100%',
+                sizing: { type: 'cover', w: '100%', h: '100%' }
+            });
+
+            // Add speaker notes if present
+            if (img.notes) {
+                slide.addNotes(img.notes);
+            }
+
+            // Track duration for post-processing (in milliseconds)
+            const duration = img.duration || slideDuration;
+            slideDurations.push(duration * 1000);
+        });
+
+        try {
+            // Generate PPTX as blob
+            const blob = await pres.write({ outputType: 'blob' });
+
+            // Post-process to add auto-advance timing
+            const modifiedBlob = await addSlideTimingToPptx(blob, slideDurations);
+
+            // Download the modified file
+            const timestamp = new Date().toISOString().split('T')[0];
+            const filename = `pechakucha-${timestamp}.pptx`;
+            const url = URL.createObjectURL(modifiedBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('PowerPoint export failed:', err);
+            alert('Failed to export PowerPoint file. Please try again.');
+        }
+    }
+
+    // Post-process PPTX blob to add auto-advance timing (advTm) to slides
+    // PPTX files are ZIP archives. We extract slide XML files, add the advTm
+    // attribute to <p:transition> elements, and repackage.
+    async function addSlideTimingToPptx(blob, slideDurations) {
+        // JSZip is bundled with PptxGenJS
+        const zip = await JSZip.loadAsync(blob);
+
+        // Process each slide
+        for (let i = 0; i < slideDurations.length; i++) {
+            const slideNum = i + 1;
+            const slidePath = `ppt/slides/slide${slideNum}.xml`;
+            const slideXml = await zip.file(slidePath)?.async('string');
+
+            if (!slideXml) continue;
+
+            const durationMs = slideDurations[i];
+            let modifiedXml;
+
+            if (durationMs === null) {
+                // Title slide: click to advance only, no auto-advance
+                // Ensure advClick="1" and no advTm
+                if (slideXml.includes('<p:transition')) {
+                    // Modify existing transition
+                    modifiedXml = slideXml.replace(
+                        /<p:transition([^>]*)>/,
+                        (match, attrs) => {
+                            // Remove any existing advTm
+                            attrs = attrs.replace(/\s*advTm="[^"]*"/g, '');
+                            // Ensure advClick is present
+                            if (!attrs.includes('advClick')) {
+                                attrs += ' advClick="1"';
+                            }
+                            return `<p:transition${attrs}>`;
+                        }
+                    );
+                } else {
+                    // Add transition element before closing </p:cSld>
+                    modifiedXml = slideXml.replace(
+                        '</p:cSld>',
+                        '</p:cSld><p:transition advClick="1"/>'
+                    );
+                }
+            } else {
+                // Content slide: auto-advance after specified duration
+                if (slideXml.includes('<p:transition')) {
+                    // Modify existing transition to add advTm
+                    modifiedXml = slideXml.replace(
+                        /<p:transition([^>]*)>/,
+                        (match, attrs) => {
+                            // Remove any existing advTm to avoid duplicates
+                            attrs = attrs.replace(/\s*advTm="[^"]*"/g, '');
+                            // Add advTm attribute
+                            return `<p:transition${attrs} advTm="${durationMs}">`;
+                        }
+                    );
+                } else {
+                    // Add transition element with advTm before closing </p:cSld>
+                    modifiedXml = slideXml.replace(
+                        '</p:cSld>',
+                        `</p:cSld><p:transition advTm="${durationMs}"/>`
+                    );
+                }
+            }
+
+            // Update the file in the ZIP
+            zip.file(slidePath, modifiedXml);
+        }
+
+        // Generate the modified PPTX blob
+        return await zip.generateAsync({
+            type: 'blob',
+            mimeType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+        });
     }
 
     // Import configuration from JSON file
@@ -2064,6 +2239,7 @@
 
     // Export/Import buttons
     exportBtn.addEventListener('click', exportConfiguration);
+    exportPptxBtn.addEventListener('click', exportPowerPoint);
     importInput.addEventListener('change', (e) => {
         if (e.target.files.length > 0) {
             importConfiguration(e.target.files[0]);

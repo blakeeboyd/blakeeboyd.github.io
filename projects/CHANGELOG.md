@@ -83,6 +83,7 @@ Web-based presentation player for the PechaKucha 20x20 format with auto-advancin
 
 ### Proposed
 
+- **In-browser slide editor**: Basic editing tools to build presentations directly in the app without needing external software. Could include text overlays, combining multiple images into a single slide, background colors, and simple layout options. The goal is to let users complete the entire PechaKucha workflow (create, edit, present, export) in one place with minimal friction.
 - Slide transition effects (fade, slide)
 - Audio/music track support with per-slide synchronization
 - Remote control via mobile device (QR code pairing)
@@ -190,6 +191,64 @@ Gamified ear training for recreating hidden parametric EQ curves.
 - Training mode with hints (show target curve partially)
 - Additional filter types (notch, bandpass)
 - Frequency labeling quiz mode
+
+---
+
+## Pairwise Matrix
+
+Prioritization tool using head-to-head comparisons to rank items by total wins.
+
+### Completed
+
+- Setup flow: enter decision context and item names
+- Guided comparison mode: one matchup at a time with progress bar
+- Keyboard shortcuts (1/← pick left, 2/→ pick right, Backspace undo)
+- Full matrix view showing all comparison results
+- Results ranked by total wins
+- Export: copy text, download Markdown, download JSON
+- Print-friendly layout
+- Save/load multiple matrices to localStorage
+- Import from JSON or Markdown files
+- User guide page
+
+### Proposed
+
+- Weighted criteria mode (score items on multiple factors)
+- Google Drive integration (App Data folder for cloud sync)
+- Tie handling (skip or half-point options)
+- Framework presets (Eisenhower-inspired criteria bundles)
+- Matrix heatmap visualization
+- Win/loss network graph
+
+---
+
+## Stereo Mic Techniques
+
+Ambisonic B-format decoder with virtual stereo microphone configurations and binaural 3D audio.
+
+### Completed
+
+- First-order Ambisonics decoding into five stereo mic techniques (XY, ORTF, Mid-Side, Blumlein, Binaural)
+- B-format file upload (4-channel WAV/FLAC) with AmbiX and FuMa format support
+- Real-time polar pattern visualization on canvas
+- Per-technique parameter controls (stereo angle, mic pattern, MS width, head rotation)
+- Binaural decoding via Omnitone with yaw dial for head rotation
+- Seamless audio seeking (no playback gap when clicking progress bar)
+- Dynamic technique info bar with descriptions that update on technique change
+- Compact source card with inline format/gain controls
+- Angle preset buttons for XY (90, 120, 135 degrees)
+- Complete guide page covering all techniques
+- Dark mode support
+- Audio Interface Standard document for cross-project consistency
+
+### Proposed
+
+- **Layout redesign**: The current 3-column layout (Technique | Polar Pattern | Parameters) does not use space well. The polar pattern canvas (square, aspect-ratio 1:1) is difficult to size correctly alongside rectangular control panels. Multiple layout attempts have been tried (2-column, 2x2 grid, asymmetric fixed+fluid). The layout needs a fresh approach, possibly drawing from professional audio plugin interfaces or abandoning the grid in favor of a more creative arrangement.
+- ORTF inter-channel delay simulation (currently approximated with gain-only panning)
+- Additional technique presets (NOS, DIN, Jecklin Disk)
+- Waveform display in the source card
+- A/B comparison between two techniques
+- Demo mode that cycles through techniques with audio playing
 
 ---
 

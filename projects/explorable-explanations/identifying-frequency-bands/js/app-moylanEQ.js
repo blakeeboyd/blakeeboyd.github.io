@@ -599,6 +599,24 @@ function loadRNBOScript(version) {
     let loopEnd = 0;
     let isDraggingHandle = null;
 
+    // Shared onended handler for audio source nodes
+    function handlePlaybackEnded() {
+      if (!shouldLoop && isPlaying) {
+        isPlaying = false;
+        pausedAt = 0;
+        updatePlayButton();
+        progressFill.style.width = "0%";
+        currentTimeDisplay.textContent = "0:00";
+        if (progressAnimationId) {
+          cancelAnimationFrame(progressAnimationId);
+          progressAnimationId = null;
+        }
+        if (selectorParam) {
+          selectorParam.value = 0;
+        }
+      }
+    }
+
     // Get the audio source selector parameter
     const selectorParam = getParameter(device, "audioFile_selector");
 
@@ -666,23 +684,7 @@ function loadRNBOScript(version) {
           audioSourceNode.buffer = uploadedAudioBuffer;
           audioSourceNode.connect(userAudioGain);
           audioSourceNode.loop = false; // We handle looping manually
-
-          audioSourceNode.onended = () => {
-            if (!shouldLoop && isPlaying) {
-              isPlaying = false;
-              pausedAt = 0;
-              updatePlayButton();
-              progressFill.style.width = "0%";
-              currentTimeDisplay.textContent = "0:00";
-              if (progressAnimationId) {
-                cancelAnimationFrame(progressAnimationId);
-                progressAnimationId = null;
-              }
-              if (selectorParam) {
-                selectorParam.value = 0;
-              }
-            }
-          };
+          audioSourceNode.onended = handlePlaybackEnded;
 
           startTime = context.currentTime;
           pausedAt = loopStart;
@@ -904,24 +906,7 @@ function loadRNBOScript(version) {
       audioSourceNode.connect(userAudioGain);
 
       // Handle playback ended
-      audioSourceNode.onended = () => {
-        if (!shouldLoop && isPlaying) {
-          isPlaying = false;
-          pausedAt = 0;
-          updatePlayButton();
-          progressFill.style.width = "0%";
-          currentTimeDisplay.textContent = "0:00";
-          if (progressAnimationId) {
-            cancelAnimationFrame(progressAnimationId);
-            progressAnimationId = null;
-          }
-          // Mute RNBO input when playback ends to prevent unwanted tone
-          // Keep dropdown showing "User Audio" since file is still loaded
-          if (selectorParam) {
-            selectorParam.value = 0;
-          }
-        }
-      };
+      audioSourceNode.onended = handlePlaybackEnded;
 
       // Switch RNBO to User Audio mode when starting playback
       if (selectorParam) {
@@ -969,9 +954,11 @@ function loadRNBOScript(version) {
       if (isPlaying) {
         playIcon.classList.add("hidden");
         pauseIcon.classList.remove("hidden");
+        playButton.setAttribute("aria-label", "Pause audio");
       } else {
         playIcon.classList.remove("hidden");
         pauseIcon.classList.add("hidden");
+        playButton.setAttribute("aria-label", "Play audio");
       }
     }
 
@@ -981,6 +968,19 @@ function loadRNBOScript(version) {
         stopAudio();
       } else {
         await playAudio(pausedAt);
+      }
+    });
+
+    // Space bar keyboard shortcut for play/pause
+    document.addEventListener("keydown", (event) => {
+      if (event.code === "Space" && !event.target.matches("input, textarea, select, button")) {
+        if (!uploadedAudioBuffer) return;
+        event.preventDefault();
+        if (isPlaying) {
+          stopAudio();
+        } else {
+          playAudio(pausedAt);
+        }
       }
     });
 
@@ -1027,7 +1027,13 @@ function loadRNBOScript(version) {
       }
     });
 
-    // Drag handlers for loop handles
+    // Drag handlers for loop handles (mouse + touch)
+    function getClientX(event) {
+      if (event.touches && event.touches.length > 0) return event.touches[0].clientX;
+      if (event.changedTouches && event.changedTouches.length > 0) return event.changedTouches[0].clientX;
+      return event.clientX;
+    }
+
     function handleDragStart(handle) {
       return (event) => {
         event.preventDefault();
@@ -1035,14 +1041,17 @@ function loadRNBOScript(version) {
         isDraggingHandle = handle;
         document.addEventListener('mousemove', handleDragMove);
         document.addEventListener('mouseup', handleDragEnd);
+        document.addEventListener('touchmove', handleDragMove, { passive: false });
+        document.addEventListener('touchend', handleDragEnd);
       };
     }
 
     function handleDragMove(event) {
       if (!isDraggingHandle || !audioDuration) return;
+      if (event.cancelable) event.preventDefault();
 
       const rect = progressBar.getBoundingClientRect();
-      let percentage = (event.clientX - rect.left) / rect.width;
+      let percentage = (getClientX(event) - rect.left) / rect.width;
       percentage = Math.max(0, Math.min(1, percentage));
       const time = percentage * audioDuration;
 
@@ -1062,6 +1071,8 @@ function loadRNBOScript(version) {
       isDraggingHandle = null;
       document.removeEventListener('mousemove', handleDragMove);
       document.removeEventListener('mouseup', handleDragEnd);
+      document.removeEventListener('touchmove', handleDragMove);
+      document.removeEventListener('touchend', handleDragEnd);
 
       // If the start handle was moved, start playing from the new loop start position
       if (wasStartHandle && uploadedAudioBuffer) {
@@ -1083,6 +1094,8 @@ function loadRNBOScript(version) {
 
     loopHandleStart.addEventListener('mousedown', handleDragStart('start'));
     loopHandleEnd.addEventListener('mousedown', handleDragStart('end'));
+    loopHandleStart.addEventListener('touchstart', handleDragStart('start'), { passive: false });
+    loopHandleEnd.addEventListener('touchstart', handleDragStart('end'), { passive: false });
 
     // Progress bar click handler for seeking
     progressBar.addEventListener("click", (event) => {
@@ -1119,23 +1132,7 @@ function loadRNBOScript(version) {
         audioSourceNode.buffer = uploadedAudioBuffer;
         audioSourceNode.loop = false; // We handle looping manually with loop start/end
         audioSourceNode.connect(userAudioGain);
-
-        audioSourceNode.onended = () => {
-          if (!shouldLoop && isPlaying) {
-            isPlaying = false;
-            pausedAt = 0;
-            updatePlayButton();
-            progressFill.style.width = "0%";
-            currentTimeDisplay.textContent = "0:00";
-            if (progressAnimationId) {
-              cancelAnimationFrame(progressAnimationId);
-              progressAnimationId = null;
-            }
-            if (selectorParam) {
-              selectorParam.value = 0;
-            }
-          }
-        };
+        audioSourceNode.onended = handlePlaybackEnded;
 
         startTime = context.currentTime;
         pausedAt = seekTime;
