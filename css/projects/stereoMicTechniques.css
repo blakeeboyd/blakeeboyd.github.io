@@ -163,10 +163,6 @@
     min-width: 120px;
 }
 
-.source-header-row .gain-control .control-label {
-    display: none;
-}
-
 /* Format selector */
 .format-selector {
     display: flex;
@@ -269,6 +265,97 @@
     background: rgba(37, 99, 235, 0.35);
     border-color: #60a5fa;
     color: #93c5fd;
+}
+
+/* ===========================================
+   Monitor Section (Solo + Stereo/Mono)
+   =========================================== */
+
+.monitor-section {
+    display: flex;
+    gap: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    margin-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+}
+
+.monitor-group {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.monitor-label {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.monitor-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.monitor-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--color-border);
+    background: var(--color-control-bg);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+}
+
+.monitor-btn:hover {
+    border-color: var(--color-text-muted);
+    color: var(--color-text);
+}
+
+.monitor-btn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.monitor-btn.active {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+}
+
+/* Solo buttons: red/blue when active */
+#solo-left-btn.active {
+    background: rgba(220, 38, 38, 0.9);
+    border-color: rgba(220, 38, 38, 0.9);
+}
+
+#solo-right-btn.active {
+    background: rgba(37, 99, 235, 0.9);
+    border-color: rgba(37, 99, 235, 0.9);
+}
+
+/* Mono toggle button: fixed width to prevent resize on label change */
+.monitor-btn-wide {
+    width: 56px;
+    padding: 0 var(--spacing-xs);
+}
+
+/* Mono toggle: yellow when active (mono mode) */
+#mono-toggle.active {
+    background: rgba(217, 119, 6, 0.9);
+    border-color: rgba(217, 119, 6, 0.9);
+}
+
+[data-theme="dark"] .monitor-btn.active {
+    color: white;
 }
 
 /* ===========================================
@@ -392,7 +479,8 @@
     color: var(--color-text-muted);
     opacity: 0.7;
     margin: 0;
-    padding-top: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-md);
     border-top: 1px solid var(--color-border);
 }
 
@@ -661,6 +749,90 @@
 .mic-app .playback-controls .progress-container {
     flex: 1;
     min-width: 0;
+}
+
+/* ===========================================
+   Audio Source Row (compact layout)
+   =========================================== */
+
+.audio-source-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.audio-source-row .preset-select {
+    flex: 1;
+    min-width: 0;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+    font-family: inherit;
+    background: var(--color-control-bg);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    appearance: auto;
+}
+
+.audio-source-row .preset-select:hover {
+    border-color: var(--color-text-muted);
+}
+
+.audio-source-row .preset-select:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+/* Compact upload button */
+.upload-compact {
+    flex-shrink: 0;
+}
+
+.upload-compact-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    color: var(--color-accent);
+}
+
+.upload-compact-label:hover,
+.upload-compact.dragover .upload-compact-label {
+    border-color: var(--color-accent);
+    background: var(--color-accent-light);
+}
+
+[data-theme="dark"] .upload-compact-label:hover,
+[data-theme="dark"] .upload-compact.dragover .upload-compact-label {
+    background: rgba(37, 99, 235, 0.1);
+}
+
+/* Legacy styles for backwards compatibility */
+.upload-dropzone .upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xs);
+    cursor: pointer;
+    color: var(--color-text-muted);
+    font-size: 0.8125rem;
+}
+
+.upload-dropzone .upload-label svg {
+    color: var(--color-accent);
+}
+
+.upload-hint {
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+    opacity: 0.7;
 }
 
 /* ===========================================

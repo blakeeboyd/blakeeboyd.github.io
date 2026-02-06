@@ -23,7 +23,6 @@
     font-family: inherit;
     cursor: help;
     margin-left: var(--spacing-xs);
-    position: relative;
     transition: all var(--transition-fast);
     vertical-align: middle;
 }
@@ -43,80 +42,9 @@
     outline-offset: 2px;
 }
 
+/* Tooltip - hidden by default, shown via JS */
 .info-tooltip {
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
-    width: 280px;
-    padding: var(--spacing-sm);
-    background: var(--color-card-bg);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-lg);
-    font-size: 0.8rem;
-    font-weight: 400;
-    line-height: 1.5;
-    color: var(--color-text);
-    text-align: left;
-    z-index: 100;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity var(--transition-fast), visibility var(--transition-fast);
-}
-
-/* Tooltip arrow */
-.info-tooltip::before {
-    content: '';
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 6px solid transparent;
-    border-bottom-color: var(--color-border);
-}
-
-.info-tooltip::after {
-    content: '';
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 5px solid transparent;
-    border-bottom-color: var(--color-card-bg);
-}
-
-/* Show on hover/focus */
-.info-trigger:hover .info-tooltip,
-.info-trigger:focus .info-tooltip {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Left-aligned tooltip */
-.info-tooltip.tooltip-left {
-    left: -8px;
-    transform: none;
-}
-
-.info-tooltip.tooltip-left::before,
-.info-tooltip.tooltip-left::after {
-    left: 16px;
-    transform: none;
-}
-
-/* Right-aligned tooltip */
-.info-tooltip.tooltip-right {
-    left: auto;
-    right: -8px;
-    transform: none;
-}
-
-.info-tooltip.tooltip-right::before,
-.info-tooltip.tooltip-right::after {
-    left: auto;
-    right: 16px;
-    transform: none;
+    display: none;
 }
 
 /* ===========================================
@@ -413,7 +341,6 @@
    =========================================== */
 
 .upload-area {
-    position: relative;
     border: 2px dashed var(--color-border);
     border-radius: var(--radius-md);
     padding: var(--spacing-md);
@@ -466,6 +393,17 @@
 .upload-area-compact .upload-icon {
     margin: 0;
     color: var(--color-accent);
+}
+
+.upload-area-compact:hover,
+.upload-area-compact.dragover {
+    border-color: var(--color-accent);
+    background: var(--color-accent-light);
+}
+
+[data-theme="dark"] .upload-area-compact:hover,
+[data-theme="dark"] .upload-area-compact.dragover {
+    background: rgba(37, 99, 235, 0.15);
 }
 
 /* Dark mode */

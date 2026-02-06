@@ -38,6 +38,14 @@
         delayL: null,
         delayR: null,
 
+        // Solo/mono routing
+        soloGainL: null,
+        soloGainR: null,
+        monoSplitter: null,
+        monoMerger: null,
+        monoGainL: null,
+        monoGainR: null,
+
         // Binaural
         foaRenderer: null,
         foaInitialized: false,
@@ -63,6 +71,11 @@
 
         gainValue: -12,
 
+        // Monitoring
+        soloLeft: false,
+        soloRight: false,
+        isMono: false,
+
         // Animation
         progressAnimationId: null,
 
@@ -74,9 +87,10 @@
     // DOM References
     // ========================================
 
-    var uploadArea = document.getElementById('upload-area');
+    var audioSourceRow = document.getElementById('audio-source-row');
+    var uploadCompact = document.getElementById('upload-compact');
     var fileInput = document.getElementById('audio-file-input');
-    var fileInputCompact = document.getElementById('audio-file-input-compact');
+    var presetSelect = document.getElementById('preset-select');
     var playbackControls = document.getElementById('playback-controls');
     var playButton = document.getElementById('play-button');
     var playIcon = document.getElementById('play-icon');
@@ -89,6 +103,14 @@
     var formatSelector = document.getElementById('format-selector');
     var gainSlider = document.getElementById('master-gain');
     var gainDisplay = document.getElementById('gain-display');
+
+    // Monitoring controls
+    var soloLeftBtn = document.getElementById('solo-left-btn');
+    var soloRightBtn = document.getElementById('solo-right-btn');
+    var soloLeftLabel = document.getElementById('solo-left-label');
+    var soloRightLabel = document.getElementById('solo-right-label');
+    var monoToggle = document.getElementById('mono-toggle');
+    var monoToggleLabel = document.getElementById('mono-toggle-label');
 
     var techniqueButtons = document.querySelectorAll('.technique-button');
     var paramsPanels = {
@@ -188,6 +210,12 @@
         state.delayR = ctx.createDelay(0.01);
         state.delayR.delayTime.value = 0;
 
+        // Solo gain nodes (for muting individual channels)
+        state.soloGainL = ctx.createGain();
+        state.soloGainL.gain.value = 1;
+        state.soloGainR = ctx.createGain();
+        state.soloGainR.gain.value = 1;
+
         // Connect gain nodes → sum nodes
         state.gainL.w.connect(state.sumL);
         state.gainL.x.connect(state.sumL);
@@ -196,17 +224,63 @@
         state.gainR.x.connect(state.sumR);
         state.gainR.y.connect(state.sumR);
 
-        // Sum → delay → merger
+        // Sum → delay → solo gain → merger
         state.sumL.connect(state.delayL);
         state.sumR.connect(state.delayR);
-        state.delayL.connect(state.channelMerger, 0, 0);
-        state.delayR.connect(state.channelMerger, 0, 1);
+        state.delayL.connect(state.soloGainL);
+        state.delayR.connect(state.soloGainR);
+        state.soloGainL.connect(state.channelMerger, 0, 0);
+        state.soloGainR.connect(state.channelMerger, 0, 1);
 
-        // Merger → master gain
-        state.channelMerger.connect(state.masterGain);
+        // Build mono mixer
+        buildMonoMixer();
 
         // Wire splitter to gain nodes based on current format
         wireSplitterToGains();
+    }
+
+    function buildMonoMixer() {
+        var ctx = state.audioContext;
+
+        // For mono: split stereo, sum L+R, send to both channels
+        state.monoSplitter = ctx.createChannelSplitter(2);
+        state.monoMerger = ctx.createChannelMerger(2);
+        state.monoGainL = ctx.createGain();
+        state.monoGainR = ctx.createGain();
+        state.monoGainL.gain.value = 0.5;
+        state.monoGainR.gain.value = 0.5;
+
+        // By default, connect merger directly to master gain (stereo mode)
+        state.channelMerger.connect(state.masterGain);
+    }
+
+    function setMonoMode(isMono) {
+        state.isMono = isMono;
+        var ctx = state.audioContext;
+        if (!ctx) return;
+
+        // Disconnect merger from master
+        try { state.channelMerger.disconnect(); } catch (e) {}
+
+        if (isMono) {
+            // Merger → splitter → sum both to both channels
+            state.channelMerger.connect(state.monoSplitter);
+            state.monoSplitter.connect(state.monoGainL, 0);
+            state.monoSplitter.connect(state.monoGainL, 1);
+            state.monoSplitter.connect(state.monoGainR, 0);
+            state.monoSplitter.connect(state.monoGainR, 1);
+            state.monoGainL.connect(state.monoMerger, 0, 0);
+            state.monoGainR.connect(state.monoMerger, 0, 1);
+            state.monoMerger.connect(state.masterGain);
+        } else {
+            // Disconnect mono path
+            try { state.monoSplitter.disconnect(); } catch (e) {}
+            try { state.monoGainL.disconnect(); } catch (e) {}
+            try { state.monoGainR.disconnect(); } catch (e) {}
+            try { state.monoMerger.disconnect(); } catch (e) {}
+            // Direct stereo
+            state.channelMerger.connect(state.masterGain);
+        }
     }
 
     function getChannelMap() {
@@ -235,6 +309,60 @@
     }
 
     // ========================================
+    // Solo Control
+    // ========================================
+
+    function updateSoloGains() {
+        if (!state.audioContext) return;
+        var t = state.audioContext.currentTime;
+
+        // For non-MS techniques: simple L/R muting
+        // For MS technique: we handle solo in updateGainsForTechnique() instead
+        if (state.technique === 'ms') {
+            // MS solo is handled via gain coefficients, not solo gains
+            state.soloGainL.gain.setValueAtTime(1, t);
+            state.soloGainR.gain.setValueAtTime(1, t);
+            // Reapply gains with solo consideration
+            updateGainsForTechnique();
+            return;
+        }
+
+        var leftGain = 1;
+        var rightGain = 1;
+
+        if (state.soloLeft && !state.soloRight) {
+            // Solo left only
+            rightGain = 0;
+        } else if (state.soloRight && !state.soloLeft) {
+            // Solo right only
+            leftGain = 0;
+        }
+        // If both solo or neither, play both
+
+        state.soloGainL.gain.setValueAtTime(leftGain, t);
+        state.soloGainR.gain.setValueAtTime(rightGain, t);
+    }
+
+    function updateSoloLabels() {
+        // Update labels based on technique
+        if (state.technique === 'ms') {
+            soloLeftLabel.textContent = 'M';
+            soloRightLabel.textContent = 'S';
+            soloLeftBtn.setAttribute('aria-label', 'Solo mid channel');
+            soloRightBtn.setAttribute('aria-label', 'Solo side channel');
+            soloLeftBtn.setAttribute('title', 'Solo Mid');
+            soloRightBtn.setAttribute('title', 'Solo Side');
+        } else {
+            soloLeftLabel.textContent = 'L';
+            soloRightLabel.textContent = 'R';
+            soloLeftBtn.setAttribute('aria-label', 'Solo left channel');
+            soloRightBtn.setAttribute('aria-label', 'Solo right channel');
+            soloLeftBtn.setAttribute('title', 'Solo Left');
+            soloRightBtn.setAttribute('title', 'Solo Right');
+        }
+    }
+
+    // ========================================
     // Gain Coefficient Calculations
     // ========================================
 
@@ -255,17 +383,37 @@
         };
     }
 
-    function calculateMSGains(midP, width) {
+    function calculateMSGains(midP, width, soloMid, soloSide) {
+        // MS decoding: L = Mid + Side, R = Mid - Side
+        // Mid comes from W and X (the forward-facing component)
+        // Side comes from Y (the sideways figure-8)
+
+        // Solo Mid: only Mid component, no Side (y = 0)
+        // Solo Side: only Side component, no Mid (w = 0, x = 0)
+        // Both or neither: normal MS matrix
+
+        var midGain = 1;
+        var sideGain = 1;
+
+        if (soloMid && !soloSide) {
+            // Solo Mid only: kill the Side component
+            sideGain = 0;
+        } else if (soloSide && !soloMid) {
+            // Solo Side only: kill the Mid component
+            midGain = 0;
+        }
+        // If both or neither, play full MS
+
         return {
             left: {
-                w: midP,
-                x: (1 - midP),
-                y: width
+                w: midP * midGain,
+                x: (1 - midP) * midGain,
+                y: width * sideGain
             },
             right: {
-                w: midP,
-                x: (1 - midP),
-                y: -width
+                w: midP * midGain,
+                x: (1 - midP) * midGain,
+                y: -width * sideGain
             }
         };
     }
@@ -301,7 +449,7 @@
                 state.delayR.delayTime.setValueAtTime(0.0005, t);
                 break;
             case 'ms':
-                gains = calculateMSGains(state.ms.midP, state.ms.width);
+                gains = calculateMSGains(state.ms.midP, state.ms.width, state.soloLeft, state.soloRight);
                 state.delayL.delayTime.setValueAtTime(0, t);
                 state.delayR.delayTime.setValueAtTime(0, t);
                 break;
@@ -367,10 +515,11 @@
         var sin = Math.sin(yawRad);
 
         // Column-major 3×3 rotation matrix for yaw (around Y-up axis)
+        // Negative yaw: when head turns right (+yaw), sound field rotates left
         state.foaRenderer.setRotationMatrix3([
-             cos, 0, sin,
-             0,   1, 0,
-            -sin, 0, cos
+             cos, 0, -sin,
+             0,   1,  0,
+             sin, 0,  cos
         ]);
     }
 
@@ -416,7 +565,6 @@
             currentTimeEl.textContent = '0:00';
             progressFill.style.width = '0%';
 
-            uploadArea.classList.add('hidden');
             playbackControls.classList.remove('hidden');
 
             notify('B-format audio loaded: ' + file.name, 'success');
@@ -424,6 +572,59 @@
             notify('Error decoding audio file.', 'error');
             console.error('Audio decode error:', err);
         });
+    }
+
+    function loadPresetAudio(filename) {
+        if (!filename) return;
+
+        if (state.isPlaying) stopAudio();
+
+        ensureAudioContext();
+
+        if (state.audioContext.state === 'suspended') {
+            state.audioContext.resume();
+        }
+
+        // Path relative to project root
+        var audioPath = '../../../audio/b-format/' + filename;
+
+        notify('Loading ' + filename.replace(/[-_]/g, ' ').replace('.wav', '') + '...', 'info');
+
+        fetch(audioPath)
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('Failed to load audio file');
+                }
+                return response.arrayBuffer();
+            })
+            .then(function(arrayBuffer) {
+                return state.audioContext.decodeAudioData(arrayBuffer);
+            })
+            .then(function(buffer) {
+                if (buffer.numberOfChannels !== 4) {
+                    notify('Expected 4-channel B-format audio, got ' + buffer.numberOfChannels + ' channel' + (buffer.numberOfChannels !== 1 ? 's' : '') + '.', 'error');
+                    presetSelect.value = '';
+                    return;
+                }
+
+                state.audioBuffer = buffer;
+                state.audioDuration = buffer.duration;
+                state.audioPausedAt = 0;
+
+                totalTimeEl.textContent = formatTime(state.audioDuration);
+                currentTimeEl.textContent = '0:00';
+                progressFill.style.width = '0%';
+
+                playbackControls.classList.remove('hidden');
+
+                var displayName = filename.replace(/[-_]/g, ' ').replace('.wav', '');
+                notify('Loaded: ' + displayName, 'success');
+            })
+            .catch(function(err) {
+                notify('Error loading preset audio.', 'error');
+                console.error('Preset audio load error:', err);
+                presetSelect.value = '';
+            });
     }
 
     // ========================================
@@ -450,7 +651,9 @@
 
         // Stop any existing source
         if (state.audioSource) {
-            try { state.audioSource.disconnect(); state.audioSource.stop(); } catch (e) {}
+            state.audioSource.onended = null;
+            try { state.audioSource.stop(); } catch (e) {}
+            try { state.audioSource.disconnect(); } catch (e) {}
             state.audioSource = null;
         }
 
@@ -464,6 +667,12 @@
     }
 
     function startVirtualMicPlayback(offset) {
+        // Ensure merger is connected to masterGain (may have been disconnected for binaural)
+        if (!state.isMono) {
+            try { state.channelMerger.disconnect(state.masterGain); } catch (e) {}
+            state.channelMerger.connect(state.masterGain);
+        }
+
         var source = state.audioContext.createBufferSource();
         source.buffer = state.audioBuffer;
         source.loop = state.isLooping;
@@ -505,6 +714,8 @@
 
     function stopAudio() {
         if (state.audioSource) {
+            // Nullify onended to prevent it from firing when we call stop()
+            state.audioSource.onended = null;
             try { state.audioSource.stop(); } catch (e) {}
             try { state.audioSource.disconnect(); } catch (e) {}
             state.audioSource = null;
@@ -522,7 +733,9 @@
         // Reconnect merger to master gain (may have been disconnected for binaural)
         if (state.channelMerger && state.masterGain) {
             try { state.channelMerger.disconnect(state.masterGain); } catch (e) {}
-            state.channelMerger.connect(state.masterGain);
+            if (!state.isMono) {
+                state.channelMerger.connect(state.masterGain);
+            }
         }
     }
 
@@ -642,6 +855,9 @@
 
         // Update info bar description
         updateTechniqueInfo(newTechnique);
+
+        // Update solo labels
+        updateSoloLabels();
 
         // Update gains (only for virtual mic modes)
         if (newTechnique !== 'binaural') {
@@ -886,8 +1102,8 @@
 
         // Nose (direction indicator, rotated by yaw)
         var noseLen = headR * 1.3;
-        var noseX = cx + noseLen * Math.sin(-yawRad);
-        var noseY = cy - noseLen * Math.cos(-yawRad);
+        var noseX = cx + noseLen * Math.sin(yawRad);
+        var noseY = cy - noseLen * Math.cos(yawRad);
         ctx.beginPath();
         ctx.moveTo(cx, cy);
         ctx.lineTo(noseX, noseY);
@@ -903,8 +1119,8 @@
 
         // Ears
         var earOffset = headR + 4;
-        var leftEarAngle = -yawRad + Math.PI / 2;
-        var rightEarAngle = -yawRad - Math.PI / 2;
+        var leftEarAngle = yawRad + Math.PI / 2;
+        var rightEarAngle = yawRad - Math.PI / 2;
         ctx.fillStyle = colors.head;
         ctx.beginPath();
         ctx.arc(cx + earOffset * Math.sin(leftEarAngle), cy - earOffset * Math.cos(leftEarAngle), 5, 0, Math.PI * 2);
@@ -1013,23 +1229,29 @@
     }
 
     fileInput.addEventListener('change', handleFileSelect);
-    fileInputCompact.addEventListener('change', handleFileSelect);
 
-    // Drag and drop
-    uploadArea.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        uploadArea.classList.add('dragover');
+    // Preset audio selection
+    presetSelect.addEventListener('change', function(e) {
+        loadPresetAudio(e.target.value);
     });
-    uploadArea.addEventListener('dragleave', function() {
-        uploadArea.classList.remove('dragover');
-    });
-    uploadArea.addEventListener('drop', function(e) {
-        e.preventDefault();
-        uploadArea.classList.remove('dragover');
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            handleAudioFile(e.dataTransfer.files[0]);
-        }
-    });
+
+    // Drag and drop on the upload button
+    if (uploadCompact) {
+        uploadCompact.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadCompact.classList.add('dragover');
+        });
+        uploadCompact.addEventListener('dragleave', function() {
+            uploadCompact.classList.remove('dragover');
+        });
+        uploadCompact.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadCompact.classList.remove('dragover');
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                handleAudioFile(e.dataTransfer.files[0]);
+            }
+        });
+    }
 
     // Play/pause
     playButton.addEventListener('click', togglePlayback);
@@ -1069,6 +1291,27 @@
         if (state.masterGain) {
             state.masterGain.gain.setValueAtTime(dbToLinear(state.gainValue), state.audioContext.currentTime);
         }
+    });
+
+    // Solo buttons
+    soloLeftBtn.addEventListener('click', function() {
+        state.soloLeft = !state.soloLeft;
+        soloLeftBtn.classList.toggle('active', state.soloLeft);
+        updateSoloGains();
+    });
+
+    soloRightBtn.addEventListener('click', function() {
+        state.soloRight = !state.soloRight;
+        soloRightBtn.classList.toggle('active', state.soloRight);
+        updateSoloGains();
+    });
+
+    // Mono toggle button
+    monoToggle.addEventListener('click', function() {
+        state.isMono = !state.isMono;
+        monoToggle.classList.toggle('active', state.isMono);
+        monoToggleLabel.textContent = state.isMono ? 'Mono' : 'Stereo';
+        setMonoMode(state.isMono);
     });
 
     // Technique buttons
@@ -1199,10 +1442,64 @@
     themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
     // ========================================
+    // Tooltip System
+    // ========================================
+
+    function initTooltips() {
+        // Create a single tooltip element appended to body
+        var tooltipEl = document.createElement('div');
+        tooltipEl.className = 'global-tooltip';
+        tooltipEl.style.cssText = 'position:fixed;z-index:10000;background:var(--color-card-bg);border:1px solid var(--color-border);border-radius:8px;padding:12px;box-shadow:0 4px 20px rgba(0,0,0,0.25);font-size:0.8rem;line-height:1.5;color:var(--color-text);max-width:280px;opacity:0;visibility:hidden;transition:opacity 0.15s,visibility 0.15s;pointer-events:none;';
+        document.body.appendChild(tooltipEl);
+
+        var triggers = document.querySelectorAll('.info-trigger');
+
+        triggers.forEach(function(trigger) {
+            var content = trigger.querySelector('.info-tooltip');
+            if (!content) return;
+
+            function showTooltip() {
+                tooltipEl.innerHTML = content.innerHTML;
+                tooltipEl.style.opacity = '1';
+                tooltipEl.style.visibility = 'visible';
+
+                // Position after making visible so we can measure
+                var rect = trigger.getBoundingClientRect();
+                var tooltipRect = tooltipEl.getBoundingClientRect();
+                var margin = 8;
+
+                var top = rect.bottom + margin;
+                var left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+
+                // Keep within viewport
+                if (left < margin) left = margin;
+                if (left + tooltipRect.width > window.innerWidth - margin) {
+                    left = window.innerWidth - tooltipRect.width - margin;
+                }
+
+                tooltipEl.style.top = top + 'px';
+                tooltipEl.style.left = left + 'px';
+            }
+
+            function hideTooltip() {
+                tooltipEl.style.opacity = '0';
+                tooltipEl.style.visibility = 'hidden';
+            }
+
+            trigger.addEventListener('mouseenter', showTooltip);
+            trigger.addEventListener('mouseleave', hideTooltip);
+            trigger.addEventListener('focus', showTooltip);
+            trigger.addEventListener('blur', hideTooltip);
+        });
+    }
+
+    // ========================================
     // Initialization
     // ========================================
 
     resizePolarCanvas();
     drawYawDial();
+    updateSoloLabels();
+    initTooltips();
 
 })();
