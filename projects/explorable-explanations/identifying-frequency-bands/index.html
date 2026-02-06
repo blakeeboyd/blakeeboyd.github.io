@@ -89,7 +89,7 @@
                                         <span class="info-tooltip tooltip-right" role="tooltip">
                                             <strong>M (Mute):</strong> Removes that frequency band from the output.<br><br>
                                             <strong>S (Solo):</strong> Isolates that band—only it will be heard. Multiple bands can be soloed together.<br><br>
-                                            <strong>Filters On/Off:</strong> Master toggle to bypass all filtering and hear the original signal.
+                                            <strong>Filters On/Off:</strong> Enables the Mute and Solo controls. Audio is only filtered when a band is actively muted or soloed.
                                         </span>
                                     </button>
                                 </h2>
@@ -185,16 +185,17 @@
                                     i
                                     <span class="info-tooltip" role="tooltip">
                                         <strong>Play/Pause:</strong> Start or stop audio playback.<br><br>
-                                        <strong>Progress Bar:</strong> Click anywhere to seek. Shows current position.<br><br>
+                                        <strong>Waveform:</strong> Click anywhere to seek. Shows current position.<br><br>
                                         <strong>Loop:</strong> Enable to repeat a section. Drag the handles or enter times to set loop points.<br><br>
                                         <strong>Upload:</strong> Click the icon on the right to load a different file.
                                     </span>
                                 </button>
                                 <div class="progress-container">
                                     <span class="time-display current-time">0:00</span>
-                                    <div class="progress-bar">
+                                    <div class="waveform-wrapper">
+                                        <canvas class="waveform-canvas" aria-label="Audio waveform"></canvas>
+                                        <div class="waveform-cursor"></div>
                                         <div class="loop-region"></div>
-                                        <div class="progress-fill"></div>
                                         <div class="loop-handle loop-handle-start"></div>
                                         <div class="loop-handle loop-handle-end"></div>
                                     </div>
@@ -232,8 +233,14 @@
                         </div>
                     </div>
 
-                    <div id="player-2" class="audio-player">
-                        <div class="player-label">Audio 2 <span class="player-hint">(for comparison)</span></div>
+                    <div id="player-2" class="audio-player collapsed">
+                        <button type="button" class="player-label player-label-toggle" aria-expanded="false" aria-controls="player-2-body">
+                            <svg class="disclosure-arrow" width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
+                                <path d="M4 2 L8 6 L4 10" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Audio 2 <span class="player-hint">(for comparison)</span>
+                        </button>
+                        <div id="player-2-body" class="player-body">
                         <div class="audio-upload-section">
                             <div class="upload-area">
                                 <input type="file" class="file-input" accept="audio/*" />
@@ -263,16 +270,17 @@
                                     i
                                     <span class="info-tooltip" role="tooltip">
                                         <strong>Play/Pause:</strong> Start or stop audio playback.<br><br>
-                                        <strong>Progress Bar:</strong> Click anywhere to seek. Shows current position.<br><br>
+                                        <strong>Waveform:</strong> Click anywhere to seek. Shows current position.<br><br>
                                         <strong>Loop:</strong> Enable to repeat a section. Drag the handles or enter times to set loop points.<br><br>
                                         <strong>Upload:</strong> Click the icon on the right to load a different file.
                                     </span>
                                 </button>
                                 <div class="progress-container">
                                     <span class="time-display current-time">0:00</span>
-                                    <div class="progress-bar">
+                                    <div class="waveform-wrapper">
+                                        <canvas class="waveform-canvas" aria-label="Audio waveform"></canvas>
+                                        <div class="waveform-cursor"></div>
                                         <div class="loop-region"></div>
-                                        <div class="progress-fill"></div>
                                         <div class="loop-handle loop-handle-start"></div>
                                         <div class="loop-handle loop-handle-end"></div>
                                     </div>
@@ -307,6 +315,7 @@
                                     </svg>
                                 </div>
                             </div>
+                        </div>
                         </div>
                     </div>
 

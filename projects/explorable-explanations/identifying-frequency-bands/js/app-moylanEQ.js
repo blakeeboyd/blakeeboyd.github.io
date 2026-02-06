@@ -102,6 +102,8 @@ async function setup() {
     setupGain(device, userAudioGain);
     setupAudioSource(device, context, userAudioGain);
     setupDemo(device, context);
+    initTooltips();
+    initPlayer2Toggle();
 
     // (Optional) Load presets, if any
     // loadPresets(device, patcher);
@@ -152,18 +154,24 @@ function loadRNBOScript(version) {
     }
 
     filtersToggle.onclick = () => {
-      const messageEvent = new RNBO.MessageEvent(
-        RNBO.TimeNow,
-        "filter",
-        filtersToggle.checked ? [1] : [0]
-      );
-      device.scheduleEvent(messageEvent);
       updateBandControlsVisualState(filtersToggle.checked);
+
+      if (!filtersToggle.checked) {
+        // Turning filters off: clear all mutes/solos and bypass RNBO filtering
+        bandNames.forEach(band => {
+          bandState[band].muted = false;
+          bandState[band].soloed = false;
+          updateBandUI(band);
+        });
+        updateAllBands(device);
+      }
     };
-    const toggleState = getParameter(device, "filter");
-    filtersToggle.checked = toggleState.value === 1;
-    // Initialize visual state on load
-    updateBandControlsVisualState(filtersToggle.checked);
+    // Start with filters toggle off (no filtering by default)
+    filtersToggle.checked = false;
+    updateBandControlsVisualState(false);
+    // Ensure RNBO starts bypassed
+    const filterBypassEvent = new RNBO.MessageEvent(RNBO.TimeNow, "filter", [0]);
+    device.scheduleEvent(filterBypassEvent);
   }
 
   // Band control state
@@ -255,6 +263,16 @@ function loadRNBOScript(version) {
 
   function updateAllBands(device) {
     const anySoloed = bandNames.some(b => bandState[b].soloed);
+    const anyMuted = bandNames.some(b => bandState[b].muted);
+
+    // Only route through RNBO filters when a band is actually muted or soloed
+    const needsFiltering = anySoloed || anyMuted;
+    const filterEvent = new RNBO.MessageEvent(
+      RNBO.TimeNow,
+      "filter",
+      needsFiltering ? [1] : [0]
+    );
+    device.scheduleEvent(filterEvent);
 
     bandNames.forEach(band => {
       let enabled;
@@ -505,8 +523,10 @@ function loadRNBOScript(version) {
 
     // Update gain control visual state based on source
     const gainControl = document.getElementById("gain-control");
+    const playerContainers = document.querySelectorAll('.audio-player');
     function updateGainControlVisualState(source) {
       gainControl.classList.toggle('source-muted', source === 0);
+      playerContainers.forEach(p => p.classList.toggle('source-disabled', source !== 2));
     }
 
     // Update slider display when source changes
@@ -574,8 +594,10 @@ function loadRNBOScript(version) {
     const playIcon = container.querySelector(".play-icon");
     const pauseIcon = container.querySelector(".pause-icon");
     const loopToggle = container.querySelector(".loop-toggle");
-    const progressBar = container.querySelector(".progress-bar");
-    const progressFill = container.querySelector(".progress-fill");
+    const waveformWrapper = container.querySelector(".waveform-wrapper");
+    const waveformCanvas = container.querySelector(".waveform-canvas");
+    const waveformCtx = waveformCanvas.getContext("2d");
+    const waveformCursor = container.querySelector(".waveform-cursor");
     const currentTimeDisplay = container.querySelector(".current-time");
     const totalTimeDisplay = container.querySelector(".total-time");
 
@@ -590,6 +612,9 @@ function loadRNBOScript(version) {
     // Upload areas
     const uploadArea = container.querySelector(".upload-area:not(.upload-area-compact)");
     const uploadAreaCompact = container.querySelector(".upload-area-compact");
+
+    // Cached waveform peaks (computed once per audio file)
+    let waveformPeaks = null;
 
     // Audio playback state
     let uploadedAudioBuffer = null;
@@ -633,8 +658,8 @@ function loadRNBOScript(version) {
         pausedAt = 0;
         updatePlayButton();
         container.classList.remove('player-active');
-        progressFill.style.width = "0%";
         currentTimeDisplay.textContent = "0:00";
+        drawWaveform();
         if (progressAnimationId) {
           cancelAnimationFrame(progressAnimationId);
           progressAnimationId = null;
@@ -642,6 +667,85 @@ function loadRNBOScript(version) {
         if (selectorParam) {
           selectorParam.value = 0;
         }
+      }
+    }
+
+    // Compute waveform peaks from audio buffer (called once per file load)
+    function computePeaks() {
+      if (!uploadedAudioBuffer) { waveformPeaks = null; return; }
+
+      const rawData = uploadedAudioBuffer.getChannelData(0);
+      const targetSamples = 512;
+      const blockSize = Math.floor(rawData.length / targetSamples);
+      const peaks = [];
+
+      for (let i = 0; i < targetSamples; i++) {
+        const start = blockSize * i;
+        let sum = 0;
+        for (let j = 0; j < blockSize; j++) {
+          sum += Math.abs(rawData[start + j] || 0);
+        }
+        peaks.push(sum / blockSize);
+      }
+
+      const maxPeak = Math.max(...peaks) || 1;
+      for (let k = 0; k < peaks.length; k++) {
+        peaks[k] = peaks[k] / maxPeak;
+      }
+
+      waveformPeaks = peaks;
+    }
+
+    // Draw the waveform visualization with played/unplayed color split
+    function drawWaveform() {
+      if (!waveformPeaks) return;
+
+      const rect = waveformWrapper.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const width = rect.width;
+      const height = rect.height;
+
+      if (width <= 0 || height <= 0) return;
+
+      waveformCanvas.width = width * dpr;
+      waveformCanvas.height = height * dpr;
+      waveformCanvas.style.width = width + 'px';
+      waveformCanvas.style.height = height + 'px';
+      waveformCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const waveColor = isDark ? 'rgba(96, 165, 250, 0.6)' : 'rgba(37, 99, 235, 0.5)';
+      const playedColor = isDark ? 'rgba(96, 165, 250, 0.9)' : 'rgba(37, 99, 235, 0.8)';
+
+      waveformCtx.clearRect(0, 0, width, height);
+
+      const barWidth = 2;
+      const gap = 1;
+      const step = barWidth + gap;
+      const centerY = height / 2;
+      const maxBarHeight = height / 2 - 2;
+
+      // Calculate playback fraction
+      let playedFraction = 0;
+      if (audioDuration > 0) {
+        if (isPlaying) {
+          const elapsed = context.currentTime - startTime + pausedAt;
+          playedFraction = Math.min(elapsed / audioDuration, 1);
+        } else {
+          playedFraction = pausedAt / audioDuration;
+        }
+      }
+
+      for (let x = 0; x < width; x += step) {
+        const peakIndex = Math.floor((x / width) * waveformPeaks.length);
+        const peak = waveformPeaks[peakIndex] || 0;
+        const barHeight = Math.max(1, peak * maxBarHeight);
+
+        const xFraction = x / width;
+        waveformCtx.fillStyle = xFraction < playedFraction ? playedColor : waveColor;
+
+        waveformCtx.fillRect(x, centerY - barHeight, barWidth, barHeight);
+        waveformCtx.fillRect(x, centerY, barWidth, barHeight);
       }
     }
 
@@ -691,9 +795,8 @@ function loadRNBOScript(version) {
         currentTime = audioDuration;
       }
 
-      const progress = (currentTime / audioDuration) * 100;
-      progressFill.style.width = `${Math.min(progress, 100)}%`;
       currentTimeDisplay.textContent = formatTime(currentTime);
+      drawWaveform();
 
       if (isPlaying) {
         progressAnimationId = requestAnimationFrame(updateProgress);
@@ -735,10 +838,13 @@ function loadRNBOScript(version) {
         fileDuration.textContent = durationFormatted;
         totalTimeDisplay.textContent = durationFormatted;
         currentTimeDisplay.textContent = "0:00";
-        progressFill.style.width = "0%";
         fileInfo.classList.remove("hidden");
         playbackControls.classList.remove("hidden");
         audioUploadSection.classList.add("has-file");
+
+        // Compute and draw waveform
+        computePeaks();
+        drawWaveform();
 
         loopStart = 0;
         loopEnd = audioDuration;
@@ -952,7 +1058,7 @@ function loadRNBOScript(version) {
       if (!isDraggingHandle || !audioDuration) return;
       if (event.cancelable) event.preventDefault();
 
-      const rect = progressBar.getBoundingClientRect();
+      const rect = waveformWrapper.getBoundingClientRect();
       let percentage = (getClientX(event) - rect.left) / rect.width;
       percentage = Math.max(0, Math.min(1, percentage));
       const time = percentage * audioDuration;
@@ -996,17 +1102,16 @@ function loadRNBOScript(version) {
     loopHandleStart.addEventListener('touchstart', handleDragStart('start'), { passive: false });
     loopHandleEnd.addEventListener('touchstart', handleDragStart('end'), { passive: false });
 
-    // Progress bar click handler for seeking
-    progressBar.addEventListener("click", (event) => {
+    // Waveform click handler for seeking
+    waveformWrapper.addEventListener("click", (event) => {
       if (!uploadedAudioBuffer) return;
       if (event.target.classList.contains('loop-handle')) return;
 
-      const rect = progressBar.getBoundingClientRect();
+      const rect = waveformWrapper.getBoundingClientRect();
       const clickX = event.clientX - rect.left;
       const percentage = clickX / rect.width;
       const seekTime = percentage * audioDuration;
 
-      progressFill.style.width = `${percentage * 100}%`;
       currentTimeDisplay.textContent = formatTime(seekTime);
 
       if (isPlaying) {
@@ -1034,7 +1139,19 @@ function loadRNBOScript(version) {
         console.log("Seeked to", formatTime(seekTime));
       } else {
         pausedAt = seekTime;
+        drawWaveform();
       }
+    });
+
+    // Waveform cursor on hover
+    waveformWrapper.addEventListener("mousemove", (event) => {
+      const rect = waveformWrapper.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      waveformCursor.style.left = x + 'px';
+    });
+
+    waveformWrapper.addEventListener("mouseleave", () => {
+      waveformCursor.style.left = '0px';
     });
 
     // Return the player API
@@ -1124,6 +1241,8 @@ function loadRNBOScript(version) {
     document.addEventListener("keydown", (event) => {
       if (event.code === "Space" && !event.target.matches("input, textarea, select, button")) {
         if (!activePlayer || !activePlayer.hasAudio()) return;
+        // Don't allow playback when source is not User Audio
+        if (container1.classList.contains('source-disabled')) return;
         event.preventDefault();
         if (activePlayer.isPlaying()) {
           activePlayer.stop();
@@ -1414,6 +1533,62 @@ function attachOutports(device) {
     });
 }
 */
+
+function initTooltips() {
+    var tooltipEl = document.createElement('div');
+    tooltipEl.className = 'global-tooltip';
+    tooltipEl.style.cssText = 'position:fixed;z-index:10000;background:var(--color-card-bg);border:1px solid var(--color-border);border-radius:8px;padding:12px;box-shadow:0 4px 20px rgba(0,0,0,0.25);font-size:0.8rem;line-height:1.5;color:var(--color-text);max-width:280px;opacity:0;visibility:hidden;transition:opacity 0.15s,visibility 0.15s;pointer-events:none;';
+    document.body.appendChild(tooltipEl);
+
+    var triggers = document.querySelectorAll('.info-trigger');
+
+    triggers.forEach(function(trigger) {
+        var content = trigger.querySelector('.info-tooltip');
+        if (!content) return;
+
+        function showTooltip() {
+            tooltipEl.innerHTML = content.innerHTML;
+            tooltipEl.style.opacity = '1';
+            tooltipEl.style.visibility = 'visible';
+
+            var rect = trigger.getBoundingClientRect();
+            var tooltipRect = tooltipEl.getBoundingClientRect();
+            var margin = 8;
+
+            var top = rect.bottom + margin;
+            var left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+
+            if (left < margin) left = margin;
+            if (left + tooltipRect.width > window.innerWidth - margin) {
+                left = window.innerWidth - tooltipRect.width - margin;
+            }
+
+            tooltipEl.style.top = top + 'px';
+            tooltipEl.style.left = left + 'px';
+        }
+
+        function hideTooltip() {
+            tooltipEl.style.opacity = '0';
+            tooltipEl.style.visibility = 'hidden';
+        }
+
+        trigger.addEventListener('mouseenter', showTooltip);
+        trigger.addEventListener('mouseleave', hideTooltip);
+        trigger.addEventListener('focus', showTooltip);
+        trigger.addEventListener('blur', hideTooltip);
+    });
+}
+
+function initPlayer2Toggle() {
+    var player2 = document.getElementById('player-2');
+    var toggleBtn = player2.querySelector('.player-label-toggle');
+    if (!toggleBtn) return;
+
+    toggleBtn.addEventListener('click', function() {
+        var isCollapsed = player2.classList.toggle('collapsed');
+        toggleBtn.setAttribute('aria-expanded', !isCollapsed);
+    });
+}
 
 setup().catch(err => {
     console.error("Setup failed:", err);

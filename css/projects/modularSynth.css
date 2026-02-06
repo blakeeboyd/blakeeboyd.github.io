@@ -1,0 +1,425 @@
+/* ===========================================
+   Modular Synth Styles
+   Project-specific styles for the educational
+   modular synthesizer explorable explanation
+   =========================================== */
+
+/* App container */
+.synth-app {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+/* Module rack area */
+.module-rack {
+    position: relative;
+    display: flex;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: var(--spacing-lg);
+    background: var(--color-control-bg);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    min-height: 300px;
+}
+
+/* Individual module card */
+.module {
+    width: 200px;
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    z-index: 1;
+}
+
+/* Module header */
+.module-header {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    border-bottom: 1px solid var(--color-border);
+    text-align: center;
+    user-select: none;
+}
+
+/* Module body (controls area) */
+.module-body {
+    padding: var(--spacing-sm);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+/* Module ports row */
+.module-ports {
+    display: flex;
+    justify-content: space-evenly;
+    padding: var(--spacing-sm) var(--spacing-sm) var(--spacing-md);
+    border-top: 1px solid var(--color-border);
+    gap: var(--spacing-sm);
+}
+
+/* ===========================================
+   Ports
+   =========================================== */
+
+.port {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    touch-action: none;
+}
+
+.port:hover {
+    transform: scale(1.2);
+}
+
+/* Output port: filled circle */
+.port-output.port-audio {
+    background: #3b82f6;
+    border: 2px solid #3b82f6;
+}
+
+/* Input port: hollow circle */
+.port-input.port-audio {
+    background: var(--color-card-bg);
+    border: 2px solid #3b82f6;
+}
+
+/* CV port: orange tones */
+.port-output.port-cv {
+    background: #f59e0b;
+    border: 2px solid #f59e0b;
+}
+
+.port-input.port-cv {
+    background: var(--color-card-bg);
+    border: 2px solid #f59e0b;
+}
+
+/* Connected state */
+.port.connected {
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+}
+
+.port-cv.connected {
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+}
+
+/* Drag target highlight */
+.port.drag-target {
+    transform: scale(1.4);
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.7);
+}
+
+.port-cv.drag-target {
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.7);
+}
+
+/* Port label */
+.port-label {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 3px;
+    font-size: 0.6rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* ===========================================
+   Cable SVG Overlay
+   =========================================== */
+
+.cable-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.cable-path {
+    stroke: #3b82f6;
+    stroke-width: 3;
+    stroke-linecap: round;
+    opacity: 0.7;
+    pointer-events: stroke;
+    cursor: pointer;
+    transition: opacity var(--transition-fast), stroke-width var(--transition-fast);
+}
+
+.cable-path:hover {
+    opacity: 1;
+    stroke-width: 5;
+    stroke: #ef4444;
+}
+
+.cable-temp {
+    stroke: #3b82f6;
+    stroke-width: 2;
+    stroke-dasharray: 8 4;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* ===========================================
+   Rotary Knob Controls
+   =========================================== */
+
+/* Knob container: centers SVG + value vertically */
+.knob-control {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Side-by-side knob pair (VCO coarse + fine) */
+.knob-pair {
+    display: flex;
+    justify-content: space-evenly;
+    gap: var(--spacing-xs);
+}
+
+.knob-pair .control-group {
+    align-items: center;
+    flex: 1;
+}
+
+/* SVG knob element */
+.knob-svg {
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.knob-svg:active {
+    cursor: grabbing;
+}
+
+.knob-svg:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 50%;
+}
+
+/* SVG arc paths */
+.knob-track {
+    stroke: var(--color-border);
+    stroke-width: 4;
+    stroke-linecap: round;
+}
+
+.knob-fill {
+    stroke: #3b82f6;
+    stroke-width: 4;
+    stroke-linecap: round;
+}
+
+.knob-indicator {
+    fill: #3b82f6;
+}
+
+/* Knob value display */
+.knob-value {
+    font-size: 0.7rem;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    color: var(--color-text-muted);
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* Toggle-able value display (Hz/note on VCO) */
+.knob-value-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    text-align: center;
+    white-space: nowrap;
+    border-bottom: 1px dotted var(--color-text-muted);
+}
+
+.knob-value-toggle:hover {
+    color: var(--color-text);
+}
+
+/* Waveform selector buttons */
+.waveform-selector {
+    display: flex;
+    gap: 2px;
+}
+
+.wave-btn {
+    flex: 1;
+    padding: 0.25rem 0.25rem;
+    font-size: 0.65rem;
+    font-weight: 500;
+    background: var(--color-control-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.wave-btn:hover {
+    border-color: var(--color-text-muted);
+    color: var(--color-text);
+}
+
+.wave-btn.active {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+}
+
+/* ===========================================
+   Scope
+   =========================================== */
+
+.scope-container {
+    background: #0a0a0a;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.scope-canvas {
+    display: block;
+    width: 100%;
+    height: 120px;
+}
+
+/* ===========================================
+   Instructions
+   =========================================== */
+
+.instructions-card {
+    padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.instructions-text {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+/* Inline port examples in instructions */
+.port-example {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.port-example-output {
+    background: #3b82f6;
+    border: 2px solid #3b82f6;
+}
+
+.port-example-input {
+    background: transparent;
+    border: 2px solid #3b82f6;
+}
+
+/* ===========================================
+   Dark Mode
+   =========================================== */
+
+[data-theme="dark"] .module-rack {
+    background: rgba(17, 24, 39, 0.5);
+}
+
+[data-theme="dark"] .wave-btn.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+}
+
+[data-theme="dark"] .cable-path {
+    stroke: #60a5fa;
+}
+
+[data-theme="dark"] .cable-temp {
+    stroke: #60a5fa;
+}
+
+[data-theme="dark"] .port.connected {
+    box-shadow: 0 0 8px rgba(96, 165, 250, 0.5);
+}
+
+[data-theme="dark"] .port-input.port-audio {
+    background: var(--color-card-bg);
+}
+
+[data-theme="dark"] .port-input.port-cv {
+    background: var(--color-card-bg);
+}
+
+[data-theme="dark"] .knob-track {
+    stroke: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .knob-fill {
+    stroke: #60a5fa;
+}
+
+[data-theme="dark"] .knob-indicator {
+    fill: #60a5fa;
+}
+
+/* ===========================================
+   Responsive
+   =========================================== */
+
+@media (max-width: 900px) {
+    .module {
+        width: 180px;
+    }
+
+    .module-rack {
+        padding: var(--spacing-sm);
+        gap: var(--spacing-sm);
+    }
+}
+
+@media (max-width: 640px) {
+    .module-rack {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .module {
+        width: 100%;
+        max-width: 300px;
+    }
+}

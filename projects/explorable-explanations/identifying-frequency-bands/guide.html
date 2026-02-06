@@ -324,15 +324,18 @@
                             <li><strong>M (Mute):</strong> Removes that frequency band from the output.</li>
                             <li><strong>S (Solo):</strong> Isolates that band so you hear only its content. Multiple bands can be soloed together.</li>
                         </ul>
-                        <p>The "Filters On/Off" toggle bypasses all filtering, letting you switch between the processed and original signal.</p>
+                        <p>The "Filters On/Off" toggle enables the Mute and Solo controls. Audio passes through unaltered until you actually mute or solo a band, so there is no coloring from the filter network when all bands are active.</p>
 
                         <h3>User Audio Controls</h3>
-                        <p>When using uploaded audio, additional controls appear:</p>
+                        <p>When "User Audio" is selected, the audio player controls become active. There are two players: Audio 1 is the primary player, and Audio 2 (collapsed by default, click the arrow to expand) lets you load a second file for A/B comparison. Only one player can play at a time: pressing play on one automatically pauses the other.</p>
+                        <p>Each player provides:</p>
                         <ul>
-                            <li><strong>Play/Pause:</strong> Start and stop playback.</li>
-                            <li><strong>Progress bar:</strong> Click anywhere to seek to a specific position.</li>
-                            <li><strong>Loop:</strong> Enable looping and drag the handles (or enter times) to define a loop region.</li>
+                            <li><strong>Play/Pause:</strong> Start and stop playback. The space bar toggles the most recently used player.</li>
+                            <li><strong>Waveform:</strong> Shows the audio waveform with playback position highlighted. Click anywhere to seek.</li>
+                            <li><strong>Loop:</strong> Enable looping and drag the handles (or type times) to define a loop region.</li>
+                            <li><strong>Upload:</strong> After loading a file, a small upload icon on the right lets you swap in a different file.</li>
                         </ul>
+                        <p>Hover over the <strong>i</strong> buttons next to each control section for additional information.</p>
 
                         <h3>Demo Mode</h3>
                         <p>The "Run Demo" button cycles through each frequency band, soloing them for three seconds each. This provides a quick survey of the entire spectrum and is useful for initial calibration.</p>
@@ -359,10 +362,17 @@
                         <h3>Stage 2: Application</h3>
                         <p>Switch to "User Audio" and upload a reference track (the same one you analyzed in previous exercises works well).</p>
                         <ol>
-                            <li>Enable the loop function and select a 15–30 second passage that contains instruments across the full spectrum.</li>
+                            <li>Enable the loop function and select a 15-30 second passage that contains instruments across the full spectrum.</li>
                             <li>Solo each frequency band and identify what instruments are present in that region.</li>
                             <li>Note which band contains the most energy from each instrument. A bass guitar will appear in multiple bands, but its fundamental energy concentrates in one or two.</li>
-                            <li>Toggle "Filters On/Off" with all the filters unmuted to compare the filtered and original signal. In this exercise, the fiters are always active which distorts the spectrum of the input. See if you can notice the effect and describe it.</li>
+                        </ol>
+
+                        <h3>Stage 3: A/B Comparison (Optional)</h3>
+                        <p>Expand Audio 2 and load a second track to compare how different recordings distribute energy across the frequency spectrum.</p>
+                        <ol>
+                            <li>Load two recordings of similar material (two mixes of the same song, or two songs in the same genre).</li>
+                            <li>Solo a frequency band, then switch between the two players to hear how each recording treats that region.</li>
+                            <li>Note the differences: does one mix have more Low Mid energy? Is one brighter in the High band? These observations build the vocabulary described in the section below.</li>
                         </ol>
                     </section>
 
@@ -377,7 +387,7 @@
                         </ul>
 
                         <div class="note">
-                            <p><strong>On filter artifacts:</strong> The filters in this tool have steep cutoffs that introduce audible artifacts. These artifacts are a feature, not a bug: they exaggerate the transition between bands, making the boundaries easier to hear. Real-world EQ typically uses gentler slopes.</p>
+                            <p><strong>On filter design:</strong> The filters in this tool have steep cutoffs that exaggerate the transition between bands, making the boundaries easier to hear. Real-world EQ typically uses gentler slopes.</p>
                         </div>
                     </section>
 
