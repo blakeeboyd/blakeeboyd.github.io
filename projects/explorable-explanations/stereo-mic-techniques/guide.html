@@ -332,7 +332,7 @@
                         <h2>Background</h2>
                         <p>Every stereo microphone technique makes a tradeoff between three spatial cues: <strong>level differences</strong> (which ear hears it louder), <strong>time differences</strong> (which ear hears it first), and <strong>spectral differences</strong> (how the sound's timbre changes with direction). Coincident techniques like XY and Blumlein rely entirely on level differences. Near-coincident techniques like ORTF add a small time difference. Spaced pairs rely almost entirely on time differences.</p>
 
-                        <p>This tool uses a first-order Ambisonic recording as its source material. Ambisonics captures the complete 360-degree sound field at a single point using four channels: an omnidirectional pressure signal (W) and three figure-8 directional signals pointing front-back (X), left-right (Y), and up-down (Z). From these four channels, we can mathematically extract what any coincident microphone pair would have captured, because all coincident techniques encode the same spatial information (level differences from directional patterns) that the Ambisonic channels already contain.</p>
+                        <p id="fnref1">This tool uses a first-order Ambisonic recording as its source material. Ambisonics captures the complete 360-degree sound field at a single point using four channels: an omnidirectional pressure signal (W) and three figure-8 directional signals pointing front-back (X), left-right (Y), and up-down (Z). From these four channels, we can mathematically extract what any coincident microphone pair would have captured, because all coincident techniques encode the same spatial information (level differences from directional patterns) that the Ambisonic channels already contain.<sup><a href="#fn1">1</a></sup></p>
 
                         <table class="technique-table">
                             <thead>
@@ -642,6 +642,12 @@
                             <li>Wiggins, B. (2004). "An Investigation into the Real-time Manipulation and Control of Three-dimensional Sound Fields." PhD Thesis, University of Derby.</li>
                         </ul>
                     </section>
+
+                    <hr class="footnote-separator">
+
+                    <section class="footnotes">
+                        <p class="footnote" id="fn1"><sup>1</sup> As the table shows, ORTF is a near-coincident technique that relies on both level and time differences, so it cannot be exactly represented from a single-point Ambisonic recording. This tool approximates ORTF by applying a fixed inter-channel delay to simulate the 17cm capsule spacing. The other three coincident techniques (XY, Mid-Side, and Blumlein) decode exactly. <a href="#fnref1">↩</a></p>
+                    </section>
                 </div>
 
                 <aside class="toc-sidebar">
@@ -666,5 +672,6 @@
             <p>&copy; <span class="footer-year"></span> Blake Boyd</p>
         </footer>
     </div>
+    <script>document.querySelector('.footer-year').textContent = new Date().getFullYear();</script>
 </body>
 </html>

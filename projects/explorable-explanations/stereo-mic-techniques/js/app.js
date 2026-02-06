@@ -80,7 +80,10 @@
         progressAnimationId: null,
 
         // Yaw drag
-        yawDragging: false
+        yawDragging: false,
+
+        // User-uploaded files (stored for switching)
+        userFiles: {}  // { filename: AudioBuffer }
     };
 
     // ========================================
@@ -95,8 +98,11 @@
     var playButton = document.getElementById('play-button');
     var playIcon = document.getElementById('play-icon');
     var pauseIcon = document.getElementById('pause-icon');
-    var progressBar = document.getElementById('progress-bar');
-    var progressFill = document.getElementById('progress-fill');
+    var waveformWrapper = document.getElementById('waveform-wrapper');
+    var waveformCanvas = document.getElementById('waveform-canvas');
+    var waveformCtx = waveformCanvas.getContext('2d');
+    var waveformProgress = document.getElementById('waveform-progress');
+    var waveformCursor = document.getElementById('waveform-cursor');
     var currentTimeEl = document.getElementById('current-time');
     var totalTimeEl = document.getElementById('total-time');
     var loopToggle = document.getElementById('loop-toggle');
@@ -561,17 +567,74 @@
             state.audioDuration = buffer.duration;
             state.audioPausedAt = 0;
 
+            // Store buffer for later switching
+            var userKey = 'user:' + file.name;
+            state.userFiles[userKey] = buffer;
+
+            // Add to dropdown if not already there
+            addUserFileToDropdown(file.name, userKey);
+
+            // Select the newly uploaded file
+            presetSelect.value = userKey;
+
             totalTimeEl.textContent = formatTime(state.audioDuration);
             currentTimeEl.textContent = '0:00';
-            progressFill.style.width = '0%';
+            updateWaveformProgress(0);
+            drawWaveform();
 
-            playbackControls.classList.remove('hidden');
+            enablePlaybackControls();
 
-            notify('B-format audio loaded: ' + file.name, 'success');
+            notify('Loaded: ' + file.name, 'success');
         }).catch(function(err) {
             notify('Error decoding audio file.', 'error');
             console.error('Audio decode error:', err);
         });
+    }
+
+    function addUserFileToDropdown(filename, value) {
+        // Check if "Your Files" optgroup exists
+        var userGroup = presetSelect.querySelector('optgroup[label="Your Files"]');
+        if (!userGroup) {
+            userGroup = document.createElement('optgroup');
+            userGroup.label = 'Your Files';
+            // Insert at the beginning, after the placeholder option
+            presetSelect.insertBefore(userGroup, presetSelect.querySelector('optgroup'));
+        }
+
+        // Check if this file is already in the dropdown
+        var existingOption = userGroup.querySelector('option[value="' + value + '"]');
+        if (!existingOption) {
+            var option = document.createElement('option');
+            option.value = value;
+            option.textContent = filename;
+            userGroup.appendChild(option);
+        }
+    }
+
+    function loadUserFile(key) {
+        var buffer = state.userFiles[key];
+        if (!buffer) return;
+
+        if (state.isPlaying) stopAudio();
+
+        ensureAudioContext();
+        if (state.audioContext.state === 'suspended') {
+            state.audioContext.resume();
+        }
+
+        state.audioBuffer = buffer;
+        state.audioDuration = buffer.duration;
+        state.audioPausedAt = 0;
+
+        totalTimeEl.textContent = formatTime(state.audioDuration);
+        currentTimeEl.textContent = '0:00';
+        updateWaveformProgress(0);
+        drawWaveform();
+
+        enablePlaybackControls();
+
+        var filename = key.replace('user:', '');
+        notify('Loaded: ' + filename, 'success');
     }
 
     function loadPresetAudio(filename) {
@@ -613,9 +676,10 @@
 
                 totalTimeEl.textContent = formatTime(state.audioDuration);
                 currentTimeEl.textContent = '0:00';
-                progressFill.style.width = '0%';
+                updateWaveformProgress(0);
+                drawWaveform();
 
-                playbackControls.classList.remove('hidden');
+                enablePlaybackControls();
 
                 var displayName = filename.replace(/[-_]/g, ' ').replace('.wav', '');
                 notify('Loaded: ' + displayName, 'success');
@@ -636,7 +700,8 @@
         if (!state.isLooping && state.isPlaying) {
             stopAudio();
             state.audioPausedAt = 0;
-            progressFill.style.width = '0%';
+            updateWaveformProgress(0);
+            drawWaveform();
             currentTimeEl.textContent = '0:00';
         }
     }
@@ -766,7 +831,8 @@
 
             state.audioPausedAt = offset;
             currentTimeEl.textContent = formatTime(offset);
-            progressFill.style.width = (fraction * 100) + '%';
+            updateWaveformProgress(fraction);
+            drawWaveform();
 
             if (state.technique === 'binaural') {
                 startBinauralPlayback(offset);
@@ -776,8 +842,15 @@
         } else {
             state.audioPausedAt = offset;
             currentTimeEl.textContent = formatTime(offset);
-            progressFill.style.width = (fraction * 100) + '%';
+            updateWaveformProgress(fraction);
+            drawWaveform();
         }
+    }
+
+    function enablePlaybackControls() {
+        playbackControls.classList.remove('disabled');
+        playButton.disabled = false;
+        loopToggle.disabled = false;
     }
 
     function updatePlayButton() {
@@ -801,7 +874,8 @@
                 elapsed = elapsed % state.audioDuration;
             }
             var fraction = Math.min(elapsed / state.audioDuration, 1);
-            progressFill.style.width = (fraction * 100) + '%';
+            updateWaveformProgress(fraction);
+            drawWaveform(); // Redraw to update played portion coloring
             currentTimeEl.textContent = formatTime(elapsed);
             state.progressAnimationId = requestAnimationFrame(update);
         }
@@ -819,6 +893,95 @@
         var mins = Math.floor(seconds / 60);
         var secs = Math.floor(seconds % 60);
         return mins + ':' + (secs < 10 ? '0' : '') + secs;
+    }
+
+    // ========================================
+    // Waveform Visualization
+    // ========================================
+
+    function drawWaveform() {
+        if (!state.audioBuffer) return;
+
+        var rect = waveformWrapper.getBoundingClientRect();
+        var dpr = window.devicePixelRatio || 1;
+        var width = rect.width;
+        var height = rect.height;
+
+        if (width <= 0 || height <= 0) return;
+
+        waveformCanvas.width = width * dpr;
+        waveformCanvas.height = height * dpr;
+        waveformCanvas.style.width = width + 'px';
+        waveformCanvas.style.height = height + 'px';
+        waveformCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        var waveColor = isDark ? 'rgba(96, 165, 250, 0.6)' : 'rgba(37, 99, 235, 0.5)';
+        var playedColor = isDark ? 'rgba(96, 165, 250, 0.9)' : 'rgba(37, 99, 235, 0.8)';
+
+        // Get audio data - use W channel (channel 0) for display
+        var rawData = state.audioBuffer.getChannelData(0);
+        var samples = Math.floor(width);
+        var blockSize = Math.floor(rawData.length / samples);
+        var peaks = [];
+
+        // Calculate peaks for each horizontal pixel
+        for (var i = 0; i < samples; i++) {
+            var start = blockSize * i;
+            var sum = 0;
+            for (var j = 0; j < blockSize; j++) {
+                sum += Math.abs(rawData[start + j] || 0);
+            }
+            peaks.push(sum / blockSize);
+        }
+
+        // Normalize peaks
+        var maxPeak = Math.max.apply(null, peaks) || 1;
+        for (var k = 0; k < peaks.length; k++) {
+            peaks[k] = peaks[k] / maxPeak;
+        }
+
+        // Clear canvas
+        waveformCtx.clearRect(0, 0, width, height);
+
+        // Draw waveform bars (mirrored top/bottom)
+        var barWidth = 2;
+        var gap = 1;
+        var step = barWidth + gap;
+        var centerY = height / 2;
+        var maxBarHeight = height / 2 - 4;
+
+        for (var x = 0; x < width; x += step) {
+            var peakIndex = Math.floor((x / width) * peaks.length);
+            var peak = peaks[peakIndex] || 0;
+            var barHeight = Math.max(2, peak * maxBarHeight);
+
+            // Calculate current playback position
+            var playedFraction = 0;
+            if (state.audioDuration > 0) {
+                if (state.isPlaying) {
+                    var elapsed = state.audioContext.currentTime - state.audioStartTime;
+                    if (state.isLooping && elapsed > state.audioDuration) {
+                        elapsed = elapsed % state.audioDuration;
+                    }
+                    playedFraction = elapsed / state.audioDuration;
+                } else {
+                    playedFraction = state.audioPausedAt / state.audioDuration;
+                }
+            }
+
+            var xFraction = x / width;
+            waveformCtx.fillStyle = xFraction < playedFraction ? playedColor : waveColor;
+
+            // Top bar
+            waveformCtx.fillRect(x, centerY - barHeight, barWidth, barHeight);
+            // Bottom bar (mirrored)
+            waveformCtx.fillRect(x, centerY, barWidth, barHeight);
+        }
+    }
+
+    function updateWaveformProgress(fraction) {
+        waveformProgress.style.width = (fraction * 100) + '%';
     }
 
     // ========================================
@@ -1232,7 +1395,15 @@
 
     // Preset audio selection
     presetSelect.addEventListener('change', function(e) {
-        loadPresetAudio(e.target.value);
+        var value = e.target.value;
+        if (!value) return;
+
+        // Check if it's a user-uploaded file
+        if (value.startsWith('user:') && state.userFiles[value]) {
+            loadUserFile(value);
+        } else {
+            loadPresetAudio(value);
+        }
     });
 
     // Drag and drop on the upload button
@@ -1256,7 +1427,7 @@
     // Play/pause
     playButton.addEventListener('click', togglePlayback);
 
-    // Progress bar seek (mouse + touch)
+    // Waveform seek (mouse + touch)
     function getClientX(e) {
         if (e.touches && e.touches.length > 0) return e.touches[0].clientX;
         if (e.changedTouches && e.changedTouches.length > 0) return e.changedTouches[0].clientX;
@@ -1264,13 +1435,21 @@
     }
 
     function seekFromEvent(e) {
-        var rect = progressBar.getBoundingClientRect();
+        var rect = waveformWrapper.getBoundingClientRect();
         var fraction = (getClientX(e) - rect.left) / rect.width;
         seekTo(Math.max(0, Math.min(1, fraction)));
     }
 
-    progressBar.addEventListener('click', seekFromEvent);
-    progressBar.addEventListener('touchstart', function(e) {
+    function updateCursorPosition(e) {
+        var rect = waveformWrapper.getBoundingClientRect();
+        var fraction = (getClientX(e) - rect.left) / rect.width;
+        fraction = Math.max(0, Math.min(1, fraction));
+        waveformCursor.style.left = (fraction * 100) + '%';
+    }
+
+    waveformWrapper.addEventListener('click', seekFromEvent);
+    waveformWrapper.addEventListener('mousemove', updateCursorPosition);
+    waveformWrapper.addEventListener('touchstart', function(e) {
         e.preventDefault();
         seekFromEvent(e);
     }, { passive: false });
@@ -1434,12 +1613,20 @@
     // Window resize → redraw canvas
     window.addEventListener('resize', resizePolarCanvas);
 
-    // Theme change → redraw canvas
+    // Theme change → redraw canvases
     var themeObserver = new MutationObserver(function() {
         drawPolarPattern();
         drawYawDial();
+        drawWaveform();
     });
     themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+    // Window resize → redraw waveform
+    window.addEventListener('resize', function() {
+        if (state.audioBuffer) {
+            drawWaveform();
+        }
+    });
 
     // ========================================
     // Tooltip System

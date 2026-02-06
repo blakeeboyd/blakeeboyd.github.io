@@ -154,77 +154,158 @@
                         </div>
                     </div>
 
-                    <div class="audio-upload-section" id="audio-upload-section">
-                        <div class="upload-area" id="audio-upload-area">
-                            <input type="file" id="audio-file-input" class="file-input" accept="audio/*" />
-                            <svg aria-hidden="true" class="upload-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="17 8 12 3 7 8"></polyline>
-                                <line x1="12" y1="3" x2="12" y2="15"></line>
-                            </svg>
-                            <p class="upload-text">Drop audio file or click to browse</p>
-                            <p class="upload-hint">Supports WAV, MP3, OGG, FLAC</p>
-                        </div>
-                        <div id="audio-file-info" class="audio-file-info hidden">
-                            <span class="file-name" id="audio-file-name"></span>
-                            <span class="file-duration" id="audio-file-duration"></span>
-                        </div>
-                        <div class="playback-controls hidden" id="playback-controls">
-                            <button type="button" id="play-button" class="play-button" aria-label="Play audio">
-                                <svg aria-hidden="true" id="play-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                                </svg>
-                                <svg aria-hidden="true" id="pause-icon" class="hidden" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                    <rect x="6" y="4" width="4" height="16"></rect>
-                                    <rect x="14" y="4" width="4" height="16"></rect>
-                                </svg>
-                            </button>
-                            <button type="button" class="info-trigger playback-info" aria-label="Playback controls information">
-                                i
-                                <span class="info-tooltip" role="tooltip">
-                                    <strong>Play/Pause:</strong> Start or stop audio playback.<br><br>
-                                    <strong>Progress Bar:</strong> Click anywhere to seek. Shows current position.<br><br>
-                                    <strong>Loop:</strong> Enable to repeat a section. Drag the handles or enter times to set loop points.<br><br>
-                                    <strong>Upload:</strong> Click the icon on the right to load a different file.
-                                </span>
-                            </button>
-                            <div class="progress-container">
-                                <span class="time-display" id="current-time">0:00</span>
-                                <div class="progress-bar" id="progress-bar">
-                                    <div class="loop-region" id="loop-region"></div>
-                                    <div class="progress-fill" id="progress-fill"></div>
-                                    <div class="loop-handle loop-handle-start" id="loop-handle-start"></div>
-                                    <div class="loop-handle loop-handle-end" id="loop-handle-end"></div>
-                                </div>
-                                <span class="time-display" id="total-time">0:00</span>
-                            </div>
-                            <div class="loop-controls">
-                                <div class="toggle-with-label">
-                                    <span class="toggle-label">Loop</span>
-                                    <label class="toggle-switch toggle-switch-sm">
-                                        <input type="checkbox" id="loop-toggle" />
-                                        <span class="toggle-slider"></span>
-                                    </label>
-                                </div>
-                                <div class="loop-range-inputs" id="loop-range-inputs">
-                                    <div class="loop-time-input">
-                                        <label class="control-label" for="loop-start-input">Start</label>
-                                        <input type="text" id="loop-start-input" class="time-input" value="0:00" placeholder="0:00" />
-                                    </div>
-                                    <div class="loop-time-input">
-                                        <label class="control-label" for="loop-end-input">End</label>
-                                        <input type="text" id="loop-end-input" class="time-input" value="0:00" placeholder="0:00" />
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="playback-divider"></div>
-                            <div class="upload-area upload-area-compact" id="audio-upload-area-compact">
-                                <input type="file" id="audio-file-input-compact" class="file-input" accept="audio/*" />
-                                <svg aria-hidden="true" class="upload-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <div id="player-1" class="audio-player">
+                        <div class="player-label">Audio 1</div>
+                        <div class="audio-upload-section">
+                            <div class="upload-area">
+                                <input type="file" class="file-input" accept="audio/*" />
+                                <svg aria-hidden="true" class="upload-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                                     <polyline points="17 8 12 3 7 8"></polyline>
                                     <line x1="12" y1="3" x2="12" y2="15"></line>
                                 </svg>
+                                <p class="upload-text">Drop audio file or click to browse</p>
+                                <p class="upload-hint">Supports WAV, MP3, OGG, FLAC</p>
+                            </div>
+                            <div class="audio-file-info hidden">
+                                <span class="file-name"></span>
+                                <span class="file-duration"></span>
+                            </div>
+                            <div class="playback-controls hidden">
+                                <button type="button" class="play-button" aria-label="Play audio">
+                                    <svg aria-hidden="true" class="play-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                    </svg>
+                                    <svg aria-hidden="true" class="pause-icon hidden" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <rect x="6" y="4" width="4" height="16"></rect>
+                                        <rect x="14" y="4" width="4" height="16"></rect>
+                                    </svg>
+                                </button>
+                                <button type="button" class="info-trigger playback-info" aria-label="Playback controls information">
+                                    i
+                                    <span class="info-tooltip" role="tooltip">
+                                        <strong>Play/Pause:</strong> Start or stop audio playback.<br><br>
+                                        <strong>Progress Bar:</strong> Click anywhere to seek. Shows current position.<br><br>
+                                        <strong>Loop:</strong> Enable to repeat a section. Drag the handles or enter times to set loop points.<br><br>
+                                        <strong>Upload:</strong> Click the icon on the right to load a different file.
+                                    </span>
+                                </button>
+                                <div class="progress-container">
+                                    <span class="time-display current-time">0:00</span>
+                                    <div class="progress-bar">
+                                        <div class="loop-region"></div>
+                                        <div class="progress-fill"></div>
+                                        <div class="loop-handle loop-handle-start"></div>
+                                        <div class="loop-handle loop-handle-end"></div>
+                                    </div>
+                                    <span class="time-display total-time">0:00</span>
+                                </div>
+                                <div class="loop-controls">
+                                    <div class="toggle-with-label">
+                                        <span class="toggle-label">Loop</span>
+                                        <label class="toggle-switch toggle-switch-sm">
+                                            <input type="checkbox" class="loop-toggle" />
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="loop-range-inputs">
+                                        <div class="loop-time-input">
+                                            <label class="control-label">Start</label>
+                                            <input type="text" class="time-input loop-start-input" value="0:00" placeholder="0:00" />
+                                        </div>
+                                        <div class="loop-time-input">
+                                            <label class="control-label">End</label>
+                                            <input type="text" class="time-input loop-end-input" value="0:00" placeholder="0:00" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="playback-divider"></div>
+                                <div class="upload-area upload-area-compact">
+                                    <input type="file" class="file-input file-input-compact" accept="audio/*" />
+                                    <svg aria-hidden="true" class="upload-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="17 8 12 3 7 8"></polyline>
+                                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="player-2" class="audio-player">
+                        <div class="player-label">Audio 2 <span class="player-hint">(for comparison)</span></div>
+                        <div class="audio-upload-section">
+                            <div class="upload-area">
+                                <input type="file" class="file-input" accept="audio/*" />
+                                <svg aria-hidden="true" class="upload-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                <p class="upload-text">Drop audio file or click to browse</p>
+                                <p class="upload-hint">Supports WAV, MP3, OGG, FLAC</p>
+                            </div>
+                            <div class="audio-file-info hidden">
+                                <span class="file-name"></span>
+                                <span class="file-duration"></span>
+                            </div>
+                            <div class="playback-controls hidden">
+                                <button type="button" class="play-button" aria-label="Play audio">
+                                    <svg aria-hidden="true" class="play-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                    </svg>
+                                    <svg aria-hidden="true" class="pause-icon hidden" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <rect x="6" y="4" width="4" height="16"></rect>
+                                        <rect x="14" y="4" width="4" height="16"></rect>
+                                    </svg>
+                                </button>
+                                <button type="button" class="info-trigger playback-info" aria-label="Playback controls information">
+                                    i
+                                    <span class="info-tooltip" role="tooltip">
+                                        <strong>Play/Pause:</strong> Start or stop audio playback.<br><br>
+                                        <strong>Progress Bar:</strong> Click anywhere to seek. Shows current position.<br><br>
+                                        <strong>Loop:</strong> Enable to repeat a section. Drag the handles or enter times to set loop points.<br><br>
+                                        <strong>Upload:</strong> Click the icon on the right to load a different file.
+                                    </span>
+                                </button>
+                                <div class="progress-container">
+                                    <span class="time-display current-time">0:00</span>
+                                    <div class="progress-bar">
+                                        <div class="loop-region"></div>
+                                        <div class="progress-fill"></div>
+                                        <div class="loop-handle loop-handle-start"></div>
+                                        <div class="loop-handle loop-handle-end"></div>
+                                    </div>
+                                    <span class="time-display total-time">0:00</span>
+                                </div>
+                                <div class="loop-controls">
+                                    <div class="toggle-with-label">
+                                        <span class="toggle-label">Loop</span>
+                                        <label class="toggle-switch toggle-switch-sm">
+                                            <input type="checkbox" class="loop-toggle" />
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="loop-range-inputs">
+                                        <div class="loop-time-input">
+                                            <label class="control-label">Start</label>
+                                            <input type="text" class="time-input loop-start-input" value="0:00" placeholder="0:00" />
+                                        </div>
+                                        <div class="loop-time-input">
+                                            <label class="control-label">End</label>
+                                            <input type="text" class="time-input loop-end-input" value="0:00" placeholder="0:00" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="playback-divider"></div>
+                                <div class="upload-area upload-area-compact">
+                                    <input type="file" class="file-input file-input-compact" accept="audio/*" />
+                                    <svg aria-hidden="true" class="upload-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="17 8 12 3 7 8"></polyline>
+                                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                                    </svg>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -276,6 +357,7 @@
     </div>
 
     <script type="text/javascript" src="../../../js/notify.js"></script>
+    <script type="text/javascript" src="js/rnbo.min.js"></script>
     <script type="text/javascript" src="js/guardrails.js"></script>
     <script type="text/javascript" src="js/app-moylanEQ.js"></script>
 </body>
