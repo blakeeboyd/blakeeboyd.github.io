@@ -512,6 +512,12 @@
     pointer-events: auto;
 }
 
+/* Player 1 stays visually active before a file is loaded to invite upload */
+.audio-player.source-disabled.upload-inviting {
+    opacity: 1;
+    filter: none;
+}
+
 /* Audio upload section */
 .audio-upload-section {
     /* No top border/margin needed — .audio-player handles separation */

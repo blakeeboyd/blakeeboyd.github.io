@@ -857,6 +857,9 @@ function loadRNBOScript(version) {
         console.log("Sample rate:", uploadedAudioBuffer.sampleRate);
         console.log("Channels:", uploadedAudioBuffer.numberOfChannels);
 
+        // No longer inviting upload — file is loaded
+        container.classList.remove('upload-inviting');
+
         // Switch source to User Audio when a file is loaded
         document.querySelectorAll('.source-button').forEach(btn => {
           btn.classList.toggle('active', parseInt(btn.dataset.source, 10) === 2);
@@ -1167,6 +1170,9 @@ function loadRNBOScript(version) {
   function setupAudioSource(device, context, userAudioGain) {
     const container1 = document.getElementById('player-1');
     const container2 = document.getElementById('player-2');
+
+    // Player 1 upload area stays visually active until a file is loaded
+    container1.classList.add('upload-inviting');
 
     const sourceButtons = document.querySelectorAll(".source-button");
     const selectorParam = getParameter(device, "audioFile_selector");
