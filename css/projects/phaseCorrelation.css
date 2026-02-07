@@ -515,7 +515,4 @@
     flex-shrink: 0;
 }
 
-/* Hidden utility */
-.hidden {
-    display: none !important;
-}
+/* .hidden utility defined in base.css */

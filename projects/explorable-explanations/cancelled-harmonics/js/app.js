@@ -955,5 +955,12 @@ function setupEventListeners() {
     document.addEventListener('keydown', resumeContext, { once: true });
 }
 
+// Clean up AudioContext on page unload
+window.addEventListener('pagehide', function() {
+    if (state.audioContext && state.audioContext.state !== 'closed') {
+        state.audioContext.close();
+    }
+});
+
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', init);

@@ -171,14 +171,7 @@
     color: var(--color-text-muted);
 }
 
-/* Card header inline layout */
-.card-header-inline {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: var(--spacing-sm);
-}
+/* .card-header-inline defined in components.css */
 
 /* Harmonics grid - 10x2 grid for 20 harmonics */
 .harmonics-grid {
@@ -580,23 +573,11 @@
     outline-offset: 2px;
 }
 
-/* Section divider */
-.section-divider {
-    width: 1px;
-    background: var(--color-border);
-    align-self: stretch;
-    min-height: 60px;
-}
+/* .section-divider defined in components-audio.css */
 
 @media (max-width: 640px) {
     .controls-row {
         flex-direction: column;
-    }
-
-    .section-divider {
-        width: 100%;
-        height: 1px;
-        min-height: 1px;
     }
 }
 

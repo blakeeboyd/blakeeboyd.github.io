@@ -284,14 +284,7 @@
     font-size: 0.75rem;
 }
 
-/* Card header inline layout */
-.card-header-inline {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: var(--spacing-sm);
-}
+/* .card-header-inline defined in components.css */
 
 /* ===========================================
    Progress Bar and Time Display
@@ -748,10 +741,4 @@
     }
 }
 
-/* ===========================================
-   Hidden Utility
-   =========================================== */
-
-.hidden {
-    display: none !important;
-}
+/* .hidden utility defined in base.css */

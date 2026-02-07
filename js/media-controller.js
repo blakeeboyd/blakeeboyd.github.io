@@ -131,7 +131,7 @@
                     event: 'command',
                     func: 'pauseVideo',
                     args: []
-                }), '*');
+                }), 'https://www.youtube.com');
             }
         });
 
@@ -140,7 +140,7 @@
             if (iframe !== activeIframe) {
                 iframe.contentWindow.postMessage(JSON.stringify({
                     method: 'pause'
-                }), '*');
+                }), 'https://player.vimeo.com');
             }
         });
 
@@ -149,7 +149,7 @@
             if (iframe !== activeIframe) {
                 iframe.contentWindow.postMessage(JSON.stringify({
                     method: 'pause'
-                }), '*');
+                }), 'https://w.soundcloud.com');
             }
         });
 

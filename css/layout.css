@@ -74,7 +74,7 @@ nav {
 
 .nav-link.active {
     color: var(--color-accent);
-    background-color: rgba(0, 102, 204, 0.1);
+    background-color: var(--color-accent-light);
 }
 
 /* Hamburger menu button (hidden on desktop) */

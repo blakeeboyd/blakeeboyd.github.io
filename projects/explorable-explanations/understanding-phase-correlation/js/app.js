@@ -485,25 +485,14 @@ function updateOutputModeButtons() {
 
 async function handleAudioFile(file) {
     if (!file || !file.type.startsWith('audio/')) {
-        console.error('Please select an audio file');
+        alert('Please select a valid audio file.');
         return;
     }
 
     // Validate file size (100MB limit)
     const MAX_FILE_SIZE = 100 * 1024 * 1024;
     if (file.size > MAX_FILE_SIZE) {
-        if (typeof notify === 'function') {
-            notify('File is too large. Maximum size is 100MB.', 'error');
-        }
-        return;
-    }
-
-    // Validate MIME type
-    const validAudioTypes = ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/flac', 'audio/mp4', 'audio/aac', 'audio/webm'];
-    if (!file.type.startsWith('audio/') && !validAudioTypes.some(t => file.type === t)) {
-        if (typeof notify === 'function') {
-            notify('Please select a valid audio file.', 'error');
-        }
+        alert('File is too large. Maximum size is 100MB.');
         return;
     }
 
@@ -534,6 +523,7 @@ async function handleAudioFile(file) {
         console.log('Audio loaded:', file.name, formatTime(state.userAudioDuration));
     } catch (error) {
         console.error('Error decoding audio:', error);
+        alert('Could not decode audio file. Please try a different file.');
     }
 }
 
