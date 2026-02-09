@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Guide to stereo microphone techniques: XY, ORTF, Mid-Side, Blumlein, Spaced Pair, and binaural decoding from Ambisonic recordings">
+    <meta name="description" content="Guide to stereo microphone techniques: XY, ORTF, Mid-Side, and Blumlein decoded from Ambisonic recordings">
     <title>Stereo Mic Techniques Guide - Blake Boyd</title>
     <meta name="theme-color" content="#2563eb">
     <meta name="author" content="Blake Emerson Boyd">
@@ -309,11 +309,11 @@
 
         <main id="main-content">
             <div class="back-links">
-                <a href="../../../lab.html" class="back-link">
+                <a href="../../../projects.html" class="back-link">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M19 12H5M12 19l-7-7 7-7"/>
                     </svg>
-                    Lab
+                    Projects
                 </a>
                 <span class="back-link-separator">/</span>
                 <a href="./" class="back-link">
@@ -332,7 +332,12 @@
                         <h2>Background</h2>
                         <p>Every stereo microphone technique makes a tradeoff between three spatial cues: <strong>level differences</strong> (which ear hears it louder), <strong>time differences</strong> (which ear hears it first), and <strong>spectral differences</strong> (how the sound's timbre changes with direction). Coincident techniques like XY and Blumlein rely entirely on level differences. Near-coincident techniques like ORTF add a small time difference. Spaced pairs rely almost entirely on time differences.</p>
 
-                        <p id="fnref1">This tool uses a first-order Ambisonic recording as its source material. Ambisonics captures the complete 360-degree sound field at a single point using four channels: an omnidirectional pressure signal (W) and three figure-8 directional signals pointing front-back (X), left-right (Y), and up-down (Z). From these four channels, we can mathematically extract what any coincident microphone pair would have captured, because all coincident techniques encode the same spatial information (level differences from directional patterns) that the Ambisonic channels already contain.<sup><a href="#fn1">1</a></sup></p>
+                        <p>The usual way to compare stereo techniques is to set up multiple mic pairs in front of the same source and record simultaneously. This works but introduces variables that have nothing to do with the technique itself: small differences in mic placement, gain matching, room position, and the fact that no two performances are identical. It becomes difficult to hear what the technique is doing versus what the setup is doing.</p>
+
+                        <p id="fnref1">This tool takes a different approach. It starts from a single Ambisonic recording and decodes it into each stereo technique mathematically. Because every decode starts from the same captured sound field, the technique is the only variable. You can switch from XY to Blumlein to Mid-Side on the same passage of music and hear exactly what each one keeps, emphasizes, or discards, without any of the confounding variables of a physical comparison.</p>
+
+                        <h3>Why Ambisonics Makes This Possible</h3>
+                        <p>Ambisonics captures the complete 360-degree sound field at a single point using four channels: an omnidirectional pressure signal (W) and three figure-8 directional signals pointing front-back (X), left-right (Y), and up-down (Z). From these four channels, we can mathematically extract what any coincident microphone pair would have captured, because all coincident techniques encode the same spatial information (level differences from directional patterns) that the Ambisonic channels already contain.<sup><a href="#fn1">1</a></sup></p>
 
                         <table class="technique-table">
                             <thead>
@@ -378,7 +383,7 @@
                                     <td>Binaural</td>
                                     <td>HRTF convolution</td>
                                     <td>Level + time + spectral</td>
-                                    <td>Rendered via Omnitone</td>
+                                    <td>Rendered via HRTF (not yet in tool)</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -388,7 +393,7 @@
                         <h2>How to Use the Tool</h2>
 
                         <h3>Audio Source</h3>
-                        <p>The tool includes sample recordings from the <a href="https://www.ambisonictoolkit.net/download/recordings/" target="_blank" rel="noopener">Ambisonic Toolkit</a>, a free and open source project for working with Ambisonic audio. These recordings were captured with various Ambisonic microphones and cover a range of environments: nature soundscapes, chamber music, electronic music, and spoken dialogue. They provide excellent material for exploring how different stereo techniques reveal (or obscure) spatial characteristics in a recording.</p>
+                        <p>The tool includes sample recordings from the <a href="https://www.ambisonictoolkit.net/download/recordings/" target="_blank" rel="noopener">Ambisonic Toolkit</a> and <a href="https://freesound.org/" target="_blank" rel="noopener">Freesound</a>. These recordings were captured with various Ambisonic microphones and cover a range of material: chamber music, Brazilian percussion, and spoken dialogue. They provide good material for exploring how different stereo techniques reveal (or obscure) spatial characteristics in a recording.</p>
                         <p>You can also upload your own 4-channel WAV or FLAC file in B-format (first-order Ambisonics). The tool supports both AmbiX (ACN/SN3D) and FuMa channel orderings. Toggle between them with the Channel Format buttons.</p>
                         <ul>
                             <li><strong>AmbiX:</strong> W, Y, Z, X channel order. The modern standard used by most current Ambisonic software and microphones (Zoom H3-VR, Sennheiser AMBEO, etc.).</li>
@@ -404,7 +409,6 @@
                         <ul>
                             <li><strong>XY:</strong> Stereo angle (60-180 degrees) and microphone pattern (cardioid, hypercardioid, or figure-8).</li>
                             <li><strong>Mid-Side:</strong> Mid microphone pattern (cardioid, omni, or hypercardioid) and width (0 = mono, 1 = standard, 2 = exaggerated).</li>
-                            <li><strong>Binaural:</strong> Head rotation dial to "turn your head" within the recording.</li>
                         </ul>
                         <p>ORTF and Blumlein use fixed configurations with no adjustable parameters.</p>
 
@@ -616,10 +620,12 @@
                                 <text x="100" y="195" class="label-muted" text-anchor="middle">HRTF simulation (headphones)</text>
                             </svg>
                         </div>
+                        <div class="note">
+                            <p>Binaural decoding is not yet available in the tool but is planned for a future update.</p>
+                        </div>
                         <p>Binaural audio simulates how sound reaches your eardrums by applying Head-Related Transfer Functions (HRTFs): the frequency-dependent filtering caused by your head, ears, and torso. When heard over headphones, binaural audio creates a convincing illusion of sounds arriving from specific directions in 3D space.</p>
                         <p>For Ambisonics, binaural decoding convolves the B-format channels with HRTF filters that have been decomposed into spherical harmonics. This is computationally efficient and produces a smooth, natural spatial impression. First-order Ambisonics (4 channels) provides moderate spatial resolution: you can clearly distinguish front from back and left from right, but precise localization of individual sources is limited compared to higher-order recordings.</p>
-                        <p>The head rotation control lets you "turn your head" within the recording. This is a key advantage of Ambisonics over fixed stereo recordings: because the full sound field is captured, the listener can explore different perspectives of the same recording.</p>
-                        <p>This tool uses <a href="https://github.com/GoogleChrome/omnitone" target="_blank" rel="noopener">Google Omnitone</a> for binaural rendering, with HRTF filters measured from a Neumann KU100 dummy head.</p>
+                        <p>A head rotation control would let you "turn your head" within the recording. This is a key advantage of Ambisonics over fixed stereo recordings: because the full sound field is captured, the listener can explore different perspectives of the same recording.</p>
                     </section>
 
                     <section class="guide-section" id="ambisonic-decoding">
