@@ -428,12 +428,21 @@
         var t = state.audioContext.currentTime;
         var ramp = 0.02;
 
-        state.gainL.w.gain.linearRampToValueAtTime(gains.left.w, t + ramp);
-        state.gainL.x.gain.linearRampToValueAtTime(gains.left.x, t + ramp);
-        state.gainL.y.gain.linearRampToValueAtTime(gains.left.y, t + ramp);
-        state.gainR.w.gain.linearRampToValueAtTime(gains.right.w, t + ramp);
-        state.gainR.x.gain.linearRampToValueAtTime(gains.right.x, t + ramp);
-        state.gainR.y.gain.linearRampToValueAtTime(gains.right.y, t + ramp);
+        // Normalize so all techniques produce the same output energy.
+        // Use the average RMS of left and right coefficient vectors.
+        var lEnergy = Math.sqrt(gains.left.w * gains.left.w + gains.left.x * gains.left.x + gains.left.y * gains.left.y);
+        var rEnergy = Math.sqrt(gains.right.w * gains.right.w + gains.right.x * gains.right.x + gains.right.y * gains.right.y);
+        var avgEnergy = (lEnergy + rEnergy) / 2;
+        // Target energy matches a cardioid (p=0.5) at 90° — the XY default
+        var targetEnergy = Math.sqrt(0.5 * 0.5 + 0.354 * 0.354 + 0.354 * 0.354); // ~0.707
+        var scale = (avgEnergy > 0.001) ? targetEnergy / avgEnergy : 1;
+
+        state.gainL.w.gain.linearRampToValueAtTime(gains.left.w * scale, t + ramp);
+        state.gainL.x.gain.linearRampToValueAtTime(gains.left.x * scale, t + ramp);
+        state.gainL.y.gain.linearRampToValueAtTime(gains.left.y * scale, t + ramp);
+        state.gainR.w.gain.linearRampToValueAtTime(gains.right.w * scale, t + ramp);
+        state.gainR.x.gain.linearRampToValueAtTime(gains.right.x * scale, t + ramp);
+        state.gainR.y.gain.linearRampToValueAtTime(gains.right.y * scale, t + ramp);
     }
 
     function updateGainsForTechnique() {
@@ -637,10 +646,23 @@
         notify('Loaded: ' + filename, 'success');
     }
 
+    // AmbiX-format preset files (all others are FuMa)
+    var ambixPresets = [
+        'WilliamDauricio-Batucada_Garantido.wav',
+        'WilliamDauricio-Marujada_Caprichoso.wav',
+        'clucs-Clock_Test.wav'
+    ];
+
     function loadPresetAudio(filename) {
         if (!filename) return;
 
         if (state.isPlaying) stopAudio();
+
+        // Auto-switch format based on preset
+        var expectedFormat = ambixPresets.indexOf(filename) !== -1 ? 'ambix' : 'fuma';
+        if (state.channelFormat !== expectedFormat) {
+            switchFormat(expectedFormat);
+        }
 
         ensureAudioContext();
 
