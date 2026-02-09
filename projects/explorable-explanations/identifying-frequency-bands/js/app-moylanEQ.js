@@ -581,7 +581,7 @@ function loadRNBOScript(version) {
   // Creates an independent audio player instance bound to a container element.
   // The onPlay callback is called before playback starts, allowing the coordinator
   // to pause other players (mutual exclusion).
-  function createPlayer(container, device, context, userAudioGain, onPlay) {
+  function createPlayer(container, device, context, userAudioGain, onPlay, onFileLoaded) {
     // DOM elements scoped to this player's container
     const audioUploadSection = container.querySelector(".audio-upload-section");
     const fileInput = container.querySelector(".file-input:not(.file-input-compact)");
@@ -855,6 +855,8 @@ function loadRNBOScript(version) {
 
         // No longer inviting upload — file is loaded
         container.classList.remove('upload-inviting');
+
+        if (onFileLoaded) onFileLoaded();
 
         // Switch source to User Audio when a file is loaded
         document.querySelectorAll('.source-button').forEach(btn => {
@@ -1180,6 +1182,13 @@ function loadRNBOScript(version) {
     const player1 = createPlayer(container1, device, context, userAudioGain, () => {
       player2.stop();
       activePlayer = player1;
+    }, () => {
+      // First file uploaded to Player 1: expand Player 2
+      if (container2.classList.contains('collapsed')) {
+        container2.classList.remove('collapsed');
+        var toggleBtn = container2.querySelector('.player-label-toggle');
+        if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+      }
     });
 
     const player2 = createPlayer(container2, device, context, userAudioGain, () => {
