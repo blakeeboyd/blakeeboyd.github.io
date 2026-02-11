@@ -112,6 +112,18 @@ class SiteNav extends HTMLElement {
       };
       document.addEventListener('click', outsideClickHandler);
       this._listeners.push({ target: document, type: 'click', handler: outsideClickHandler });
+
+      // Close menu on Escape key
+      const escapeHandler = (e) => {
+        if (e.key === 'Escape' && navLinks.classList.contains('open')) {
+          navLinks.classList.remove('open');
+          hamburger.classList.remove('open');
+          hamburger.setAttribute('aria-expanded', 'false');
+          hamburger.focus();
+        }
+      };
+      document.addEventListener('keydown', escapeHandler);
+      this._listeners.push({ target: document, type: 'keydown', handler: escapeHandler });
     }
   }
 }

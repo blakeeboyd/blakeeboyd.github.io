@@ -42,6 +42,7 @@ document.getElementById('contact-form').addEventListener('submit', function(e) {
         mode: 'no-cors'
     }).then(function() {
         clearTimeout(timeoutId);
+        form.reset();
         form.classList.add('hidden');
         document.getElementById('form-success').classList.remove('hidden');
         statusDiv.textContent = 'Message sent successfully!';
