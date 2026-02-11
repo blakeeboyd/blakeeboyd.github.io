@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EQ ear training game - match hidden EQ curves by listening and adjusting a parametric equalizer">
+    <title>EQ Matching - Blake Boyd</title>
+    <!-- SEO -->
+    <link rel="canonical" href="https://blakeeboyd.github.io/projects/eq-training/">
+    <!-- Open Graph -->
+    <meta property="og:title" content="EQ Matching Ear Training - Blake Boyd">
+    <meta property="og:description" content="EQ ear training game - match hidden EQ curves by listening and adjusting a parametric equalizer">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://blakeeboyd.github.io/projects/eq-training/">
+    <meta property="og:site_name" content="Blake Boyd">
+    <meta property="og:image" content="https://blakeeboyd.github.io/images/social-card.jpg">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="EQ Matching Ear Training - Blake Boyd">
+    <meta name="twitter:description" content="Match hidden EQ curves by ear using a parametric equalizer">
+    <meta name="twitter:image" content="https://blakeeboyd.github.io/images/social-card.jpg">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake Emerson Boyd">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="stylesheet" href="../../css/base.css">
+    <link rel="stylesheet" href="../../css/layout.css">
+    <link rel="stylesheet" href="../../css/components.css">
+    <link rel="stylesheet" href="../../css/components-audio.css">
+    <link rel="stylesheet" href="../../css/projects/eqMatching.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="../../js/theme.js"></script>
+    <script src="../../js/nav-component.js" defer></script>
+</head>
+<body>
+    <div class="container wide">
+        <site-nav base="../../"></site-nav>
+
+        <main id="main-content">
+            <!-- Header -->
+            <div class="page-header">
+                <h1 class="page-title">EQ Matching</h1>
+                <p class="page-subtitle">Train your ears by matching hidden EQ curves</p>
+            </div>
+
+            <!-- Main Game Area -->
+            <div class="eq-game-layout">
+                <!-- EQ Visualization Card -->
+                <div class="card eq-canvas-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Parametric EQ</h2>
+                        <div class="eq-mode-indicator" id="eq-mode">Your EQ</div>
+                    </div>
+                    <div class="eq-canvas-container">
+                        <canvas id="eq-canvas" aria-label="EQ frequency response curve visualization"></canvas>
+                        <div class="eq-readout" id="eq-readout"></div>
+                    </div>
+                </div>
+
+                <!-- Controls Card -->
+                <div class="card controls-card">
+                    <!-- Audio Source -->
+                    <div class="control-section">
+                        <h3>Audio Source</h3>
+                        <div class="source-buttons">
+                            <button type="button" data-source="noise" class="active">Pink Noise</button>
+                            <button type="button" data-source="file">Upload Audio</button>
+                        </div>
+                        <div class="upload-area hidden" id="upload-area">
+                            <input type="file" id="audio-file-input" accept="audio/*" hidden>
+                            <label for="audio-file-input" class="upload-label">
+                                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                <span>Drop audio file or click to upload</span>
+                            </label>
+                        </div>
+                        <div class="file-info hidden" id="file-info">
+                            <span class="file-name" id="file-name"></span>
+                            <span class="file-duration" id="file-duration"></span>
+                        </div>
+                    </div>
+
+                    <!-- Listening Mode -->
+                    <div class="control-section">
+                        <h3>Listening Mode</h3>
+                        <div class="mode-buttons">
+                            <button type="button" data-mode="target" class="active">Target EQ</button>
+                            <button type="button" data-mode="user">Your EQ</button>
+                            <button type="button" data-mode="bypass">Bypass</button>
+                        </div>
+                    </div>
+
+                    <!-- Gain Control -->
+                    <div class="control-section">
+                        <h3>Master Gain</h3>
+                        <div class="gain-control">
+                            <input type="range" id="master-gain" min="-70" max="0" value="-24">
+                            <span id="gain-display">-24 dB</span>
+                        </div>
+                    </div>
+
+                    <!-- Game Actions -->
+                    <div class="control-section game-actions">
+                        <button type="button" id="new-round-btn" class="action-button primary">New Round</button>
+                        <button type="button" id="submit-btn" class="action-button" disabled>Submit Guess</button>
+                        <button type="button" id="reset-btn" class="action-button secondary">Reset EQ</button>
+                    </div>
+                </div>
+
+                <!-- Score/Results Card -->
+                <div class="card score-card">
+                    <div class="score-display">
+                        <span class="score-label">Score</span>
+                        <span class="score-value" id="score-value">--</span>
+                    </div>
+                    <div class="streak-display">
+                        <span class="streak-label">Streak</span>
+                        <span class="streak-value" id="streak-value">0</span>
+                    </div>
+                    <div class="result-message hidden" id="result-message"></div>
+                </div>
+            </div>
+
+            <!-- Band Controls Card -->
+            <div class="card band-controls-card">
+                <h2 class="card-title">Filter Parameters
+                    <button type="button" class="info-trigger" aria-label="Filter parameter information">
+                        i
+                        <span class="info-tooltip" role="tooltip">
+                            <strong>Drag points</strong> on the EQ graph to adjust frequency and gain.<br><br>
+                            <strong>Scroll wheel</strong> over a peaking band point to adjust Q (bandwidth).<br><br>
+                            Use these number inputs for precise control.
+                        </span>
+                    </button>
+                </h2>
+                <div class="bands-grid">
+                    <!-- Band 1: HPF/LSF -->
+                    <div class="band-control" data-band="0">
+                        <div class="band-header">
+                            <span class="band-label band-1">Band 1</span>
+                            <select class="filter-type-select" id="band0-type">
+                                <option value="highpass">High-Pass</option>
+                                <option value="lowshelf">Low Shelf</option>
+                            </select>
+                        </div>
+                        <div class="band-params">
+                            <label>Freq <input type="number" id="band0-freq" min="20" max="500" value="80"> Hz</label>
+                            <label class="gain-param hidden" id="band0-gain-label">Gain <input type="number" id="band0-gain" min="-18" max="18" value="0" step="0.5"> dB</label>
+                        </div>
+                    </div>
+                    <!-- Band 2: Peak -->
+                    <div class="band-control" data-band="1">
+                        <div class="band-header">
+                            <span class="band-label band-2">Band 2</span>
+                            <span class="filter-type">Peaking</span>
+                        </div>
+                        <div class="band-params">
+                            <label>Freq <input type="number" id="band1-freq" min="100" max="2000" value="400"> Hz</label>
+                            <label>Gain <input type="number" id="band1-gain" min="-18" max="18" value="0" step="0.5"> dB</label>
+                            <label>Q <input type="number" id="band1-q" min="0.1" max="10" step="0.1" value="1.0"></label>
+                        </div>
+                    </div>
+                    <!-- Band 3: Peak -->
+                    <div class="band-control" data-band="2">
+                        <div class="band-header">
+                            <span class="band-label band-3">Band 3</span>
+                            <span class="filter-type">Peaking</span>
+                        </div>
+                        <div class="band-params">
+                            <label>Freq <input type="number" id="band2-freq" min="500" max="8000" value="2000"> Hz</label>
+                            <label>Gain <input type="number" id="band2-gain" min="-18" max="18" value="0" step="0.5"> dB</label>
+                            <label>Q <input type="number" id="band2-q" min="0.1" max="10" step="0.1" value="1.0"></label>
+                        </div>
+                    </div>
+                    <!-- Band 4: LPF/HSF -->
+                    <div class="band-control" data-band="3">
+                        <div class="band-header">
+                            <span class="band-label band-4">Band 4</span>
+                            <select class="filter-type-select" id="band3-type">
+                                <option value="lowpass">Low-Pass</option>
+                                <option value="highshelf">High Shelf</option>
+                            </select>
+                        </div>
+                        <div class="band-params">
+                            <label>Freq <input type="number" id="band3-freq" min="2000" max="20000" value="12000"> Hz</label>
+                            <label class="gain-param hidden" id="band3-gain-label">Gain <input type="number" id="band3-gain" min="-18" max="18" value="0" step="0.5"> dB</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructions Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">How to Play</h2>
+                </div>
+                <div class="background-content">
+                    <ol>
+                        <li><strong>Start a New Round:</strong> Click "New Round" to generate a hidden EQ curve applied to the audio.</li>
+                        <li><strong>Listen to the Target:</strong> With "Target EQ" selected, listen to how the audio has been shaped.</li>
+                        <li><strong>Adjust Your EQ:</strong> Switch to "Your EQ" and drag the control points on the graph (or use the number inputs below) to recreate what you hear.</li>
+                        <li><strong>Compare:</strong> Toggle between "Target EQ" and "Your EQ" to refine your match.</li>
+                        <li><strong>Submit:</strong> When confident, click "Submit Guess" to reveal the target curve and see your score.</li>
+                    </ol>
+                    <p><strong>Tips:</strong> Use "Bypass" to hear the unprocessed audio for reference. Scroll over a control point to adjust Q (bandwidth) for peaking bands. Higher scores require closer matches across all frequencies.</p>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; <span class="footer-year"></span> Blake Boyd</p>
+        </footer>
+    </div>
+
+    <script src="../../js/notify.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

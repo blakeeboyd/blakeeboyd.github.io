@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Explore the timbre of a complex tone by toggling on and off individual harmonics.">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake Emerson Boyd">
+    <title>Cancelled Harmonics - Blake Boyd</title>
+    <!-- SEO -->
+    <link rel="canonical" href="https://blakeeboyd.github.io/projects/cancelled-harmonics/">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Cancelled Harmonics - Blake Boyd">
+    <meta property="og:description" content="Explore the timbre of a complex tone by toggling on and off individual harmonics.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://blakeeboyd.github.io/projects/cancelled-harmonics/">
+    <meta property="og:site_name" content="Blake Boyd">
+    <meta property="og:image" content="https://blakeeboyd.github.io/images/social-card.jpg">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Cancelled Harmonics - Blake Boyd">
+    <meta name="twitter:description" content="Explore the timbre of a complex tone by toggling on and off individual harmonics.">
+    <meta name="twitter:image" content="https://blakeeboyd.github.io/images/social-card.jpg">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+    <link rel="manifest" href="../../manifest.json">
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../css/base.css">
+    <link rel="stylesheet" href="../../css/layout.css">
+    <link rel="stylesheet" href="../../css/components.css">
+    <link rel="stylesheet" href="../../css/components-audio.css">
+    <link rel="stylesheet" href="../../css/projects/cancelledHarmonics.css">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- JS -->
+    <script src="../../js/theme.js"></script>
+    <script src="../../js/nav-component.js" defer></script>
+</head>
+<body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div class="container wide">
+        <site-nav base="../../"></site-nav>
+
+        <main id="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Cancelled Harmonics (ASA 1)</h1>
+                <p class="page-subtitle">Explore the timbre of a complex tone by toggling on and off individual harmonics.</p>
+            </div>
+
+            <div class="harmonics-app">
+                <!-- Main controls card -->
+                <div class="card">
+                    <div class="controls-row">
+                        <!-- Playback section -->
+                        <div class="playback-section">
+                            <div class="card-header">
+                                <h2 class="card-title">Playback
+                                    <button type="button" class="info-trigger" aria-label="Playback information">
+                                        i
+                                        <span class="info-tooltip tooltip-left" role="tooltip">
+                                            <strong>Start/Stop:</strong> Toggle audio playback.<br><br>
+                                            <strong>Master Gain:</strong> Adjust overall volume from -70dB to 0dB.
+                                        </span>
+                                    </button>
+                                </h2>
+                            </div>
+                            <div class="playback-controls">
+                                <button type="button" id="play-button" class="play-button" aria-label="Start audio">
+                                    <svg class="icon-play" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                    </svg>
+                                    <svg class="icon-pause" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                        <rect x="6" y="4" width="4" height="16"></rect>
+                                        <rect x="14" y="4" width="4" height="16"></rect>
+                                    </svg>
+                                </button>
+                                <div class="gain-control">
+                                    <label class="control-label" for="master-gain">Master Gain (dB)</label>
+                                    <div class="gain-row">
+                                        <input type="range" id="master-gain" class="gain-slider" min="-70" max="0" value="-24" step="1" />
+                                        <span class="gain-text" id="gain-display">-24</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-divider"></div>
+
+                        <!-- Fundamental frequency section -->
+                        <div class="fundamental-section">
+                            <div class="card-header">
+                                <h2 class="card-title">Fundamental Frequency
+                                    <button type="button" class="info-trigger" aria-label="Fundamental frequency information">
+                                        i
+                                        <span class="info-tooltip" role="tooltip">
+                                            <strong>Fundamental Frequency:</strong> The base frequency of the complex tone.<br><br>
+                                            All harmonics are integer multiples of this frequency (2f, 3f, 4f, etc.).<br><br>
+                                            Default: 200 Hz (per ASA demo)
+                                        </span>
+                                    </button>
+                                </h2>
+                            </div>
+                            <div class="freq-control">
+                                <div class="freq-row">
+                                    <input type="range" id="fundamental-freq-slider" class="freq-slider" value="200" min="50" max="500" step="1" />
+                                    <div class="freq-input-group">
+                                        <input type="number" id="fundamental-freq-input" class="freq-input" value="200" min="50" max="500" step="1" />
+                                        <span class="freq-unit">Hz</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Harmonics grid card -->
+                <div class="card">
+                    <div class="card-header card-header-inline">
+                        <h2 class="card-title">Harmonics
+                            <button type="button" class="info-trigger" aria-label="Harmonics information">
+                                i
+                                <span class="info-tooltip" role="tooltip">
+                                    <strong>Click to toggle:</strong> Each button represents a harmonic.<br><br>
+                                    <strong>Active (blue):</strong> Harmonic is sounding<br>
+                                    <strong>Inactive (gray):</strong> Harmonic is muted
+                                </span>
+                            </button>
+                        </h2>
+                        <div class="harmonics-actions">
+                            <div class="waveform-section">
+                                <span class="waveform-label">Waveform
+                                    <button type="button" class="info-trigger" aria-label="Waveform information">
+                                        i
+                                        <span class="info-tooltip tooltip-left" role="tooltip">
+                                            <strong>Waveform presets</strong> set the harmonic amplitudes:<br><br>
+                                            • <strong>Sine:</strong> fundamental only<br>
+                                            • <strong>Triangle:</strong> odd harmonics, 1/n²<br>
+                                            • <strong>Square:</strong> odd harmonics, 1/n<br>
+                                            • <strong>Sawtooth:</strong> all harmonics, 1/n
+                                        </span>
+                                    </button>
+                                </span>
+                                <div class="waveform-buttons">
+                                    <button type="button" id="wave-sine" class="action-button wave-button" title="Sine (fundamental only)">Sine</button>
+                                    <button type="button" id="wave-triangle" class="action-button wave-button" title="Triangle wave">Triangle</button>
+                                    <button type="button" id="wave-square" class="action-button wave-button" title="Square wave">Square</button>
+                                    <button type="button" id="wave-sawtooth" class="action-button wave-button active" title="Sawtooth wave">Saw</button>
+                                </div>
+                            </div>
+                            <span class="actions-divider"></span>
+                            <button type="button" id="enable-all" class="action-button">Enable All</button>
+                            <button type="button" id="disable-all" class="action-button">Disable All</button>
+                        </div>
+                    </div>
+                    <div class="harmonics-grid" id="harmonics-grid">
+                        <!-- 20 harmonic buttons generated by JavaScript -->
+                    </div>
+                    <div class="auto-demo-row">
+                        <div class="demo-button-group">
+                            <button type="button" id="auto-demo" class="action-button action-button-primary">Auto Demo</button>
+                            <span class="demo-description">Hear each harmonic separate from the complex tone</span>
+                            <button type="button" class="info-trigger" aria-label="Auto Demo information">
+                                i
+                                <span class="info-tooltip tooltip-left" role="tooltip">
+                                    <strong>Auto Demo</strong> replicates the ASA demonstration sequence. For harmonics 1-10, it toggles each on and off three times with silence between, helping you hear how each component separates from the complex tone.
+                                </span>
+                            </button>
+                        </div>
+                        <div class="demo-button-group">
+                            <button type="button" id="random-build" class="action-button action-button-secondary">Random Build</button>
+                            <span class="demo-description">Build a sawtooth from scratch</span>
+                            <button type="button" class="info-trigger" aria-label="Random Build information">
+                                i
+                                <span class="info-tooltip tooltip-left" role="tooltip">
+                                    <strong>Random Build</strong> is just for fun! It starts with silence and randomly adds harmonics one by one until the full sawtooth timbre emerges.
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Spectrogram card -->
+                <div class="card">
+                    <div class="card-header card-header-inline">
+                        <h2 class="card-title">Spectrogram
+                            <button type="button" class="info-trigger" aria-label="Spectrogram information">
+                                i
+                                <span class="info-tooltip" role="tooltip">
+                                    <strong>Real-time visualization</strong> of frequency content.<br><br>
+                                    Horizontal axis: time (scrolling left)<br>
+                                    Vertical axis: frequency (0-5kHz)<br>
+                                    Color: amplitude (blue=quiet, red=loud)<br><br>
+                                    Each horizontal line represents one harmonic.
+                                </span>
+                            </button>
+                        </h2>
+                        <div class="spectrogram-controls">
+                            <div class="control-group inline">
+                                <label class="control-label" for="fft-size">Resolution</label>
+                                <select id="fft-size" class="eq-select">
+                                    <option value="1024">Low (1024)</option>
+                                    <option value="2048" selected>Medium (2048)</option>
+                                    <option value="4096">High (4096)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="spectrogram-container">
+                        <canvas id="spectrogram" aria-label="Real-time spectrogram showing frequency content over time"></canvas>
+                        <div class="frequency-axis" id="frequency-axis">
+                            <!-- Frequency labels generated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Educational content cards -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Background</h2>
+                    </div>
+                    <div class="background-content">
+                        <p>This tool demonstrates <strong>Fourier analysis</strong> by letting you build and deconstruct complex tones from their harmonic components. It is an interactive example of the <a href="https://ccrma.stanford.edu/~malcolm/correlograms/index.html?1%20Cancelled%20Harmonics.html" target="_blank" rel="noopener">ASA Cancelled Harmonics demo</a>.</p>
+
+                        <p>A key insight from psychoacoustics is that our perception of complex sounds depends on whether their components change independently. When all harmonics maintain constant relative amplitudes, we perceive a unified timbre. But the moment a single harmonic is removed or added, it becomes distinctly audible—even if we couldn't hear it as a separate tone before.</p>
+
+                        <p>This phenomenon reveals that our auditory system can switch between two modes: perceiving the whole sound as a single entity, or attending to its individual frequency components. The spectrogram visualizes these components in real time, making it easier to connect what you hear with what you see.</p>
+
+                        <p>Four <strong>waveform presets</strong> control the harmonic structure: sawtooth (all harmonics at 1/n amplitude), square (odd harmonics at 1/n), triangle (odd harmonics at 1/n²), and sine (fundamental only). The fundamental frequency is adjustable from 50-500 Hz.</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Exercise</h2>
+                    </div>
+                    <div class="background-content">
+                        <p>Try the following exercises to develop your analytical listening skills:</p>
+                        <ol>
+                            <li><strong>Click Auto Demo</strong> and listen carefully. Pay attention to how each harmonic separates from the complex tone when it is removed, then merges back into the unified timbre when restored. Can you follow each harmonic as it "pops out" and returns?</li>
+                            <li><strong>Enable all harmonics</strong> and toggle individual ones manually. Notice how a harmonic becomes distinctly audible when it changes state, even though you couldn't hear it as a separate tone before.</li>
+                            <li><strong>Start with all harmonics disabled</strong> and add them one by one from the fundamental up. Notice how the timbre builds as you add higher harmonics.</li>
+                            <li><strong>Try isolating specific harmonics:</strong> Disable all except one or two adjacent harmonics. Can you hear them as separate tones?</li>
+                            <li><strong>Experiment with waveform presets</strong> and notice how different harmonic structures create different timbres (sawtooth vs. square vs. triangle).</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; <span class="footer-year"></span> Blake Boyd</p>
+        </footer>
+    </div>
+
+    <script type="text/javascript" src="js/app.js"></script>
+</body>
+</html>

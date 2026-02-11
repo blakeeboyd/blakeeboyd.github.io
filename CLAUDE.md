@@ -40,52 +40,65 @@ When building new features:
 │   └── wip-modal.js        # Reusable "work in progress" modal
 ├── images/                 # Site images
 └── projects/
-    ├── creative-tools/
-    │   ├── pechakucha-player/
-    │   │   ├── index.html      # Player main page (uses .container.wide)
-    │   │   ├── presentation.html # External presentation window
-    │   │   ├── guide.html      # User guide
-    │   │   └── js/
-    │   │       └── app.js      # Pure JavaScript, no dependencies
-    │   ├── bandlab-parser/
-    │   │   ├── index.html      # Parser main page (uses .container.wide)
-    │   │   └── bookmarklet.html # Bookmarklet setup instructions
-    │   └── pairwise-matrix/
-    │       ├── index.html      # Matrix tool (uses .container.wide)
-    │       ├── guide.html      # User guide
-    │       ├── architecture.md # System design documentation
-    │       ├── ideas.md        # Future feature ideas
-    │       └── js/
-    │           └── app.js      # Pure JavaScript, no dependencies
-    └── explorable-explanations/
-        ├── identifying-frequency-bands/
-        │   ├── index.html      # Main page (uses .container.wide)
-        │   ├── js/
-        │   │   ├── app.js
-        │   │   ├── app-moylanEQ.js
-        │   │   └── guardrails.js
-        │   └── export/
-        │       ├── gb.moylanEQ.export.json
-        │       ├── dependencies.json
-        │       └── media/      # Audio files (not tracked in git due to size)
-        ├── cancelled-harmonics/
-        │   ├── index.html      # Main page (uses .container.wide)
-        │   └── js/
-        │       └── app.js      # Pure Web Audio API, no dependencies
-        └── understanding-phase-correlation/
-            ├── index.html      # Main page (uses .container.wide)
-            └── js/
-                └── app.js      # Pure Web Audio API, stereo correlation meter
-    └── ear-training/
-        └── EQ-Training/
-            ├── index.html      # EQ matching game (uses .container.wide)
-            └── js/
-                └── app.js      # Web Audio API, canvas EQ visualization, game logic
+    ├── bandlab-parser/
+    │   ├── index.html          # Parser main page (uses .container.wide)
+    │   └── bookmarklet.html    # Bookmarklet setup instructions
+    ├── cancelled-harmonics/
+    │   ├── index.html          # Main page (uses .container.wide)
+    │   └── js/
+    │       └── app.js          # Pure Web Audio API, no dependencies
+    ├── eq-training/
+    │   ├── index.html          # EQ matching game (uses .container.wide)
+    │   └── js/
+    │       └── app.js          # Web Audio API, canvas EQ visualization, game logic
+    ├── identifying-frequency-bands/
+    │   ├── index.html          # Main page (uses .container.wide)
+    │   ├── js/
+    │   │   ├── app.js
+    │   │   ├── app-moylanEQ.js
+    │   │   └── guardrails.js
+    │   └── export/
+    │       ├── gb.moylanEQ.export.json
+    │       ├── dependencies.json
+    │       └── media/          # Audio files (not tracked in git due to size)
+    ├── modular-synth/
+    │   └── index.html          # Main page (uses .container.wide)
+    ├── pairwise-matrix/
+    │   ├── index.html          # Matrix tool (uses .container.wide)
+    │   ├── guide.html          # User guide
+    │   ├── architecture.md     # System design documentation
+    │   ├── ideas.md            # Future feature ideas
+    │   └── js/
+    │       └── app.js          # Pure JavaScript, no dependencies
+    ├── pechakucha-player/
+    │   ├── index.html          # Player main page (uses .container.wide)
+    │   ├── presentation.html   # External presentation window
+    │   ├── guide.html          # User guide
+    │   └── js/
+    │       └── app.js          # Pure JavaScript, no dependencies
+    ├── round-robin-timer/
+    │   ├── index.html          # Timer main page (uses .container.wide)
+    │   └── js/
+    │       └── app.js          # Pure JavaScript, Web Audio API
+    ├── stereo-mic-techniques/
+    │   ├── index.html          # Main page (uses .container.wide)
+    │   ├── guide.html          # User guide
+    │   └── js/
+    │       └── app.js          # Web Audio API, B-format audio demos
+    ├── textgarden/
+    │   ├── index.html          # Main page (uses .container.wide)
+    │   ├── guide.html          # User guide
+    │   └── js/
+    │       └── app.js          # Pure JavaScript, no dependencies
+    └── understanding-phase-correlation/
+        ├── index.html          # Main page (uses .container.wide)
+        └── js/
+            └── app.js          # Pure Web Audio API, stereo correlation meter
 ```
 
 ## URL Conventions
 
-- Use clean URLs without explicit `index.html` (e.g., `/projects/creative-tools/bandlab-parser/` not `/projects/creative-tools/bandlab-parser/index.html`)
+- Use clean URLs without explicit `index.html` (e.g., `/projects/bandlab-parser/` not `/projects/bandlab-parser/index.html`)
 - Use **relative paths** for local development compatibility (e.g., `../../css/style.css` not `/css/style.css`)
 - Navigation links should use relative paths from the current page
 
@@ -173,7 +186,7 @@ The modal:
 
 A web-based presentation player for the PechaKucha format where slides auto-advance on a timer. Supports both practice mode (single-screen) and presentation mode (dual-screen with presenter view).
 
-**Location:** `projects/creative-tools/pechakucha-player/`
+**Location:** `projects/pechakucha-player/`
 
 **Key Features:**
 - Drag-and-drop image upload with thumbnail reordering
@@ -244,7 +257,7 @@ let presentationWindow = null;
 
 A prioritization tool that ranks items through head-to-head comparisons. Each item competes against every other item exactly once, and the item with the most wins ranks highest.
 
-**Location:** `projects/creative-tools/pairwise-matrix/`
+**Location:** `projects/pairwise-matrix/`
 
 **Key Features:**
 - Setup flow: enter decision context (e.g., "Which tasks should I do first?") and item names
@@ -310,12 +323,12 @@ A browser-based tool for parsing BandLab sample pack HTML pages into structured 
 - Metadata extraction (pack name, artist, genre, instruments, etc.)
 - Sample information (BPM, key, duration, type)
 
-**Location:** `projects/creative-tools/bandlab-parser/`
+**Location:** `projects/bandlab-parser/`
 
 **Bookmarklet URL:**
 The bookmarklet is hardcoded to the hosted URL:
 ```
-https://blakeeboyd.github.io/projects/creative-tools/bandlab-parser/index.html#bookmarklet=...
+https://blakeeboyd.github.io/projects/bandlab-parser/index.html#bookmarklet=...
 ```
 
 **How It Works:**
@@ -328,7 +341,7 @@ https://blakeeboyd.github.io/projects/creative-tools/bandlab-parser/index.html#b
 
 Educational audio application for learning critical listening skills and frequency band recognition. Built with RNBO (Max/MSP web export) for the MUS399 course.
 
-**Location:** `projects/explorable-explanations/identifying-frequency-bands/`
+**Location:** `projects/identifying-frequency-bands/`
 
 **Key Features:**
 - Three audio source modes: Mute, Pink Noise (internal), User Audio (upload)
@@ -379,7 +392,7 @@ window.userAudioPlayback = {
 
 Interactive demonstration of Fourier analysis where users can toggle individual harmonics of a complex tone and observe spectral changes in a real-time spectrogram. Based on the ASA (Acoustical Society of America) "Cancelled Harmonics" demo.
 
-**Location:** `projects/explorable-explanations/cancelled-harmonics/`
+**Location:** `projects/cancelled-harmonics/`
 
 **Key Features:**
 - 16 harmonic additive synthesizer with toggleable harmonics
@@ -419,7 +432,7 @@ OscillatorNode x 16 (sine waves at f, 2f, 3f, ... 16f)
 
 Interactive demonstration of stereo phase correlation showing how correlated and uncorrelated audio behaves with different polarity configurations. Features a real-time stereo correlation meter.
 
-**Location:** `projects/explorable-explanations/understanding-phase-correlation/`
+**Location:** `projects/understanding-phase-correlation/`
 
 **Key Features:**
 - Four phase scenarios demonstrating stereo behavior:
@@ -466,7 +479,7 @@ AnalyserNode x2 (L/R channels) → Correlation calculation
 
 Gamified ear training tool where users listen to audio processed through a hidden 4-band parametric EQ and try to recreate the sound by adjusting their own EQ curve.
 
-**Location:** `projects/ear-training/EQ-Training/`
+**Location:** `projects/eq-training/`
 
 **Note:** This project is not listed on the projects page - accessible only via direct URL.
 

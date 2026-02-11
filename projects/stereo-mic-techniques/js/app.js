@@ -671,7 +671,7 @@
         }
 
         // Path relative to project root
-        var audioPath = '../../../audio/b-format/' + filename;
+        var audioPath = '../../audio/b-format/' + filename;
 
         notify('Loading ' + filename.replace(/[-_]/g, ' ').replace('.wav', '') + '...', 'info');
 

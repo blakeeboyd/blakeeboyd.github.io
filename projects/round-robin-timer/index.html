@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="Round Robin Timer for timed improvisation rotation sessions">
+    <title>Round Robin Timer - Blake Boyd</title>
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake Emerson Boyd">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+    <link rel="stylesheet" href="../../css/base.css">
+    <link rel="stylesheet" href="../../css/layout.css">
+    <link rel="stylesheet" href="../../css/components.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="../../js/theme.js"></script>
+    <script src="../../js/nav-component.js" defer></script>
+    <script src="../../js/wip-modal.js" defer></script>
+    <style>
+        /* ========================================
+           Round Robin Timer - Project Styles
+           Prefix: .rr-
+           ======================================== */
+
+        .rr-app {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* ---- Performer Colors ---- */
+        .rr-color-0 { --performer-color: #2563eb; --performer-bg: rgba(37, 99, 235, 0.12); }
+        .rr-color-1 { --performer-color: #dc2626; --performer-bg: rgba(220, 38, 38, 0.12); }
+        .rr-color-2 { --performer-color: #059669; --performer-bg: rgba(5, 150, 105, 0.12); }
+        .rr-color-3 { --performer-color: #d97706; --performer-bg: rgba(217, 119, 6, 0.12); }
+        .rr-color-4 { --performer-color: #7c3aed; --performer-bg: rgba(124, 58, 237, 0.12); }
+        .rr-color-5 { --performer-color: #db2777; --performer-bg: rgba(219, 39, 119, 0.12); }
+        .rr-color-6 { --performer-color: #0891b2; --performer-bg: rgba(8, 145, 178, 0.12); }
+        .rr-color-7 { --performer-color: #4f46e5; --performer-bg: rgba(79, 70, 229, 0.12); }
+        .rr-color-8 { --performer-color: #b91c1c; --performer-bg: rgba(185, 28, 28, 0.12); }
+        .rr-color-9 { --performer-color: #15803d; --performer-bg: rgba(21, 128, 61, 0.12); }
+
+        [data-theme="dark"] .rr-color-0 { --performer-color: #60a5fa; --performer-bg: rgba(96, 165, 250, 0.18); }
+        [data-theme="dark"] .rr-color-1 { --performer-color: #f87171; --performer-bg: rgba(248, 113, 113, 0.18); }
+        [data-theme="dark"] .rr-color-2 { --performer-color: #34d399; --performer-bg: rgba(52, 211, 153, 0.18); }
+        [data-theme="dark"] .rr-color-3 { --performer-color: #fbbf24; --performer-bg: rgba(251, 191, 36, 0.18); }
+        [data-theme="dark"] .rr-color-4 { --performer-color: #a78bfa; --performer-bg: rgba(167, 139, 250, 0.18); }
+        [data-theme="dark"] .rr-color-5 { --performer-color: #f472b6; --performer-bg: rgba(244, 114, 182, 0.18); }
+        [data-theme="dark"] .rr-color-6 { --performer-color: #22d3ee; --performer-bg: rgba(34, 211, 238, 0.18); }
+        [data-theme="dark"] .rr-color-7 { --performer-color: #818cf8; --performer-bg: rgba(129, 140, 248, 0.18); }
+        [data-theme="dark"] .rr-color-8 { --performer-color: #fca5a5; --performer-bg: rgba(252, 165, 165, 0.18); }
+        [data-theme="dark"] .rr-color-9 { --performer-color: #6ee7b7; --performer-bg: rgba(110, 231, 183, 0.18); }
+
+        /* ---- Setup Phase ---- */
+        .rr-setup {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .rr-section {
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-md);
+        }
+
+        .rr-section-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--color-text-muted);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        /* Performer list */
+        .rr-performer-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .rr-performer-row {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: 0.375rem 0.5rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--color-border);
+            background: var(--color-control-bg);
+            transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+            position: relative;
+        }
+
+        .rr-performer-row:hover {
+            border-color: var(--color-text-muted);
+        }
+
+        .rr-performer-row.rr-dragging {
+            opacity: 0.5;
+            border-color: var(--color-accent);
+        }
+
+        .rr-performer-row.rr-drag-over {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        }
+
+        .rr-drag-handle {
+            cursor: grab;
+            color: var(--color-text-muted);
+            display: flex;
+            align-items: center;
+            padding: 0 0.125rem;
+            flex-shrink: 0;
+        }
+
+        .rr-drag-handle:active { cursor: grabbing; }
+
+        .rr-performer-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--performer-color);
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+        }
+
+        .rr-performer-color:hover {
+            transform: scale(1.3);
+            box-shadow: 0 0 0 2px var(--performer-color);
+        }
+
+        .rr-performer-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            color: var(--color-text);
+            outline: none;
+            min-width: 0;
+        }
+
+        .rr-performer-input::placeholder {
+            color: var(--color-text-muted);
+            opacity: 0.6;
+        }
+
+        .rr-remove-btn {
+            background: none;
+            border: none;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            padding: 0.125rem;
+            display: flex;
+            align-items: center;
+            border-radius: var(--radius-sm);
+            transition: color var(--transition-fast), background var(--transition-fast);
+            flex-shrink: 0;
+        }
+
+        .rr-remove-btn:hover {
+            color: var(--color-error);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .rr-add-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            border: 1px dashed var(--color-border);
+            border-radius: var(--radius-sm);
+            background: transparent;
+            color: var(--color-text-muted);
+            font-family: var(--font-family);
+            font-size: 0.8125rem;
+            cursor: pointer;
+            transition: color var(--transition-fast), border-color var(--transition-fast);
+        }
+
+        .rr-add-btn:hover {
+            color: var(--color-accent);
+            border-color: var(--color-accent);
+        }
+
+        /* Settings grid */
+        .rr-settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-sm) var(--spacing-md);
+        }
+
+        @media (max-width: 640px) {
+            .rr-settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .rr-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
+        }
+
+        .rr-label {
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--color-text);
+        }
+
+        .rr-label-hint {
+            font-weight: 400;
+            color: var(--color-text-muted);
+            font-size: 0.75rem;
+        }
+
+        .rr-duration-input {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            padding: 0.375rem 0.625rem;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            background: var(--color-control-bg);
+            color: var(--color-text);
+            width: 5.5rem;
+            text-align: center;
+            outline: none;
+            transition: border-color var(--transition-fast);
+        }
+
+        .rr-duration-input:focus {
+            border-color: var(--color-accent);
+        }
+
+        /* Toggle buttons (format, timer mode) */
+        .rr-toggle-group {
+            display: flex;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+
+        .rr-toggle-option {
+            flex: 1;
+            padding: 0.5rem 0.75rem;
+            border: none;
+            background: var(--color-control-bg);
+            color: var(--color-text-muted);
+            font-family: var(--font-family);
+            font-size: 0.8125rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background var(--transition-fast), color var(--transition-fast);
+            text-align: center;
+        }
+
+        .rr-toggle-option:not(:last-child) {
+            border-right: 1px solid var(--color-border);
+        }
+
+        .rr-toggle-option.active {
+            background: var(--color-accent);
+            color: #fff;
+        }
+
+        [data-theme="dark"] .rr-toggle-option.active {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .rr-toggle-desc {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            margin-top: 0.25rem;
+            line-height: 1.3;
+        }
+
+        /* Checkbox */
+        .rr-checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .rr-checkbox {
+            width: 1rem;
+            height: 1rem;
+            accent-color: var(--color-accent);
+            cursor: pointer;
+        }
+
+        .rr-checkbox-label {
+            font-size: 0.8125rem;
+            color: var(--color-text);
+            cursor: pointer;
+        }
+
+        /* Summary bar */
+        .rr-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: var(--spacing-xs) var(--spacing-md);
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: var(--color-control-bg);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--color-border);
+        }
+
+        .rr-summary-stats {
+            display: flex;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+
+        .rr-stat {
+            display: flex;
+            flex-direction: column;
+            gap: 0.125rem;
+        }
+
+        .rr-stat-label {
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--color-text-muted);
+        }
+
+        .rr-stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .rr-start-btn {
+            padding: 0.625rem 2rem;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: var(--color-accent);
+            color: #fff;
+            font-family: var(--font-family);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background var(--transition-fast), transform var(--transition-fast);
+        }
+
+        [data-theme="dark"] .rr-start-btn {
+            background: #3b82f6;
+        }
+
+        .rr-start-btn:hover {
+            background: var(--color-accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .rr-start-btn:active {
+            transform: translateY(0);
+        }
+
+        .rr-start-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ---- Timer Phase ---- */
+        .rr-timer {
+            display: none;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .rr-timer.active {
+            display: flex;
+        }
+
+        .rr-setup.hidden {
+            display: none;
+        }
+
+        /* Now playing display */
+        .rr-now-playing {
+            text-align: center;
+            padding: var(--spacing-lg) var(--spacing-md);
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+        }
+
+        .rr-round-info {
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .rr-performers-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+
+        .rr-performer-tag {
+            font-size: clamp(1.25rem, 4vw, 2rem);
+            font-weight: 600;
+            padding: 0.375rem 1rem;
+            border-radius: var(--radius-md);
+            background: var(--performer-bg);
+            color: var(--performer-color);
+            border: 2px solid var(--performer-color);
+            line-height: 1.2;
+        }
+
+        .rr-performer-separator {
+            font-size: 1.5rem;
+            color: var(--color-text-muted);
+            font-weight: 300;
+        }
+
+        .rr-solo-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        /* Countdown */
+        .rr-countdown {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(3.5rem, 12vw, 7rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--color-text);
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .rr-countdown.rr-warning {
+            color: var(--color-warning);
+        }
+
+        .rr-countdown.rr-urgent {
+            color: var(--color-error);
+            animation: rr-pulse-text 1s ease-in-out infinite;
+        }
+
+        @keyframes rr-pulse-text {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .rr-countdown.rr-paused {
+            opacity: 0.5;
+        }
+
+        .rr-countdown.rr-round-end {
+            color: var(--color-text-muted);
+        }
+
+        .rr-up-next {
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            margin-top: var(--spacing-sm);
+        }
+
+        .rr-up-next-names {
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        /* Timer meta row */
+        .rr-timer-meta {
+            display: flex;
+            justify-content: center;
+            gap: var(--spacing-lg);
+            flex-wrap: wrap;
+        }
+
+        .rr-meta-item {
+            text-align: center;
+        }
+
+        .rr-meta-label {
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--color-text-muted);
+        }
+
+        .rr-meta-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        /* Controls */
+        .rr-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: var(--spacing-xs);
+            flex-wrap: wrap;
+        }
+
+        .rr-ctrl-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            background: var(--color-card-bg);
+            color: var(--color-text);
+            font-family: var(--font-family);
+            font-size: 0.8125rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+        }
+
+        .rr-ctrl-btn:hover {
+            background: var(--color-control-bg);
+            border-color: var(--color-text-muted);
+        }
+
+        .rr-ctrl-btn svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .rr-ctrl-btn.rr-play-btn {
+            padding: 0.625rem 1.5rem;
+            background: var(--color-accent);
+            color: #fff;
+            border-color: var(--color-accent);
+            font-size: 0.9375rem;
+        }
+
+        [data-theme="dark"] .rr-ctrl-btn.rr-play-btn {
+            background: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        .rr-ctrl-btn.rr-play-btn:hover {
+            background: var(--color-accent-hover);
+        }
+
+        .rr-ctrl-btn.rr-next-highlight {
+            border-color: var(--color-success);
+            color: var(--color-success);
+            animation: rr-pulse-border 1.5s ease-in-out infinite;
+        }
+
+        @keyframes rr-pulse-border {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.3); }
+            50% { box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1); }
+        }
+
+        .rr-ctrl-btn.rr-reset-btn:hover {
+            color: var(--color-error);
+            border-color: var(--color-error);
+        }
+
+        /* Schedule list */
+        .rr-schedule {
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-sm);
+        }
+
+        .rr-schedule-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--color-text-muted);
+            padding: 0 0.5rem var(--spacing-xs);
+            border-bottom: 1px solid var(--color-border);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .rr-schedule-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .rr-schedule-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.5rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.8125rem;
+            transition: background var(--transition-fast), opacity var(--transition-fast);
+        }
+
+        .rr-schedule-item.rr-current {
+            background: var(--color-accent-light);
+            font-weight: 600;
+        }
+
+        .rr-schedule-item.rr-completed {
+            opacity: 0.4;
+        }
+
+        .rr-schedule-round {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6875rem;
+            color: var(--color-text-muted);
+            min-width: 1.75rem;
+            flex-shrink: 0;
+        }
+
+        .rr-schedule-names {
+            flex: 1;
+        }
+
+        .rr-schedule-type {
+            font-size: 0.6875rem;
+            color: var(--color-text-muted);
+            flex-shrink: 0;
+        }
+
+        /* Session complete */
+        .rr-complete {
+            display: none;
+            text-align: center;
+            padding: var(--spacing-xl) var(--spacing-md);
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+        }
+
+        .rr-complete.active {
+            display: block;
+        }
+
+        .rr-complete-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--color-success);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .rr-complete-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            color: var(--color-text);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .rr-complete-btn {
+            padding: 0.5rem 1.5rem;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            background: var(--color-card-bg);
+            color: var(--color-text);
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background var(--transition-fast);
+        }
+
+        .rr-complete-btn:hover {
+            background: var(--color-control-bg);
+        }
+
+        /* Transition between phases */
+        .rr-transition-pause {
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            padding: var(--spacing-xs);
+        }
+
+        /* Fullscreen */
+        .rr-ctrl-btn.rr-fullscreen-btn:hover {
+            border-color: var(--color-accent);
+            color: var(--color-accent);
+        }
+
+        .rr-timer.rr-fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100dvh;
+            z-index: 9999;
+            background: var(--color-bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-lg);
+            box-sizing: border-box;
+        }
+
+        .rr-timer.rr-fullscreen .rr-now-playing {
+            border: none;
+            background: transparent;
+            padding: var(--spacing-xl) var(--spacing-md);
+        }
+
+        .rr-timer.rr-fullscreen .rr-performer-tag {
+            font-size: clamp(2rem, 6vw, 4rem);
+            padding: 0.5rem 1.5rem;
+        }
+
+        .rr-timer.rr-fullscreen .rr-performer-separator {
+            font-size: 2.5rem;
+        }
+
+        .rr-timer.rr-fullscreen .rr-solo-label {
+            font-size: 1.25rem;
+        }
+
+        .rr-timer.rr-fullscreen .rr-countdown {
+            font-size: clamp(5rem, 18vw, 12rem);
+        }
+
+        .rr-timer.rr-fullscreen .rr-round-info {
+            font-size: 1rem;
+        }
+
+        .rr-timer.rr-fullscreen .rr-up-next {
+            font-size: 1.125rem;
+        }
+
+        .rr-timer.rr-fullscreen .rr-schedule {
+            display: none;
+        }
+
+        .rr-timer.rr-fullscreen .rr-meta-label {
+            font-size: 0.8125rem;
+        }
+
+        .rr-timer.rr-fullscreen .rr-meta-value {
+            font-size: 1.25rem;
+        }
+
+        .rr-timer.rr-fullscreen .rr-kbd-hint {
+            display: none;
+        }
+
+        /* Restart button */
+        .rr-ctrl-btn.rr-restart-btn:hover {
+            color: var(--color-warning);
+            border-color: var(--color-warning);
+        }
+
+        /* Keyboard hint */
+        .rr-kbd-hint {
+            font-size: 0.6875rem;
+            color: var(--color-text-muted);
+            text-align: center;
+            margin-top: var(--spacing-xs);
+        }
+
+        .rr-kbd {
+            display: inline-block;
+            padding: 0.125rem 0.375rem;
+            border: 1px solid var(--color-border);
+            border-radius: 3px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.625rem;
+            background: var(--color-control-bg);
+            vertical-align: middle;
+        }
+
+        /* Export/Import row */
+        .rr-io-row {
+            display: flex;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            flex-wrap: wrap;
+        }
+
+        .rr-io-wrapper {
+            position: relative;
+        }
+
+        .rr-io-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            background: var(--color-card-bg);
+            color: var(--color-text-muted);
+            font-family: var(--font-family);
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+        }
+
+        .rr-io-btn:hover {
+            background: var(--color-control-bg);
+            border-color: var(--color-text-muted);
+            color: var(--color-text);
+        }
+
+        .rr-io-btn svg {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+        }
+
+        .rr-io-btn .rr-chevron {
+            width: 10px;
+            height: 10px;
+            transition: transform var(--transition-fast);
+        }
+
+        .rr-io-wrapper.open .rr-chevron {
+            transform: rotate(180deg);
+        }
+
+        .rr-export-menu {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 4px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            min-width: 120px;
+            overflow: hidden;
+        }
+
+        [data-theme="dark"] .rr-export-menu {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .rr-io-wrapper.open .rr-export-menu {
+            display: block;
+        }
+
+        .rr-export-option {
+            display: block;
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: none;
+            background: transparent;
+            color: var(--color-text);
+            font-family: var(--font-family);
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: left;
+            transition: background var(--transition-fast);
+        }
+
+        .rr-export-option:hover {
+            background: var(--color-control-bg);
+        }
+
+        .rr-export-option:not(:last-child) {
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .rr-import-input {
+            display: none;
+        }
+
+        /* Confirm modal */
+        .rr-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rr-modal-overlay.active {
+            display: flex;
+        }
+
+        [data-theme="dark"] .rr-modal-overlay {
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .rr-modal {
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg) var(--spacing-xl);
+            max-width: 360px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            animation: rr-modal-in 0.15s ease-out;
+        }
+
+        [data-theme="dark"] .rr-modal {
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes rr-modal-in {
+            from { opacity: 0; transform: scale(0.95) translateY(8px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .rr-modal-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            margin: 0 auto var(--spacing-sm);
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--color-error);
+        }
+
+        .rr-modal-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .rr-modal-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: 0.375rem;
+        }
+
+        .rr-modal-message {
+            font-size: 0.8125rem;
+            color: var(--color-text-muted);
+            line-height: 1.4;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .rr-modal-actions {
+            display: flex;
+            gap: var(--spacing-xs);
+            justify-content: center;
+        }
+
+        .rr-modal-btn {
+            padding: 0.5rem 1.25rem;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-family);
+            font-size: 0.8125rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background var(--transition-fast), border-color var(--transition-fast);
+        }
+
+        .rr-modal-btn-cancel {
+            border: 1px solid var(--color-border);
+            background: var(--color-card-bg);
+            color: var(--color-text);
+        }
+
+        .rr-modal-btn-cancel:hover {
+            background: var(--color-control-bg);
+            border-color: var(--color-text-muted);
+        }
+
+        .rr-modal-btn-confirm {
+            border: 1px solid var(--color-error);
+            background: var(--color-error);
+            color: #fff;
+        }
+
+        .rr-modal-btn-confirm:hover {
+            background: #dc2626;
+            border-color: #dc2626;
+        }
+
+        /* Color picker popover */
+        .rr-color-picker {
+            display: none;
+            position: absolute;
+            left: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: 0.625rem;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.06);
+            z-index: 20;
+        }
+
+        [data-theme="dark"] .rr-color-picker {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .rr-color-picker.active {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            animation: rr-picker-in 0.12s ease-out;
+        }
+
+        @keyframes rr-picker-in {
+            from { opacity: 0; transform: translateY(-50%) scale(0.92); }
+            to { opacity: 1; transform: translateY(-50%) scale(1); }
+        }
+
+        .rr-color-picker-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.375rem;
+        }
+
+        .rr-color-swatch {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2.5px solid transparent;
+            cursor: pointer;
+            transition: transform 0.1s ease, border-color 0.1s ease, box-shadow 0.1s ease;
+            padding: 0;
+            background: none;
+            outline: none;
+        }
+
+        .rr-color-swatch:hover {
+            transform: scale(1.2);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .rr-color-swatch:focus-visible {
+            box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-accent);
+        }
+
+        .rr-color-swatch.active {
+            border-color: var(--color-text);
+            transform: scale(1.15);
+        }
+
+        .rr-color-picker-divider {
+            height: 1px;
+            background: var(--color-border);
+            margin: 0;
+        }
+
+        .rr-color-swatch-custom {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            width: 100%;
+            padding: 0.25rem 0.125rem;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: transparent;
+            cursor: pointer;
+            transition: background 0.1s ease;
+            position: relative;
+        }
+
+        .rr-color-swatch-custom:hover {
+            background: var(--color-control-bg);
+        }
+
+        .rr-color-swatch-custom-dot {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 1.5px dashed var(--color-text-muted);
+            background: var(--color-control-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: border-color 0.1s ease;
+        }
+
+        .rr-color-swatch-custom:hover .rr-color-swatch-custom-dot {
+            border-color: var(--color-text);
+        }
+
+        .rr-color-swatch-custom-dot svg {
+            width: 10px;
+            height: 10px;
+            color: var(--color-text-muted);
+        }
+
+        .rr-color-swatch-custom:hover .rr-color-swatch-custom-dot svg {
+            color: var(--color-text);
+        }
+
+        .rr-color-swatch-custom-label {
+            font-size: 0.6875rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
+            white-space: nowrap;
+        }
+
+        .rr-color-swatch-custom:hover .rr-color-swatch-custom-label {
+            color: var(--color-text);
+        }
+
+        .rr-color-swatch-custom.active .rr-color-swatch-custom-dot {
+            border-style: solid;
+        }
+
+        .rr-color-swatch-custom.active .rr-color-swatch-custom-dot svg {
+            display: none;
+        }
+
+        .rr-color-swatch-custom input[type="color"] {
+            position: absolute;
+            width: 0;
+            height: 0;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Custom color picker panel */
+        .rr-custom-picker {
+            display: none;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding-top: 0.375rem;
+        }
+
+        .rr-custom-picker.active {
+            display: flex;
+        }
+
+        .rr-custom-picker-divider {
+            height: 1px;
+            background: var(--color-border);
+        }
+
+        .rr-custom-picker-sl {
+            width: 160px;
+            height: 100px;
+            border-radius: var(--radius-sm);
+            cursor: crosshair;
+            position: relative;
+            border: 1px solid var(--color-border);
+        }
+
+        .rr-custom-picker-sl-cursor {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 0 2px rgba(0,0,0,0.5), inset 0 0 2px rgba(0,0,0,0.3);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .rr-custom-picker-hue {
+            width: 160px;
+            height: 14px;
+            border-radius: 7px;
+            cursor: pointer;
+            position: relative;
+            background: linear-gradient(to right,
+                hsl(0,100%,50%),
+                hsl(30,100%,50%),
+                hsl(60,100%,50%),
+                hsl(90,100%,50%),
+                hsl(120,100%,50%),
+                hsl(150,100%,50%),
+                hsl(180,100%,50%),
+                hsl(210,100%,50%),
+                hsl(240,100%,50%),
+                hsl(270,100%,50%),
+                hsl(300,100%,50%),
+                hsl(330,100%,50%),
+                hsl(360,100%,50%)
+            );
+            border: 1px solid var(--color-border);
+        }
+
+        .rr-custom-picker-hue-cursor {
+            position: absolute;
+            width: 6px;
+            height: 18px;
+            top: -3px;
+            border-radius: 3px;
+            border: 2px solid #fff;
+            box-shadow: 0 0 2px rgba(0,0,0,0.4);
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+
+        .rr-custom-picker-hex-row {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .rr-custom-picker-preview {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 1.5px solid var(--color-border);
+            flex-shrink: 0;
+        }
+
+        .rr-custom-picker-hex {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6875rem;
+            padding: 0.25rem 0.375rem;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            background: var(--color-control-bg);
+            color: var(--color-text);
+            width: 5.5rem;
+            outline: none;
+            transition: border-color var(--transition-fast);
+        }
+
+        .rr-custom-picker-hex:focus {
+            border-color: var(--color-accent);
+        }
+
+        /* Info section */
+        .rr-info {
+            margin-top: var(--spacing-lg);
+            padding: var(--spacing-md);
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+        }
+
+        .rr-info-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .rr-info p {
+            font-size: 0.875rem;
+            line-height: 1.6;
+            color: var(--color-text);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .rr-info p:last-child {
+            margin-bottom: 0;
+        }
+
+        .rr-info-example {
+            font-size: 0.8125rem;
+            color: var(--color-text-muted);
+            padding: var(--spacing-sm);
+            background: var(--color-control-bg);
+            border-radius: var(--radius-sm);
+            margin: var(--spacing-xs) 0;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div class="container wide">
+        <site-nav base="../../"></site-nav>
+
+        <main id="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Round Robin Timer</h1>
+                <p class="page-subtitle">Timed rotation for improvisation sessions.</p>
+            </div>
+
+            <div class="rr-app">
+                <!-- ======== SETUP PHASE ======== -->
+                <div class="rr-setup" id="rr-setup">
+                    <div class="rr-section">
+                        <div class="rr-section-title">Performers</div>
+                        <div class="rr-performer-list" id="rr-performer-list">
+                            <!-- Populated by JS -->
+                        </div>
+                        <button type="button" class="rr-add-btn" id="rr-add-performer">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Add performer
+                        </button>
+                    </div>
+
+                    <div class="rr-section">
+                        <div class="rr-section-title">Settings</div>
+                        <div class="rr-settings-grid">
+                            <div class="rr-field">
+                                <label class="rr-label" for="rr-duration">Round Duration</label>
+                                <input type="text" id="rr-duration" class="rr-duration-input" value="5:00" placeholder="5:00" autocomplete="off">
+                            </div>
+                            <div class="rr-field">
+                                <span class="rr-label">Rotation Format</span>
+                                <div class="rr-toggle-group" id="rr-format-toggle">
+                                    <button type="button" class="rr-toggle-option active" data-value="duo-relay">Duo Relay</button>
+                                    <button type="button" class="rr-toggle-option" data-value="solo-duo">Solo-Duo</button>
+                                </div>
+                                <div class="rr-toggle-desc" id="rr-format-desc">First and last performers play solo. Everyone else plays in duos.</div>
+                            </div>
+                            <div class="rr-field">
+                                <span class="rr-label">Timer Mode</span>
+                                <div class="rr-toggle-group" id="rr-mode-toggle">
+                                    <button type="button" class="rr-toggle-option active" data-value="auto">Auto-advance</button>
+                                    <button type="button" class="rr-toggle-option" data-value="manual">Manual</button>
+                                </div>
+                            </div>
+                            <div class="rr-field" style="justify-content: center;">
+                                <div class="rr-checkbox-row">
+                                    <input type="checkbox" id="rr-audio-cue" class="rr-checkbox">
+                                    <label for="rr-audio-cue" class="rr-checkbox-label">Audio cue at round end</label>
+                                </div>
+                                <div class="rr-checkbox-row">
+                                    <input type="checkbox" id="rr-countdown-beeps" class="rr-checkbox">
+                                    <label for="rr-countdown-beeps" class="rr-checkbox-label">3-2-1 countdown beeps</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rr-summary" id="rr-summary">
+                        <div class="rr-summary-stats">
+                            <div class="rr-stat">
+                                <span class="rr-stat-label">Performers</span>
+                                <span class="rr-stat-value" id="rr-stat-performers">2</span>
+                            </div>
+                            <div class="rr-stat">
+                                <span class="rr-stat-label">Rounds</span>
+                                <span class="rr-stat-value" id="rr-stat-rounds">2</span>
+                            </div>
+                            <div class="rr-stat">
+                                <span class="rr-stat-label">Total Time</span>
+                                <span class="rr-stat-value" id="rr-stat-time">10:00</span>
+                            </div>
+                        </div>
+                        <div class="rr-io-row">
+                            <button type="button" class="rr-io-btn" id="rr-import-btn" title="Import setup">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                Import
+                            </button>
+                            <input type="file" class="rr-import-input" id="rr-import-input" accept=".json,.txt,.md,.markdown">
+                            <div class="rr-io-wrapper" id="rr-export-wrapper">
+                                <button type="button" class="rr-io-btn" id="rr-export-btn" title="Export setup">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    Export
+                                    <svg class="rr-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                                </button>
+                                <div class="rr-export-menu" id="rr-export-menu">
+                                    <button type="button" class="rr-export-option" data-format="json">JSON</button>
+                                    <button type="button" class="rr-export-option" data-format="md">Markdown</button>
+                                    <button type="button" class="rr-export-option" data-format="txt">Plain Text</button>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="rr-start-btn" id="rr-start-btn">Start</button>
+                    </div>
+                </div>
+
+                <!-- ======== TIMER PHASE ======== -->
+                <div class="rr-timer" id="rr-timer">
+                    <div class="rr-now-playing" id="rr-now-playing">
+                        <div class="rr-round-info" id="rr-round-info">Round 1 of 6</div>
+                        <div class="rr-performers-display" id="rr-performers-display"></div>
+                        <div class="rr-countdown" id="rr-countdown">5:00</div>
+                        <div class="rr-up-next" id="rr-up-next"></div>
+                    </div>
+
+                    <div class="rr-timer-meta">
+                        <div class="rr-meta-item">
+                            <div class="rr-meta-label">Elapsed</div>
+                            <div class="rr-meta-value" id="rr-elapsed">0:00</div>
+                        </div>
+                    </div>
+
+                    <div class="rr-controls">
+                        <button type="button" class="rr-ctrl-btn" id="rr-prev-btn" title="Previous round">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="19 20 9 12 19 4"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+                            Prev
+                        </button>
+                        <button type="button" class="rr-ctrl-btn rr-play-btn" id="rr-play-btn">
+                            <svg id="rr-play-icon" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            <svg id="rr-pause-icon" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                            <span id="rr-play-label">Play</span>
+                        </button>
+                        <button type="button" class="rr-ctrl-btn" id="rr-next-btn" title="Next round">
+                            Next
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+                        </button>
+                        <button type="button" class="rr-ctrl-btn rr-restart-btn" id="rr-restart-btn" title="Restart from round 1">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/><line x1="1" y1="3" x2="1" y2="21"/></svg>
+                            Restart
+                        </button>
+                        <button type="button" class="rr-ctrl-btn rr-fullscreen-btn" id="rr-fullscreen-btn" title="Fullscreen">
+                            <svg id="rr-fs-enter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                            <svg id="rr-fs-exit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                        </button>
+                        <button type="button" class="rr-ctrl-btn rr-reset-btn" id="rr-reset-btn" title="Reset">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                            Reset
+                        </button>
+                    </div>
+                    <div class="rr-kbd-hint"><span class="rr-kbd">Space</span> Play / Pause &nbsp; <span class="rr-kbd">F</span> Fullscreen</div>
+
+                    <div class="rr-schedule" id="rr-schedule">
+                        <div class="rr-schedule-title">Schedule</div>
+                        <div class="rr-schedule-list" id="rr-schedule-list"></div>
+                    </div>
+                </div>
+
+                <!-- ======== SESSION COMPLETE ======== -->
+                <div class="rr-complete" id="rr-complete">
+                    <div class="rr-complete-title">Session Complete</div>
+                    <div class="rr-complete-time" id="rr-complete-time">Total: 30:00</div>
+                    <button type="button" class="rr-complete-btn" id="rr-complete-reset">Set Up New Session</button>
+                </div>
+
+                <!-- ======== CONFIRM MODAL ======== -->
+                <div class="rr-modal-overlay" id="rr-modal-overlay">
+                    <div class="rr-modal">
+                        <div class="rr-modal-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                        </div>
+                        <div class="rr-modal-title">Reset Session</div>
+                        <div class="rr-modal-message">Return to setup? Your current progress will be lost.</div>
+                        <div class="rr-modal-actions">
+                            <button type="button" class="rr-modal-btn rr-modal-btn-cancel" id="rr-modal-cancel">Cancel</button>
+                            <button type="button" class="rr-modal-btn rr-modal-btn-confirm" id="rr-modal-confirm">Reset</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ======== INFO SECTION ======== -->
+                <div class="rr-info">
+                    <h2 class="rr-info-title">What is a round robin?</h2>
+                    <p>In group improvisation, a round robin is a structured rotation where performers cycle through pairings in sequence. Rather than everyone playing at once, two performers play together while the rest listen, and the baton passes from one pairing to the next. The format gives each performer a chance to interact one-on-one with their neighbors in the lineup, creating a series of distinct musical conversations.</p>
+                    <p>This tool supports two rotation formats:</p>
+                    <p><strong>Duo Relay</strong> bookends the session with two solos: the first performer opens alone, then duos cascade through the lineup, and the last performer closes alone. The structure keeps things moving, since every transition swaps just one player.
+                    </p>
+                    <div class="rr-info-example">
+                        Example with performers A through D:<br>
+                        A solo &rarr; A+B &rarr; B+C &rarr; C+D &rarr; D solo
+                    </div>
+                    <p><strong>Solo-Duo Alternating</strong> gives every performer a solo before their first duo, so each person has a moment to establish their individual voice. The session alternates between solo and duo rounds throughout.
+                    </p>
+                    <div class="rr-info-example">
+                        Example with performers A through D:<br>
+                        A solo &rarr; A+B &rarr; B solo &rarr; B+C &rarr; C solo &rarr; C+D &rarr; D solo
+                    </div>
+                    <p>Either way, the goal is the same: give performers a frame to play inside, so they can focus on listening and responding rather than negotiating logistics.</p>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; <span class="footer-year"></span> Blake Boyd</p>
+        </footer>
+    </div>
+
+    <script>document.querySelector('.footer-year').textContent = new Date().getFullYear();</script>
+    <script type="text/javascript" src="js/app.js"></script>
+</body>
+</html>

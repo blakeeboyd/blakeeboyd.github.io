@@ -900,7 +900,7 @@
 
         lines.push('');
         lines.push('---');
-        lines.push('*Generated with [Pairwise Matrix](https://blakeeboyd.github.io/projects/creative-tools/pairwise-matrix/)*');
+        lines.push('*Generated with [Pairwise Matrix](https://blakeeboyd.github.io/projects/pairwise-matrix/)*');
 
         return lines.join('\n');
     }

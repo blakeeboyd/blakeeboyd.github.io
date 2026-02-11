@@ -26,7 +26,7 @@ An interactive audio tool for learning to identify frequency registers, built fo
 - Full playback controls with loop regions
 - Built with RNBO (Max/MSP web export) and Web Audio API
 
-[View Project](https://blakeeboyd.github.io/projects/explorable-explanations/identifying-frequency-bands/)
+[View Project](https://blakeeboyd.github.io/projects/identifying-frequency-bands/)
 
 #### Cancelled Harmonics (ASA 1)
 
@@ -40,7 +40,7 @@ Interactive demonstration of Fourier analysis based on the ASA "Cancelled Harmon
 - Random Build mode for fun exploration
 - Pure Web Audio API, no external dependencies
 
-[View Project](https://blakeeboyd.github.io/projects/explorable-explanations/cancelled-harmonics/)
+[View Project](https://blakeeboyd.github.io/projects/cancelled-harmonics/)
 
 #### Understanding Phase Correlation
 
@@ -53,7 +53,7 @@ Interactive demonstration of stereo phase correlation with a real-time correlati
 - User audio upload with stereo support
 - Pure Web Audio API, no external dependencies
 
-[View Project](https://blakeeboyd.github.io/projects/explorable-explanations/understanding-phase-correlation/)
+[View Project](https://blakeeboyd.github.io/projects/understanding-phase-correlation/)
 
 ### Ear Training
 
@@ -68,7 +68,7 @@ Gamified ear training for matching hidden EQ curves.
 - Scoring system with streak tracking
 - Pink noise or user-uploaded audio sources
 
-[View Project](https://blakeeboyd.github.io/projects/ear-training/EQ-Training/)
+[View Project](https://blakeeboyd.github.io/projects/eq-training/)
 
 ### Creative Tools
 
@@ -86,7 +86,7 @@ A web-based presentation player for the PechaKucha format (auto-advancing slides
 - Export/import presentation settings as JSON
 - Real-time timer with progress indication
 
-[View Project](https://blakeeboyd.github.io/projects/creative-tools/pechakucha-player/)
+[View Project](https://blakeeboyd.github.io/projects/pechakucha-player/)
 
 #### BandLab JSON Parser
 
@@ -97,7 +97,7 @@ A browser-based tool for parsing BandLab sample pack pages into structured JSON 
 - One-click bookmarklet for parsing while browsing
 - Automatic extraction of BPM, key, duration, and sample info
 
-[View Project](https://blakeeboyd.github.io/projects/creative-tools/bandlab-parser/)
+[View Project](https://blakeeboyd.github.io/projects/bandlab-parser/)
 
 ## Development
 
@@ -131,15 +131,17 @@ npx serve
 │   └── bandlab-parser.js      # BandLab parser logic
 ├── images/                    # Site images
 └── projects/
-    ├── creative-tools/
-    │   ├── pechakucha-player/
-    │   └── bandlab-parser/
-    ├── explorable-explanations/
-    │   ├── identifying-frequency-bands/
-    │   ├── cancelled-harmonics/
-    │   └── understanding-phase-correlation/
-    └── ear-training/
-        └── EQ-Training/
+    ├── bandlab-parser/
+    ├── cancelled-harmonics/
+    ├── eq-training/
+    ├── identifying-frequency-bands/
+    ├── modular-synth/
+    ├── pairwise-matrix/
+    ├── pechakucha-player/
+    ├── round-robin-timer/
+    ├── stereo-mic-techniques/
+    ├── textgarden/
+    └── understanding-phase-correlation/
 ```
 
 ## License

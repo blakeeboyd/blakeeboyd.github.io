@@ -1,0 +1,2210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A web-based PechaKucha presentation player. Upload images and present them with automatic 20-second timing.">
+    <title>PechaKucha Player - Blake Boyd</title>
+    <!-- SEO -->
+    <link rel="canonical" href="https://blakeeboyd.github.io/projects/pechakucha-player/">
+    <!-- Open Graph -->
+    <meta property="og:title" content="PechaKucha Player - Blake Boyd">
+    <meta property="og:description" content="A web-based PechaKucha presentation player. Upload images and present them with automatic 20-second timing.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://blakeeboyd.github.io/projects/pechakucha-player/">
+    <meta property="og:site_name" content="Blake Boyd">
+    <meta property="og:image" content="https://blakeeboyd.github.io/images/social-card.jpg">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="PechaKucha Player - Blake Boyd">
+    <meta name="twitter:description" content="A web-based PechaKucha presentation player with automatic timing.">
+    <meta name="twitter:image" content="https://blakeeboyd.github.io/images/social-card.jpg">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake Emerson Boyd">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="stylesheet" href="../../css/base.css">
+    <link rel="stylesheet" href="../../css/layout.css">
+    <link rel="stylesheet" href="../../css/components.css">
+    <link rel="stylesheet" href="../../css/components-audio.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="../../js/theme.js"></script>
+    <script src="../../js/nav-component.js" defer></script>
+    <style>
+        /* WIP Notice */
+        .wip-notice {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            background: color-mix(in srgb, var(--color-warning) 10%, transparent);
+            border: 1px solid color-mix(in srgb, var(--color-warning) 30%, transparent);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+        }
+
+        .wip-notice svg {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            color: var(--color-warning);
+        }
+
+        .wip-notice p {
+            margin: 0;
+        }
+
+        .wip-notice p + p {
+            margin-top: 0.5rem;
+        }
+
+        .wip-notice a {
+            color: var(--color-accent);
+            text-decoration: none;
+        }
+
+        .wip-notice a:hover {
+            text-decoration: underline;
+        }
+        /* PechaKucha-specific styles */
+        .pk-upload-section {
+            text-align: center;
+            padding: var(--spacing-xl) var(--spacing-md);
+        }
+
+        .pk-dropzone {
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            cursor: pointer;
+            transition: border-color 0.2s, background-color 0.2s;
+            background: var(--color-card-bg);
+        }
+
+        .pk-dropzone:hover,
+        .pk-dropzone.dragover {
+            border-color: var(--color-accent);
+            background: var(--color-bg);
+        }
+
+        .pk-dropzone-text {
+            color: var(--color-text-muted);
+            margin: var(--spacing-sm) 0;
+        }
+
+        .pk-dropzone-icon {
+            color: var(--color-text-muted);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .pk-file-input {
+            display: none;
+        }
+
+        .pk-settings {
+            display: flex;
+            gap: var(--spacing-lg);
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: var(--spacing-lg);
+            padding: var(--spacing-md);
+            background: var(--color-card-bg);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--color-border);
+        }
+
+        .pk-setting {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .pk-setting label {
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
+        }
+
+        .pk-setting input[type="number"] {
+            width: 70px;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            background: var(--color-bg);
+            color: var(--color-text);
+            font-size: 1rem;
+            text-align: center;
+            /* Hide spinner arrows */
+            -moz-appearance: textfield;
+            appearance: textfield;
+            cursor: ns-resize;
+        }
+
+        .pk-setting input[type="number"]::-webkit-inner-spin-button,
+        .pk-setting input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .pk-setting input[type="number"]:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            cursor: text;
+        }
+
+        .pk-setting input[type="number"].dragging {
+            border-color: var(--color-accent);
+            user-select: none;
+        }
+
+        .pk-preview-section {
+            padding: var(--spacing-md);
+        }
+
+        .pk-slide-notice {
+            text-align: center;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text-muted);
+        }
+
+        .pk-slide-notice.warning {
+            color: var(--color-warning);
+        }
+
+        /* Title Slide Section */
+        .pk-thumbnails-container {
+            display: flex;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .pk-title-slide-section {
+            flex-shrink: 0;
+            width: 180px;
+        }
+
+        .pk-section-label {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .pk-section-label .info-tooltip {
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        /* Title Slide Slot */
+        .pk-title-slide-slot {
+            aspect-ratio: 16 / 9;
+            width: 120px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            background: var(--color-control-bg);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .pk-title-slide-slot.has-image {
+            background: var(--color-card-bg);
+        }
+
+        .pk-slot-hint {
+            font-size: 0.625rem;
+            color: var(--color-text-muted);
+            text-align: center;
+            padding: 0.5rem;
+        }
+
+        .pk-title-slide-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .pk-title-slide-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            font-size: 14px;
+            line-height: 1;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .pk-title-slide-slot:hover .pk-title-slide-remove {
+            opacity: 1;
+        }
+
+        .pk-grid-divider {
+            width: 1px;
+            background: var(--color-border);
+            flex-shrink: 0;
+        }
+
+        .pk-slides-section {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .pk-thumbnail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: var(--spacing-md);
+            position: relative;
+        }
+
+        /* Floating insertion indicator */
+        .pk-insert-indicator {
+            position: absolute;
+            width: 4px;
+            background: var(--color-accent);
+            border-radius: 2px;
+            box-shadow: 0 0 8px var(--color-accent);
+            pointer-events: none;
+            z-index: 100;
+            display: none;
+        }
+
+        .pk-insert-indicator.visible {
+            display: block;
+        }
+
+        .pk-thumbnail {
+            position: relative;
+            aspect-ratio: 16 / 9;
+            border-radius: var(--radius-sm);
+            border: 2px solid var(--color-border);
+        }
+
+        .pk-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: calc(var(--radius-sm) - 2px);
+        }
+
+        .pk-thumbnail-number {
+            position: absolute;
+            bottom: 4px;
+            left: 4px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.125rem 0.5rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 500;
+            line-height: 1.4;
+            min-width: 1.5rem;
+            text-align: center;
+        }
+
+        /* Drag and drop reordering */
+        .pk-thumbnail[draggable="true"] {
+            cursor: grab;
+            position: relative;
+        }
+
+        .pk-thumbnail[draggable="true"]:active {
+            cursor: grabbing;
+        }
+
+        .pk-thumbnail.dragging {
+            opacity: 0.4;
+            transform: scale(0.95);
+        }
+
+        .pk-thumbnail.selected {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 2px var(--color-accent);
+        }
+
+        /* Thumbnail action buttons (hover to reveal) */
+        .pk-thumbnail-action {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            border-radius: var(--radius-sm);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            opacity: 0;
+            transition: opacity 0.15s, background-color 0.15s;
+        }
+
+        .pk-thumbnail:hover .pk-thumbnail-action {
+            opacity: 1;
+        }
+
+        .pk-thumbnail-action svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* Preview button (top-left) */
+        .pk-thumbnail-preview {
+            top: 4px;
+            left: 4px;
+        }
+
+        .pk-thumbnail-preview:hover {
+            background: var(--color-accent);
+        }
+
+        /* Delete button (top-right) */
+        .pk-thumbnail-delete {
+            top: 4px;
+            right: 4px;
+        }
+
+        .pk-thumbnail-delete:hover {
+            background: var(--color-error);
+        }
+
+        /* Lightbox overlay */
+        .pk-lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: zoom-out;
+        }
+
+        .pk-lightbox img {
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: var(--radius-md);
+        }
+
+        .pk-lightbox-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: var(--radius-sm);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.15s;
+        }
+
+        .pk-lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .pk-lightbox-close svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .pk-lightbox-hint {
+            position: absolute;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.875rem;
+        }
+
+        /* Add more card */
+        .pk-add-more {
+            aspect-ratio: 16 / 9;
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius-sm);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            cursor: pointer;
+            transition: border-color 0.2s, background-color 0.2s;
+            background: var(--color-card-bg);
+            color: var(--color-text-muted);
+        }
+
+        .pk-add-more:hover,
+        .pk-add-more.dragover {
+            border-color: var(--color-accent);
+            background: var(--color-bg);
+        }
+
+        .pk-add-more-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .pk-add-more-text {
+            font-size: 0.75rem;
+            margin: 0;
+        }
+
+        .pk-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: var(--spacing-md);
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        /* Control panel card styling */
+        .pk-control-panel {
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+        }
+
+        .pk-control-panel-header {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .pk-control-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--spacing-sm);
+        }
+
+        .pk-control-row + .pk-control-row {
+            margin-top: var(--spacing-sm);
+            padding-top: var(--spacing-sm);
+            border-top: 1px solid var(--color-border);
+        }
+
+        .pk-control-label {
+            font-size: 0.875rem;
+            color: var(--color-text);
+        }
+
+        .pk-control-value {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .pk-start-options {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pk-mode-toggle {
+            display: flex;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .pk-mode-toggle input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .pk-mode-toggle label {
+            padding: 8px 16px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            background: var(--color-bg);
+            color: var(--color-text-muted);
+            border-right: 1px solid var(--color-border);
+            transition: background-color var(--transition-fast), color var(--transition-fast);
+            user-select: none;
+        }
+
+        .pk-mode-toggle label:last-of-type {
+            border-right: none;
+        }
+
+        .pk-mode-toggle label:hover {
+            background: var(--color-control-bg);
+            color: var(--color-text);
+        }
+
+        .pk-mode-toggle input[type="radio"]:checked + label {
+            background: var(--color-accent);
+            color: white;
+        }
+
+        .pk-mode-toggle input[type="radio"]:focus-visible + label {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
+        }
+
+        .pk-action-buttons {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .pk-primary-actions {
+            display: flex;
+            justify-content: center;
+            gap: var(--spacing-sm);
+        }
+
+        .pk-start-btn {
+            padding: var(--spacing-sm) var(--spacing-lg);
+            font-size: 1rem;
+        }
+
+        .pk-secondary-actions {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+            align-items: center;
+        }
+
+        .pk-settings-actions {
+            display: flex;
+            gap: var(--spacing-xs);
+            align-items: center;
+        }
+
+        .pk-text-button {
+            background: none;
+            border: none;
+            padding: var(--spacing-xs);
+            font-size: 0.8125rem;
+            font-family: var(--font-family);
+            color: var(--color-text-muted);
+            cursor: pointer;
+            transition: color var(--transition-fast);
+        }
+
+        .pk-text-button:hover {
+            color: var(--color-accent);
+        }
+
+        .pk-action-divider {
+            color: var(--color-border);
+            user-select: none;
+        }
+
+        .pk-import-label {
+            display: inline-flex;
+            cursor: pointer;
+        }
+
+        .pk-import-label input {
+            display: none;
+        }
+
+        .pk-slideshow-section {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Practice mode ready overlay - covers slide area only, not controls */
+        .pk-practice-ready-overlay {
+            position: absolute;
+            inset: 0;
+            bottom: auto;
+            height: calc(100% - 52px); /* Leave room for controls bar */
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+        }
+
+        .pk-practice-ready-overlay[hidden] {
+            display: none;
+        }
+
+        .pk-practice-ready-background {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+
+        .pk-practice-ready-background img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .pk-practice-ready-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            padding: 32px 48px;
+            background: rgba(0, 0, 0, 0.75);
+            border-radius: 16px;
+            backdrop-filter: blur(8px);
+            color: #fff;
+            text-align: center;
+        }
+
+        .pk-practice-ready-content h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .pk-practice-ready-content p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .pk-practice-start-btn {
+            margin-top: 8px;
+            padding: 12px 48px;
+            font-size: 1.125rem;
+        }
+
+        .pk-practice-ready-hint {
+            font-size: 0.875rem;
+        }
+
+        /* Practice mode content area (slide + notes side by side) */
+        .pk-practice-content {
+            flex: 1;
+            display: flex;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .pk-slide-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* When notes are visible, slide takes less space */
+        .pk-practice-content:has(.pk-practice-notes-panel:not([hidden])) .pk-slide-container {
+            flex: 0 0 70%;
+        }
+
+        .pk-slide-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .pk-controls {
+            background: rgba(0, 0, 0, 0.8);
+            padding: var(--spacing-sm) var(--spacing-md);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--spacing-md);
+        }
+
+        .pk-progress-container {
+            flex: 1;
+            max-width: 400px;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .pk-progress-bar {
+            flex: 1;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .pk-progress-fill {
+            height: 100%;
+            background: var(--color-accent);
+            transition: width 0.1s linear;
+        }
+
+        .pk-slide-timer {
+            color: white;
+            font-size: 0.875rem;
+            font-variant-numeric: tabular-nums;
+            min-width: 24px;
+            text-align: right;
+        }
+
+        .pk-slide-info {
+            color: white;
+            font-size: 0.875rem;
+            display: flex;
+            gap: var(--spacing-md);
+        }
+
+        .pk-elapsed-time,
+        .pk-total-time {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .pk-time-separator {
+            opacity: 0.5;
+        }
+
+        .pk-pause-indicator {
+            color: var(--color-warning);
+            font-weight: 500;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pk-controls-hint {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.75rem;
+        }
+
+        .pk-complete-section {
+            text-align: center;
+            padding: var(--spacing-xl);
+        }
+
+        .pk-complete-stats {
+            display: flex;
+            gap: var(--spacing-lg);
+            justify-content: center;
+            margin: var(--spacing-lg) 0;
+        }
+
+        .pk-stat {
+            text-align: center;
+        }
+
+        .pk-stat-value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--color-accent);
+        }
+
+        .pk-stat-label {
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        /* Action buttons - matches Cancelled Harmonics style */
+        .action-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            font-family: var(--font-family);
+            background: var(--color-accent);
+            border: 1px solid var(--color-accent);
+            border-radius: var(--radius-sm);
+            color: white;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-decoration: none;
+        }
+
+        .action-button:hover {
+            background: var(--color-accent-hover);
+            border-color: var(--color-accent-hover);
+            opacity: 1;
+        }
+
+        .action-button.secondary {
+            background: var(--color-control-bg);
+            border: 1px solid var(--color-border);
+            color: var(--color-text-muted);
+        }
+
+        .action-button.secondary:hover {
+            background: var(--color-card-bg);
+            border-color: var(--color-text-muted);
+            color: var(--color-text);
+        }
+
+        /* Dark mode button contrast fix */
+        [data-theme="dark"] .action-button:not(.secondary) {
+            background: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        [data-theme="dark"] .action-button:not(.secondary):hover {
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        /* Undo toast notification */
+        .pk-toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-sm) var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1500;
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .pk-toast.visible {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .pk-toast-message {
+            color: var(--color-text);
+            font-size: 0.875rem;
+        }
+
+        .pk-toast-shortcut {
+            color: var(--color-text-muted);
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            background: var(--color-bg);
+            border-radius: var(--radius-sm);
+            font-family: monospace;
+        }
+
+        .pk-toast-undo {
+            background: none;
+            border: none;
+            color: var(--color-accent);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            transition: background-color 0.15s;
+        }
+
+        .pk-toast-undo:hover {
+            background: var(--color-bg);
+        }
+
+        /* About section styling */
+        .pk-about {
+            margin-top: var(--spacing-xl);
+            padding: var(--spacing-lg);
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            text-align: left;
+        }
+
+        .pk-about h2 {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .pk-about h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--color-text);
+            margin: var(--spacing-lg) 0 var(--spacing-sm);
+        }
+
+        .pk-about h3:first-of-type {
+            margin-top: var(--spacing-md);
+        }
+
+        .pk-about p {
+            color: var(--color-text-muted);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .pk-about p:last-child {
+            margin-bottom: 0;
+        }
+
+        .pk-about ol,
+        .pk-about ul {
+            margin: 0 0 var(--spacing-md) var(--spacing-lg);
+            padding: 0;
+            color: var(--color-text-muted);
+        }
+
+        .pk-about li {
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .pk-about kbd {
+            display: inline-block;
+            padding: 0.15rem 0.4rem;
+            font-size: 0.8rem;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+            color: var(--color-text);
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Presenter View (shown during external presentation) */
+        .pk-presenter-view {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: var(--color-bg);
+            padding: var(--spacing-md);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Fullscreen presenter layout - two columns */
+        .pk-presenter-layout {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: var(--spacing-lg);
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* Left column: Current slide + controls */
+        .pk-presenter-left {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            min-height: 0;
+        }
+
+        /* Current slide (16:9 aspect ratio) */
+        .pk-presenter-current {
+            position: relative;
+            aspect-ratio: 16 / 9;
+            max-height: calc(100vh - 280px);
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Progress bar on current slide */
+        .pk-presenter-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .pk-presenter-progress-fill {
+            height: 100%;
+            background: var(--color-accent);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .pk-presenter-slide-label {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            background: var(--color-control-bg);
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pk-presenter-slide-img {
+            width: 100%;
+            flex: 1;
+            object-fit: contain;
+            background: #000;
+            min-height: 0;
+        }
+
+        /* Controls area below current slide */
+        .pk-presenter-controls-area {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+            padding: var(--spacing-md);
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+        }
+
+        .pk-presenter-timer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .pk-presenter-time {
+            font-size: 3rem;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            color: var(--color-text);
+            line-height: 1;
+        }
+
+        .pk-presenter-time.warning,
+        .pk-presenter-time.warning-yellow {
+            color: var(--color-warning);
+        }
+
+        .pk-presenter-time.warning-red {
+            color: var(--color-error);
+        }
+
+        .pk-presenter-time.warning-critical {
+            color: var(--color-error);
+            animation: timer-pulse 0.5s ease-in-out infinite;
+        }
+
+        @keyframes timer-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .pk-presenter-time-secondary {
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .pk-presenter-slide-counter {
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+        }
+
+        .pk-presenter-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-xs);
+            flex: 1;
+        }
+
+        .pk-presenter-controls .action-button {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            font-size: 0.875rem;
+        }
+
+        /* Presenter navigation button group (Prev/Pause/Next) */
+        .pk-presenter-nav-group {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .pk-presenter-nav-btn {
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            background: var(--color-control-bg);
+            color: var(--color-text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--transition-fast), border-color var(--transition-fast);
+        }
+
+        .pk-presenter-nav-btn:hover:not(:disabled) {
+            background: var(--color-card-bg);
+            border-color: var(--color-accent);
+        }
+
+        .pk-presenter-nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .pk-presenter-nav-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Slide filmstrip for navigation */
+        .pk-presenter-filmstrip {
+            flex: 0 0 auto;
+            height: 100px;
+            min-height: 0;
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pk-presenter-filmstrip-track {
+            flex: 1;
+            display: flex;
+            gap: var(--spacing-xs);
+            padding: var(--spacing-sm);
+            overflow-x: auto;
+            overflow-y: hidden;
+            align-items: center;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-border) transparent;
+        }
+
+        .pk-presenter-filmstrip-track::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .pk-presenter-filmstrip-track::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .pk-presenter-filmstrip-track::-webkit-scrollbar-thumb {
+            background: var(--color-border);
+            border-radius: 4px;
+        }
+
+        .pk-presenter-filmstrip-thumb {
+            flex: 0 0 auto;
+            height: calc(100% - 16px);
+            aspect-ratio: 16 / 9;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            border: 2px solid transparent;
+            transition: border-color var(--transition-fast), opacity var(--transition-fast);
+        }
+
+        .pk-presenter-filmstrip-thumb:hover {
+            border-color: var(--color-text-muted);
+        }
+
+        .pk-presenter-filmstrip-thumb.current {
+            border-color: var(--color-accent);
+        }
+
+        .pk-presenter-filmstrip-thumb.past {
+            opacity: 0.5;
+        }
+
+        .pk-presenter-filmstrip-thumb.has-custom-duration::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 8px;
+            height: 8px;
+            background: var(--color-warning);
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .pk-presenter-filmstrip-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .pk-presenter-filmstrip-number {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            font-size: 0.625rem;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Right column: Next slide + Notes stacked */
+        .pk-presenter-right {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            min-height: 0;
+        }
+
+        .pk-presenter-next {
+            flex: 0 0 auto;
+            aspect-ratio: 16 / 9;
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .pk-presenter-next-placeholder {
+            position: absolute;
+            inset: 0;
+            top: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+        }
+
+        .pk-presenter-next-placeholder span {
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
+        }
+
+        /* External display info message */
+        .pk-external-info {
+            text-align: center;
+            padding: var(--spacing-md);
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-lg);
+            color: var(--color-text-muted);
+        }
+
+        .pk-external-info strong {
+            color: var(--color-text);
+        }
+
+        /* Notes indicator on thumbnails */
+        .pk-thumbnail.has-notes::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            width: 8px;
+            height: 8px;
+            background: var(--color-accent);
+            border-radius: 50%;
+            box-shadow: 0 0 4px var(--color-accent);
+        }
+
+        /* Custom duration indicator on thumbnails */
+        .pk-thumbnail.has-custom-duration::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 8px;
+            height: 8px;
+            background: var(--color-warning);
+            border-radius: 50%;
+            box-shadow: 0 0 4px var(--color-warning);
+            z-index: 1;
+        }
+
+        /* Notes Panel (shown when slide is selected) */
+        .pk-notes-panel {
+            margin-top: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            padding: var(--spacing-md);
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+        }
+
+        .pk-notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .pk-notes-header-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--color-text);
+        }
+
+        .pk-notes-close {
+            width: 28px;
+            height: 28px;
+            background: transparent;
+            border: none;
+            border-radius: var(--radius-sm);
+            color: var(--color-text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: background-color 0.15s, color 0.15s;
+        }
+
+        .pk-notes-close:hover {
+            background: var(--color-control-bg);
+            color: var(--color-text);
+        }
+
+        .pk-notes-input {
+            width: 100%;
+            min-height: 100px;
+            padding: var(--spacing-sm);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            background: var(--color-bg);
+            color: var(--color-text);
+            font-family: inherit;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            resize: vertical;
+        }
+
+        .pk-notes-input:focus {
+            outline: none;
+            border-color: var(--color-accent);
+        }
+
+        .pk-notes-input::placeholder {
+            color: var(--color-text-muted);
+        }
+
+        /* Per-slide duration override */
+        .pk-notes-duration {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: var(--spacing-sm);
+            padding-top: var(--spacing-sm);
+            border-top: 1px solid var(--color-border);
+        }
+
+        .pk-notes-duration label {
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+        }
+
+        .pk-notes-duration input {
+            width: 60px;
+            padding: 6px 8px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            background: var(--color-bg);
+            color: var(--color-text);
+            font-size: 0.875rem;
+            text-align: center;
+            /* Hide spinner arrows */
+            -moz-appearance: textfield;
+            appearance: textfield;
+            cursor: ns-resize;
+        }
+
+        .pk-notes-duration input::-webkit-inner-spin-button,
+        .pk-notes-duration input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .pk-notes-duration input:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            cursor: text;
+        }
+
+        .pk-notes-duration input.dragging {
+            border-color: var(--color-accent);
+            user-select: none;
+        }
+
+        .pk-notes-duration-unit {
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+        }
+
+        .pk-notes-panel #set-title-btn {
+            margin-top: var(--spacing-md);
+        }
+
+        /* Presenter Notes Display (in right column) */
+        .pk-presenter-notes {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .pk-presenter-notes-header {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            background: var(--color-control-bg);
+        }
+
+        .pk-presenter-notes-label {
+            font-size: 0.625rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pk-presenter-export-btn {
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            font-family: var(--font-family);
+            background: var(--color-control-bg);
+            color: var(--color-text-muted);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+        }
+
+        .pk-presenter-export-btn:hover {
+            background: var(--color-card-bg);
+            border-color: var(--color-text-muted);
+            color: var(--color-text);
+        }
+
+        .pk-presenter-notes-input {
+            flex: 1;
+            width: 100%;
+            min-height: 0;
+            padding: var(--spacing-sm);
+            border: none;
+            background: transparent;
+            color: var(--color-text);
+            font-family: inherit;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            resize: none;
+        }
+
+        .pk-presenter-notes-input:focus {
+            outline: none;
+        }
+
+        .pk-presenter-notes-input::placeholder {
+            color: var(--color-text-muted);
+        }
+
+        /* Custom checkbox styling */
+        .pk-checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .pk-checkbox-label input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            background: var(--color-card-bg);
+            cursor: pointer;
+            position: relative;
+            transition: background-color var(--transition-fast), border-color var(--transition-fast);
+        }
+
+        .pk-checkbox-label input[type="checkbox"]:checked {
+            background: var(--color-accent);
+            border-color: var(--color-accent);
+        }
+
+        .pk-checkbox-label input[type="checkbox"]:checked::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 2px;
+            width: 5px;
+            height: 9px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .pk-checkbox-label input[type="checkbox"]:focus-visible {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
+        }
+
+        .pk-checkbox-label:hover {
+            color: var(--color-text);
+        }
+
+        .pk-checkbox-label:hover input[type="checkbox"] {
+            border-color: var(--color-accent);
+        }
+
+        /* Timer toggle in practice mode controls (dark background) */
+        .pk-timer-toggle {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .pk-timer-toggle:hover {
+            color: rgba(255, 255, 255, 1);
+        }
+
+        .pk-timer-toggle input[type="checkbox"] {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .pk-timer-toggle input[type="checkbox"]:checked {
+            background: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        .pk-timer-toggle:hover input[type="checkbox"] {
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .pk-timer-toggle input[type="checkbox"]:focus-visible {
+            outline-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Image display mode selector */
+        .pk-display-mode {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .pk-display-mode-label {
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+        }
+
+        /* Timer overlay on slide */
+        .pk-timer-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .pk-timer-overlay span {
+            font-size: 20rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: rgba(255, 255, 255, 0.5);
+            text-shadow: 0 0 60px rgba(0, 0, 0, 0.6);
+            line-height: 1;
+        }
+
+        .pk-timer-overlay span.warning-yellow {
+            color: rgba(245, 158, 11, 0.6);
+        }
+
+        .pk-timer-overlay span.warning-red {
+            color: rgba(239, 68, 68, 0.6);
+        }
+
+        .pk-timer-overlay span.warning-critical {
+            color: rgba(239, 68, 68, 0.8);
+            animation: timer-pulse 0.5s ease-in-out infinite;
+        }
+
+        /* Practice mode notes panel (right side) */
+        .pk-practice-notes-panel {
+            flex: 0 0 30%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .pk-practice-notes-header {
+            padding: var(--spacing-sm) var(--spacing-md);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
+        }
+
+        .pk-practice-notes-text {
+            flex: 1;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin: 0;
+            padding: var(--spacing-md);
+            white-space: pre-wrap;
+            overflow-y: auto;
+        }
+
+        .pk-practice-notes-text:empty::before {
+            content: 'No notes for this slide';
+            color: rgba(255, 255, 255, 0.4);
+            font-style: italic;
+        }
+
+        /* Navigation arrows */
+        .pk-nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 64px;
+            height: 64px;
+            background: rgba(0, 0, 0, 0.3);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s ease, background-color 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .pk-nav-prev { left: 24px; }
+        .pk-nav-next { right: 24px; }
+
+        .pk-slide-container:hover .pk-nav-arrow:not(:disabled) {
+            opacity: 1;
+        }
+
+        .pk-nav-arrow:hover:not(:disabled) {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .pk-nav-arrow:disabled {
+            opacity: 0 !important;
+            cursor: default;
+        }
+
+        .pk-nav-arrow svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        /* Position slide container as relative for absolute positioned children */
+        .pk-slide-container {
+            position: relative;
+        }
+
+        /* Focus indicators for accessibility */
+        .pk-thumbnail:focus-visible,
+        .pk-thumbnail-action:focus-visible,
+        .pk-presenter-filmstrip-thumb:focus-visible,
+        .pk-presenter-nav-btn:focus-visible,
+        .pk-nav-arrow:focus-visible,
+        .pk-lightbox-close:focus-visible {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
+        }
+
+        /* Dark background context focus (for lightbox and slideshow) */
+        .pk-lightbox-close:focus-visible,
+        .pk-nav-arrow:focus-visible {
+            outline-color: #3b82f6;
+        }
+
+        /* Responsive breakpoints for presenter view */
+        @media (max-width: 1024px) {
+            .pk-presenter-layout {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-md);
+            }
+
+            .pk-presenter-left {
+                max-height: none;
+            }
+
+            .pk-presenter-right {
+                flex-direction: row;
+                gap: var(--spacing-md);
+            }
+
+            .pk-presenter-next {
+                width: 200px;
+                flex-shrink: 0;
+            }
+
+            .pk-presenter-notes {
+                flex: 1;
+                min-height: 120px;
+            }
+
+            .pk-presenter-current {
+                max-height: 50vh;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .pk-presenter-view {
+                padding: var(--spacing-sm);
+            }
+
+            .pk-presenter-right {
+                flex-direction: column;
+            }
+
+            .pk-presenter-next {
+                width: 100%;
+                max-height: 150px;
+            }
+
+            .pk-presenter-time {
+                font-size: 2.5rem;
+            }
+
+            .pk-presenter-controls {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .pk-presenter-time {
+                font-size: 2rem;
+            }
+
+            .pk-presenter-filmstrip {
+                height: 80px;
+            }
+
+            .pk-presenter-controls-area {
+                flex-direction: column;
+                gap: var(--spacing-sm);
+                align-items: stretch;
+            }
+
+            .pk-presenter-time-info {
+                text-align: center;
+            }
+
+            .pk-presenter-controls {
+                justify-content: center;
+            }
+
+            /* Practice notes: stack vertically on small screens */
+            .pk-practice-content {
+                flex-direction: column;
+            }
+
+            .pk-practice-content:has(.pk-practice-notes-panel:not([hidden])) .pk-slide-container {
+                flex: 0 0 60%;
+            }
+
+            .pk-practice-notes-panel {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container wide">
+        <site-nav base="../../"></site-nav>
+
+        <div id="main-content" class="page-header">
+            <h1 class="page-title">PechaKucha Player</h1>
+            <p class="page-subtitle">Upload images to create an auto-advancing presentation in the PechaKucha style.</p>
+            <div class="wip-notice">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+                <div>
+                    <p><strong>Work in Progress</strong>: This tool is under active development. Some features may be incomplete or behave unexpectedly.</p>
+                    <p>If you encounter bugs or have feature requests, please <a href="../../contact.html">get in touch</a>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Section -->
+        <section id="upload-section" class="pk-upload-section">
+            <div id="dropzone" class="pk-dropzone">
+                <svg class="pk-dropzone-icon" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <p class="pk-dropzone-text">Drag and drop images here</p>
+                <p class="pk-dropzone-text">or</p>
+                <input type="file" id="file-input" class="pk-file-input" multiple accept="image/*,.json,application/json">
+                <label for="file-input" class="action-button">Choose Files</label>
+            </div>
+
+            <div class="pk-about">
+                <h2>What is PechaKucha?</h2>
+                <p>PechaKucha (Japanese for "chit-chat") is a presentation format where slides auto-advance every 20 seconds, forcing concise storytelling. The classic format uses 20 slides for a total of 6 minutes and 40 seconds.</p>
+                <p style="margin-top: var(--spacing-md);">
+                    <a href="guide.html" style="color: var(--color-accent); font-weight: 500;">View the complete guide &rarr;</a>
+                </p>
+            </div>
+        </section>
+
+        <!-- Preview Section -->
+        <section id="preview-section" class="pk-preview-section" hidden>
+            <p id="slide-notice" class="pk-slide-notice"></p>
+
+            <div class="pk-thumbnails-container">
+                <!-- Title Slide Section -->
+                <div class="pk-title-slide-section">
+                    <div class="pk-section-label">Title Slide (optional)
+                        <button type="button" class="info-trigger" aria-label="More information about title slide">?
+                            <span class="info-tooltip tooltip-left">To set a title slide, click any slide thumbnail below to select it, then click "Set as Title Slide." The title slide will display first before the timed presentation begins.</span>
+                        </button>
+                    </div>
+                    <div id="title-slide-slot" class="pk-title-slide-slot">
+                        <span id="title-slot-hint" class="pk-slot-hint">None</span>
+                        <img id="title-slide-img" class="pk-title-slide-img" src="" alt="Title slide" hidden>
+                        <button id="title-slide-remove" class="pk-title-slide-remove" aria-label="Remove title slide" hidden>&times;</button>
+                    </div>
+                </div>
+
+                <div class="pk-grid-divider"></div>
+
+                <!-- Slides Section -->
+                <div class="pk-slides-section">
+                    <div class="pk-section-label">Presentation Slides
+                        <button type="button" class="info-trigger" aria-label="More information about presentation slides">?
+                            <span class="info-tooltip tooltip-left">Drag to reorder slides. Click a slide to add speaker notes. Hover over thumbnails to see preview and delete buttons.</span>
+                        </button>
+                    </div>
+                    <div id="thumbnails" class="pk-thumbnail-grid"></div>
+                </div>
+            </div>
+
+            <!-- Notes Panel (shown when slide is selected) -->
+            <div id="notes-panel" class="pk-notes-panel" hidden>
+                <div class="pk-notes-header">
+                    <span class="pk-notes-header-title">Notes for Slide <span id="notes-slide-number">1</span></span>
+                    <button id="notes-close-btn" class="pk-notes-close" aria-label="Close notes">&times;</button>
+                </div>
+                <textarea id="notes-input" class="pk-notes-input" placeholder="Add speaker notes for this slide..."></textarea>
+                <div class="pk-notes-duration">
+                    <label for="slide-duration-override">Duration</label>
+                    <input type="number" id="slide-duration-override" min="1" max="120">
+                    <span class="pk-notes-duration-unit">seconds</span>
+                    <button type="button" class="info-trigger" aria-label="More information about slide duration">?
+                        <span class="info-tooltip">Override the default duration for this slide. Leave empty to use the global setting.</span>
+                    </button>
+                </div>
+                <button id="set-title-btn" class="action-button secondary">Set as Title Slide</button>
+            </div>
+
+            <div class="pk-actions">
+                <!-- Settings Panel -->
+                <div class="pk-control-panel">
+                    <div class="pk-control-panel-header">Settings</div>
+
+                    <div class="pk-control-row">
+                        <span class="pk-control-label">Mode</span>
+                        <div class="pk-control-value">
+                            <div class="pk-mode-toggle" role="radiogroup" aria-label="Presentation mode">
+                                <input type="radio" id="mode-practice" name="presentation-mode" value="practice" checked>
+                                <label for="mode-practice">Practice</label>
+                                <input type="radio" id="mode-present" name="presentation-mode" value="present">
+                                <label for="mode-present">Present</label>
+                            </div>
+                            <button type="button" class="info-trigger" aria-label="More information about presentation modes">?
+                                <span class="info-tooltip"><strong>Practice:</strong> Single-screen fullscreen view for rehearsing.<br><strong>Present:</strong> Opens a separate window for your audience while you see presenter view with notes and timer. Best with two screens.</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pk-control-row">
+                        <span class="pk-control-label">Image display</span>
+                        <div class="pk-control-value">
+                            <div class="pk-mode-toggle" role="radiogroup" aria-label="Image display mode">
+                                <input type="radio" id="display-fit" name="display-mode" value="fit" checked>
+                                <label for="display-fit">Fit</label>
+                                <input type="radio" id="display-fill" name="display-mode" value="fill">
+                                <label for="display-fill">Fill</label>
+                                <input type="radio" id="display-native" name="display-mode" value="native">
+                                <label for="display-native">Native</label>
+                            </div>
+                            <button type="button" class="info-trigger" aria-label="More information about image display modes">?
+                                <span class="info-tooltip"><strong>Fit:</strong> Shows the entire image with black bars if needed.<br><strong>Fill:</strong> Fills the screen, cropping edges if the aspect ratio doesn't match.<br><strong>Native:</strong> Shows the image at its original size, centered.</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Primary Actions -->
+                <div class="pk-primary-actions">
+                    <button id="start-btn" class="action-button pk-start-btn">Start Presentation</button>
+                    <button id="start-from-btn" class="action-button pk-start-btn" hidden>Start from Slide 1</button>
+                </div>
+
+                <!-- Secondary Actions -->
+                <div class="pk-secondary-actions">
+                    <button id="reset-btn" class="action-button secondary">Choose Different Images</button>
+                    <div class="pk-settings-actions">
+                        <button id="export-btn" class="pk-text-button">Export Settings</button>
+                        <span class="pk-action-divider">·</span>
+                        <button id="export-pptx-btn" class="pk-text-button">Export PowerPoint</button>
+                        <span class="pk-action-divider">·</span>
+                        <label class="pk-import-label">
+                            <span class="pk-text-button">Import Settings</span>
+                            <input type="file" id="import-input" accept=".json,application/json">
+                        </label>
+                        <button type="button" class="info-trigger" aria-label="More information about export and import">?
+                            <span class="info-tooltip"><strong>Export Settings:</strong> Save slide order, notes, and settings as a JSON file.<br><strong>Export PowerPoint:</strong> Download a .pptx file with slides, auto-advance timings, and speaker notes.<br><strong>Import:</strong> Load a previously exported JSON file.</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Presenter View (shown during external presentation) -->
+        <section id="presenter-section" class="pk-presenter-view" hidden>
+            <div class="pk-presenter-layout">
+                <!-- Left: Current Slide + Controls -->
+                <div class="pk-presenter-left">
+                    <div class="pk-presenter-current">
+                        <div class="pk-presenter-slide-label">Current Slide</div>
+                        <img id="presenter-current-img" class="pk-presenter-slide-img" src="" alt="Current slide">
+                        <div class="pk-presenter-progress">
+                            <div id="presenter-progress-fill" class="pk-presenter-progress-fill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Controls below current slide -->
+                    <div class="pk-presenter-controls-area">
+                        <div class="pk-presenter-timer">
+                            <div id="presenter-time" class="pk-presenter-time">0:20</div>
+                            <div class="pk-presenter-time-secondary">
+                                <span id="presenter-elapsed">0:00</span> / <span id="presenter-total">6:40</span>
+                            </div>
+                            <div id="presenter-counter" class="pk-presenter-slide-counter">Slide 1 of 20</div>
+                        </div>
+
+                        <div class="pk-presenter-controls">
+                            <button id="presenter-start-btn" class="action-button">Start Presentation</button>
+                            <div id="presenter-nav-group" class="pk-presenter-nav-group" hidden>
+                                <button id="presenter-prev-btn" class="pk-presenter-nav-btn" aria-label="Previous slide">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <polyline points="15 18 9 12 15 6"></polyline>
+                                    </svg>
+                                </button>
+                                <button id="presenter-pause-btn" class="action-button">Pause</button>
+                                <button id="presenter-next-btn" class="pk-presenter-nav-btn" aria-label="Next slide">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <polyline points="9 18 15 12 9 6"></polyline>
+                                    </svg>
+                                </button>
+                            </div>
+                            <button id="presenter-close-window-btn" class="action-button secondary">Audience Window</button>
+                            <button id="presenter-end-btn" class="action-button secondary">Edit Slides</button>
+                            <label class="pk-checkbox-label pk-timer-toggle pk-presenter-audio-toggle">
+                                <input type="checkbox" id="audio-toggle-presenter">
+                                <span>Audio cues</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Slide filmstrip for quick navigation -->
+                    <div class="pk-presenter-filmstrip">
+                        <div id="presenter-filmstrip" class="pk-presenter-filmstrip-track">
+                            <!-- Thumbnails rendered dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Next Slide + Notes -->
+                <div class="pk-presenter-right">
+                    <div class="pk-presenter-next">
+                        <div class="pk-presenter-slide-label">Next Slide</div>
+                        <img id="presenter-next-img" class="pk-presenter-slide-img" src="" alt="Next slide">
+                        <div id="presenter-next-placeholder" class="pk-presenter-next-placeholder" hidden>
+                            <span>No Next Slide</span>
+                        </div>
+                    </div>
+
+                    <div id="presenter-notes" class="pk-presenter-notes">
+                        <div class="pk-presenter-notes-header">
+                            <span class="pk-presenter-notes-label">Notes</span>
+                            <button id="presenter-export-btn" class="pk-presenter-export-btn" title="Export presentation">Export</button>
+                        </div>
+                        <textarea id="presenter-notes-input" class="pk-presenter-notes-input" placeholder="Add notes for this slide..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slideshow Section (fullscreen overlay) -->
+        <section id="slideshow-section" class="pk-slideshow-section" hidden>
+            <!-- Ready overlay (shown before starting practice mode) -->
+            <div id="practice-ready-overlay" class="pk-practice-ready-overlay">
+                <div id="practice-ready-background" class="pk-practice-ready-background"></div>
+                <div class="pk-practice-ready-content">
+                    <h1>Ready to Practice</h1>
+                    <p id="practice-slide-count">20 slides</p>
+                    <button id="practice-start-btn" class="action-button pk-practice-start-btn">Start</button>
+                    <p class="pk-practice-ready-hint">Press Space or click Start to begin</p>
+                </div>
+            </div>
+            <!-- Main content area (slide + optional notes) -->
+            <div class="pk-practice-content">
+                <div class="pk-slide-container">
+                    <img id="current-slide" src="" alt="Presentation slide">
+                    <!-- Timer overlay (optional, practice mode only) -->
+                    <div id="timer-overlay" class="pk-timer-overlay" hidden>
+                        <span id="timer-overlay-value">20</span>
+                    </div>
+                    <!-- Navigation arrows (practice mode only) -->
+                    <button id="nav-prev" class="pk-nav-arrow pk-nav-prev" aria-label="Previous slide">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <button id="nav-next" class="pk-nav-arrow pk-nav-next" aria-label="Next slide">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+                <!-- Notes panel (practice mode only) - shown on right side -->
+                <div id="practice-notes-panel" class="pk-practice-notes-panel" hidden>
+                    <div class="pk-practice-notes-header">Notes</div>
+                    <p id="practice-notes-text" class="pk-practice-notes-text">No notes for this slide</p>
+                </div>
+            </div>
+            <div class="pk-controls">
+                <div class="pk-slide-info">
+                    <span id="slide-counter">1 / 20</span>
+                    <span id="pause-indicator" class="pk-pause-indicator" hidden>Paused</span>
+                </div>
+                <div class="pk-progress-container">
+                    <div class="pk-progress-bar">
+                        <div id="progress-fill" class="pk-progress-fill" style="width: 0%"></div>
+                    </div>
+                    <span id="slide-timer" class="pk-slide-timer">20</span>
+                </div>
+                <div class="pk-slide-info">
+                    <span id="elapsed-time" class="pk-elapsed-time">0:00</span>
+                    <span class="pk-time-separator">/</span>
+                    <span id="total-time" class="pk-total-time">6:40</span>
+                </div>
+                <label class="pk-checkbox-label pk-timer-toggle">
+                    <input type="checkbox" id="timer-toggle-practice">
+                    <span>Timer</span>
+                </label>
+                <label class="pk-checkbox-label pk-timer-toggle">
+                    <input type="checkbox" id="notes-toggle-practice">
+                    <span>Notes</span>
+                </label>
+                <label class="pk-checkbox-label pk-timer-toggle">
+                    <input type="checkbox" id="audio-toggle-practice">
+                    <span>Audio cues</span>
+                </label>
+                <span class="pk-controls-hint">Space: pause · Esc: exit</span>
+            </div>
+        </section>
+
+        <!-- Complete Section -->
+        <section id="complete-section" class="pk-complete-section" hidden>
+            <h2>Presentation Complete</h2>
+            <div class="pk-complete-stats">
+                <div class="pk-stat">
+                    <div id="final-slide-count" class="pk-stat-value">20</div>
+                    <div class="pk-stat-label">slides</div>
+                </div>
+                <div class="pk-stat">
+                    <div id="final-duration" class="pk-stat-value">6:40</div>
+                    <div class="pk-stat-label">total time</div>
+                </div>
+            </div>
+            <div class="pk-actions">
+                <button id="restart-btn" class="action-button">Present Again</button>
+                <button id="edit-btn" class="action-button secondary">Edit Slides</button>
+                <button id="new-btn" class="action-button secondary">New Presentation</button>
+            </div>
+        </section>
+
+        <footer>
+            <p>&copy; <span class="footer-year"></span> Blake Boyd</p>
+        </footer>
+    </div>
+
+    <!-- Undo toast notification -->
+    <div id="undo-toast" class="pk-toast" aria-live="polite">
+        <span class="pk-toast-message">Slide deleted</span>
+        <span id="toast-shortcut" class="pk-toast-shortcut"></span>
+        <button id="toast-undo-btn" class="pk-toast-undo">Undo</button>
+    </div>
+
+    <!-- Lightbox for image preview -->
+    <div id="lightbox" class="pk-lightbox" hidden>
+        <img id="lightbox-image" src="" alt="Image preview">
+        <button id="lightbox-close" class="pk-lightbox-close" aria-label="Close preview">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+        <span class="pk-lightbox-hint">Click anywhere or press Esc to close</span>
+    </div>
+
+    <script src="../../js/notify.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS@3.12.0/dist/pptxgen.bundle.js" integrity="sha384-Cck14aA9cifjYolcnjebXRfWGkz5ltHMBiG4px/j8GS+xQcb7OhNQWZYyWjQ+UwQ" crossorigin="anonymous"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
