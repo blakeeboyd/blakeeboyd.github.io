@@ -199,6 +199,10 @@
             margin-bottom: var(--spacing-xs);
         }
 
+        .pk-section-label .info-trigger {
+            flex-shrink: 0;
+        }
+
         .pk-section-label .info-tooltip {
             text-transform: none;
             letter-spacing: normal;
@@ -302,6 +306,23 @@
             height: 100%;
             object-fit: cover;
             border-radius: calc(var(--radius-sm) - 2px);
+        }
+
+        /* Thumbnail display mode previews */
+        .pk-thumbnail[data-mode="fit"] img,
+        .pk-thumbnail[data-mode="native"] img {
+            object-fit: contain;
+        }
+
+        .pk-thumbnail[data-mode="letterbox"] {
+            background: #000;
+        }
+        .pk-thumbnail[data-mode="letterbox"] img {
+            object-fit: contain;
+        }
+
+        .pk-thumbnail[data-mode="smartcrop"] img {
+            object-fit: cover;
         }
 
         .pk-thumbnail-number {
@@ -572,6 +593,150 @@
             outline-offset: 2px;
         }
 
+        /* Select dropdown for display mode */
+        .pk-select {
+            padding: 8px 12px;
+            font-size: 0.875rem;
+            font-family: inherit;
+            background: var(--color-bg);
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: border-color var(--transition-fast);
+        }
+
+        .pk-select:hover {
+            border-color: var(--color-text-muted);
+        }
+
+        .pk-select:focus-visible {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
+        }
+
+        /* Ken Burns animation (--pk-zoom custom property allows per-slide zoom) */
+        @keyframes pk-kenburns {
+            from {
+                transform: scale(var(--pk-zoom, 1));
+            }
+            to {
+                transform: scale(calc(var(--pk-zoom, 1) * 1.15));
+            }
+        }
+
+        .pk-kenburns-active {
+            animation-name: pk-kenburns;
+            animation-timing-function: ease-in-out;
+            animation-fill-mode: forwards;
+        }
+
+        /* Display mode preview */
+        .pk-display-preview {
+            margin-top: var(--spacing-sm);
+            padding-top: var(--spacing-sm);
+            border-top: 1px solid var(--color-border);
+        }
+
+        .pk-display-preview-label {
+            font-size: 0.7rem;
+            color: var(--color-text-muted);
+            margin-bottom: 4px;
+        }
+
+        .pk-display-preview-frame {
+            position: relative;
+            aspect-ratio: 16 / 9;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            background: var(--color-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pk-display-preview-frame img {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Mode-specific preview styles */
+        .pk-display-preview-frame[data-mode="fit"] img {
+            object-fit: contain;
+        }
+
+        .pk-display-preview-frame[data-mode="letterbox"] {
+            background: #000;
+        }
+        .pk-display-preview-frame[data-mode="letterbox"] img {
+            object-fit: contain;
+        }
+
+        .pk-display-preview-frame[data-mode="fill"] img {
+            object-fit: cover;
+        }
+
+        .pk-display-preview-frame[data-mode="smartcrop"] {
+            cursor: crosshair;
+        }
+        .pk-display-preview-frame[data-mode="smartcrop"] img {
+            object-fit: cover;
+        }
+
+        .pk-display-preview-frame[data-mode="kenburns"] img {
+            object-fit: cover;
+            animation: pk-kenburns-preview 6s ease-in-out infinite alternate;
+        }
+
+        @keyframes pk-kenburns-preview {
+            from { transform: scale(var(--pk-zoom, 1)); }
+            to { transform: scale(calc(var(--pk-zoom, 1) * 1.15)); }
+        }
+
+        .pk-display-preview-frame[data-mode="native"] img {
+            object-fit: none;
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        /* Smart Crop focal point marker */
+        .pk-focal-point-marker {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid white;
+            border-radius: 50%;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(0, 0, 0, 0.3);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .pk-focal-point-marker::before,
+        .pk-focal-point-marker::after {
+            content: '';
+            position: absolute;
+            background: white;
+            box-shadow: 0 0 1px rgba(0, 0, 0, 0.5);
+        }
+
+        .pk-focal-point-marker::before {
+            width: 1px;
+            height: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .pk-focal-point-marker::after {
+            width: 100%;
+            height: 1px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
         .pk-action-buttons {
             display: flex;
             gap: var(--spacing-md);
@@ -601,26 +766,19 @@
             display: flex;
             gap: var(--spacing-xs);
             align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
-        .pk-text-button {
-            background: none;
-            border: none;
-            padding: var(--spacing-xs);
+        .pk-settings-actions .action-button {
             font-size: 0.8125rem;
-            font-family: var(--font-family);
-            color: var(--color-text-muted);
-            cursor: pointer;
-            transition: color var(--transition-fast);
+            padding: 6px 12px;
         }
 
-        .pk-text-button:hover {
-            color: var(--color-accent);
-        }
-
-        .pk-action-divider {
-            color: var(--color-border);
-            user-select: none;
+        .pk-settings-actions .action-button svg {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
         }
 
         .pk-import-label {
@@ -1332,6 +1490,12 @@
             box-shadow: 0 0 4px var(--color-accent);
         }
 
+        /* Custom display mode indicator on thumbnails */
+        .pk-thumbnail.has-custom-display-mode .pk-thumbnail-number {
+            outline: 2px solid var(--color-success);
+            outline-offset: -1px;
+        }
+
         /* Custom duration indicator on thumbnails */
         .pk-thumbnail.has-custom-duration::before {
             content: '';
@@ -1462,6 +1626,78 @@
         .pk-notes-duration-unit {
             font-size: 0.875rem;
             color: var(--color-text-muted);
+        }
+
+        /* Per-slide display mode override */
+        .pk-notes-display-mode {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: var(--spacing-sm);
+            padding-top: var(--spacing-sm);
+            border-top: 1px solid var(--color-border);
+        }
+
+        .pk-notes-display-mode label {
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            white-space: nowrap;
+        }
+
+        .pk-notes-display-mode-select {
+            padding: 6px 8px;
+            font-size: 0.8125rem;
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* Per-slide zoom */
+        .pk-notes-zoom {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: var(--spacing-sm);
+            padding-top: var(--spacing-sm);
+            border-top: 1px solid var(--color-border);
+        }
+
+        .pk-notes-zoom label {
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            white-space: nowrap;
+        }
+
+        .pk-notes-zoom input[type="range"] {
+            flex: 1;
+            min-width: 0;
+            height: 4px;
+            accent-color: var(--color-accent);
+            cursor: pointer;
+        }
+
+        .pk-notes-zoom-value {
+            font-size: 0.8125rem;
+            color: var(--color-text-muted);
+            min-width: 3rem;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .pk-notes-zoom-reset {
+            background: none;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            color: var(--color-text-muted);
+            font-size: 0.75rem;
+            font-family: inherit;
+            padding: 2px 8px;
+            cursor: pointer;
+            transition: color var(--transition-fast), border-color var(--transition-fast);
+        }
+
+        .pk-notes-zoom-reset:hover {
+            color: var(--color-text);
+            border-color: var(--color-text-muted);
         }
 
         .pk-notes-panel #set-title-btn {
@@ -1685,17 +1921,25 @@
 
         .pk-practice-notes-text {
             flex: 1;
+            width: 100%;
+            min-height: 0;
             color: rgba(255, 255, 255, 0.9);
+            font-family: var(--font-family);
             font-size: 1rem;
             line-height: 1.6;
             margin: 0;
             padding: var(--spacing-md);
-            white-space: pre-wrap;
+            background: transparent;
+            border: none;
+            resize: none;
             overflow-y: auto;
         }
 
-        .pk-practice-notes-text:empty::before {
-            content: 'No notes for this slide';
+        .pk-practice-notes-text:focus {
+            outline: none;
+        }
+
+        .pk-practice-notes-text::placeholder {
             color: rgba(255, 255, 255, 0.4);
             font-style: italic;
         }
@@ -1947,6 +2191,34 @@
                         <span class="info-tooltip">Override the default duration for this slide. Leave empty to use the global setting.</span>
                     </button>
                 </div>
+                <div class="pk-notes-display-mode">
+                    <label for="slide-display-mode">Display</label>
+                    <select id="slide-display-mode" class="pk-select pk-notes-display-mode-select">
+                        <option value="">Default (Fit)</option>
+                        <option value="fit">Fit</option>
+                        <option value="letterbox">Letterbox</option>
+                        <option value="fill">Fill</option>
+                        <option value="smartcrop">Smart Crop</option>
+                        <option value="kenburns">Ken Burns</option>
+                        <option value="native">Native</option>
+                    </select>
+                    <button type="button" class="info-trigger" aria-label="More information about per-slide display mode">?
+                        <span class="info-tooltip">Override the display mode for this slide. Leave as Default to use the global setting.</span>
+                    </button>
+                </div>
+                <div id="zoom-row" class="pk-notes-zoom" hidden>
+                    <label for="slide-zoom">Zoom</label>
+                    <input type="range" id="slide-zoom" min="50" max="300" value="100" step="5">
+                    <span id="slide-zoom-value" class="pk-notes-zoom-value">100%</span>
+                    <button type="button" id="slide-zoom-reset" class="pk-notes-zoom-reset" title="Reset to 100%">Reset</button>
+                </div>
+                <div id="display-preview" class="pk-display-preview" hidden>
+                    <p id="display-preview-label" class="pk-display-preview-label">Preview</p>
+                    <div id="display-preview-frame" class="pk-display-preview-frame" data-mode="fit">
+                        <img id="display-preview-img" src="" alt="Display mode preview">
+                        <div id="focal-point-marker" class="pk-focal-point-marker" style="left: 50%; top: 50%; display: none;"></div>
+                    </div>
+                </div>
                 <button id="set-title-btn" class="action-button secondary">Set as Title Slide</button>
             </div>
 
@@ -1973,16 +2245,16 @@
                     <div class="pk-control-row">
                         <span class="pk-control-label">Image display</span>
                         <div class="pk-control-value">
-                            <div class="pk-mode-toggle" role="radiogroup" aria-label="Image display mode">
-                                <input type="radio" id="display-fit" name="display-mode" value="fit" checked>
-                                <label for="display-fit">Fit</label>
-                                <input type="radio" id="display-fill" name="display-mode" value="fill">
-                                <label for="display-fill">Fill</label>
-                                <input type="radio" id="display-native" name="display-mode" value="native">
-                                <label for="display-native">Native</label>
-                            </div>
+                            <select id="display-mode-select" class="pk-select" aria-label="Image display mode">
+                                <option value="fit" selected>Fit</option>
+                                <option value="letterbox">Letterbox</option>
+                                <option value="fill">Fill</option>
+                                <option value="smartcrop">Smart Crop</option>
+                                <option value="kenburns">Ken Burns</option>
+                                <option value="native">Native</option>
+                            </select>
                             <button type="button" class="info-trigger" aria-label="More information about image display modes">?
-                                <span class="info-tooltip"><strong>Fit:</strong> Shows the entire image with black bars if needed.<br><strong>Fill:</strong> Fills the screen, cropping edges if the aspect ratio doesn't match.<br><strong>Native:</strong> Shows the image at its original size, centered.</span>
+                                <span class="info-tooltip"><strong>Fit:</strong> Shows entire image, background color fills gaps.<br><strong>Letterbox:</strong> Like Fit, but with black bars for a cinematic look.<br><strong>Fill:</strong> Fills the screen, cropping edges to fit.<br><strong>Smart Crop:</strong> Like Fill, but you set a focal point per slide so the important part stays visible.<br><strong>Ken Burns:</strong> Slow pan and zoom across each image.<br><strong>Native:</strong> Shows the image at its original size, centered.</span>
                             </button>
                         </div>
                     </div>
@@ -1998,17 +2270,21 @@
                 <div class="pk-secondary-actions">
                     <button id="reset-btn" class="action-button secondary">Choose Different Images</button>
                     <div class="pk-settings-actions">
-                        <button id="export-btn" class="pk-text-button">Export Settings</button>
-                        <span class="pk-action-divider">·</span>
-                        <button id="export-pptx-btn" class="pk-text-button">Export PowerPoint</button>
-                        <span class="pk-action-divider">·</span>
+                        <button id="export-btn" class="action-button secondary">
+                            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            Save Settings
+                        </button>
+                        <button id="export-pptx-btn" class="action-button secondary">
+                            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                            Export PowerPoint
+                        </button>
                         <label class="pk-import-label">
-                            <span class="pk-text-button">Import Settings</span>
+                            <span class="action-button secondary">
+                                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                Load Settings
+                            </span>
                             <input type="file" id="import-input" accept=".json,application/json">
                         </label>
-                        <button type="button" class="info-trigger" aria-label="More information about export and import">?
-                            <span class="info-tooltip"><strong>Export Settings:</strong> Save slide order, notes, and settings as a JSON file.<br><strong>Export PowerPoint:</strong> Download a .pptx file with slides, auto-advance timings, and speaker notes.<br><strong>Import:</strong> Load a previously exported JSON file.</span>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -2125,7 +2401,7 @@
                 <!-- Notes panel (practice mode only) - shown on right side -->
                 <div id="practice-notes-panel" class="pk-practice-notes-panel" hidden>
                     <div class="pk-practice-notes-header">Notes</div>
-                    <p id="practice-notes-text" class="pk-practice-notes-text">No notes for this slide</p>
+                    <textarea id="practice-notes-text" class="pk-practice-notes-text" placeholder="Add notes for this slide..."></textarea>
                 </div>
             </div>
             <div class="pk-controls">

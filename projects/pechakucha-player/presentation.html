@@ -40,6 +40,18 @@
             object-fit: contain;
         }
 
+        /* Ken Burns animation */
+        @keyframes pk-kenburns {
+            from { transform: scale(1); }
+            to { transform: scale(1.15); }
+        }
+
+        .pk-kenburns-active {
+            animation-name: pk-kenburns;
+            animation-timing-function: ease-in-out;
+            animation-fill-mode: forwards;
+        }
+
         /* Waiting state */
         .waiting-overlay {
             position: fixed;
@@ -286,6 +298,8 @@
             let parentWindow = null;
             let isPresenting = false;
             let fadeTimer = null;
+            let displayMode = 'fit';
+            let currentZoom = 100;
 
             // DOM Elements
             const waitingOverlay = document.getElementById('waiting-overlay');
@@ -335,6 +349,46 @@
                 }
             }
 
+            // Apply display mode to the slide image
+            function applyDisplayMode() {
+                var container = currentSlide.parentElement;
+
+                // Reset all mode styles
+                currentSlide.style.objectFit = '';
+                currentSlide.style.objectPosition = '';
+                currentSlide.style.width = '100%';
+                currentSlide.style.height = '100%';
+                currentSlide.style.maxWidth = '';
+                currentSlide.style.maxHeight = '';
+                currentSlide.style.transform = '';
+                currentSlide.classList.remove('pk-kenburns-active');
+                currentSlide.style.animationDuration = '';
+                currentSlide.style.transformOrigin = '';
+                currentSlide.style.animationPlayState = '';
+                currentSlide.style.removeProperty('--pk-zoom');
+                container.style.background = '';
+
+                if (displayMode === 'native') {
+                    currentSlide.style.objectFit = 'none';
+                    currentSlide.style.width = 'auto';
+                    currentSlide.style.height = 'auto';
+                    currentSlide.style.maxWidth = '100%';
+                    currentSlide.style.maxHeight = '100%';
+                } else if (displayMode === 'letterbox') {
+                    currentSlide.style.objectFit = 'contain';
+                    // Background is already #000 in presentation.html
+                } else if (displayMode === 'fill' || displayMode === 'smartcrop') {
+                    currentSlide.style.objectFit = 'cover';
+                    if (currentZoom !== 100) currentSlide.style.transform = 'scale(' + (currentZoom / 100) + ')';
+                } else if (displayMode === 'kenburns') {
+                    currentSlide.style.objectFit = 'cover';
+                    if (currentZoom !== 100) currentSlide.style.setProperty('--pk-zoom', currentZoom / 100);
+                } else {
+                    // fit (default)
+                    currentSlide.style.objectFit = 'contain';
+                }
+            }
+
             // Handle initialization with images and settings
             function handleInit(data) {
                 images = data.images || [];
@@ -342,18 +396,9 @@
                 slideDuration = data.settings?.slideDuration || 20;
                 currentIndex = data.startIndex || 0;
 
-                // Apply display mode
-                const displayMode = data.settings?.displayMode || 'fit';
-                if (displayMode === 'native') {
-                    // Native: show at original size, centered
-                    currentSlide.style.objectFit = 'none';
-                    currentSlide.style.width = 'auto';
-                    currentSlide.style.height = 'auto';
-                    currentSlide.style.maxWidth = '100%';
-                    currentSlide.style.maxHeight = '100%';
-                } else {
-                    currentSlide.style.objectFit = displayMode === 'fill' ? 'cover' : 'contain';
-                }
+                // Store and apply display mode
+                displayMode = data.settings?.displayMode || 'fit';
+                applyDisplayMode();
 
                 // Show ready overlay instead of starting immediately
                 waitingOverlay.hidden = true;
@@ -451,11 +496,17 @@
             function handleShowSlide(data) {
                 currentIndex = data.index;
                 pausedTimeRemaining = data.timeRemaining || slideDuration * 1000;
-                showSlide(currentIndex);
+                // Update display mode for this slide (per-slide override from main window)
+                if (data.displayMode) {
+                    displayMode = data.displayMode;
+                }
+                currentZoom = data.zoom || 100;
+                applyDisplayMode();
+                showSlide(currentIndex, data);
             }
 
             // Show a specific slide
-            function showSlide(index) {
+            function showSlide(index, data) {
                 if (index >= images.length) {
                     handleEnd();
                     return;
@@ -464,6 +515,26 @@
                 currentIndex = index;
                 currentSlide.src = images[index].dataUrl;
                 currentSlide.alt = `Slide ${index + 1} of ${images.length}`;
+
+                // Apply per-slide display mode adjustments
+                if (displayMode === 'smartcrop' && data && data.focalPoint) {
+                    currentSlide.style.objectPosition = data.focalPoint.x + '% ' + data.focalPoint.y + '%';
+                } else if (displayMode === 'smartcrop' && images[index].focalPoint) {
+                    var fp = images[index].focalPoint;
+                    currentSlide.style.objectPosition = fp.x + '% ' + fp.y + '%';
+                }
+
+                if (displayMode === 'kenburns') {
+                    currentSlide.classList.remove('pk-kenburns-active');
+                    void currentSlide.offsetWidth;
+                    var durationMs = data ? (data.timeRemaining || slideDuration * 1000) : slideDuration * 1000;
+                    currentSlide.style.animationDuration = (durationMs / 1000) + 's';
+                    currentSlide.style.transformOrigin = (data && data.kenBurnsOrigin) ? data.kenBurnsOrigin : 'center center';
+                    currentSlide.classList.add('pk-kenburns-active');
+                    if (isPaused) {
+                        currentSlide.style.animationPlayState = 'paused';
+                    }
+                }
             }
 
             // Handle pause command (no visible indicator to audience)
@@ -474,6 +545,10 @@
                 const elapsed = Date.now() - slideStartTime;
                 pausedTimeRemaining = Math.max((slideDuration * 1000) - elapsed, 0);
 
+                if (displayMode === 'kenburns') {
+                    currentSlide.style.animationPlayState = 'paused';
+                }
+
                 // Stop timers
                 clearTimers();
             }
@@ -481,6 +556,9 @@
             // Handle resume command
             function handleResume() {
                 isPaused = false;
+                if (displayMode === 'kenburns') {
+                    currentSlide.style.animationPlayState = 'running';
+                }
             }
 
             // Handle end command

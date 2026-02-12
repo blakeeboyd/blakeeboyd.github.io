@@ -204,6 +204,37 @@
             margin-bottom: 0;
         }
 
+        /* Quick start steps */
+        .quick-steps {
+            counter-reset: step;
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .quick-steps li {
+            counter-increment: step;
+            position: relative;
+            padding-left: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .quick-steps li::before {
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0.1em;
+            width: 1.6rem;
+            height: 1.6rem;
+            background: var(--color-accent);
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         /* Mobile */
         @media (max-width: 768px) {
             .guide-layout {
@@ -244,68 +275,64 @@
 
             <div class="guide-layout">
                 <div class="guide-content">
+                    <section class="guide-section" id="quick-start">
+                        <h2>Quick Start</h2>
+                        <p>Get a presentation running in under a minute:</p>
+                        <ol class="quick-steps">
+                            <li><strong>Upload images.</strong> Drag files into the drop zone or click "Choose Files." Name files with numbers (1.jpg, 2.jpg...) for automatic sorting.</li>
+                            <li><strong>Reorder if needed.</strong> Drag thumbnails to rearrange. The slide number updates as you go.</li>
+                            <li><strong>Press Start Presentation.</strong> Your slides auto-advance every 20 seconds (the classic PechaKucha timing). Press <kbd>Space</kbd> to pause, <kbd>Esc</kbd> to exit.</li>
+                        </ol>
+                        <p>That's the basics. Everything below covers the optional settings that let you customize timing, display modes, speaker notes, and more.</p>
+                    </section>
+
                     <section class="guide-section" id="what-is-pechakucha">
                         <h2>What is PechaKucha?</h2>
                         <p>PechaKucha (Japanese for "chit-chat") is a presentation format created by Klein-Dytham Architecture in Tokyo in 2003. The classic format uses 20 slides shown for 20 seconds each, totaling 6 minutes and 40 seconds.</p>
                         <p>The key constraint: slides auto-advance whether the speaker is ready or not. This forces concise storytelling and keeps presentations energetic. The format has spread to over 1,000 cities worldwide.</p>
-                        <p>This tool lets you create and practice PechaKucha-style presentations with customizable timing, speaker notes, and two presentation modes.</p>
-                    </section>
-
-                    <section class="guide-section" id="getting-started">
-                        <h2>Getting Started</h2>
-                        <p>To create a presentation:</p>
-                        <ol>
-                            <li><strong>Upload images</strong> by dragging them into the dropzone or clicking "Choose Files"</li>
-                            <li><strong>Organize slides</strong> by dragging thumbnails to reorder them</li>
-                            <li><strong>Add speaker notes</strong> by clicking any slide to select it</li>
-                            <li><strong>Choose your mode</strong> (Practice or Present)</li>
-                            <li><strong>Start presenting</strong> with the Start button</li>
-                        </ol>
-
-                        <h3>File Naming</h3>
-                        <p>Name your image files with numbers (1.jpg, 2.jpg, 3.jpg...) for automatic sorting. The player uses natural sorting, so "2.jpg" will come before "10.jpg".</p>
-
-                        <h3>Supported Formats</h3>
-                        <p>The player accepts any image format your browser supports: JPEG, PNG, GIF, WebP, and SVG.</p>
+                        <p>This tool lets you create PechaKucha-style presentations with customizable timing, six image display modes, speaker notes, and two presentation modes.</p>
                     </section>
 
                     <section class="guide-section" id="organizing-slides">
                         <h2>Organizing Slides</h2>
 
                         <h3>Reordering</h3>
-                        <p>Drag any thumbnail to a new position. A blue indicator shows where the slide will be inserted when you drop it.</p>
+                        <p>Drag any thumbnail to a new position. A blue indicator shows where the slide will land. You can also use the arrow keys on a focused thumbnail to reorder with the keyboard.</p>
 
                         <h3>Deleting Slides</h3>
-                        <p>Hover over a thumbnail to reveal the delete button (X) in the top-right corner. Click it to remove the slide. You can undo deletions with <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>Z</kbd> or by clicking "Undo" in the toast notification.</p>
+                        <p>Hover over a thumbnail to reveal the delete button in the top-right corner. Undo with <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>Z</kbd> or by clicking "Undo" in the toast notification.</p>
 
                         <h3>Adding More Slides</h3>
-                        <p>Click the "+ Add more" card at the end of your slides, or drag additional images anywhere on the page to add them to your presentation.</p>
+                        <p>Click the "+ Add more" card at the end of your slides, or drag additional images anywhere on the page.</p>
 
-                        <h3>Preview Slides</h3>
-                        <p>Hover over a thumbnail and click the eye icon (top-left) to view a full-size preview. Press <kbd>Esc</kbd> or click anywhere to close the preview.</p>
+                        <h3>Preview</h3>
+                        <p>Hover over a thumbnail and click the eye icon to view a full-size preview. Press <kbd>Esc</kbd> or click outside to close.</p>
+
+                        <h3>Supported Formats</h3>
+                        <p>The player accepts any image format your browser supports: JPEG, PNG, GIF, WebP, and SVG.</p>
                     </section>
 
-                    <section class="guide-section" id="title-slide">
-                        <h2>Title Slide</h2>
-                        <p>You can designate one slide as a title slide that displays before the timed presentation begins. The title slide does not count against your presentation time.</p>
-                        <p>To set a title slide:</p>
-                        <ol>
-                            <li>Click any slide thumbnail to select it</li>
-                            <li>Click "Set as Title Slide" in the notes panel</li>
-                        </ol>
-                        <p>The title slide appears in the dedicated slot on the left side of the slide grid. Click the X on the title slide thumbnail to remove it and return the slide to the main sequence.</p>
-                    </section>
+                    <section class="guide-section" id="slide-settings">
+                        <h2>Slide Settings</h2>
+                        <p>Click any slide thumbnail to open the notes panel. Here you can configure per-slide options:</p>
 
-                    <section class="guide-section" id="speaker-notes">
-                        <h2>Speaker Notes</h2>
-                        <p>Click any slide to open the notes panel where you can:</p>
-                        <ul>
-                            <li><strong>Add notes</strong>: Type your talking points for this slide</li>
-                            <li><strong>Set custom duration</strong>: Override the default timing for this specific slide</li>
-                            <li><strong>Set as title slide</strong>: Designate this slide as the title</li>
-                        </ul>
-                        <p>Slides with notes show a small blue dot in the bottom-right corner of their thumbnail.</p>
-                        <p>Slides with custom durations show a small orange dot in the top-right corner.</p>
+                        <h3>Speaker Notes</h3>
+                        <p>Type talking points for each slide. Notes are visible in the right panel during Practice mode and in the presenter view during Present mode. You can also edit notes live during a presentation.</p>
+                        <p>Slides with notes show a small blue dot on their thumbnail.</p>
+
+                        <h3>Custom Duration</h3>
+                        <p>Override the global timing for a specific slide. Useful when a complex diagram needs extra time or a transition slide only needs a few seconds. You can type a value or drag up/down on the input to adjust.</p>
+                        <p>Slides with custom durations show a small orange dot on their thumbnail.</p>
+
+                        <h3>Per-Slide Display Mode</h3>
+                        <p>Override the global display mode for individual slides. The dropdown defaults to "Default" (which follows the global setting). Choosing a specific mode like Smart Crop or Letterbox applies only to that slide.</p>
+                        <p>Slides with a custom display mode show a green outline on their thumbnail number.</p>
+
+                        <h3>Display Mode Preview</h3>
+                        <p>Below the display mode dropdown, a live preview shows exactly how the slide will appear during presentation. The preview updates in real time as you change modes. For Smart Crop, click the preview image to set the focal point.</p>
+
+                        <h3>Title Slide</h3>
+                        <p>Click "Set as Title Slide" to designate the selected slide as a title card displayed before the timed presentation begins. The title slide does not count against your presentation time. It appears in the dedicated slot on the left side of the slide grid. Click the X on the title slide thumbnail to return it to the main sequence.</p>
 
                         <div class="tip">
                             <div class="tip-label">Tip</div>
@@ -313,34 +340,63 @@
                         </div>
                     </section>
 
-                    <section class="guide-section" id="presentation-modes">
-                        <h2>Presentation Modes</h2>
-                        <p>The player offers two modes for different situations:</p>
+                    <section class="guide-section" id="display-modes">
+                        <h2>Display Modes</h2>
+                        <p>Six modes control how images appear on screen. Set a global default in the Settings panel, or override per-slide in the notes panel. The thumbnails in the slide grid reflect the active display mode so you can see the effect before presenting.</p>
 
-                        <h3>Practice Mode</h3>
-                        <p>A single-screen fullscreen view ideal for rehearsing. The presentation shows on your main screen with optional overlays:</p>
-                        <ul>
-                            <li><strong>Timer overlay</strong>: Large countdown numbers on the slide (toggle with the Timer checkbox)</li>
-                            <li><strong>Notes panel</strong>: Your speaker notes appear in a panel on the right (toggle with the Notes checkbox)</li>
-                            <li><strong>Audio cues</strong>: Beeps at 5, 4, 3, 2, 1 seconds remaining (toggle with the Audio cues checkbox)</li>
-                        </ul>
-                        <p>Use the navigation arrows or <kbd>←</kbd>/<kbd>→</kbd> keys to move between slides manually.</p>
+                        <h3>Fit (default)</h3>
+                        <p>Shows the entire image, adding empty space on the sides or top/bottom if the aspect ratio doesn't match the screen. Nothing gets cropped.</p>
 
-                        <h3>Present Mode</h3>
-                        <p>Opens a separate window for your audience while you see a presenter view. Best used with two screens (your laptop and a projector/external monitor).</p>
-                        <p>The presenter view shows:</p>
-                        <ul>
-                            <li><strong>Current slide</strong>: What your audience sees now</li>
-                            <li><strong>Next slide</strong>: Preview of what's coming</li>
-                            <li><strong>Timer</strong>: Large countdown with color warnings (yellow at 5s, red at 3s, pulsing at 1s)</li>
-                            <li><strong>Elapsed/total time</strong>: Track your overall progress</li>
-                            <li><strong>Notes</strong>: Editable speaker notes (changes save automatically)</li>
-                            <li><strong>Filmstrip</strong>: Clickable thumbnails for quick navigation</li>
-                        </ul>
+                        <h3>Letterbox</h3>
+                        <p>Same as Fit, but the empty space is filled with black. Good for a cinema look when images are wider than the screen.</p>
+
+                        <h3>Fill</h3>
+                        <p>Scales the image to cover the entire screen, cropping any overflow. Centered by default.</p>
+
+                        <h3>Smart Crop</h3>
+                        <p>Like Fill, but you control which part of the image stays visible. Click the preview image in the notes panel to set a focal point. The crop anchors to that point, so the most important part of the image is always on screen. The crosshair marker and preview update in real time as you click.</p>
+
+                        <h3>Ken Burns</h3>
+                        <p>Applies a slow zoom effect (from 1x to 1.15x scale) over the duration of the slide. Creates a sense of movement, especially effective for photographs and artwork. The preview in the notes panel shows the animation so you can see the effect.</p>
+
+                        <h3>Native</h3>
+                        <p>Shows the image at its original pixel size, centered on screen. If the image is smaller than the screen, empty space surrounds it. If larger, it gets capped to the screen dimensions. Useful for screenshots or pixel art where you want exact-pixel rendering.</p>
 
                         <div class="tip">
                             <div class="tip-label">Tip</div>
-                            <p>Position your presenter view on your laptop and drag the audience window to your external display. The audience window can be made fullscreen with F11 (or Ctrl+Cmd+F on Mac).</p>
+                            <p>For most presentations, <strong>Fit</strong> is the safest choice since nothing gets cropped. Use <strong>Fill</strong> or <strong>Smart Crop</strong> for a more cinematic look when your images extend beyond the screen aspect ratio.</p>
+                        </div>
+                    </section>
+
+                    <section class="guide-section" id="presentation-modes">
+                        <h2>Presentation Modes</h2>
+
+                        <h3>Practice Mode</h3>
+                        <p>A single-screen fullscreen view ideal for rehearsing. Optional overlays:</p>
+                        <ul>
+                            <li><strong>Timer overlay</strong>: Large countdown numbers on the slide</li>
+                            <li><strong>Notes panel</strong>: Speaker notes appear on the right (editable during practice)</li>
+                            <li><strong>Audio cues</strong>: Beeps at 5, 4, 3, 2, 1 seconds remaining</li>
+                        </ul>
+                        <p>Use <kbd>←</kbd>/<kbd>→</kbd> to navigate manually. Press <kbd>Space</kbd> to pause/resume.</p>
+
+                        <h3>Present Mode</h3>
+                        <p>Opens a separate audience window while you see a presenter view. Best used with two screens (your laptop and a projector or external monitor).</p>
+                        <p>The presenter view shows:</p>
+                        <ul>
+                            <li><strong>Current slide</strong> with progress bar and large countdown timer</li>
+                            <li><strong>Next slide</strong> preview</li>
+                            <li><strong>Elapsed and total time</strong></li>
+                            <li><strong>Editable notes</strong> (changes save automatically)</li>
+                            <li><strong>Filmstrip</strong> with clickable thumbnails for quick navigation</li>
+                        </ul>
+
+                        <h3>Starting from a Specific Slide</h3>
+                        <p>Click a slide to select it before starting. A "Start from Slide N" button appears so you can jump straight to where you left off.</p>
+
+                        <div class="tip">
+                            <div class="tip-label">Tip</div>
+                            <p>Position your presenter view on your laptop and drag the audience window to your external display. The audience window can be made fullscreen with <kbd>F11</kbd> (or <kbd>Ctrl</kbd>+<kbd>Cmd</kbd>+<kbd>F</kbd> on Mac).</p>
                         </div>
                     </section>
 
@@ -348,7 +404,7 @@
                         <h2>Timing Settings</h2>
 
                         <h3>Global Duration</h3>
-                        <p>The default slide duration is 20 seconds (classic PechaKucha timing). You can change this in the Settings panel before starting. Common alternatives:</p>
+                        <p>The default slide duration is 20 seconds (classic PechaKucha timing). Change it in the Settings panel before starting. Common alternatives:</p>
                         <ul>
                             <li><strong>15 seconds</strong>: Faster pace, 5-minute presentation for 20 slides</li>
                             <li><strong>20 seconds</strong>: Classic PechaKucha (6:40 for 20 slides)</li>
@@ -356,50 +412,36 @@
                         </ul>
 
                         <h3>Per-Slide Duration</h3>
-                        <p>Override the timing for individual slides in the notes panel. This is useful when:</p>
-                        <ul>
-                            <li>A complex diagram needs more time</li>
-                            <li>A transition slide only needs a few seconds</li>
-                            <li>You want to build in pauses for audience reaction</li>
-                        </ul>
+                        <p>Override timing for individual slides in the notes panel. The global default shows as a placeholder so you always know what the slide will use if left empty.</p>
                     </section>
 
-                    <section class="guide-section" id="image-display">
-                        <h2>Image Display Modes</h2>
-                        <p>Control how images appear on screen:</p>
-                        <ul>
-                            <li><strong>Fit</strong>: Shows the entire image with black bars if the aspect ratio doesn't match the screen</li>
-                            <li><strong>Fill</strong>: Fills the entire screen, cropping edges if necessary</li>
-                            <li><strong>Native</strong>: Shows the image at its original pixel size, centered on a black background</li>
-                        </ul>
-                        <p>For most presentations, <strong>Fit</strong> is recommended to ensure nothing gets cropped.</p>
-                    </section>
+                    <section class="guide-section" id="saving-and-exporting">
+                        <h2>Saving and Exporting</h2>
+                        <p>Three buttons appear below the Start button:</p>
 
-                    <section class="guide-section" id="export-import">
-                        <h2>Export and Import</h2>
+                        <h3>Save Settings</h3>
+                        <p>Downloads a JSON file containing slide order (by filename), speaker notes, per-slide durations, per-slide display modes, focal points, title slide designation, and global settings. The file does not include the images themselves, only references to filenames.</p>
 
-                        <h3>Exporting</h3>
-                        <p>Click "Export Settings" to download a JSON file containing:</p>
-                        <ul>
-                            <li>Slide order (by filename)</li>
-                            <li>Speaker notes for each slide</li>
-                            <li>Per-slide duration overrides</li>
-                            <li>Title slide designation</li>
-                            <li>Global settings</li>
-                        </ul>
-                        <p>The export does not include the images themselves, only references to their filenames.</p>
-
-                        <h3>Importing</h3>
-                        <p>To restore a presentation:</p>
+                        <h3>Load Settings</h3>
+                        <p>Restores a previously saved configuration. To use it:</p>
                         <ol>
-                            <li>Upload your images (use the same filenames as before)</li>
-                            <li>Upload the JSON file along with the images, or use "Import Settings"</li>
+                            <li>Upload your images (use the same filenames as when you saved)</li>
+                            <li>Click "Load Settings" and select the JSON file</li>
                         </ol>
-                        <p>The player matches slides by filename, so keep your original filenames when re-importing.</p>
+                        <p>The player matches slides by filename. You can also drop the JSON file alongside your images during the initial upload.</p>
+
+                        <h3>Export PowerPoint</h3>
+                        <p>Downloads a .pptx file with your slides, auto-advance timings, and speaker notes. Each slide uses its assigned display mode for image placement:</p>
+                        <ul>
+                            <li><strong>Fit / Letterbox</strong>: Image centered and contained within the slide</li>
+                            <li><strong>Fill / Ken Burns</strong>: Image covers the full slide</li>
+                            <li><strong>Smart Crop</strong>: Image cropped to the focal point you set</li>
+                            <li><strong>Native</strong>: Image centered at its original dimensions</li>
+                        </ul>
 
                         <div class="tip">
                             <div class="tip-label">Tip</div>
-                            <p>Export your presentation before important events. If anything goes wrong, you can quickly restore your slide order and notes.</p>
+                            <p>Save your settings before important events. If anything goes wrong, you can quickly restore your slide order, notes, and display modes.</p>
                         </div>
                     </section>
 
@@ -407,21 +449,16 @@
                         <h2>During Presentation</h2>
 
                         <h3>Pausing</h3>
-                        <p>Press <kbd>Space</kbd> to pause the auto-advance timer. Press again to resume. A "Paused" indicator appears while paused.</p>
+                        <p>Press <kbd>Space</kbd> to pause the auto-advance timer. A "Paused" indicator appears. Press again to resume. Ken Burns animations also pause and resume smoothly.</p>
 
                         <h3>Manual Navigation</h3>
-                        <p>Use <kbd>←</kbd> and <kbd>→</kbd> arrow keys to move between slides. In presenter mode, you can also click thumbnails in the filmstrip or use the Prev/Next buttons.</p>
+                        <p>Use <kbd>←</kbd> and <kbd>→</kbd> to move between slides. In presenter mode, you can also click filmstrip thumbnails or use the Prev/Next buttons.</p>
 
                         <h3>Exiting</h3>
-                        <p>Press <kbd>Esc</kbd> to exit the presentation and return to the editor. In presenter mode, click "Edit Slides" to return while keeping your audience window open.</p>
+                        <p>Press <kbd>Esc</kbd> to exit and return to the editor. In presenter mode, click "Edit Slides" to return while keeping your audience window open.</p>
 
                         <h3>Completion</h3>
-                        <p>After the last slide, a completion screen shows your total slide count and presentation time. From here you can:</p>
-                        <ul>
-                            <li><strong>Present Again</strong>: Restart from the beginning</li>
-                            <li><strong>Edit Slides</strong>: Return to the editor</li>
-                            <li><strong>New Presentation</strong>: Clear everything and start fresh</li>
-                        </ul>
+                        <p>After the last slide, a completion screen shows your total slide count and time. From here you can restart, edit slides, or begin a new presentation.</p>
                     </section>
 
                     <section class="guide-section" id="shortcuts">
@@ -431,7 +468,8 @@
                         <table class="shortcut-table">
                             <tbody>
                                 <tr><td>Undo delete</td><td><kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>Z</kbd></td></tr>
-                                <tr><td>Close preview</td><td><kbd>Esc</kbd></td></tr>
+                                <tr><td>Close preview/lightbox</td><td><kbd>Esc</kbd></td></tr>
+                                <tr><td>Reorder selected slide</td><td><kbd>↑</kbd>/<kbd>↓</kbd> or <kbd>←</kbd>/<kbd>→</kbd></td></tr>
                             </tbody>
                         </table>
 
@@ -447,14 +485,15 @@
                     </section>
 
                     <section class="guide-section" id="tips">
-                        <h2>Tips for Great PechaKucha Presentations</h2>
+                        <h2>Tips for Great Presentations</h2>
                         <ul>
-                            <li><strong>Practice until automatic</strong>: Run through your presentation multiple times until you can deliver each slide's content naturally within the time limit</li>
-                            <li><strong>Let images tell the story</strong>: Avoid text-heavy slides. The format rewards visual storytelling over bullet points</li>
-                            <li><strong>Plan your transitions</strong>: Know exactly what you'll say as each slide appears. The auto-advance waits for no one</li>
-                            <li><strong>Embrace the constraint</strong>: The time limit keeps energy high and prevents rambling. Trust the format</li>
-                            <li><strong>Use the audio cues</strong>: The countdown beeps help you feel the rhythm without constantly watching the timer</li>
-                            <li><strong>Test your setup</strong>: Before presenting, verify your images display correctly and the timing feels right</li>
+                            <li><strong>Practice until automatic.</strong> Run through multiple times until you can deliver each slide's content naturally within the time limit.</li>
+                            <li><strong>Let images tell the story.</strong> Avoid text-heavy slides. The format rewards visual storytelling.</li>
+                            <li><strong>Plan your transitions.</strong> Know exactly what you'll say as each slide appears. The auto-advance waits for no one.</li>
+                            <li><strong>Embrace the constraint.</strong> The time limit keeps energy high and prevents rambling. Trust the format.</li>
+                            <li><strong>Use the audio cues.</strong> The countdown beeps help you feel the rhythm without watching the timer.</li>
+                            <li><strong>Preview your display modes.</strong> Check the thumbnail grid and the notes panel preview to make sure each slide looks right before presenting.</li>
+                            <li><strong>Save your settings.</strong> A quick JSON export means you can restore everything if you need to start over or move to a different device.</li>
                         </ul>
                     </section>
                 </div>
@@ -462,15 +501,14 @@
                 <aside class="toc-sidebar">
                     <h2 class="toc-header">Contents</h2>
                     <ul class="toc-list">
+                        <li><a href="#quick-start">Quick Start</a></li>
                         <li><a href="#what-is-pechakucha">What is PechaKucha?</a></li>
-                        <li><a href="#getting-started">Getting Started</a></li>
                         <li><a href="#organizing-slides">Organizing Slides</a></li>
-                        <li><a href="#title-slide">Title Slide</a></li>
-                        <li><a href="#speaker-notes">Speaker Notes</a></li>
+                        <li><a href="#slide-settings">Slide Settings</a></li>
+                        <li><a href="#display-modes">Display Modes</a></li>
                         <li><a href="#presentation-modes">Presentation Modes</a></li>
                         <li><a href="#timing-settings">Timing Settings</a></li>
-                        <li><a href="#image-display">Image Display Modes</a></li>
-                        <li><a href="#export-import">Export and Import</a></li>
+                        <li><a href="#saving-and-exporting">Saving and Exporting</a></li>
                         <li><a href="#during-presentation">During Presentation</a></li>
                         <li><a href="#shortcuts">Keyboard Shortcuts</a></li>
                         <li><a href="#tips">Tips</a></li>

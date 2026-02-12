@@ -197,9 +197,10 @@ A web-based presentation player for the PechaKucha format where slides auto-adva
 - Two presentation modes:
   - Practice: Single-screen fullscreen view for rehearsing
   - Present: Opens separate audience window with presenter view showing timer, notes, and next slide
+- Six image display modes: Fit, Letterbox (black bars), Fill (crop to cover), Smart Crop (per-slide focal point), Ken Burns (slow pan/zoom), Native (original size)
 - Audio countdown cues (beeps at 3, 2, 1 seconds)
 - Keyboard controls (Space: pause, Arrow keys: navigate, Escape: exit)
-- Export/import presentation settings as JSON (preserves slide order, notes, durations)
+- Export/import presentation settings as JSON (preserves slide order, notes, durations, focal points)
 - Lightbox preview for individual slides
 - Undo support for slide deletion
 
@@ -212,7 +213,7 @@ A web-based presentation player for the PechaKucha format where slides auto-adva
 
 **State Management:**
 ```javascript
-let images = [];           // Array of { name, dataUrl, notes, duration }
+let images = [];           // Array of { name, dataUrl, notes, duration, focalPoint, displayMode }
 let titleSlide = null;     // { name, dataUrl, notes } | null
 let currentIndex = 0;
 let isPaused = false;
@@ -242,7 +243,7 @@ let presentationWindow = null;
   "displayMode": "fit",
   "titleSlide": { "name": "...", "notes": "" },
   "slides": [
-    { "name": "slide1.jpg", "notes": "Speaker notes", "duration": null }
+    { "name": "slide1.jpg", "notes": "Speaker notes", "duration": null, "focalPoint": { "x": 50, "y": 50 }, "displayMode": null }
   ]
 }
 ```

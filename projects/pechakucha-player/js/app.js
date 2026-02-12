@@ -97,6 +97,11 @@
     const notesInput = document.getElementById('notes-input');
     const notesCloseBtn = document.getElementById('notes-close-btn');
     const slideDurationOverride = document.getElementById('slide-duration-override');
+    const slideDisplayModeOverride = document.getElementById('slide-display-mode');
+    const zoomRow = document.getElementById('zoom-row');
+    const slideZoomInput = document.getElementById('slide-zoom');
+    const slideZoomValue = document.getElementById('slide-zoom-value');
+    const slideZoomReset = document.getElementById('slide-zoom-reset');
     const presenterNotesInput = document.getElementById('presenter-notes-input');
     const presenterExportBtn = document.getElementById('presenter-export-btn');
 
@@ -153,9 +158,22 @@
     const editBtn = document.getElementById('edit-btn');
 
     // Image display mode
-    const displayFitRadio = document.getElementById('display-fit');
-    const displayFillRadio = document.getElementById('display-fill');
-    const displayNativeRadio = document.getElementById('display-native');
+    const displayModeSelect = document.getElementById('display-mode-select');
+
+    // Display mode preview
+    const displayPreview = document.getElementById('display-preview');
+    const displayPreviewLabel = document.getElementById('display-preview-label');
+    const displayPreviewFrame = document.getElementById('display-preview-frame');
+    const displayPreviewImg = document.getElementById('display-preview-img');
+    const focalPointMarker = document.getElementById('focal-point-marker');
+
+    // Ken Burns animation origins (3x3 grid for variety)
+    const kenBurnsOrigins = [
+        'top left', 'top center', 'top right',
+        'center left', 'center center', 'center right',
+        'bottom left', 'bottom center', 'bottom right'
+    ];
+    let lastKenBurnsOrigin = -1;
 
     // Presentation mode toggle
     const modePracticeRadio = document.getElementById('mode-practice');
@@ -231,7 +249,9 @@
                     name: file.name,
                     dataUrl: e.target.result,
                     notes: '',
-                    duration: null  // null = use global default
+                    duration: null,  // null = use global default
+                    displayMode: null,  // null = use global default
+                    zoom: null  // null = 100% (no zoom)
                 });
                 loaded++;
 
@@ -264,7 +284,10 @@
                 newImages.push({
                     name: file.name,
                     dataUrl: e.target.result,
-                    notes: ''
+                    notes: '',
+                    duration: null,
+                    displayMode: null,
+                    zoom: null
                 });
                 loaded++;
 
@@ -299,12 +322,26 @@
             let classes = 'pk-thumbnail';
             if (img.notes) classes += ' has-notes';
             if (img.duration) classes += ' has-custom-duration';
+            if (img.displayMode) classes += ' has-custom-display-mode';
             thumb.className = classes;
             thumb.draggable = true;
             thumb.tabIndex = 0; // Make focusable for keyboard reordering
             thumb.dataset.index = index;
+            var thumbMode = getSlideDisplayMode(index);
+            thumb.setAttribute('data-mode', thumbMode);
+            var thumbStyles = [];
+            if (thumbMode === 'smartcrop') {
+                var fp = getFocalPoint(index);
+                thumbStyles.push('object-position: ' + fp.x + '% ' + fp.y + '%');
+            }
+            var zoom = getSlideZoom(index);
+            var zoomModes = ['fill', 'smartcrop', 'kenburns'];
+            if (zoomModes.indexOf(thumbMode) !== -1 && zoom !== 100) {
+                thumbStyles.push('transform: scale(' + (zoom / 100) + ')');
+            }
+            var thumbImgStyle = thumbStyles.length ? ' style="' + thumbStyles.join('; ') + '"' : '';
             thumb.innerHTML = `
-                <img src="${img.dataUrl}" alt="Slide ${index + 1}">
+                <img src="${img.dataUrl}" alt="Slide ${index + 1}"${thumbImgStyle}>
                 <span class="pk-thumbnail-number">${index + 1}</span>
                 <button class="pk-thumbnail-action pk-thumbnail-preview" aria-label="Preview slide ${index + 1}">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -876,22 +913,100 @@
         // Show duration override (empty string if null/undefined to use placeholder)
         slideDurationOverride.value = images[index].duration || '';
         slideDurationOverride.placeholder = slideDuration; // Show global default as placeholder
+        // Show display mode override (empty string = use global default)
+        slideDisplayModeOverride.value = images[index].displayMode || '';
+        updateDefaultDisplayModeLabel();
+        // Show zoom override
+        var zoomVal = getSlideZoom(index);
+        slideZoomInput.value = zoomVal;
+        slideZoomValue.textContent = zoomVal + '%';
+        updateZoomVisibility(index);
         notesPanel.hidden = false;
         updateSetTitleButton();
+        updateDisplayModePreview(index);
     }
 
     // Hide the notes panel
     function hideNotesPanel() {
         notesPanel.hidden = true;
+        displayPreview.hidden = true;
     }
 
-    // Save notes and duration for the currently selected slide
+    // Show/hide zoom slider based on the slide's effective display mode
+    function updateZoomVisibility(index) {
+        if (index === undefined || index === null) index = selectedIndex;
+        var mode = (index !== null && index >= 0 && index < images.length) ? getSlideDisplayMode(index) : 'fit';
+        var zoomModes = ['fill', 'smartcrop', 'kenburns'];
+        zoomRow.hidden = zoomModes.indexOf(mode) === -1;
+    }
+
+    // Update the "Default (X)" label in the per-slide display mode dropdown
+    function updateDefaultDisplayModeLabel() {
+        var modeLabels = { fit: 'Fit', letterbox: 'Letterbox', fill: 'Fill', smartcrop: 'Smart Crop', kenburns: 'Ken Burns', native: 'Native' };
+        var label = modeLabels[displayModeSelect.value] || 'Fit';
+        slideDisplayModeOverride.options[0].textContent = 'Default (' + label + ')';
+    }
+
+    // Update the display mode preview to show how the slide will look
+    function updateDisplayModePreview(index) {
+        if (index === undefined || index === null) index = selectedIndex;
+        var validSlide = index !== null && index >= 0 && index < images.length;
+        displayPreview.hidden = !validSlide;
+        if (!validSlide) return;
+
+        var mode = getSlideDisplayMode(index);
+        var modeLabels = { fit: 'Fit', letterbox: 'Letterbox', fill: 'Fill', smartcrop: 'Smart Crop', kenburns: 'Ken Burns', native: 'Native' };
+
+        // Update preview image
+        displayPreviewImg.src = images[index].dataUrl;
+        displayPreviewFrame.setAttribute('data-mode', mode);
+
+        // Smart Crop: show focal point marker and set object-position
+        var isSmartCrop = mode === 'smartcrop';
+        focalPointMarker.style.display = isSmartCrop ? '' : 'none';
+        if (isSmartCrop) {
+            var fp = getFocalPoint(index);
+            focalPointMarker.style.left = fp.x + '%';
+            focalPointMarker.style.top = fp.y + '%';
+            displayPreviewImg.style.objectPosition = fp.x + '% ' + fp.y + '%';
+        } else {
+            displayPreviewImg.style.objectPosition = '';
+        }
+
+        // Apply zoom (only for cover-based modes)
+        var zoom = getSlideZoom(index);
+        var zoomModes = ['fill', 'smartcrop', 'kenburns'];
+        displayPreviewImg.style.removeProperty('--pk-zoom');
+        if (zoomModes.indexOf(mode) !== -1 && zoom !== 100) {
+            if (mode === 'kenburns') {
+                // Ken Burns uses CSS custom property for animation start/end scale
+                displayPreviewImg.style.setProperty('--pk-zoom', zoom / 100);
+                displayPreviewImg.style.transform = '';
+            } else {
+                displayPreviewImg.style.transform = 'scale(' + (zoom / 100) + ')';
+            }
+        } else {
+            displayPreviewImg.style.transform = '';
+        }
+
+        // Update label
+        var label = 'Preview: ' + (modeLabels[mode] || 'Fit');
+        if (isSmartCrop) label += ' — click to set focal point';
+        displayPreviewLabel.textContent = label;
+    }
+
+    // Save notes, duration, and display mode for the currently selected slide
     function saveCurrentNotes() {
         if (selectedIndex !== null && images[selectedIndex]) {
             images[selectedIndex].notes = notesInput.value;
             // Save duration override (null if empty)
             const durationValue = parseInt(slideDurationOverride.value, 10);
             images[selectedIndex].duration = (durationValue > 0) ? durationValue : null;
+            // Save display mode override (null if "Default")
+            images[selectedIndex].displayMode = slideDisplayModeOverride.value || null;
+            // Save zoom (null if 100%)
+            var zoomVal = parseInt(slideZoomInput.value, 10);
+            images[selectedIndex].zoom = (zoomVal && zoomVal !== 100) ? zoomVal : null;
             // Update thumbnail indicators
             const allThumbs = thumbnails.querySelectorAll('.pk-thumbnail');
             if (allThumbs[selectedIndex]) {
@@ -906,6 +1021,32 @@
                     allThumbs[selectedIndex].classList.add('has-custom-duration');
                 } else {
                     allThumbs[selectedIndex].classList.remove('has-custom-duration');
+                }
+                // Custom display mode indicator
+                if (images[selectedIndex].displayMode) {
+                    allThumbs[selectedIndex].classList.add('has-custom-display-mode');
+                } else {
+                    allThumbs[selectedIndex].classList.remove('has-custom-display-mode');
+                }
+                // Update thumbnail display mode preview
+                var thumbMode = getSlideDisplayMode(selectedIndex);
+                allThumbs[selectedIndex].setAttribute('data-mode', thumbMode);
+                var thumbImg = allThumbs[selectedIndex].querySelector('img');
+                if (thumbImg) {
+                    if (thumbMode === 'smartcrop') {
+                        var fp = getFocalPoint(selectedIndex);
+                        thumbImg.style.objectPosition = fp.x + '% ' + fp.y + '%';
+                    } else {
+                        thumbImg.style.objectPosition = '';
+                    }
+                    // Update thumbnail zoom
+                    var thumbZoom = getSlideZoom(selectedIndex);
+                    var zoomModes = ['fill', 'smartcrop', 'kenburns'];
+                    if (zoomModes.indexOf(thumbMode) !== -1 && thumbZoom !== 100) {
+                        thumbImg.style.transform = 'scale(' + (thumbZoom / 100) + ')';
+                    } else {
+                        thumbImg.style.transform = '';
+                    }
                 }
             }
         }
@@ -992,6 +1133,120 @@
         URL.revokeObjectURL(url);
     }
 
+    // Load an image to get its natural dimensions (in pixels)
+    function getImageDimensions(dataUrl) {
+        return new Promise(function(resolve) {
+            var img = new Image();
+            img.onload = function() {
+                resolve({ width: img.naturalWidth, height: img.naturalHeight });
+            };
+            img.onerror = function() {
+                resolve({ width: 0, height: 0 });
+            };
+            img.src = dataUrl;
+        });
+    }
+
+    // Build PptxGenJS addImage options based on display mode
+    // slideW/slideH are in inches (10 x 5.625 for 16:9)
+    function getPptxImageOptions(dataUrl, mode, focalPoint, imgDims, slideW, slideH, zoom) {
+        var opts = { data: dataUrl, x: 0, y: 0, w: '100%', h: '100%' };
+        var zoomFactor = (zoom || 100) / 100;
+
+        if (mode === 'native' && imgDims.width > 0 && imgDims.height > 0) {
+            // Convert pixel dimensions to inches at 96 DPI
+            var imgWInches = imgDims.width / 96;
+            var imgHInches = imgDims.height / 96;
+            // Cap to slide bounds
+            if (imgWInches > slideW) { imgHInches *= slideW / imgWInches; imgWInches = slideW; }
+            if (imgHInches > slideH) { imgWInches *= slideH / imgHInches; imgHInches = slideH; }
+            // Center on slide
+            opts.x = (slideW - imgWInches) / 2;
+            opts.y = (slideH - imgHInches) / 2;
+            opts.w = imgWInches;
+            opts.h = imgHInches;
+            // No sizing property: image placed at natural size (capped to fit)
+
+        } else if (mode === 'fit') {
+            opts.sizing = { type: 'contain', w: '100%', h: '100%' };
+
+        } else if (mode === 'letterbox') {
+            opts.sizing = { type: 'contain', w: '100%', h: '100%' };
+
+        } else if (mode === 'smartcrop' && imgDims.width > 0 && imgDims.height > 0) {
+            // PptxGenJS 'crop' uses image-relative coordinates in inches.
+            // We calculate the visible crop region based on the focal point,
+            // mimicking CSS object-fit:cover + object-position.
+            var imgAspect = imgDims.width / imgDims.height;
+            var slideAspect = slideW / slideH;
+            var imgWInches = imgDims.width / 96;
+            var imgHInches = imgDims.height / 96;
+
+            // Start with the base cover crop
+            var cropX = 0, cropY = 0, cropW = imgWInches, cropH = imgHInches;
+
+            if (imgAspect > slideAspect) {
+                cropH = imgHInches;
+                cropW = imgHInches * slideAspect;
+            } else {
+                cropW = imgWInches;
+                cropH = imgWInches / slideAspect;
+            }
+
+            // Apply zoom: shrink crop region by zoom factor (zoom in = see less)
+            if (zoomFactor > 1) {
+                cropW = cropW / zoomFactor;
+                cropH = cropH / zoomFactor;
+            }
+
+            // Position crop around focal point
+            var fpXInches = imgWInches * (focalPoint.x / 100);
+            var fpYInches = imgHInches * (focalPoint.y / 100);
+            cropX = fpXInches - cropW / 2;
+            cropY = fpYInches - cropH / 2;
+            // Clamp to image bounds
+            if (cropX < 0) cropX = 0;
+            if (cropY < 0) cropY = 0;
+            if (cropX + cropW > imgWInches) cropX = imgWInches - cropW;
+            if (cropY + cropH > imgHInches) cropY = imgHInches - cropH;
+
+            opts.sizing = { type: 'crop', x: cropX, y: cropY, w: cropW, h: cropH };
+
+        } else if ((mode === 'fill' || mode === 'kenburns') && zoomFactor > 1 && imgDims.width > 0 && imgDims.height > 0) {
+            // Fill/Ken Burns with zoom: crop into center of image
+            var imgAspect = imgDims.width / imgDims.height;
+            var slideAspect = slideW / slideH;
+            var imgWInches = imgDims.width / 96;
+            var imgHInches = imgDims.height / 96;
+
+            // Base cover crop
+            var cropW, cropH;
+            if (imgAspect > slideAspect) {
+                cropH = imgHInches;
+                cropW = imgHInches * slideAspect;
+            } else {
+                cropW = imgWInches;
+                cropH = imgWInches / slideAspect;
+            }
+
+            // Shrink by zoom factor
+            cropW = cropW / zoomFactor;
+            cropH = cropH / zoomFactor;
+
+            // Center crop
+            var cropX = (imgWInches - cropW) / 2;
+            var cropY = (imgHInches - cropH) / 2;
+
+            opts.sizing = { type: 'crop', x: cropX, y: cropY, w: cropW, h: cropH };
+
+        } else {
+            // fill, kenburns (static cover at 100% zoom), or smartcrop fallback
+            opts.sizing = { type: 'cover', w: '100%', h: '100%' };
+        }
+
+        return opts;
+    }
+
     // Export presentation as PowerPoint file
     // PptxGenJS doesn't support auto-advance timing natively, so we post-process
     // the PPTX file to add the advTm attribute to slide transitions.
@@ -1014,8 +1269,24 @@
         pres.subject = 'Auto-generated presentation';
 
         // Set slide dimensions to 16:9 widescreen
-        pres.defineLayout({ name: 'LAYOUT_16x9', width: 10, height: 5.625 });
+        const slideW = 10;
+        const slideH = 5.625;
+        pres.defineLayout({ name: 'LAYOUT_16x9', width: slideW, height: slideH });
         pres.layout = 'LAYOUT_16x9';
+
+        // Pre-load image dimensions if any slide uses native, smartcrop, or zoom > 100%
+        var allDims = [];
+        var needsDims = images.some(function(img, i) {
+            var m = getSlideDisplayMode(i);
+            var z = getSlideZoom(i);
+            return m === 'native' || m === 'smartcrop' || z > 100;
+        });
+        if (needsDims) {
+            var dimPromises = images.map(function(img) {
+                return getImageDimensions(img.dataUrl);
+            });
+            allDims = await Promise.all(dimPromises);
+        }
 
         // Track slide durations for post-processing
         const slideDurations = [];
@@ -1024,7 +1295,7 @@
         if (titleSlide) {
             const titlePptxSlide = pres.addSlide();
 
-            // Add image covering full slide
+            // Title slide always uses cover sizing
             titlePptxSlide.addImage({
                 data: titleSlide.dataUrl,
                 x: 0,
@@ -1043,19 +1314,21 @@
             slideDurations.push(null);
         }
 
-        // Add each slide
+        // Add each slide with per-slide display-mode-aware sizing
         images.forEach((img, index) => {
+            var slideMode = getSlideDisplayMode(index);
             const slide = pres.addSlide();
 
-            // Add image covering full slide
-            slide.addImage({
-                data: img.dataUrl,
-                x: 0,
-                y: 0,
-                w: '100%',
-                h: '100%',
-                sizing: { type: 'cover', w: '100%', h: '100%' }
-            });
+            // Set black background for letterbox mode
+            if (slideMode === 'letterbox') {
+                slide.background = { fill: '000000' };
+            }
+
+            var fp = getFocalPoint(index);
+            var dims = allDims[index] || { width: 0, height: 0 };
+            var slideZoom = getSlideZoom(index);
+            var imgOpts = getPptxImageOptions(img.dataUrl, slideMode, fp, dims, slideW, slideH, slideZoom);
+            slide.addImage(imgOpts);
 
             // Add speaker notes if present
             if (img.notes) {
@@ -1182,9 +1455,7 @@
 
                 // Apply display mode
                 const displayMode = config.settings?.displayMode || 'fit';
-                displayFitRadio.checked = displayMode === 'fit';
-                displayFillRadio.checked = displayMode === 'fill';
-                displayNativeRadio.checked = displayMode === 'native';
+                displayModeSelect.value = displayMode;
 
                 // Apply timer overlay preference (default to false for backward compatibility)
                 timerTogglePractice.checked = config.settings?.showTimerOverlay || false;
@@ -1204,10 +1475,12 @@
                 // Apply title slide
                 titleSlide = config.titleSlide || null;
 
-                // Apply slides (ensure each has duration property for backward compatibility)
+                // Apply slides (ensure each has duration and displayMode for backward compatibility)
                 images = (config.slides || []).map(slide => ({
                     ...slide,
-                    duration: slide.duration || null
+                    duration: slide.duration || null,
+                    displayMode: slide.displayMode || null,
+                    zoom: slide.zoom || null
                 }));
 
                 // Show preview and update button labels
@@ -1281,8 +1554,8 @@
         elapsedTimeDisplay.textContent = '0:00';
         totalTimeDisplay.textContent = formatTime(calculateTotalTime());
 
-        // Apply image display mode
-        applyDisplayMode();
+        // Apply image display mode for the starting slide
+        applyDisplayMode(startIndex);
     }
 
     // Begin practice presentation (called when user clicks Start on ready overlay)
@@ -1301,9 +1574,6 @@
 
         // Notes panel: respect user's checkbox state
         practiceNotesPanel.hidden = !notesTogglePractice.checked;
-
-        // Apply image display mode
-        applyDisplayMode();
 
         // Initialize elapsed/total time display
         elapsedTimeDisplay.textContent = '0:00';
@@ -1365,8 +1635,11 @@
         currentSlide.alt = `Slide ${index + 1} of ${images.length}`;
         slideCounter.textContent = `${index + 1} / ${images.length}`;
 
+        // Apply display mode for this slide (resets and re-applies per-slide)
+        applyDisplayMode(index);
+
         // Update practice mode notes panel
-        practiceNotesText.textContent = images[index].notes || '';
+        practiceNotesText.value = images[index].notes || '';
 
         // Update navigation arrow states
         updateNavArrows();
@@ -1527,12 +1800,18 @@
             // Resume
             isPaused = false;
             pauseIndicator.hidden = true;
+            if (getSlideDisplayMode(currentIndex) === 'kenburns') {
+                currentSlide.style.animationPlayState = 'running';
+            }
             startSlideTimer();
         } else {
             // Pause
             clearTimers();
             isPaused = true;
             pauseIndicator.hidden = false;
+            if (getSlideDisplayMode(currentIndex) === 'kenburns') {
+                currentSlide.style.animationPlayState = 'paused';
+            }
 
             // Calculate remaining time and elapsed time on this slide
             const elapsedSinceStart = Date.now() - slideStartTime;
@@ -1604,30 +1883,102 @@
     }
 
     // Apply image display mode to slide containers
-    function applyDisplayMode() {
-        const mode = getDisplayMode();
+    // Optional index parameter for per-slide mode resolution
+    function applyDisplayMode(index) {
+        var effectiveIndex = (index !== undefined) ? index : currentIndex;
+        const mode = getSlideDisplayMode(effectiveIndex);
+        const container = currentSlide.parentElement;
+
+        // Reset all mode-specific styles
+        currentSlide.style.objectFit = '';
+        currentSlide.style.objectPosition = '';
+        currentSlide.style.width = '100%';
+        currentSlide.style.height = '100%';
+        currentSlide.style.maxWidth = '';
+        currentSlide.style.maxHeight = '';
+        currentSlide.style.transform = '';
+        currentSlide.classList.remove('pk-kenburns-active');
+        currentSlide.style.animationDuration = '';
+        currentSlide.style.transformOrigin = '';
+        currentSlide.style.animationPlayState = '';
+        currentSlide.style.removeProperty('--pk-zoom');
+        container.style.background = '';
+
+        var zoom = getSlideZoom(effectiveIndex);
+
         if (mode === 'native') {
-            // Native: show at original size, centered
             currentSlide.style.objectFit = 'none';
             currentSlide.style.width = 'auto';
             currentSlide.style.height = 'auto';
             currentSlide.style.maxWidth = '100%';
             currentSlide.style.maxHeight = '100%';
+        } else if (mode === 'letterbox') {
+            currentSlide.style.objectFit = 'contain';
+            container.style.background = '#000';
+        } else if (mode === 'fill') {
+            currentSlide.style.objectFit = 'cover';
+            if (zoom !== 100) currentSlide.style.transform = 'scale(' + (zoom / 100) + ')';
+        } else if (mode === 'smartcrop') {
+            currentSlide.style.objectFit = 'cover';
+            var fp = getFocalPoint(effectiveIndex);
+            currentSlide.style.objectPosition = fp.x + '% ' + fp.y + '%';
+            if (zoom !== 100) currentSlide.style.transform = 'scale(' + (zoom / 100) + ')';
+        } else if (mode === 'kenburns') {
+            currentSlide.style.objectFit = 'cover';
+            if (zoom !== 100) currentSlide.style.setProperty('--pk-zoom', zoom / 100);
+            applyKenBurns(currentSlide, getSlideDuration(effectiveIndex));
         } else {
-            // Fit or Fill: use object-fit
-            currentSlide.style.objectFit = mode === 'fill' ? 'cover' : 'contain';
-            currentSlide.style.width = '100%';
-            currentSlide.style.height = '100%';
-            currentSlide.style.maxWidth = '';
-            currentSlide.style.maxHeight = '';
+            // fit (default)
+            currentSlide.style.objectFit = 'contain';
         }
     }
 
-    // Get current display mode value
+    // Get focal point for a slide (defaults to center)
+    function getFocalPoint(index) {
+        if (index >= 0 && index < images.length && images[index].focalPoint) {
+            return images[index].focalPoint;
+        }
+        return { x: 50, y: 50 };
+    }
+
+    // Get zoom level for a slide (defaults to 100, meaning no zoom)
+    function getSlideZoom(index) {
+        if (index >= 0 && index < images.length && images[index].zoom) {
+            return images[index].zoom;
+        }
+        return 100;
+    }
+
+    // Apply Ken Burns animation to an image element
+    function applyKenBurns(img, durationSeconds) {
+        // Pick a random origin different from the last one
+        var originIndex;
+        do {
+            originIndex = Math.floor(Math.random() * kenBurnsOrigins.length);
+        } while (originIndex === lastKenBurnsOrigin && kenBurnsOrigins.length > 1);
+        lastKenBurnsOrigin = originIndex;
+
+        img.classList.remove('pk-kenburns-active');
+        // Force reflow to restart animation
+        void img.offsetWidth;
+        img.style.transformOrigin = kenBurnsOrigins[originIndex];
+        img.style.animationDuration = durationSeconds + 's';
+        img.classList.add('pk-kenburns-active');
+        if (isPaused) {
+            img.style.animationPlayState = 'paused';
+        }
+        return kenBurnsOrigins[originIndex];
+    }
+
+    // Get current global display mode value
     function getDisplayMode() {
-        if (displayFillRadio.checked) return 'fill';
-        if (displayNativeRadio.checked) return 'native';
-        return 'fit';
+        return displayModeSelect.value;
+    }
+
+    // Get effective display mode for a specific slide (per-slide override or global default)
+    function getSlideDisplayMode(index) {
+        var slide = images[index];
+        return (slide && slide.displayMode) ? slide.displayMode : displayModeSelect.value;
     }
 
     // End slideshow and show completion
@@ -1777,6 +2128,7 @@
             const thumb = document.createElement('div');
             let classes = 'pk-presenter-filmstrip-thumb';
             if (img.duration) classes += ' has-custom-duration';
+            if (img.displayMode) classes += ' has-custom-display-mode';
             thumb.className = classes;
             thumb.dataset.index = index;
 
@@ -1945,11 +2297,27 @@
 
         // Send to presentation window
         if (presentationWindow && !presentationWindow.closed) {
-            presentationWindow.postMessage({
+            var mode = getSlideDisplayMode(index);
+            var msg = {
                 type: 'showSlide',
                 index: index,
-                timeRemaining: getSlideDuration(index) * 1000
-            }, window.location.origin);
+                timeRemaining: getSlideDuration(index) * 1000,
+                displayMode: mode,
+                zoom: getSlideZoom(index)
+            };
+            // Add mode-specific data
+            if (mode === 'kenburns') {
+                // Pick a Ken Burns origin and send it so both views match
+                var originIndex;
+                do {
+                    originIndex = Math.floor(Math.random() * kenBurnsOrigins.length);
+                } while (originIndex === lastKenBurnsOrigin && kenBurnsOrigins.length > 1);
+                lastKenBurnsOrigin = originIndex;
+                msg.kenBurnsOrigin = kenBurnsOrigins[originIndex];
+            } else if (mode === 'smartcrop') {
+                msg.focalPoint = getFocalPoint(index);
+            }
+            presentationWindow.postMessage(msg, window.location.origin);
         }
     }
 
@@ -2277,6 +2645,40 @@
     notesInput.addEventListener('input', saveCurrentNotes);
     notesInput.addEventListener('blur', saveCurrentNotes);
 
+    // Per-slide display mode override
+    slideDisplayModeOverride.addEventListener('change', () => {
+        saveCurrentNotes();
+        if (selectedIndex !== null) {
+            updateZoomVisibility(selectedIndex);
+            updateDisplayModePreview(selectedIndex);
+        }
+    });
+
+    // Per-slide zoom
+    slideZoomInput.addEventListener('input', () => {
+        slideZoomValue.textContent = slideZoomInput.value + '%';
+        saveCurrentNotes();
+        if (selectedIndex !== null) {
+            updateDisplayModePreview(selectedIndex);
+        }
+    });
+
+    slideZoomReset.addEventListener('click', () => {
+        slideZoomInput.value = 100;
+        slideZoomValue.textContent = '100%';
+        saveCurrentNotes();
+        if (selectedIndex !== null) {
+            updateDisplayModePreview(selectedIndex);
+        }
+    });
+
+    // Practice mode notes input (editable during practice)
+    practiceNotesText.addEventListener('input', () => {
+        if (currentIndex >= 0 && currentIndex < images.length) {
+            images[currentIndex].notes = practiceNotesText.value;
+        }
+    });
+
     // Presenter notes input (during presentation)
     presenterNotesInput.addEventListener('input', () => {
         if (isExternalPresentation && currentIndex < images.length) {
@@ -2328,6 +2730,46 @@
     modePresentRadio.addEventListener('change', () => {
         updateStartButtonLabels();
         updateStartFromButton();
+    });
+
+    // Global display mode change - update thumbnails, per-slide dropdown label, and preview
+    displayModeSelect.addEventListener('change', () => {
+        updateDefaultDisplayModeLabel();
+        // Update all thumbnails that use the global default (no per-slide override)
+        var allThumbs = thumbnails.querySelectorAll('.pk-thumbnail');
+        var globalMode = displayModeSelect.value;
+        images.forEach((img, i) => {
+            if (!img.displayMode && allThumbs[i]) {
+                allThumbs[i].setAttribute('data-mode', globalMode);
+                var thumbImg = allThumbs[i].querySelector('img');
+                if (thumbImg) thumbImg.style.objectPosition = '';
+            }
+        });
+        if (selectedIndex !== null) {
+            updateZoomVisibility(selectedIndex);
+            updateDisplayModePreview(selectedIndex);
+        }
+    });
+
+    // Focal point click handler (only active when preview is in smartcrop mode)
+    displayPreviewFrame.addEventListener('click', (e) => {
+        if (selectedIndex === null || selectedIndex >= images.length) return;
+        if (displayPreviewFrame.getAttribute('data-mode') !== 'smartcrop') return;
+        var rect = displayPreviewImg.getBoundingClientRect();
+        var x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+        var y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+        x = Math.max(0, Math.min(100, x));
+        y = Math.max(0, Math.min(100, y));
+        images[selectedIndex].focalPoint = { x: x, y: y };
+        focalPointMarker.style.left = x + '%';
+        focalPointMarker.style.top = y + '%';
+        displayPreviewImg.style.objectPosition = x + '% ' + y + '%';
+        // Update thumbnail focal point
+        var allThumbs = thumbnails.querySelectorAll('.pk-thumbnail');
+        if (allThumbs[selectedIndex]) {
+            var thumbImg = allThumbs[selectedIndex].querySelector('img');
+            if (thumbImg) thumbImg.style.objectPosition = x + '% ' + y + '%';
+        }
     });
 
     // Edit slides button on completion screen
@@ -2406,12 +2848,15 @@
             return; // Don't process other keys when on ready overlay
         }
 
-        if (e.code === 'Space') {
-            e.preventDefault();
-            togglePause();
-        } else if (e.code === 'Escape') {
+        if (e.code === 'Escape') {
             e.preventDefault();
             exitSlideshow();
+        } else if (isTyping) {
+            // Don't intercept keys when typing in practice notes
+            return;
+        } else if (e.code === 'Space') {
+            e.preventDefault();
+            togglePause();
         } else if (e.code === 'ArrowLeft') {
             e.preventDefault();
             goToPreviousSlide();
@@ -2423,7 +2868,8 @@
 
     // Prevent spacebar scrolling when slideshow is active
     document.addEventListener('keypress', (e) => {
-        if (!slideshowSection.hidden && e.code === 'Space') {
+        if (!slideshowSection.hidden && e.code === 'Space' &&
+            document.activeElement?.tagName !== 'TEXTAREA') {
             e.preventDefault();
         }
     });
@@ -2483,5 +2929,56 @@
 
     // Initialize button labels based on default mode selection
     updateStartButtonLabels();
+
+    // ========================================
+    // Tooltip System
+    // ========================================
+
+    function initTooltips() {
+        var tooltipEl = document.createElement('div');
+        tooltipEl.className = 'global-tooltip';
+        tooltipEl.style.cssText = 'position:fixed;z-index:10000;background:var(--color-card-bg);border:1px solid var(--color-border);border-radius:8px;padding:12px;box-shadow:0 4px 20px rgba(0,0,0,0.25);font-size:0.8rem;line-height:1.5;color:var(--color-text);max-width:280px;opacity:0;visibility:hidden;transition:opacity 0.15s,visibility 0.15s;pointer-events:none;';
+        document.body.appendChild(tooltipEl);
+
+        var triggers = document.querySelectorAll('.info-trigger');
+
+        triggers.forEach(function(trigger) {
+            var content = trigger.querySelector('.info-tooltip');
+            if (!content) return;
+
+            function showTooltip() {
+                tooltipEl.innerHTML = content.innerHTML;
+                tooltipEl.style.opacity = '1';
+                tooltipEl.style.visibility = 'visible';
+
+                var rect = trigger.getBoundingClientRect();
+                var tooltipRect = tooltipEl.getBoundingClientRect();
+                var margin = 8;
+
+                var top = rect.bottom + margin;
+                var left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+
+                if (left < margin) left = margin;
+                if (left + tooltipRect.width > window.innerWidth - margin) {
+                    left = window.innerWidth - tooltipRect.width - margin;
+                }
+
+                tooltipEl.style.top = top + 'px';
+                tooltipEl.style.left = left + 'px';
+            }
+
+            function hideTooltip() {
+                tooltipEl.style.opacity = '0';
+                tooltipEl.style.visibility = 'hidden';
+            }
+
+            trigger.addEventListener('mouseenter', showTooltip);
+            trigger.addEventListener('mouseleave', hideTooltip);
+            trigger.addEventListener('focus', showTooltip);
+            trigger.addEventListener('blur', hideTooltip);
+        });
+    }
+
+    initTooltips();
 
 })();
