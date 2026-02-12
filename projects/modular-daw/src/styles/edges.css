@@ -1,0 +1,36 @@
+/* Cable styles */
+
+.daw-edge--audio .react-flow__edge-path {
+  stroke: var(--color-accent);
+  stroke-width: 2;
+}
+
+.daw-edge--stereo .react-flow__edge-path {
+  stroke-width: 3.5;
+}
+
+.daw-edge--parameter .react-flow__edge-path {
+  stroke: var(--color-warning);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 3;
+}
+
+/* Hover state */
+.daw-edge:hover .react-flow__edge-path {
+  stroke: var(--color-error);
+  cursor: pointer;
+}
+
+/* Selected state */
+.daw-edge.selected .react-flow__edge-path {
+  stroke: var(--color-error);
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .daw-edge--audio .react-flow__edge-path {
+  stroke: #60a5fa;
+}
+
+[data-theme="dark"] .daw-edge--parameter .react-flow__edge-path {
+  stroke: #fbbf24;
+}

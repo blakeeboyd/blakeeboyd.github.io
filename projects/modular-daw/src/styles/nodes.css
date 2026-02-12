@@ -1,0 +1,244 @@
+/* Module node styles */
+
+.daw-node {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 8px);
+  min-width: 180px;
+  font-family: var(--font-family);
+  font-size: 0.8rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.daw-node--io {
+  border-left: 3px solid var(--color-success);
+}
+
+.daw-node--generator {
+  border-left: 3px solid var(--color-accent);
+}
+
+.daw-node--utility {
+  border-left: 3px solid var(--color-warning);
+}
+
+.daw-node--effect {
+  border-left: 3px solid #a855f7;
+}
+
+.daw-node__header {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.daw-node__body {
+  padding: var(--spacing-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+/* Parameters */
+
+.daw-node__param {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.daw-node__param-label {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.daw-node__param-value {
+  font-size: 0.7rem;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.daw-node__slider {
+  width: 100%;
+  height: 4px;
+  cursor: pointer;
+  accent-color: var(--color-accent);
+}
+
+/* Waveform selector buttons */
+
+.daw-node__waveform-btns {
+  display: flex;
+  gap: 2px;
+}
+
+.daw-node__waveform-btn {
+  flex: 1;
+  padding: 2px 4px;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm, 4px);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-family: var(--font-family);
+  transition: all var(--transition-fast);
+}
+
+.daw-node__waveform-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+
+.daw-node__waveform-btn.active {
+  background: var(--color-accent);
+  color: #fff;
+  border-color: var(--color-accent);
+}
+
+[data-theme="dark"] .daw-node__waveform-btn.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #fff;
+}
+
+/* Handles (ports) */
+
+.daw-handle {
+  width: 10px !important;
+  height: 10px !important;
+  border-radius: 50% !important;
+  border: 2px solid !important;
+  background: var(--color-card-bg) !important;
+}
+
+.daw-handle--audio {
+  border-color: var(--color-accent) !important;
+}
+
+.daw-handle--parameter {
+  border-color: var(--color-warning) !important;
+}
+
+/* Module panel */
+
+.daw-module-panel {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 8px);
+  padding: var(--spacing-sm);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.daw-module-panel__title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--spacing-xs);
+}
+
+.daw-module-panel__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.daw-module-panel__btn {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.8rem;
+  font-family: var(--font-family);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm, 4px);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-fast);
+}
+
+.daw-module-panel__btn:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: #fff;
+}
+
+[data-theme="dark"] .daw-module-panel__btn:hover {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
+/* Start audio button */
+
+.daw-start-audio {
+  margin-top: 30vh;
+  padding: var(--spacing-sm) var(--spacing-lg, 24px);
+  font-size: 1rem;
+  font-family: var(--font-family);
+  font-weight: 500;
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-accent);
+  color: #fff;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.daw-start-audio:hover {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+[data-theme="dark"] .daw-start-audio {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
+[data-theme="dark"] .daw-start-audio:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+/* Toolbar */
+
+.daw-toolbar {
+  display: flex;
+  gap: 4px;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 8px);
+  padding: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.daw-toolbar__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: var(--radius-sm, 4px);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.daw-toolbar__btn:hover:not(:disabled) {
+  background: var(--color-border);
+}
+
+.daw-toolbar__btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}

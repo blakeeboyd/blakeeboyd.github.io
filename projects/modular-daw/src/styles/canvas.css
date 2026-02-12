@@ -1,0 +1,50 @@
+/* React Flow canvas overrides to match site theme */
+
+.react-flow {
+  --xy-background-color: var(--color-card-bg);
+}
+
+/* Background dots */
+.react-flow__background {
+  color: var(--color-border);
+}
+
+/* MiniMap */
+.react-flow__minimap {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+/* Controls */
+.react-flow__controls {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+.react-flow__controls-button {
+  background: var(--color-card-bg);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  fill: var(--color-text);
+}
+
+.react-flow__controls-button:hover {
+  background: var(--color-bg);
+}
+
+/* Custom node wrappers: remove React Flow's default styling */
+.react-flow__node {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* Selection box */
+.react-flow__selection {
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid var(--color-accent);
+}
