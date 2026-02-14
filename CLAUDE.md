@@ -80,6 +80,25 @@ When building new features:
     │   ├── index.html          # Timer main page (uses .container.wide)
     │   └── js/
     │       └── app.js          # Pure JavaScript, Web Audio API
+    ├── advance/
+    │   ├── index.html          # Host page (loads bundled React app)
+    │   ├── guide.html          # User guide
+    │   ├── assets/
+    │   │   ├── index.js        # Production bundle
+    │   │   └── index.css       # Production styles
+    │   ├── src/                # React source (Vite + TypeScript)
+    │   │   ├── App.tsx         # Router setup
+    │   │   ├── main.tsx        # Entry point
+    │   │   ├── components/     # UI components
+    │   │   ├── hooks/          # Custom hooks (auto-save, undo-redo)
+    │   │   ├── lib/            # Utilities (export, storage, id)
+    │   │   ├── pages/          # Route pages
+    │   │   ├── store/          # Zustand stores
+    │   │   ├── styles/         # CSS modules
+    │   │   └── types/          # TypeScript types
+    │   ├── package.json
+    │   ├── vite.config.ts
+    │   └── tsconfig*.json
     ├── stereo-mic-techniques/
     │   ├── index.html          # Main page (uses .container.wide)
     │   ├── guide.html          # User guide
@@ -523,6 +542,79 @@ Each EQ Chain: HPF/LSF → Peak → Peak → LPF/HSF (4 BiquadFilterNodes)
 
 **Key Files:**
 - `js/app.js` - Audio engine, canvas interaction, game logic
+
+### Advance
+
+A browser-based suite of production documentation tools for live sound engineers: patch sheets, stage plots, and run-of-show documents. The only project on the site that uses a modern JS framework (React + TypeScript), built with Vite. Tagline: "Get ahead of the show."
+
+**Location:** `projects/advance/`
+
+**Key Features:**
+- Three document types: Patch Sheets (input/output channel lists), Stage Plots (visual stage layouts), Run of Show (cue-based production timelines)
+- All data persisted in localStorage (no server)
+- Export to PDF (tables via jsPDF/autotable, stage plots via html2canvas) and JSON
+- Import from previously exported JSON
+- Undo/redo with keyboard shortcuts (Ctrl+Z/Y)
+- Auto-save with status indicator
+- Drag-to-reorder table rows, draggable/resizable stage elements
+- Grid snapping for stage plots
+- Background image upload for stage plots
+- Row highlight colors for run of show
+
+**Technical Stack:**
+- React 18 + TypeScript + Vite
+- Zustand for state management (one store per document type + one document registry)
+- Zundo for undo/redo (temporal middleware on Zustand stores)
+- react-router-dom for client-side routing (HashRouter for GitHub Pages)
+- jsPDF + jspdf-autotable for table PDF export
+- html2canvas for stage plot PDF export
+- nanoid for ID generation
+
+**Architecture:**
+```
+src/
+├── App.tsx              # HashRouter + routes
+├── main.tsx             # Mount point
+├── components/
+│   ├── layout/          # Sidebar, Toolbar (shared across all tools)
+│   ├── shared/          # DocumentCard, ExportMenu, ConfirmDialog, etc.
+│   ├── patch-sheet/     # InputTable, OutputTable, MetadataPanel
+│   ├── stage-plot/      # StageCanvas, ElementPalette, PropertiesPanel
+│   └── run-of-show/     # RunOfShowEditor (table-based)
+├── hooks/
+│   ├── use-auto-save.ts # Debounced save with idle/pending/saved status
+│   └── use-undo-redo.ts # Keyboard shortcuts + canUndo/canRedo states
+├── lib/
+│   ├── export-pdf.ts    # PDF generators for all three types
+│   ├── export-json.ts   # JSON import/export
+│   ├── storage.ts       # localStorage helpers
+│   └── id.ts            # nanoid wrapper
+├── pages/               # Route pages (HomePage, PatchSheetPage, etc.)
+├── store/
+│   ├── document-store.ts     # Document registry (persisted)
+│   ├── patch-sheet-store.ts  # Patch sheet state (temporal)
+│   ├── stage-plot-store.ts   # Stage plot state (temporal)
+│   └── run-of-show-store.ts  # Run of show state (temporal)
+├── styles/              # Scoped CSS (adv- prefix, CSS variables)
+└── types/               # TypeScript interfaces for each document type
+```
+
+**Build & Deploy:**
+- Dev: `cd projects/advance && npm run dev` (Vite dev server)
+- Build: `npm run build` (runs tsc, Vite build, copies dist/ to assets/)
+- Production: `index.html` loads `assets/index.js` and `assets/index.css`
+- Vite config includes a custom plugin to proxy site-wide CSS/JS/images from `../../` during dev
+
+**CSS Architecture:**
+- All classes prefixed with `adv-` to avoid conflicts with site CSS
+- CSS variables defined in `tokens.css` (colors, radii, shadows, transitions)
+- Separate files: `layout.css`, `components.css`, `stage-plot.css`, `run-of-show.css`
+- Print media queries in each CSS file
+
+**Key Patterns:**
+- Zustand selectors: use `useShallow` for selectors that return arrays/objects, select primitives directly to avoid infinite re-render loops
+- Each tool page follows the pattern: load document on route change, auto-save on state changes, undo/redo via temporal store
+- Stage plot elements use pointer events (not drag API) for smooth drag/resize
 
 ## Design Inspiration
 

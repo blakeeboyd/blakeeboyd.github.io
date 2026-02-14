@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="How to use Advance, a browser-based suite of production documentation tools for live sound: patch sheets, stage plots, and run of show editors.">
+    <title>Advance Guide - Blake Boyd</title>
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake E. Boyd">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+    <link rel="stylesheet" href="../../css/base.css">
+    <link rel="stylesheet" href="../../css/layout.css">
+    <link rel="stylesheet" href="../../css/components.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="../../js/theme.js"></script>
+    <script src="../../js/nav-component.js" defer></script>
+    <style>
+        /* Layout */
+        .guide-layout {
+            display: grid;
+            grid-template-columns: 1fr 200px;
+            gap: 3rem;
+            align-items: start;
+        }
+
+        .guide-content {
+            min-width: 0;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            position: sticky;
+            top: 2rem;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-header {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-list a {
+            display: block;
+            font-size: 0.8125rem;
+            color: var(--color-text-muted);
+            text-decoration: none;
+            padding: 0.25rem 0;
+            transition: color 0.15s ease;
+        }
+
+        .toc-list a:hover {
+            color: var(--color-text);
+        }
+
+        /* Header */
+        .guide-header {
+            margin-bottom: 3rem;
+        }
+
+        .back-links {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--color-accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .back-link-separator {
+            color: var(--color-text-muted);
+        }
+
+        .guide-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .guide-header .subtitle {
+            color: var(--color-text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Sections */
+        .guide-section {
+            margin-bottom: 3rem;
+            scroll-margin-top: 2rem;
+        }
+
+        .guide-section h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .guide-section h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        .guide-section p {
+            margin-bottom: 1rem;
+            line-height: 1.7;
+        }
+
+        .guide-section ul, .guide-section ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .guide-section li {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        /* Tables */
+        .shortcut-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0 1.5rem;
+        }
+
+        .shortcut-table th,
+        .shortcut-table td {
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .shortcut-table th {
+            font-weight: 600;
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
+        }
+
+        .shortcut-table kbd {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.8rem;
+            font-family: inherit;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            margin-right: 0.25rem;
+        }
+
+        /* Tips */
+        .tip {
+            background: var(--color-accent-light, #dbeafe);
+            border-left: 3px solid var(--color-accent);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        [data-theme="twilight"] .tip,
+        [data-theme="night"] .tip {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .tip-label {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--color-accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .tip p {
+            margin-bottom: 0;
+        }
+
+        /* Quick start steps */
+        .quick-steps {
+            counter-reset: step;
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .quick-steps li {
+            counter-increment: step;
+            position: relative;
+            padding-left: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .quick-steps li::before {
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0.1em;
+            width: 1.6rem;
+            height: 1.6rem;
+            background: var(--color-accent);
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .guide-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .toc-sidebar {
+                position: relative;
+                top: 0;
+                order: -1;
+                margin-bottom: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <site-nav base="../../"></site-nav>
+
+        <main id="main-content">
+            <div class="back-links">
+                <a href="../../projects.html" class="back-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Projects
+                </a>
+                <span class="back-link-separator">/</span>
+                <a href="./" class="back-link">
+                    Advance
+                </a>
+            </div>
+
+            <header class="guide-header">
+                <h1>Advance Guide</h1>
+                <p class="subtitle">Production documentation tools for live sound: patch sheets, stage plots, and run of show.</p>
+            </header>
+
+            <div class="guide-layout">
+                <div class="guide-content">
+                    <section class="guide-section" id="quick-start">
+                        <h2>Quick Start</h2>
+                        <p>Create your first document in under a minute:</p>
+                        <ol class="quick-steps">
+                            <li><strong>Pick a tool.</strong> The home page shows three cards: Patch Sheet, Stage Plot, and Run of Show. Click one to open that tool's workspace.</li>
+                            <li><strong>Create a document.</strong> Click "+ New" in the sidebar or "New Document" in the empty state. Give it a name in the toolbar at the top.</li>
+                            <li><strong>Start editing.</strong> Fill in your channels, place your stage elements, or build your timeline. Everything auto-saves as you work.</li>
+                        </ol>
+                        <p>That covers the basics. The sections below explain each tool in detail, plus exporting, importing, and keyboard shortcuts.</p>
+                    </section>
+
+                    <section class="guide-section" id="overview">
+                        <h2>What is Advance?</h2>
+                        <p>In live sound, "the advance" is the process of sending technical documentation to a venue before a gig: patch lists, stage layouts, schedule cues. Advance is a browser-based tool suite for building those documents without accounts, subscriptions, or internet access after the initial page load.</p>
+                        <p>Three tools, one workspace:</p>
+                        <ul>
+                            <li><strong>Patch Sheet</strong>: Input and output channel lists for your console. Track mic types, phantom power, connection routing, and notes per channel.</li>
+                            <li><strong>Stage Plot</strong>: A visual 2D layout of the stage. Drag instruments, monitors, risers, and personnel into position.</li>
+                            <li><strong>Run of Show</strong>: A cue-based timeline for production events. Auto-calculated start times, custom columns, section headers, and row highlighting.</li>
+                        </ul>
+                        <p>All data stays in your browser's localStorage. Nothing is sent to a server. Export to JSON or PDF whenever you need a portable copy.</p>
+                    </section>
+
+                    <section class="guide-section" id="navigation">
+                        <h2>Navigation</h2>
+                        <p>The app header contains tabs for each tool. Click a tab to switch between Patch Sheets, Stage Plots, and Run of Show. The home icon returns you to the dashboard, which shows all three tools and your five most recent documents.</p>
+                        <p>Each tool has a sidebar on the left listing your documents of that type, sorted by last edited. Click a document to open it, or click "+ New" to create one. The search bar at the top of the sidebar filters documents by name.</p>
+                    </section>
+
+                    <section class="guide-section" id="patch-sheets">
+                        <h2>Patch Sheets</h2>
+                        <p>A patch sheet documents every audio channel on your console: what's plugged in, where it comes from, and how it's routed.</p>
+
+                        <h3>Metadata</h3>
+                        <p>The top section captures show-level information: venue, date, FOH engineer, monitor engineer, and general notes. These fields appear on PDF exports and help identify the document later.</p>
+
+                        <h3>Input Channels</h3>
+                        <p>Each row represents one input channel with the following columns:</p>
+                        <ul>
+                            <li><strong>Channel number</strong>: The console channel (editable, not auto-numbered, so you can skip or label channels as needed)</li>
+                            <li><strong>Name</strong>: Source name (e.g., "Kick In," "Vox Lead")</li>
+                            <li><strong>Mic Type</strong>: Dynamic, condenser, DI, ribbon, or wireless</li>
+                            <li><strong>Device</strong>: Specific mic or DI model</li>
+                            <li><strong>48V</strong>: Phantom power toggle</li>
+                            <li><strong>Connection</strong>: Analog snake, Dante, or direct</li>
+                            <li><strong>Details</strong>: Connection specifics (snake channel, Dante route, etc.)</li>
+                            <li><strong>Notes</strong>: Anything else worth knowing</li>
+                        </ul>
+                        <p>Click any cell to edit it inline. New rows appear at the bottom. Drag the handle on the left to reorder.</p>
+
+                        <h3>Output Channels</h3>
+                        <p>A separate tab for outputs (monitor mixes, aux sends, matrix outputs). Columns include channel number, name, source type, source details, destination type, destination gear, and notes.</p>
+
+                        <div class="tip">
+                            <div class="tip-label">Tip</div>
+                            <p>Use the metadata fields even for informal gigs. When you re-open the document months later, "The Venue, Jan 15" is more useful than "Untitled Patch Sheet."</p>
+                        </div>
+                    </section>
+
+                    <section class="guide-section" id="stage-plots">
+                        <h2>Stage Plots</h2>
+                        <p>A visual representation of what goes where on stage. The canvas shows a top-down view with "AUDIENCE" labeled at the bottom.</p>
+
+                        <h3>The Canvas</h3>
+                        <p>The canvas is a fixed-size area representing the stage. Choose from eight size presets (small to x-large, narrow or wide) using the dropdown above the canvas. The canvas can scroll horizontally on smaller screens.</p>
+
+                        <h3>Adding Elements</h3>
+                        <p>The element palette on the right contains 23 element types organized into four categories:</p>
+                        <ul>
+                            <li><strong>Instruments</strong>: Electric guitar, acoustic guitar, bass, drums, keyboard, piano, percussion, violin, horn, generic instrument</li>
+                            <li><strong>Audio</strong>: Microphone, monitor wedge, speaker, DI box, amp, headphones, mixer</li>
+                            <li><strong>People</strong>: Vocalist, musician, tech crew</li>
+                            <li><strong>Stage</strong>: Riser, table, chair</li>
+                        </ul>
+                        <p>Click an element type to place it on the canvas. Each element appears with a default label that you can edit in the properties panel.</p>
+
+                        <h3>Moving and Resizing</h3>
+                        <p>Drag any element to reposition it. When selected, a resize handle appears at the bottom-right corner. Drag it to change the element's size. Enable grid snapping (the "Snap" checkbox above the canvas) to align elements to a 10-pixel grid.</p>
+
+                        <h3>Properties Panel</h3>
+                        <p>Select an element to see its properties on the right:</p>
+                        <ul>
+                            <li><strong>Label</strong>: Display name on the element</li>
+                            <li><strong>Position</strong>: X/Y coordinates (editable for precise placement)</li>
+                            <li><strong>Size</strong>: Width and height</li>
+                            <li><strong>Rotation</strong>: Angle in degrees</li>
+                            <li><strong>Color</strong>: Element background color</li>
+                            <li><strong>Show Label</strong>: Toggle label visibility</li>
+                            <li><strong>Duplicate</strong> and <strong>Delete</strong> buttons</li>
+                        </ul>
+
+                        <h3>Background Image</h3>
+                        <p>Upload an image (a floor plan, venue photo, or CAD drawing) as a background behind your elements. Adjust the opacity slider to control how much the background shows through. Click "Clear" to remove it.</p>
+
+                        <div class="tip">
+                            <div class="tip-label">Tip</div>
+                            <p>Enable grid snap when placing multiple elements so they line up naturally. Disable it for final fine-tuning.</p>
+                        </div>
+                    </section>
+
+                    <section class="guide-section" id="run-of-show">
+                        <h2>Run of Show</h2>
+                        <p>A timeline for production events: sound checks, set changes, performances, intermissions. Each row is a cue with timing information and department-specific notes.</p>
+
+                        <h3>Built-in Columns</h3>
+                        <p>Every run of show includes these columns:</p>
+                        <ul>
+                            <li><strong>#</strong>: Item number (auto-increments but editable)</li>
+                            <li><strong>Start</strong>: Start time in HH:MM:SS format</li>
+                            <li><strong>Duration</strong>: How long in MM:SS format</li>
+                            <li><strong>Audio</strong>: Sound cues and notes</li>
+                            <li><strong>Video</strong>: Video/projection cues</li>
+                            <li><strong>Lights</strong>: Lighting cues</li>
+                            <li><strong>Notes</strong>: Production notes</li>
+                        </ul>
+
+                        <h3>Custom Columns</h3>
+                        <p>Click "Add Column" to create additional columns for your specific needs (e.g., "Backline," "Pyro," "MC Script"). Custom columns support text, number, and time types. Click the column header to rename or delete it.</p>
+
+                        <h3>Section Headers</h3>
+                        <p>Click "Add Header" to insert a section divider (e.g., "Sound Check," "Doors Open," "Headliner Set"). Headers span the full width of the table and help visually organize a long timeline.</p>
+
+                        <h3>Row Highlighting</h3>
+                        <p>Click the color dot on any row to highlight it with one of nine colors: red, amber, green, blue, purple, pink, cyan, or lime. Useful for flagging critical cues, color-coding by department, or marking tentative items.</p>
+
+                        <h3>Reordering</h3>
+                        <p>Drag the grip handle on the left of any row to reorder items. The start times do not auto-cascade (each row's start time is independent), so adjust manually after reordering.</p>
+
+                        <div class="tip">
+                            <div class="tip-label">Tip</div>
+                            <p>Use section headers to break long shows into logical blocks: load-in, sound check, doors, set 1, changeover, set 2, load-out. This makes the document scannable during the show.</p>
+                        </div>
+                    </section>
+
+                    <section class="guide-section" id="saving">
+                        <h2>Saving and Auto-Save</h2>
+                        <p>Documents auto-save to your browser's localStorage as you edit, with a short delay to batch rapid changes. A status indicator in the toolbar shows "Saving..." during the delay and "Saved" when the save completes.</p>
+                        <p>Your documents persist between browser sessions. They survive page refreshes and browser restarts. However, clearing your browser data or using private/incognito mode will erase them.</p>
+
+                        <div class="tip">
+                            <div class="tip-label">Tip</div>
+                            <p>Export important documents to JSON regularly. Local storage is convenient but not a backup. A JSON file on your drive is.</p>
+                        </div>
+                    </section>
+
+                    <section class="guide-section" id="export">
+                        <h2>Exporting</h2>
+                        <p>The export menu (in the toolbar when a document is open) offers three formats:</p>
+
+                        <h3>JSON</h3>
+                        <p>A full data export that can be re-imported later. This is the best option for backups, sharing with collaborators, or moving data between devices. The file contains all document data including metadata, channel lists, element positions, and timeline items.</p>
+
+                        <h3>PDF</h3>
+                        <p>A print-ready document. Patch sheets and run of show export as formatted tables with headers and metadata. Stage plots export as an image snapshot of the canvas. PDFs auto-orient based on content (landscape for wide stage plots, portrait for tables).</p>
+
+                        <h3>Import</h3>
+                        <p>Click "Import" in the export menu to load a previously exported JSON file. The importer validates the file format and document type before creating a new document with the imported data.</p>
+                    </section>
+
+                    <section class="guide-section" id="undo-redo">
+                        <h2>Undo and Redo</h2>
+                        <p>Every editing action can be undone. Use the toolbar buttons or keyboard shortcuts. The undo/redo buttons gray out when there's no history to traverse.</p>
+                        <p>Undo history is per-document and resets when you switch documents or reload the page. It tracks all state changes: adding/removing rows, editing cells, moving elements, changing properties.</p>
+                    </section>
+
+                    <section class="guide-section" id="shortcuts">
+                        <h2>Keyboard Shortcuts</h2>
+                        <table class="shortcut-table">
+                            <tbody>
+                                <tr><td>Undo</td><td><kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>Z</kbd></td></tr>
+                                <tr><td>Redo</td><td><kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>Y</kbd></td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section class="guide-section" id="privacy">
+                        <h2>Privacy</h2>
+                        <p>Advance runs entirely in your browser. Your documents, channel lists, stage layouts, and timelines are:</p>
+                        <ul>
+                            <li>Never sent to any server</li>
+                            <li>Stored only in your browser's localStorage</li>
+                            <li>Deletable at any time (click the trash icon on any document)</li>
+                        </ul>
+                        <p>Exported files stay on your device. JSON exports contain only the data you entered. PDF exports are generated client-side and never uploaded.</p>
+                    </section>
+
+                    <section class="guide-section" id="tips">
+                        <h2>Tips</h2>
+                        <ul>
+                            <li><strong>Name your documents well.</strong> "Spring Concert 2026 - Main Stage" is more useful than "Untitled Patch Sheet" when you have a dozen documents in the sidebar.</li>
+                            <li><strong>Use all three tools together.</strong> A complete advance package for a venue includes a patch sheet, a stage plot, and a run of show. Export all three as PDFs and send them in one email.</li>
+                            <li><strong>Export before clearing browser data.</strong> JSON exports round-trip perfectly. If you're switching browsers or devices, export your documents first and import them on the other end.</li>
+                            <li><strong>Start from templates.</strong> Create a base document for your typical setup, export the JSON, then import it for each new gig and modify from there.</li>
+                            <li><strong>Grid snap for clean plots.</strong> Stage plots look more professional when elements are aligned. Enable snap, place your elements roughly, and they'll settle onto the grid.</li>
+                            <li><strong>Color-code your run of show.</strong> Establish a consistent color scheme across shows: green for go cues, red for hold points, amber for contingencies.</li>
+                        </ul>
+                    </section>
+                </div>
+
+                <aside class="toc-sidebar">
+                    <h2 class="toc-header">Contents</h2>
+                    <ul class="toc-list">
+                        <li><a href="#quick-start">Quick Start</a></li>
+                        <li><a href="#overview">What is Advance?</a></li>
+                        <li><a href="#navigation">Navigation</a></li>
+                        <li><a href="#patch-sheets">Patch Sheets</a></li>
+                        <li><a href="#stage-plots">Stage Plots</a></li>
+                        <li><a href="#run-of-show">Run of Show</a></li>
+                        <li><a href="#saving">Saving</a></li>
+                        <li><a href="#export">Exporting</a></li>
+                        <li><a href="#undo-redo">Undo and Redo</a></li>
+                        <li><a href="#shortcuts">Keyboard Shortcuts</a></li>
+                        <li><a href="#privacy">Privacy</a></li>
+                        <li><a href="#tips">Tips</a></li>
+                    </ul>
+                </aside>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; <span class="footer-year"></span> Blake Boyd</p>
+        </footer>
+    </div>
+</body>
+</html>

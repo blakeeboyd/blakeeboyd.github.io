@@ -1,0 +1,281 @@
+/* ==========================================================================
+   Stage Plot Designer Styles
+   ========================================================================== */
+
+.adv-stage-editor {
+  display: flex;
+  gap: 16px;
+  min-height: 500px;
+}
+
+.adv-stage-canvas-area {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.adv-stage-canvas {
+  position: relative;
+  background: var(--adv-surface-inset);
+  border: 2px solid var(--adv-border-strong);
+  border-radius: var(--adv-radius-sm);
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+.adv-stage-canvas__label {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--adv-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.adv-stage-element {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: move;
+  user-select: none;
+  border: 2px solid transparent;
+  border-radius: var(--adv-radius-xs);
+  transition: border-color var(--adv-transition-fast);
+}
+
+.adv-stage-element:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.adv-stage-element--selected {
+  border-color: var(--adv-accent) !important;
+}
+
+.adv-stage-element__icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.adv-stage-element__label {
+  font-size: 0.65rem;
+  color: var(--adv-text);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  margin-top: 2px;
+}
+
+.adv-stage-element__resize {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--adv-accent);
+  border-radius: 2px;
+  cursor: nwse-resize;
+}
+
+.adv-stage-element__resize--se {
+  bottom: -4px;
+  right: -4px;
+}
+
+/* Right panel */
+.adv-stage-panel {
+  width: 240px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.adv-stage-panel__section {
+  background: var(--adv-surface);
+  border: 1px solid var(--adv-border);
+  border-radius: var(--adv-radius-sm);
+  padding: 12px;
+}
+
+.adv-stage-panel__title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--adv-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 10px;
+}
+
+/* Element palette */
+.adv-palette {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.adv-palette__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  background: var(--adv-surface-inset);
+  border: 1px solid var(--adv-border);
+  border-radius: var(--adv-radius-xs);
+  cursor: pointer;
+  transition: background var(--adv-transition-fast), border-color var(--adv-transition-fast);
+}
+
+.adv-palette__item:hover {
+  background: var(--adv-surface-raised);
+  border-color: var(--adv-border-strong);
+}
+
+.adv-palette__item-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.adv-palette__item-name {
+  font-size: 0.6rem;
+  color: var(--adv-text-tertiary);
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Properties panel */
+.adv-props {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.adv-props__row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.adv-props__label {
+  font-size: 0.7rem;
+  color: var(--adv-text-secondary);
+  min-width: 50px;
+}
+
+.adv-props__input {
+  flex: 1;
+  padding: 4px 6px;
+  border: 1px solid var(--adv-border);
+  border-radius: var(--adv-radius-xs);
+  background: var(--adv-surface-inset);
+  color: var(--adv-text);
+  font-size: 0.8rem;
+  font-family: var(--adv-font);
+  outline: none;
+}
+
+.adv-props__input:focus {
+  border-color: var(--adv-border-focus);
+}
+
+/* Stage size selector */
+.adv-stage-size {
+  display: flex;
+  gap: 8px;
+}
+
+.adv-stage-size__select {
+  flex: 1;
+  padding: 4px 6px;
+  border: 1px solid var(--adv-border);
+  border-radius: var(--adv-radius-xs);
+  background: var(--adv-surface-inset);
+  color: var(--adv-text);
+  font-size: 0.8rem;
+  font-family: var(--adv-font);
+  outline: none;
+  cursor: pointer;
+}
+
+/* Background upload */
+.adv-bg-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.adv-bg-upload__drop {
+  padding: 16px;
+  border: 1px dashed var(--adv-border-strong);
+  border-radius: var(--adv-radius-xs);
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--adv-text-tertiary);
+  cursor: pointer;
+}
+
+.adv-bg-upload__drop:hover {
+  border-color: var(--adv-accent);
+}
+
+/* Grid overlay when snap is enabled */
+.adv-stage-canvas--grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 10px 10px;
+}
+
+/* Snap toggle */
+.adv-stage-size__snap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--adv-text-secondary);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+
+.adv-stage-size__snap input {
+  accent-color: var(--adv-accent);
+}
+
+/* Responsive: scroll when canvas overflows */
+.adv-stage-canvas-area {
+  overflow-x: auto;
+}
+
+@media print {
+  .adv-stage-panel {
+    display: none !important;
+  }
+
+  .adv-stage-canvas {
+    border-color: #999;
+    background: #fff !important;
+    background-image: none !important;
+  }
+
+  .adv-stage-canvas__label {
+    color: #666;
+  }
+
+  .adv-stage-element__label {
+    color: #000;
+  }
+
+  .adv-stage-element {
+    border-color: transparent !important;
+  }
+}

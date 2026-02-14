@@ -1,0 +1,236 @@
+/* ==========================================================================
+   Advance Layout
+   ========================================================================== */
+
+.adv-app {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 60vh;
+  font-family: var(--adv-font);
+  color: var(--adv-text);
+}
+
+/* Header with tool tabs */
+.adv-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--adv-border);
+  margin-bottom: 20px;
+}
+
+.adv-header__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--adv-text);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.adv-header__nav {
+  display: flex;
+  gap: 4px;
+}
+
+.adv-header__tab {
+  padding: 6px 14px;
+  border-radius: var(--adv-radius-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--adv-text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--adv-transition-fast), color var(--adv-transition-fast);
+}
+
+.adv-header__tab:hover {
+  background: var(--adv-surface-raised);
+  color: var(--adv-text);
+}
+
+.adv-header__tab--active {
+  background: var(--adv-surface-raised);
+  color: var(--adv-text);
+}
+
+.adv-header__guide {
+  margin-left: auto;
+  opacity: 0.6;
+}
+
+.adv-header__guide:hover {
+  opacity: 1;
+}
+
+/* Page layout: sidebar + main */
+.adv-page {
+  display: flex;
+  gap: 20px;
+  min-height: 50vh;
+}
+
+.adv-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.adv-sidebar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.adv-sidebar__title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--adv-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.adv-sidebar__search {
+  padding: 6px 8px;
+  border: 1px solid var(--adv-border);
+  border-radius: var(--adv-radius-xs);
+  background: var(--adv-surface-inset);
+  color: var(--adv-text);
+  font-size: 0.8rem;
+  font-family: var(--adv-font);
+  outline: none;
+  width: 100%;
+  transition: border-color var(--adv-transition-fast);
+}
+
+.adv-sidebar__search:focus {
+  border-color: var(--adv-border-focus);
+}
+
+.adv-main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Toolbar above editor */
+.adv-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--adv-surface);
+  border: 1px solid var(--adv-border);
+  border-radius: var(--adv-radius-sm);
+  margin-bottom: 16px;
+}
+
+.adv-toolbar__name {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--adv-text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--adv-radius-xs);
+  padding: 4px 8px;
+  flex: 1;
+  min-width: 0;
+  font-family: var(--adv-font);
+  outline: none;
+  transition: border-color var(--adv-transition-fast);
+}
+
+.adv-toolbar__name:hover {
+  border-color: var(--adv-border-strong);
+}
+
+.adv-toolbar__name:focus {
+  border-color: var(--adv-border-focus);
+}
+
+.adv-toolbar__actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.adv-toolbar__separator {
+  width: 1px;
+  height: 20px;
+  background: var(--adv-border-strong);
+}
+
+.adv-toolbar__status {
+  font-size: 0.7rem;
+  color: var(--adv-text-tertiary);
+  white-space: nowrap;
+  transition: opacity 0.3s ease;
+}
+
+.adv-toolbar__status--saved {
+  color: var(--adv-success);
+}
+
+/* Home page dashboard */
+.adv-home {
+  text-align: center;
+  padding: 40px 0;
+}
+
+.adv-home__title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--adv-text);
+  margin: 0 0 8px;
+}
+
+.adv-home__subtitle {
+  font-size: 1rem;
+  color: var(--adv-text-secondary);
+  margin: 0 0 40px;
+}
+
+.adv-home__tools {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  max-width: 960px;
+  margin: 0 auto 48px;
+}
+
+.adv-home__recent {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.adv-home__recent-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--adv-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 12px;
+}
+
+@media print {
+  .adv-header,
+  .adv-sidebar,
+  .adv-toolbar {
+    display: none !important;
+  }
+
+  .adv-app {
+    color: #000;
+    background: #fff;
+  }
+
+  .adv-main {
+    width: 100%;
+  }
+}

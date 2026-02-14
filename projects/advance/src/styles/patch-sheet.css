@@ -1,0 +1,15 @@
+/* ==========================================================================
+   Patch Sheet Editor Styles
+   ========================================================================== */
+
+.adv-patch-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.adv-patch-editor__actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
