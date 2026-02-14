@@ -1,0 +1,170 @@
+/* ==========================================================================
+   SoundBench Layout
+   ========================================================================== */
+
+.sb-app {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 60vh;
+  font-family: var(--sb-font);
+  color: var(--sb-text);
+}
+
+/* Header with tool tabs */
+.sb-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--sb-border);
+  margin-bottom: 20px;
+}
+
+.sb-header__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--sb-text);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.sb-header__nav {
+  display: flex;
+  gap: 4px;
+}
+
+.sb-header__tab {
+  padding: 6px 14px;
+  border-radius: var(--sb-radius-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--sb-text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--sb-transition-fast), color var(--sb-transition-fast);
+}
+
+.sb-header__tab:hover {
+  background: var(--sb-surface-raised);
+  color: var(--sb-text);
+}
+
+.sb-header__tab--active {
+  background: var(--sb-surface-raised);
+  color: var(--sb-text);
+}
+
+/* Full-width page (no sidebar) */
+.sb-page--full {
+  display: block;
+}
+
+/* Home page dashboard */
+.sb-home {
+  text-align: center;
+  padding: 40px 0;
+}
+
+.sb-home__title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--sb-text);
+  margin: 0 0 8px;
+}
+
+.sb-home__subtitle {
+  font-size: 1rem;
+  color: var(--sb-text-secondary);
+  margin: 0 0 40px;
+}
+
+.sb-home__tools {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* Tool cards (home page) */
+.sb-tool-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 24px;
+  background: var(--sb-surface);
+  border: 1px solid var(--sb-border);
+  border-radius: var(--sb-radius);
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color var(--sb-transition-normal), box-shadow var(--sb-transition-normal);
+}
+
+.sb-tool-card:hover {
+  border-color: var(--sb-border-strong);
+  box-shadow: var(--sb-shadow-md);
+}
+
+.sb-tool-card__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--sb-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.sb-tool-card__icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.sb-tool-card__name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--sb-text);
+  margin: 0;
+}
+
+.sb-tool-card__desc {
+  font-size: 0.85rem;
+  color: var(--sb-text-secondary);
+  margin: 0;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* Toolbar */
+.sb-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--sb-surface);
+  border: 1px solid var(--sb-border);
+  border-radius: var(--sb-radius-sm);
+  margin-bottom: 16px;
+}
+
+.sb-toolbar__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--sb-text);
+  margin: 0;
+}
+
+@media print {
+  .sb-header {
+    display: none !important;
+  }
+
+  .sb-app {
+    color: #000;
+    background: #fff;
+  }
+}

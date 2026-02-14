@@ -1,0 +1,52 @@
+/* ==========================================================================
+   SoundBench Design Tokens
+   Scoped to .sb-app so they override site variables within the app
+   without leaking to the page chrome. Always dark — no theme switching.
+   ========================================================================== */
+
+.sb-app {
+  /* Surfaces */
+  --sb-bg: #0f1117;
+  --sb-surface: #1a1d27;
+  --sb-surface-header: #22262f;
+  --sb-surface-inset: #0a0c12;
+  --sb-surface-raised: #2a2e3a;
+
+  /* Borders */
+  --sb-border: rgba(255, 255, 255, 0.06);
+  --sb-border-strong: rgba(255, 255, 255, 0.12);
+  --sb-border-focus: rgba(59, 130, 246, 0.4);
+
+  /* Text */
+  --sb-text: #f3f4f6;
+  --sb-text-secondary: #9ca3af;
+  --sb-text-tertiary: #6b7280;
+
+  /* Accent */
+  --sb-accent: #3b82f6;
+  --sb-accent-hover: #2563eb;
+  --sb-success: #22c55e;
+  --sb-warning: #f59e0b;
+  --sb-error: #ef4444;
+
+  /* Tool type colors */
+  --sb-color-norm: #10b981;
+
+  /* Shadows */
+  --sb-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --sb-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --sb-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+  /* Sizing */
+  --sb-radius: 8px;
+  --sb-radius-sm: 6px;
+  --sb-radius-xs: 4px;
+
+  /* Typography */
+  --sb-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --sb-mono: 'SF Mono', 'Fira Code', monospace;
+
+  /* Transitions */
+  --sb-transition-fast: 0.12s ease;
+  --sb-transition-normal: 0.2s ease;
+}

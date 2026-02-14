@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Browser-based offline audio processing tools: loudness normalization, brickwall limiting, and more.">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake E. Boyd">
+    <meta name="robots" content="noindex, nofollow">
+    <title>SoundBench - Blake Boyd</title>
+    <!-- SEO -->
+    <link rel="canonical" href="https://blakeeboyd.github.io/projects/soundbench/">
+    <!-- Open Graph -->
+    <meta property="og:title" content="SoundBench - Blake Boyd">
+    <meta property="og:description" content="Browser-based offline audio processing tools: loudness normalization, brickwall limiting, and more.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://blakeeboyd.github.io/projects/soundbench/">
+    <meta property="og:site_name" content="Blake Boyd">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="SoundBench - Blake Boyd">
+    <meta name="twitter:description" content="Browser-based offline audio processing tools: loudness normalization, brickwall limiting, and more.">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+    <link rel="manifest" href="../../manifest.json">
+    <!-- Site CSS -->
+    <link rel="stylesheet" href="../../css/base.css">
+    <link rel="stylesheet" href="../../css/layout.css">
+    <link rel="stylesheet" href="../../css/components.css">
+    <!-- App CSS (production build) -->
+    <link rel="stylesheet" href="assets/index.css">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Site JS -->
+    <script src="../../js/theme.js"></script>
+    <script src="../../js/nav-component.js" defer></script>
+    <script src="../../js/wip-modal.js" defer></script>
+</head>
+<body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div class="container wide">
+        <site-nav base="../../"></site-nav>
+
+        <main id="main-content">
+            <div id="root"></div>
+        </main>
+
+        <footer>
+            <p>&copy; <span class="footer-year"></span> Blake Boyd</p>
+        </footer>
+    </div>
+    <!-- Production: loads built bundle. Dev: 404s silently (module scripts don't throw). -->
+    <script type="module" src="assets/index.js"></script>
+    <!-- Dev: Vite serves this. Production: 404s silently. -->
+    <script type="module" src="./src/main.tsx"></script>
+</body>
+</html>
