@@ -198,7 +198,7 @@ A web-based presentation player for the PechaKucha format where slides auto-adva
   - Practice: Single-screen fullscreen view for rehearsing
   - Present: Opens separate audience window with presenter view showing timer, notes, and next slide
 - Six image display modes: Fit, Letterbox (black bars), Fill (crop to cover), Smart Crop (per-slide focal point), Ken Burns (slow pan/zoom), Native (original size)
-- Audio countdown cues (beeps at 3, 2, 1 seconds)
+- Audio countdown cues (single beep at 5s, double beep at 3s)
 - Keyboard controls (Space: pause, Arrow keys: navigate, Escape: exit)
 - Export/import presentation settings as JSON (preserves slide order, notes, durations, focal points)
 - Lightbox preview for individual slides

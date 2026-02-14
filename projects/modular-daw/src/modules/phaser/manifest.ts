@@ -1,0 +1,65 @@
+import type { ModuleManifest } from '../../types/modules';
+
+export const phaserManifest: ModuleManifest = {
+  type: 'phaser',
+  label: 'Phaser',
+  category: 'effect',
+  ports: [
+    {
+      id: 'in',
+      label: 'Audio In',
+      direction: 'input',
+      signalType: 'audio',
+      channelFormat: 'stereo',
+    },
+    {
+      id: 'out',
+      label: 'Output',
+      direction: 'output',
+      signalType: 'audio',
+      channelFormat: 'stereo',
+    },
+  ],
+  parameters: [
+    {
+      id: 'rate',
+      label: 'Rate',
+      min: 0.05,
+      max: 5,
+      defaultValue: 0.5,
+      step: 0.05,
+      unit: 'Hz',
+      mapping: 'log',
+    },
+    {
+      id: 'depth',
+      label: 'Depth',
+      min: 0,
+      max: 1,
+      defaultValue: 0.7,
+      step: 0.01,
+      unit: '',
+      mapping: 'linear',
+    },
+    {
+      id: 'feedback',
+      label: 'Feedback',
+      min: 0,
+      max: 0.95,
+      defaultValue: 0.5,
+      step: 0.01,
+      unit: '',
+      mapping: 'linear',
+    },
+    {
+      id: 'stages',
+      label: 'Stages',
+      min: 2,
+      max: 8,
+      defaultValue: 4,
+      step: 2,
+      unit: '',
+      mapping: 'linear',
+    },
+  ],
+};

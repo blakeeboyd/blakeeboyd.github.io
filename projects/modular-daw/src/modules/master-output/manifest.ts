@@ -4,7 +4,8 @@ export const masterOutputManifest: ModuleManifest = {
   type: 'master-output',
   label: 'Master Output',
   category: 'io',
-  singleton: true,
+  singleton: false,
+  soloSafe: true,
   ports: [
     {
       id: 'in',

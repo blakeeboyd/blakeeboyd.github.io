@@ -10,10 +10,12 @@ import {
 import { nanoid } from 'nanoid';
 import type { DawNode, DawEdge } from '../types/graph';
 import { getManifest } from '../modules/registry';
+import { validateConnection } from '../utils/validate-connection';
 
 export interface GraphState {
   nodes: DawNode[];
   edges: DawEdge[];
+  lastConnectionError: string | null;
 
   // React Flow callbacks
   onNodesChange: (changes: NodeChange[]) => void;
@@ -24,6 +26,13 @@ export interface GraphState {
   addModule: (type: string, position?: { x: number; y: number }) => string;
   removeModule: (nodeId: string) => void;
   updateParameter: (nodeId: string, parameterId: string, value: number) => void;
+  setNodeData: (nodeId: string, patch: Partial<DawNode['data']>) => void;
+  toggleMute: (nodeId: string) => void;
+  toggleSolo: (nodeId: string, exclusive?: boolean) => void;
+  clearAllSolo: () => void;
+  toggleBypass: (nodeId: string) => void;
+  loadPatch: (nodes: DawNode[], edges: DawEdge[]) => void;
+  clearConnectionError: () => void;
 }
 
 export const useGraphStore = create<GraphState>()(
@@ -31,6 +40,7 @@ export const useGraphStore = create<GraphState>()(
     (set, get) => ({
       nodes: [],
       edges: [],
+      lastConnectionError: null,
 
       onNodesChange: (changes) => {
         set({
@@ -45,50 +55,25 @@ export const useGraphStore = create<GraphState>()(
       },
 
       onConnect: (connection) => {
-        if (!connection.source || !connection.target) return;
-        if (!connection.sourceHandle || !connection.targetHandle) return;
+        const result = validateConnection(connection, get().nodes, get().edges);
+        if (!result.valid) {
+          set({ lastConnectionError: result.reason ?? 'Invalid connection' });
+          return;
+        }
 
-        // Look up source port to determine signal type
-        const sourceNode = get().nodes.find(n => n.id === connection.source);
-        if (!sourceNode) return;
-
+        // Look up source port for edge metadata
+        const sourceNode = get().nodes.find(n => n.id === connection.source)!;
         const sourceManifest = getManifest(sourceNode.type!);
         const sourcePort = sourceManifest.ports.find(
           p => p.id === connection.sourceHandle
-        );
-        if (!sourcePort) return;
-
-        // Look up target port for validation
-        const targetNode = get().nodes.find(n => n.id === connection.target);
-        if (!targetNode) return;
-
-        const targetManifest = getManifest(targetNode.type!);
-        const targetPort = targetManifest.ports.find(
-          p => p.id === connection.targetHandle
-        );
-        if (!targetPort) return;
-
-        // Validate: signal types must match
-        if (sourcePort.signalType !== targetPort.signalType) return;
-
-        // Validate: source must be output, target must be input
-        if (sourcePort.direction !== 'output' || targetPort.direction !== 'input') return;
-
-        // Validate: no self-connections
-        if (connection.source === connection.target) return;
-
-        // Check if target port already has a connection (inputs accept 1 by default)
-        const existingConn = get().edges.find(
-          e => e.target === connection.target && e.targetHandle === connection.targetHandle
-        );
-        if (existingConn) return;
+        )!;
 
         const newEdge: DawEdge = {
           id: nanoid(),
-          source: connection.source,
-          sourceHandle: connection.sourceHandle,
-          target: connection.target,
-          targetHandle: connection.targetHandle,
+          source: connection.source!,
+          sourceHandle: connection.sourceHandle!,
+          target: connection.target!,
+          targetHandle: connection.targetHandle!,
           type: sourcePort.signalType,
           data: {
             signalType: sourcePort.signalType,
@@ -96,7 +81,7 @@ export const useGraphStore = create<GraphState>()(
           },
         };
 
-        set({ edges: [...get().edges, newEdge] });
+        set({ edges: [...get().edges, newEdge], lastConnectionError: null });
       },
 
       addModule: (type, position) => {
@@ -118,6 +103,7 @@ export const useGraphStore = create<GraphState>()(
           id,
           type,
           position: position ?? { x: 100, y: 100 },
+          dragHandle: '.daw-node__header',
           data: {
             label: manifest.label,
             parameters: defaultParams,
@@ -161,6 +147,73 @@ export const useGraphStore = create<GraphState>()(
               : n
           ),
         });
+      },
+
+      setNodeData: (nodeId, patch) => {
+        set({
+          nodes: get().nodes.map(n =>
+            n.id === nodeId
+              ? { ...n, data: { ...n.data, ...patch } }
+              : n
+          ),
+        });
+      },
+
+      toggleMute: (nodeId) => {
+        set({
+          nodes: get().nodes.map(n =>
+            n.id === nodeId
+              ? { ...n, data: { ...n.data, muted: !n.data.muted } }
+              : n
+          ),
+        });
+      },
+
+      toggleSolo: (nodeId, exclusive = true) => {
+        const nodes = get().nodes;
+        const targetNode = nodes.find(n => n.id === nodeId);
+        if (!targetNode) return;
+
+        const newSoloed = !targetNode.data.soloed;
+
+        set({
+          nodes: nodes.map(n => {
+            if (n.id === nodeId) {
+              return { ...n, data: { ...n.data, soloed: newSoloed } };
+            }
+            // In exclusive mode, un-solo all others when soloing
+            if (exclusive && newSoloed) {
+              return { ...n, data: { ...n.data, soloed: false } };
+            }
+            return n;
+          }),
+        });
+      },
+
+      clearAllSolo: () => {
+        set({
+          nodes: get().nodes.map(n =>
+            n.data.soloed ? { ...n, data: { ...n.data, soloed: false } } : n
+          ),
+        });
+      },
+
+      toggleBypass: (nodeId) => {
+        set({
+          nodes: get().nodes.map(n =>
+            n.id === nodeId
+              ? { ...n, data: { ...n.data, bypassed: !n.data.bypassed } }
+              : n
+          ),
+        });
+      },
+
+      clearConnectionError: () => {
+        set({ lastConnectionError: null });
+      },
+
+      loadPatch: (nodes, edges) => {
+        set({ nodes, edges });
       },
     }),
     {

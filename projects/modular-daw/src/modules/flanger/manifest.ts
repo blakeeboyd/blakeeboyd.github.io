@@ -1,0 +1,65 @@
+import type { ModuleManifest } from '../../types/modules';
+
+export const flangerManifest: ModuleManifest = {
+  type: 'flanger',
+  label: 'Flanger',
+  category: 'effect',
+  ports: [
+    {
+      id: 'in',
+      label: 'Audio In',
+      direction: 'input',
+      signalType: 'audio',
+      channelFormat: 'stereo',
+    },
+    {
+      id: 'out',
+      label: 'Output',
+      direction: 'output',
+      signalType: 'audio',
+      channelFormat: 'stereo',
+    },
+  ],
+  parameters: [
+    {
+      id: 'rate',
+      label: 'Rate',
+      min: 0.05,
+      max: 5,
+      defaultValue: 0.5,
+      step: 0.05,
+      unit: 'Hz',
+      mapping: 'log',
+    },
+    {
+      id: 'depth',
+      label: 'Depth',
+      min: 0,
+      max: 0.005,
+      defaultValue: 0.002,
+      step: 0.0001,
+      unit: 's',
+      mapping: 'linear',
+    },
+    {
+      id: 'feedback',
+      label: 'Feedback',
+      min: 0,
+      max: 0.95,
+      defaultValue: 0.5,
+      step: 0.01,
+      unit: '',
+      mapping: 'linear',
+    },
+    {
+      id: 'mix',
+      label: 'Mix',
+      min: 0,
+      max: 1,
+      defaultValue: 0.5,
+      step: 0.01,
+      unit: '',
+      mapping: 'linear',
+    },
+  ],
+};

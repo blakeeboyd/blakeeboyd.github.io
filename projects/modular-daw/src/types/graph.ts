@@ -30,9 +30,26 @@ export interface DawNode {
   id: string;
   type: string;
   position: { x: number; y: number };
+  dragHandle?: string;
   data: {
     label: string;
     parameters: Record<string, number>;
+    /** Key into audio buffer cache (track modules only) */
+    bufferRef?: string;
+    /** Original file name for display */
+    fileName?: string;
+    /** Buffer duration in seconds */
+    duration?: number;
+    /** Whether this node is muted */
+    muted?: boolean;
+    /** Whether this node is soloed */
+    soloed?: boolean;
+    /** Whether this effect is bypassed (dry signal only) */
+    bypassed?: boolean;
+    /** Port direction for boundary port-nodes in internal graph views */
+    portDirection?: string;
+    /** External port ID for boundary port-nodes */
+    portId?: string;
   };
 }
 

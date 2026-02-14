@@ -1,0 +1,72 @@
+import type { ModuleManifest } from '../../types/modules';
+
+export const filterManifest: ModuleManifest = {
+  type: 'filter',
+  label: 'Filter',
+  category: 'effect',
+  ports: [
+    {
+      id: 'in',
+      label: 'Audio In',
+      direction: 'input',
+      signalType: 'audio',
+      channelFormat: 'stereo',
+    },
+    {
+      id: 'out',
+      label: 'Output',
+      direction: 'output',
+      signalType: 'audio',
+      channelFormat: 'stereo',
+    },
+    {
+      id: 'freq-cv',
+      label: 'Freq CV',
+      direction: 'input',
+      signalType: 'parameter',
+      channelFormat: 'mono',
+    },
+  ],
+  parameters: [
+    {
+      id: 'filterType',
+      label: 'Type',
+      min: 0,
+      max: 6,
+      defaultValue: 0,
+      step: 1,
+      unit: '',
+      mapping: 'linear',
+    },
+    {
+      id: 'frequency',
+      label: 'Frequency',
+      min: 20,
+      max: 20000,
+      defaultValue: 1000,
+      step: 1,
+      unit: 'Hz',
+      mapping: 'log',
+    },
+    {
+      id: 'Q',
+      label: 'Q',
+      min: 0.1,
+      max: 20,
+      defaultValue: 1,
+      step: 0.1,
+      unit: '',
+      mapping: 'log',
+    },
+    {
+      id: 'gain',
+      label: 'Gain',
+      min: -24,
+      max: 24,
+      defaultValue: 0,
+      step: 0.5,
+      unit: 'dB',
+      mapping: 'linear',
+    },
+  ],
+};

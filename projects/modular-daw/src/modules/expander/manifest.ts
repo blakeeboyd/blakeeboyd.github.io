@@ -1,0 +1,72 @@
+import type { ModuleManifest } from '../../types/modules';
+
+export const expanderManifest: ModuleManifest = {
+  type: 'expander',
+  label: 'Expander',
+  category: 'effect',
+  ports: [
+    {
+      id: 'in',
+      label: 'Audio In',
+      direction: 'input',
+      signalType: 'audio',
+      channelFormat: 'stereo',
+    },
+    {
+      id: 'sidechain',
+      label: 'Sidechain',
+      direction: 'input',
+      signalType: 'audio',
+      channelFormat: 'stereo',
+    },
+    {
+      id: 'out',
+      label: 'Output',
+      direction: 'output',
+      signalType: 'audio',
+      channelFormat: 'stereo',
+    },
+  ],
+  parameters: [
+    {
+      id: 'threshold',
+      label: 'Threshold',
+      min: -60,
+      max: 0,
+      defaultValue: -30,
+      step: 0.5,
+      unit: 'dB',
+      mapping: 'linear',
+    },
+    {
+      id: 'ratio',
+      label: 'Ratio',
+      min: 1,
+      max: 10,
+      defaultValue: 2,
+      step: 0.5,
+      unit: ':1',
+      mapping: 'linear',
+    },
+    {
+      id: 'attack',
+      label: 'Attack',
+      min: 0.0001,
+      max: 0.05,
+      defaultValue: 0.001,
+      step: 0.0001,
+      unit: 's',
+      mapping: 'log',
+    },
+    {
+      id: 'release',
+      label: 'Release',
+      min: 0.01,
+      max: 0.5,
+      defaultValue: 0.1,
+      step: 0.01,
+      unit: 's',
+      mapping: 'log',
+    },
+  ],
+};

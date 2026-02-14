@@ -1,0 +1,148 @@
+/* ==========================================================================
+   Keyboard shortcuts overlay — always dark, uses --daw-* tokens
+   ========================================================================== */
+
+.daw-shortcuts-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: daw-shortcuts-fade-in 0.15s ease;
+}
+
+@keyframes daw-shortcuts-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.daw-shortcuts {
+  background: var(--daw-surface);
+  border: 1px solid var(--daw-border-strong);
+  border-radius: var(--daw-radius);
+  box-shadow: var(--daw-shadow-popover);
+  color: var(--daw-text);
+  font-family: var(--daw-font);
+  width: 420px;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: daw-shortcuts-slide-in 0.15s ease;
+}
+
+@keyframes daw-shortcuts-slide-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.daw-shortcuts__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--daw-border);
+  background: var(--daw-surface-header);
+  border-radius: var(--daw-radius) var(--daw-radius) 0 0;
+}
+
+.daw-shortcuts__title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: var(--daw-header-spacing);
+  color: var(--daw-text);
+}
+
+.daw-shortcuts__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: var(--daw-radius-xs);
+  background: transparent;
+  color: var(--daw-text-label);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  transition: all var(--daw-transition-fast);
+}
+
+.daw-shortcuts__close:hover {
+  background: var(--daw-error);
+  color: #fff;
+}
+
+.daw-shortcuts__body {
+  padding: 8px 0;
+}
+
+.daw-shortcuts__group {
+  padding: 4px 0;
+}
+
+.daw-shortcuts__group-title {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--daw-text-tertiary);
+  padding: 8px 16px 4px;
+}
+
+.daw-shortcuts__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 16px;
+  transition: background var(--daw-transition-fast);
+}
+
+.daw-shortcuts__row:hover {
+  background: var(--daw-surface-raised);
+}
+
+.daw-shortcuts__action {
+  font-size: 0.75rem;
+  color: var(--daw-text-label);
+}
+
+.daw-shortcuts__keys {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.daw-shortcuts__key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border: 1px solid var(--daw-border-strong);
+  border-radius: var(--daw-radius-xs);
+  background: var(--daw-surface-header);
+  color: var(--daw-text);
+  font-size: 0.65rem;
+  font-family: var(--daw-font);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.daw-shortcuts__plus {
+  font-size: 0.6rem;
+  color: var(--daw-text-tertiary);
+}
+
+.daw-shortcuts__footer {
+  padding: 8px 16px;
+  border-top: 1px solid var(--daw-border);
+  text-align: center;
+}
+
+.daw-shortcuts__hint {
+  font-size: 0.65rem;
+  color: var(--daw-text-tertiary);
+}

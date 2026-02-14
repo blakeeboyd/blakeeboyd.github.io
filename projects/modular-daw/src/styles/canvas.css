@@ -1,37 +1,39 @@
-/* React Flow canvas overrides to match site theme */
+/* React Flow canvas overrides — always dark */
 
 .react-flow {
-  --xy-background-color: var(--color-card-bg);
+  --xy-background-color: var(--daw-canvas-bg);
 }
 
 /* Background dots */
 .react-flow__background {
-  color: var(--color-border);
+  color: rgba(255, 255, 255, 0.05);
 }
 
 /* MiniMap */
 .react-flow__minimap {
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  background: var(--daw-surface) !important;
+  border: 1px solid var(--daw-border-strong);
+  border-radius: var(--daw-radius-xs);
 }
 
 /* Controls */
 .react-flow__controls {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--daw-border-strong);
+  border-radius: var(--daw-radius-xs);
+  box-shadow: var(--daw-shadow-panel);
 }
 
 .react-flow__controls-button {
-  background: var(--color-card-bg);
-  border-bottom: 1px solid var(--color-border);
-  color: var(--color-text);
-  fill: var(--color-text);
+  background: var(--daw-surface);
+  border-bottom: 1px solid var(--daw-border);
+  color: var(--daw-text-label);
+  fill: var(--daw-text-label);
 }
 
 .react-flow__controls-button:hover {
-  background: var(--color-bg);
+  background: var(--daw-surface-raised);
+  color: var(--daw-text);
+  fill: var(--daw-text);
 }
 
 /* Custom node wrappers: remove React Flow's default styling */
@@ -45,6 +47,11 @@
 
 /* Selection box */
 .react-flow__selection {
-  background: rgba(37, 99, 235, 0.08);
-  border: 1px solid var(--color-accent);
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid var(--daw-accent);
+}
+
+/* Scope-tinted background when inside a composite module */
+.daw-canvas-container--scope .react-flow {
+  --xy-background-color: #1a0f2e;
 }

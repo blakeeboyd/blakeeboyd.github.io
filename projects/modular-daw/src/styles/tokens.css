@@ -1,0 +1,68 @@
+/* ==========================================================================
+   DAW Design Tokens
+   Scoped to .daw-app so they override site variables within the DAW
+   without leaking to the page chrome. Always dark — no theme switching.
+   ========================================================================== */
+
+.daw-app {
+  /* Surfaces */
+  --daw-canvas-bg: #111111;
+  --daw-surface: #1e1e1e;
+  --daw-surface-header: #252526;
+  --daw-surface-inset: #0a0a0a;
+  --daw-surface-raised: #2d2d2d;
+
+  /* Borders */
+  --daw-border: rgba(255, 255, 255, 0.06);
+  --daw-border-strong: rgba(255, 255, 255, 0.10);
+  --daw-border-focus: rgba(59, 130, 246, 0.3);
+
+  /* Text */
+  --daw-text: #f3f4f6;
+  --daw-text-label: #9ca3af;
+  --daw-text-tertiary: #6b7280;
+
+  /* Category top-border colors */
+  --daw-cat-source: #ef4444;
+  --daw-cat-effect: #3b82f6;
+  --daw-cat-utility: #6b7280;
+  --daw-cat-io: #22c55e;
+  --daw-cat-routing: #06b6d4;
+  --daw-cat-atomic: #14b8a6;
+
+  /* Signal type colors */
+  --daw-signal-audio: #ef4444;
+  --daw-signal-parameter: #f59e0b;
+  --daw-signal-sidechain: #f97316;
+
+  /* Interactive accent */
+  --daw-accent: #3b82f6;
+  --daw-accent-hover: #2563eb;
+  --daw-success: #22c55e;
+  --daw-warning: #f59e0b;
+  --daw-error: #ef4444;
+
+  /* Shadows */
+  --daw-shadow-module: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --daw-shadow-selected: 0 0 0 1px rgba(59, 130, 246, 0.3), 0 4px 16px rgba(59, 130, 246, 0.15);
+  --daw-shadow-panel: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --daw-shadow-popover: 0 8px 24px rgba(0, 0, 0, 0.6);
+
+  /* Sizing */
+  --daw-radius: 10px;
+  --daw-radius-sm: 6px;
+  --daw-radius-xs: 4px;
+
+  /* Typography */
+  --daw-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --daw-header-spacing: 0.08em;
+
+  /* Transitions */
+  --daw-transition-fast: 0.12s ease;
+  --daw-transition-normal: 0.2s ease;
+
+  /* Slider */
+  --daw-slider-track: rgba(255, 255, 255, 0.08);
+  --daw-slider-fill: var(--daw-accent);
+  --daw-slider-thumb: #ffffff;
+}

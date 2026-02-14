@@ -1,0 +1,50 @@
+/* ==========================================================================
+   Auto-dismiss toast notification — always dark, uses --daw-* tokens
+   ========================================================================== */
+
+.daw-toast {
+  position: absolute;
+  bottom: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  background: var(--daw-surface-raised);
+  border: 1px solid var(--daw-border-strong);
+  border-radius: var(--daw-radius-sm);
+  box-shadow: var(--daw-shadow-popover);
+  padding: 8px 16px;
+  color: var(--daw-text);
+  font-family: var(--daw-font);
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: daw-toast-in 0.15s ease, daw-toast-out 0.25s ease 2.25s forwards;
+}
+
+.daw-toast--error {
+  border-color: var(--daw-error);
+  color: var(--daw-error);
+}
+
+@keyframes daw-toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes daw-toast-out {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px);
+  }
+}

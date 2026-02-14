@@ -1,36 +1,63 @@
-/* Cable styles */
+/* ==========================================================================
+   Cable styles — always dark, uses --daw-* tokens
+   ========================================================================== */
 
+/* Audio cables: red */
 .daw-edge--audio .react-flow__edge-path {
-  stroke: var(--color-accent);
+  stroke: var(--daw-signal-audio);
   stroke-width: 2;
+  transition: filter var(--daw-transition-fast);
 }
 
 .daw-edge--stereo .react-flow__edge-path {
   stroke-width: 3.5;
 }
 
+/* Parameter cables: amber dashed */
 .daw-edge--parameter .react-flow__edge-path {
-  stroke: var(--color-warning);
+  stroke: var(--daw-signal-parameter);
   stroke-width: 1.5;
   stroke-dasharray: 6 3;
+  transition: filter var(--daw-transition-fast);
 }
 
-/* Hover state */
-.daw-edge:hover .react-flow__edge-path {
-  stroke: var(--color-error);
+/* Hover glow */
+.daw-edge--audio:hover .react-flow__edge-path {
+  filter: drop-shadow(0 0 4px var(--daw-signal-audio));
   cursor: pointer;
 }
 
-/* Selected state */
+.daw-edge--parameter:hover .react-flow__edge-path {
+  filter: drop-shadow(0 0 4px var(--daw-signal-parameter));
+  cursor: pointer;
+}
+
+/* Selected: white with blue glow */
 .daw-edge.selected .react-flow__edge-path {
-  stroke: var(--color-error);
+  stroke: #ffffff;
+  filter: drop-shadow(0 0 6px var(--daw-accent));
 }
 
-/* Dark mode adjustments */
-[data-theme="dark"] .daw-edge--audio .react-flow__edge-path {
-  stroke: #60a5fa;
+/* Dragging connection line: animated dash */
+.react-flow__connection-path {
+  stroke: var(--daw-signal-audio);
+  stroke-width: 2;
+  stroke-dasharray: 8 4;
+  animation: daw-dash-flow 0.5s linear infinite;
 }
 
-[data-theme="dark"] .daw-edge--parameter .react-flow__edge-path {
-  stroke: #fbbf24;
+@keyframes daw-dash-flow {
+  to { stroke-dashoffset: -12; }
+}
+
+/* Channel format conversion badge */
+.daw-edge__format-badge {
+  background: rgba(0, 0, 0, 0.8);
+  color: var(--daw-text);
+  font-size: 8px;
+  font-weight: 600;
+  padding: 1px 4px;
+  border-radius: 3px;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
 }

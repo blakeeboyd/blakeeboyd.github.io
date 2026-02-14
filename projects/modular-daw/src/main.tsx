@@ -4,11 +4,17 @@ import { App } from './App';
 import { registerAllModules } from './modules';
 import './styles/index.css';
 
-// Register module types before rendering
-registerAllModules();
+// Re-export embed API for use on other pages
+export { createDawInstance } from './embed-api';
+export type { PatchDef, PatchNodeDef, PatchEdgeDef, CreateDawInstanceOptions } from './embed-api';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-);
+// Auto-mount for standalone DAW page (only when #root exists)
+const rootEl = document.getElementById('root');
+if (rootEl) {
+  registerAllModules();
+  ReactDOM.createRoot(rootEl).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>,
+  );
+}

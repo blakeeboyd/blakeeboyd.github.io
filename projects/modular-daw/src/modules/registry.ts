@@ -40,3 +40,7 @@ export function getNodeTypes(): Record<string, ComponentType<any>> {
 export function getAllManifests(): ModuleManifest[] {
   return Array.from(registry.values()).map(r => r.manifest);
 }
+
+export function clearRegistry(): void {
+  registry.clear();
+}
