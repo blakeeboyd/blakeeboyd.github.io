@@ -1985,6 +1985,55 @@
             height: 32px;
         }
 
+        /* Overlay controls (pause/play, exit) */
+        .pk-overlay-btn {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.3);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s ease, background-color 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .pk-slide-container:hover .pk-overlay-btn {
+            opacity: 1;
+        }
+
+        .pk-overlay-btn:hover {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .pk-overlay-pause {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 72px;
+            height: 72px;
+        }
+
+        .pk-overlay-pause svg {
+            width: 36px;
+            height: 36px;
+        }
+
+        .pk-overlay-exit {
+            top: 16px;
+            right: 16px;
+            width: 44px;
+            height: 44px;
+        }
+
+        .pk-overlay-exit svg {
+            width: 22px;
+            height: 22px;
+        }
+
         /* Position slide container as relative for absolute positioned children */
         .pk-slide-container {
             position: relative;
@@ -2003,7 +2052,8 @@
 
         /* Dark background context focus (for lightbox and slideshow) */
         .pk-lightbox-close:focus-visible,
-        .pk-nav-arrow:focus-visible {
+        .pk-nav-arrow:focus-visible,
+        .pk-overlay-btn:focus-visible {
             outline-color: #3b82f6;
         }
 
@@ -2129,7 +2179,7 @@
                     <circle cx="8.5" cy="8.5" r="1.5"></circle>
                     <polyline points="21 15 16 10 5 21"></polyline>
                 </svg>
-                <p class="pk-dropzone-text">Drag and drop images here</p>
+                <p class="pk-dropzone-text">Drag and drop images here to build your presentation</p>
                 <p class="pk-dropzone-text">or</p>
                 <input type="file" id="file-input" class="pk-file-input" multiple accept="image/*,.json,application/json">
                 <label for="file-input" class="action-button">Choose Files</label>
@@ -2395,6 +2445,23 @@
                     <button id="nav-next" class="pk-nav-arrow pk-nav-next" aria-label="Next slide">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                    <!-- Pause/play toggle (center) -->
+                    <button id="practice-pause-btn" class="pk-overlay-btn pk-overlay-pause" aria-label="Pause">
+                        <svg class="pk-pause-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <rect x="6" y="4" width="4" height="16" rx="1"></rect>
+                            <rect x="14" y="4" width="4" height="16" rx="1"></rect>
+                        </svg>
+                        <svg class="pk-play-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" hidden>
+                            <path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86A1 1 0 0 0 8 5.14z"></path>
+                        </svg>
+                    </button>
+                    <!-- Exit button (top-right) -->
+                    <button id="practice-exit-btn" class="pk-overlay-btn pk-overlay-exit" aria-label="Exit presentation">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
                         </svg>
                     </button>
                 </div>

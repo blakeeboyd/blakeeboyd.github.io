@@ -529,7 +529,12 @@
                     void currentSlide.offsetWidth;
                     var durationMs = data ? (data.timeRemaining || slideDuration * 1000) : slideDuration * 1000;
                     currentSlide.style.animationDuration = (durationMs / 1000) + 's';
-                    currentSlide.style.transformOrigin = (data && data.kenBurnsOrigin) ? data.kenBurnsOrigin : 'center center';
+                    var kbOrigin = (data && data.kenBurnsOrigin) ? data.kenBurnsOrigin : 'center center';
+                    currentSlide.style.transformOrigin = kbOrigin;
+                    // Anchor object-position to focal point so zoom targets that area
+                    if (data && data.focalPoint) {
+                        currentSlide.style.objectPosition = data.focalPoint.x + '% ' + data.focalPoint.y + '%';
+                    }
                     currentSlide.classList.add('pk-kenburns-active');
                     if (isPaused) {
                         currentSlide.style.animationPlayState = 'paused';

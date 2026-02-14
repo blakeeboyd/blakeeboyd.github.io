@@ -62,6 +62,10 @@
     const elapsedTimeDisplay = document.getElementById('elapsed-time');
     const totalTimeDisplay = document.getElementById('total-time');
     const pauseIndicator = document.getElementById('pause-indicator');
+    const practicePauseBtn = document.getElementById('practice-pause-btn');
+    const practicePauseIcon = practicePauseBtn ? practicePauseBtn.querySelector('.pk-pause-icon') : null;
+    const practicePlayIcon = practicePauseBtn ? practicePauseBtn.querySelector('.pk-play-icon') : null;
+    const practiceExitBtn = document.getElementById('practice-exit-btn');
 
     const finalSlideCount = document.getElementById('final-slide-count');
     const finalDuration = document.getElementById('final-duration');
@@ -80,7 +84,9 @@
     const modePresentRadio = document.getElementById('mode-present');
     const presenterSection = document.getElementById('presenter-section');
     const presenterCurrentImg = document.getElementById('presenter-current-img');
+    const presenterCurrentContainer = presenterCurrentImg ? presenterCurrentImg.closest('.pk-presenter-current') : null;
     const presenterNextImg = document.getElementById('presenter-next-img');
+    const presenterNextContainer = presenterNextImg ? presenterNextImg.closest('.pk-presenter-next') : null;
     const presenterNextPlaceholder = document.getElementById('presenter-next-placeholder');
     const presenterTime = document.getElementById('presenter-time');
     const presenterCounter = document.getElementById('presenter-counter');
@@ -216,12 +222,15 @@
     function handleFiles(fileList) {
         const files = Array.from(fileList);
 
-        // Check for JSON configuration file
-        const jsonFile = files.find(f =>
+        // Check for JSON configuration file(s) — use the most recently modified one
+        const jsonFiles = files.filter(f =>
             f.type === 'application/json' || f.name.endsWith('.json')
         );
 
-        if (jsonFile) {
+        if (jsonFiles.length > 0) {
+            const jsonFile = jsonFiles.reduce((newest, f) =>
+                f.lastModified > newest.lastModified ? f : newest
+            );
             importConfiguration(jsonFile);
             return;
         }
@@ -961,14 +970,18 @@
         displayPreviewImg.src = images[index].dataUrl;
         displayPreviewFrame.setAttribute('data-mode', mode);
 
-        // Smart Crop: show focal point marker and set object-position
-        var isSmartCrop = mode === 'smartcrop';
-        focalPointMarker.style.display = isSmartCrop ? '' : 'none';
-        if (isSmartCrop) {
+        // Smart Crop / Ken Burns: show focal point marker
+        var usesFocalPoint = mode === 'smartcrop' || mode === 'kenburns';
+        focalPointMarker.style.display = usesFocalPoint ? '' : 'none';
+        if (usesFocalPoint) {
             var fp = getFocalPoint(index);
             focalPointMarker.style.left = fp.x + '%';
             focalPointMarker.style.top = fp.y + '%';
-            displayPreviewImg.style.objectPosition = fp.x + '% ' + fp.y + '%';
+            if (mode === 'smartcrop' || mode === 'kenburns') {
+                displayPreviewImg.style.objectPosition = fp.x + '% ' + fp.y + '%';
+            } else {
+                displayPreviewImg.style.objectPosition = '';
+            }
         } else {
             displayPreviewImg.style.objectPosition = '';
         }
@@ -991,7 +1004,8 @@
 
         // Update label
         var label = 'Preview: ' + (modeLabels[mode] || 'Fit');
-        if (isSmartCrop) label += ' — click to set focal point';
+        if (mode === 'smartcrop') label += ' — click to set focal point';
+        else if (mode === 'kenburns') label += ' — click to set zoom target';
         displayPreviewLabel.textContent = label;
     }
 
@@ -1568,6 +1582,7 @@
         pausedElapsedOnSlide = 0;
         presentationStartTime = Date.now();
         pauseIndicator.hidden = true;
+        updatePauseButtonIcon();
 
         // Timer overlay: respect user's checkbox state (preserve their preference)
         timerOverlay.hidden = !timerTogglePractice.checked;
@@ -1818,6 +1833,21 @@
             pausedTimeRemaining = Math.max(currentSlideDuration - elapsedSinceStart, 0);
             pausedElapsedOnSlide = pausedElapsedOnSlide + elapsedSinceStart;
         }
+        updatePauseButtonIcon();
+    }
+
+    // Sync the overlay pause/play button icon with current state
+    function updatePauseButtonIcon() {
+        if (!practicePauseBtn) return;
+        if (isPaused) {
+            practicePauseIcon.hidden = true;
+            practicePlayIcon.hidden = false;
+            practicePauseBtn.setAttribute('aria-label', 'Resume');
+        } else {
+            practicePauseIcon.hidden = false;
+            practicePlayIcon.hidden = true;
+            practicePauseBtn.setAttribute('aria-label', 'Pause');
+        }
     }
 
     // Clear all timers
@@ -1926,10 +1956,69 @@
         } else if (mode === 'kenburns') {
             currentSlide.style.objectFit = 'cover';
             if (zoom !== 100) currentSlide.style.setProperty('--pk-zoom', zoom / 100);
-            applyKenBurns(currentSlide, getSlideDuration(effectiveIndex));
+            // Use focal point for object-position so zoom anchors to that area
+            var fp = getFocalPoint(effectiveIndex);
+            if (fp.x !== 50 || fp.y !== 50) {
+                currentSlide.style.objectPosition = fp.x + '% ' + fp.y + '%';
+            }
+            applyKenBurns(currentSlide, getSlideDuration(effectiveIndex), effectiveIndex);
         } else {
             // fit (default)
             currentSlide.style.objectFit = 'contain';
+        }
+    }
+
+    // Apply display mode to a presenter view image (current or next slide preview)
+    function applyPresenterDisplayMode(img, container, slideIndex, isNextSlide) {
+        if (!img || !container) return;
+        var mode = getSlideDisplayMode(slideIndex);
+        var zoom = getSlideZoom(slideIndex);
+
+        // Reset all mode-specific styles
+        img.style.objectFit = '';
+        img.style.objectPosition = '';
+        img.style.width = '';
+        img.style.height = '';
+        img.style.maxWidth = '';
+        img.style.maxHeight = '';
+        img.style.transform = '';
+        img.classList.remove('pk-kenburns-active');
+        img.style.animationDuration = '';
+        img.style.transformOrigin = '';
+        img.style.animationPlayState = '';
+        img.style.removeProperty('--pk-zoom');
+        container.style.background = '';
+
+        if (mode === 'native') {
+            img.style.objectFit = 'none';
+            img.style.width = 'auto';
+            img.style.height = 'auto';
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '100%';
+        } else if (mode === 'letterbox') {
+            img.style.objectFit = 'contain';
+            container.style.background = '#000';
+        } else if (mode === 'fill') {
+            img.style.objectFit = 'cover';
+            if (zoom !== 100) img.style.transform = 'scale(' + (zoom / 100) + ')';
+        } else if (mode === 'smartcrop') {
+            img.style.objectFit = 'cover';
+            var fp = getFocalPoint(slideIndex);
+            img.style.objectPosition = fp.x + '% ' + fp.y + '%';
+            if (zoom !== 100) img.style.transform = 'scale(' + (zoom / 100) + ')';
+        } else if (mode === 'kenburns') {
+            img.style.objectFit = 'cover';
+            if (zoom !== 100) img.style.setProperty('--pk-zoom', zoom / 100);
+            var fp = getFocalPoint(slideIndex);
+            if (fp.x !== 50 || fp.y !== 50) {
+                img.style.objectPosition = fp.x + '% ' + fp.y + '%';
+            }
+            if (!isNextSlide) {
+                applyKenBurns(img, getSlideDuration(slideIndex), slideIndex);
+            }
+        } else {
+            // fit (default)
+            img.style.objectFit = 'contain';
         }
     }
 
@@ -1950,24 +2039,36 @@
     }
 
     // Apply Ken Burns animation to an image element
-    function applyKenBurns(img, durationSeconds) {
-        // Pick a random origin different from the last one
-        var originIndex;
-        do {
-            originIndex = Math.floor(Math.random() * kenBurnsOrigins.length);
-        } while (originIndex === lastKenBurnsOrigin && kenBurnsOrigins.length > 1);
-        lastKenBurnsOrigin = originIndex;
+    // If slideIndex is provided and the slide has a custom focal point, use it as transform origin
+    function applyKenBurns(img, durationSeconds, slideIndex) {
+        var origin;
+        // Use focal point as origin if set (non-default)
+        if (slideIndex !== undefined && slideIndex !== null) {
+            var fp = getFocalPoint(slideIndex);
+            if (fp.x !== 50 || fp.y !== 50) {
+                origin = fp.x + '% ' + fp.y + '%';
+            }
+        }
+        // Fall back to random origin
+        if (!origin) {
+            var originIndex;
+            do {
+                originIndex = Math.floor(Math.random() * kenBurnsOrigins.length);
+            } while (originIndex === lastKenBurnsOrigin && kenBurnsOrigins.length > 1);
+            lastKenBurnsOrigin = originIndex;
+            origin = kenBurnsOrigins[originIndex];
+        }
 
         img.classList.remove('pk-kenburns-active');
         // Force reflow to restart animation
         void img.offsetWidth;
-        img.style.transformOrigin = kenBurnsOrigins[originIndex];
+        img.style.transformOrigin = origin;
         img.style.animationDuration = durationSeconds + 's';
         img.classList.add('pk-kenburns-active');
         if (isPaused) {
             img.style.animationPlayState = 'paused';
         }
-        return kenBurnsOrigins[originIndex];
+        return origin;
     }
 
     // Get current global display mode value
@@ -2275,12 +2376,14 @@
         // Update presenter view
         presenterCurrentImg.src = images[index].dataUrl;
         presenterCurrentImg.alt = `Slide ${index + 1}`;
+        applyPresenterDisplayMode(presenterCurrentImg, presenterCurrentContainer, index, false);
 
         if (index + 1 < images.length) {
             presenterNextImg.src = images[index + 1].dataUrl;
             presenterNextImg.alt = `Slide ${index + 2}`;
             presenterNextImg.hidden = false;
             presenterNextPlaceholder.hidden = true;
+            applyPresenterDisplayMode(presenterNextImg, presenterNextContainer, index + 1, true);
         } else {
             presenterNextImg.src = '';
             presenterNextImg.hidden = true;
@@ -2307,13 +2410,19 @@
             };
             // Add mode-specific data
             if (mode === 'kenburns') {
-                // Pick a Ken Burns origin and send it so both views match
-                var originIndex;
-                do {
-                    originIndex = Math.floor(Math.random() * kenBurnsOrigins.length);
-                } while (originIndex === lastKenBurnsOrigin && kenBurnsOrigins.length > 1);
-                lastKenBurnsOrigin = originIndex;
-                msg.kenBurnsOrigin = kenBurnsOrigins[originIndex];
+                // Use focal point as origin if set, otherwise random
+                var fp = getFocalPoint(index);
+                if (fp.x !== 50 || fp.y !== 50) {
+                    msg.kenBurnsOrigin = fp.x + '% ' + fp.y + '%';
+                    msg.focalPoint = fp;
+                } else {
+                    var originIndex;
+                    do {
+                        originIndex = Math.floor(Math.random() * kenBurnsOrigins.length);
+                    } while (originIndex === lastKenBurnsOrigin && kenBurnsOrigins.length > 1);
+                    lastKenBurnsOrigin = originIndex;
+                    msg.kenBurnsOrigin = kenBurnsOrigins[originIndex];
+                }
             } else if (mode === 'smartcrop') {
                 msg.focalPoint = getFocalPoint(index);
             }
@@ -2399,6 +2508,11 @@
             isPaused = false;
             presenterPauseBtn.textContent = 'Pause';
 
+            // Resume Ken Burns on presenter preview
+            if (getSlideDisplayMode(currentIndex) === 'kenburns') {
+                presenterCurrentImg.style.animationPlayState = 'running';
+            }
+
             if (presentationWindow && !presentationWindow.closed) {
                 presentationWindow.postMessage({ type: 'resume' }, window.location.origin);
             }
@@ -2409,6 +2523,11 @@
             clearTimers();
             isPaused = true;
             presenterPauseBtn.textContent = 'Resume';
+
+            // Pause Ken Burns on presenter preview
+            if (getSlideDisplayMode(currentIndex) === 'kenburns') {
+                presenterCurrentImg.style.animationPlayState = 'paused';
+            }
 
             // Calculate remaining time based on current slide's duration
             const elapsed = Date.now() - slideStartTime;
@@ -2709,6 +2828,14 @@
     navPrev.addEventListener('click', goToPreviousSlide);
     navNext.addEventListener('click', goToNextSlide);
 
+    // Overlay pause/play and exit buttons (practice mode)
+    practicePauseBtn.addEventListener('click', () => {
+        togglePause();
+    });
+    practiceExitBtn.addEventListener('click', () => {
+        exitSlideshow();
+    });
+
     // Practice mode start button (on ready overlay)
     practiceStartBtn.addEventListener('click', beginPracticePresentation);
 
@@ -2751,10 +2878,11 @@
         }
     });
 
-    // Focal point click handler (only active when preview is in smartcrop mode)
+    // Focal point click handler (active for smartcrop and kenburns modes)
     displayPreviewFrame.addEventListener('click', (e) => {
         if (selectedIndex === null || selectedIndex >= images.length) return;
-        if (displayPreviewFrame.getAttribute('data-mode') !== 'smartcrop') return;
+        var currentMode = displayPreviewFrame.getAttribute('data-mode');
+        if (currentMode !== 'smartcrop' && currentMode !== 'kenburns') return;
         var rect = displayPreviewImg.getBoundingClientRect();
         var x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
         var y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
@@ -2763,12 +2891,17 @@
         images[selectedIndex].focalPoint = { x: x, y: y };
         focalPointMarker.style.left = x + '%';
         focalPointMarker.style.top = y + '%';
-        displayPreviewImg.style.objectPosition = x + '% ' + y + '%';
+        // Only set object-position for smartcrop (kenburns uses transformOrigin instead)
+        if (currentMode === 'smartcrop') {
+            displayPreviewImg.style.objectPosition = x + '% ' + y + '%';
+        }
         // Update thumbnail focal point
         var allThumbs = thumbnails.querySelectorAll('.pk-thumbnail');
         if (allThumbs[selectedIndex]) {
             var thumbImg = allThumbs[selectedIndex].querySelector('img');
-            if (thumbImg) thumbImg.style.objectPosition = x + '% ' + y + '%';
+            if (thumbImg && currentMode === 'smartcrop') {
+                thumbImg.style.objectPosition = x + '% ' + y + '%';
+            }
         }
     });
 
