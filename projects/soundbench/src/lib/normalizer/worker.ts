@@ -5,7 +5,7 @@
  * Import paths use relative paths since workers don't support @ aliases.
  */
 
-import { measureLufsI } from './lufs';
+import { measureAllLufs } from './lufs';
 import { measureRms } from './rms';
 import { measureSamplePeak, measureTruePeak } from './true-peak';
 import { runPipeline } from './pipeline';
@@ -20,10 +20,13 @@ self.onmessage = (event: MessageEvent<WorkerRequest>) => {
 
   try {
     if (msg.type === 'measure') {
+      const lufs = measureAllLufs(msg.channelData, msg.sampleRate);
       const measurements: AudioFileMeasurements = {
         peakDb: measureSamplePeak(msg.channelData),
         truePeakDb: measureTruePeak(msg.channelData),
-        lufsI: measureLufsI(msg.channelData, msg.sampleRate),
+        lufsI: lufs.lufsI,
+        lufsMMax: lufs.lufsMMax,
+        lufsSMax: lufs.lufsSMax,
         rmsDb: measureRms(msg.channelData, msg.sampleRate),
       };
 
@@ -38,6 +41,10 @@ self.onmessage = (event: MessageEvent<WorkerRequest>) => {
         },
       );
 
+      const transfer: Transferable[] = [result.wavBuffer];
+      if (result.wavBufferL) transfer.push(result.wavBufferL);
+      if (result.wavBufferR) transfer.push(result.wavBufferR);
+
       post(
         {
           type: 'result',
@@ -45,8 +52,10 @@ self.onmessage = (event: MessageEvent<WorkerRequest>) => {
           wavBuffer: result.wavBuffer,
           measurements: result.outputMeasurements,
           appliedGainDb: result.appliedGainDb,
+          wavBufferL: result.wavBufferL,
+          wavBufferR: result.wavBufferR,
         },
-        [result.wavBuffer],
+        transfer,
       );
     }
   } catch (err) {

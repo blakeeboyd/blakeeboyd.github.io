@@ -1,7 +1,8 @@
 import { useCallback, useRef } from 'react';
 import { useNormalizerStore } from '@/store/normalizer-store';
 import { decodeAudioFile } from '@/lib/normalizer/decode';
-import type { WorkerResponse } from '@/types/normalizer';
+import { computeLoudestGain, computeAlbumGain, computeBatchLimiterReduction } from '@/lib/normalizer/batch-gain';
+import type { WorkerResponse, ProcessingJobSettings } from '@/types/normalizer';
 import { FileDropZone } from './FileDropZone';
 import { FileList } from './FileList';
 import { NormalizerSettings } from './NormalizerSettings';
@@ -65,7 +66,16 @@ export function NormalizerEditor() {
           // Don't transfer here since we need the data for processing later
         );
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to decode audio file';
+        let message = 'Failed to decode audio file';
+        if (err instanceof Error) {
+          if (err.message.includes('Unable to decode')) {
+            message = 'Unsupported audio format or corrupted file';
+          } else if (err.message.includes('buffer')) {
+            message = 'File is too large to decode in the browser';
+          } else {
+            message = err.message;
+          }
+        }
         updateFile(entry.id, { status: 'error', error: message });
       }
     }
@@ -80,6 +90,22 @@ export function NormalizerEditor() {
     decodedCache.clear();
     clearFiles();
   }, [clearFiles]);
+
+  const handleCancel = useCallback(() => {
+    if (workerRef.current) {
+      workerRef.current.terminate();
+      workerRef.current = null;
+    }
+
+    const currentFiles = useNormalizerStore.getState().files;
+    for (const f of currentFiles) {
+      if (f.status === 'processing' || f.status === 'decoding') {
+        updateFile(f.id, { status: 'error', error: 'Cancelled', progress: 0 });
+      }
+    }
+
+    setIsProcessing(false);
+  }, [updateFile, setIsProcessing]);
 
   function getOrCreateWorker(): Worker {
     if (!workerRef.current) {
@@ -97,6 +123,8 @@ export function NormalizerEditor() {
             status: 'done',
             progress: 100,
             outputBuffer: msg.wavBuffer,
+            outputBufferL: msg.wavBufferL,
+            outputBufferR: msg.wavBufferR,
             outputMeasurements: msg.measurements,
             appliedGainDb: msg.appliedGainDb,
           });
@@ -122,20 +150,27 @@ export function NormalizerEditor() {
         }
       };
 
+      worker.onerror = () => {
+        const currentFiles = useNormalizerStore.getState().files;
+        for (const f of currentFiles) {
+          if (f.status === 'processing' || f.status === 'decoding') {
+            updateFile(f.id, { status: 'error', error: 'Worker crashed unexpectedly' });
+          }
+        }
+        setIsProcessing(false);
+        workerRef.current?.terminate();
+        workerRef.current = null;
+      };
+
       workerRef.current = worker;
     }
     return workerRef.current!;
   }
 
-  const handleProcess = useCallback(() => {
-    const readyFiles = useNormalizerStore.getState().files.filter(
-      f => f.status === 'ready' || f.status === 'done'
-    );
-
-    if (readyFiles.length === 0) return;
-
-    setIsProcessing(true);
-    const settings = getSettings();
+  function sendProcessMessages(
+    readyFiles: typeof files,
+    settings: ProcessingJobSettings,
+  ): void {
     const worker = getOrCreateWorker();
 
     for (const entry of readyFiles) {
@@ -149,6 +184,8 @@ export function NormalizerEditor() {
         status: 'processing',
         progress: 0,
         outputBuffer: undefined,
+        outputBufferL: undefined,
+        outputBufferR: undefined,
         outputMeasurements: undefined,
         appliedGainDb: undefined,
       });
@@ -161,6 +198,84 @@ export function NormalizerEditor() {
         settings,
       });
     }
+  }
+
+  const handleProcess = useCallback(() => {
+    const readyFiles = useNormalizerStore.getState().files.filter(
+      f => f.status === 'ready' || f.status === 'done'
+    );
+
+    if (readyFiles.length === 0) return;
+
+    setIsProcessing(true);
+    const settings = getSettings();
+
+    const isBatchNorm = settings.normalize.enabled
+      && settings.normalize.batchMode !== 'each'
+      && readyFiles.length > 1;
+
+    const isBatchLimit = settings.limiter.enabled
+      && settings.limiter.batchMode === 'together'
+      && readyFiles.length > 1;
+
+    if (!isBatchNorm && !isBatchLimit) {
+      // Single-pass: current behavior, no overrides
+      sendProcessMessages(readyFiles, settings);
+      return;
+    }
+
+    // Two-pass: compute batch gains, then process with overrides
+    const filesWithMeasurements = readyFiles.filter(f => f.inputMeasurements && f.durationSec);
+
+    if (filesWithMeasurements.length === 0) {
+      // No measurements available; fall back to single-pass
+      sendProcessMessages(readyFiles, settings);
+      return;
+    }
+
+    const batchFiles = filesWithMeasurements.map(f => ({
+      measurements: f.inputMeasurements!,
+      durationSec: f.durationSec!,
+    }));
+
+    // Calculate batch normalization gain
+    let overrideGainDb: number | undefined;
+
+    if (isBatchNorm) {
+      const { type, targetValue, condition, batchMode } = settings.normalize;
+      const gain = batchMode === 'loudest'
+        ? computeLoudestGain(batchFiles, type, targetValue, condition)
+        : computeAlbumGain(batchFiles, type, targetValue, condition);
+      if (gain !== null) {
+        overrideGainDb = gain;
+      }
+    }
+
+    // Calculate batch limiter reduction
+    let overrideLimiterReduction: number | undefined;
+
+    if (isBatchLimit) {
+      const appliedGain = overrideGainDb ?? 0;
+      const useTruePeak = settings.limiter.type === 'true-peak';
+      const reduction = computeBatchLimiterReduction(
+        batchFiles,
+        appliedGain,
+        settings.limiter.ceiling,
+        useTruePeak,
+      );
+      if (reduction < 0) {
+        overrideLimiterReduction = reduction;
+      }
+    }
+
+    // Send process messages with overrides
+    const batchSettings: ProcessingJobSettings = {
+      ...settings,
+      overrideGainDb,
+      overrideLimiterReduction,
+    };
+
+    sendProcessMessages(readyFiles, batchSettings);
   }, [getSettings, setIsProcessing, updateFile]);
 
   const readyCount = files.filter(f => f.status === 'ready' || f.status === 'done').length;
@@ -172,7 +287,7 @@ export function NormalizerEditor() {
         <FileDropZone onFiles={handleAddFiles} disabled={isProcessing} />
         <FileList files={files} onRemove={handleRemove} onClear={handleClear} />
 
-        {isProcessing && <ProcessingProgress files={files} />}
+        {isProcessing && <ProcessingProgress files={files} onCancel={handleCancel} />}
 
         {!isProcessing && readyCount > 0 && (
           <button className="norm-process-btn" onClick={handleProcess}>

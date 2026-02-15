@@ -3,10 +3,15 @@
  *
  * K-weighting: two cascaded biquad filters (high shelf + high pass)
  * Gating: 400ms blocks, 75% overlap, absolute gate at -70 LUFS, relative gate at -10 LU
+ *
+ * Exports:
+ *   measureLufsI    — integrated loudness (gated)
+ *   measureLufsMMax — max momentary loudness (ungated, 400ms blocks)
+ *   measureLufsSMax — max short-term loudness (ungated, 3000ms blocks)
+ *   measureAllLufs  — all three, K-weighting computed once
  */
 
 // Biquad filter coefficients for K-weighting
-// Computed per ITU-R BS.1770-4 for specific sample rates
 interface BiquadCoeffs {
   b0: number; b1: number; b2: number;
   a1: number; a2: number;
@@ -41,7 +46,6 @@ function getKWeightCoeffs(sampleRate: number): KWeightCoeffs {
   }
 
   // For other sample rates, compute via bilinear transform
-  // using the analog prototype frequencies from the spec
   const shelf = computeHighShelf(sampleRate, 1681.974450955533, 3.999843904948301, 0.7071752369554196);
   const highpass = computeHighPass(sampleRate, 38.13547087602444, 0.5003270373238773);
   return { shelf, highpass };
@@ -111,29 +115,29 @@ function channelToFloat64(channel: Float32Array): Float64Array {
   return out;
 }
 
-/**
- * Measure LUFS-I (integrated loudness) per ITU-R BS.1770-4
- */
-export function measureLufsI(channelData: Float32Array[], sampleRate: number): number {
-  const blockDuration = 0.4; // 400ms
-  const overlap = 0.75;
-  const blockSize = Math.round(blockDuration * sampleRate);
-  const hopSize = Math.round(blockSize * (1 - overlap));
-  const numChannels = channelData.length;
+// --- Shared helpers ---
 
-  // Channel weights: 1.0 for L, R, C; 1.41 for Ls, Rs (surround)
-  // For stereo (2ch), both are 1.0
-  const channelWeights = numChannels <= 3
+function kWeightChannels(channelData: Float32Array[], sampleRate: number): Float64Array[] {
+  return channelData.map(ch => applyKWeighting(channelToFloat64(ch), sampleRate));
+}
+
+function getChannelWeights(numChannels: number): number[] {
+  return numChannels <= 3
     ? new Array(numChannels).fill(1.0)
     : [1.0, 1.0, 1.0, ...new Array(numChannels - 3).fill(1.41)];
+}
 
-  // Apply K-weighting to each channel
-  const weighted: Float64Array[] = channelData.map(ch =>
-    applyKWeighting(channelToFloat64(ch), sampleRate)
-  );
-
-  // Calculate loudness per block
-  const totalSamples = channelData[0].length;
+/**
+ * Compute per-block loudness values (ungated) for a given block size and hop size.
+ */
+function computeBlockLoudnesses(
+  weighted: Float64Array[],
+  channelWeights: number[],
+  blockSize: number,
+  hopSize: number,
+): number[] {
+  const numChannels = weighted.length;
+  const totalSamples = weighted[0].length;
   const blockLoudnesses: number[] = [];
 
   for (let start = 0; start + blockSize <= totalSamples; start += hopSize) {
@@ -153,6 +157,14 @@ export function measureLufsI(channelData: Float32Array[], sampleRate: number): n
     blockLoudnesses.push(loudness);
   }
 
+  return blockLoudnesses;
+}
+
+/**
+ * Apply two-stage gating (absolute at -70 LUFS, relative at -10 LU)
+ * to block loudnesses and return integrated loudness.
+ */
+function integrateWithGating(blockLoudnesses: number[]): number {
   if (blockLoudnesses.length === 0) return -Infinity;
 
   // Absolute gate: discard blocks below -70 LUFS
@@ -176,4 +188,79 @@ export function measureLufsI(channelData: Float32Array[], sampleRate: number): n
   ) / relativeGated.length;
 
   return -0.691 + 10 * Math.log10(finalPower);
+}
+
+// --- Public API ---
+
+/**
+ * Measure LUFS-I (integrated loudness) per ITU-R BS.1770-4
+ */
+export function measureLufsI(channelData: Float32Array[], sampleRate: number): number {
+  const blockSize = Math.round(0.4 * sampleRate);
+  const hopSize = Math.round(blockSize * 0.25);
+
+  const weighted = kWeightChannels(channelData, sampleRate);
+  const channelWeights = getChannelWeights(channelData.length);
+  const blockLoudnesses = computeBlockLoudnesses(weighted, channelWeights, blockSize, hopSize);
+
+  return integrateWithGating(blockLoudnesses);
+}
+
+/**
+ * Measure LUFS-M max (maximum momentary loudness).
+ * Ungated max of 400ms blocks.
+ */
+export function measureLufsMMax(channelData: Float32Array[], sampleRate: number): number {
+  const blockSize = Math.round(0.4 * sampleRate);
+  const hopSize = Math.round(blockSize * 0.25);
+
+  const weighted = kWeightChannels(channelData, sampleRate);
+  const channelWeights = getChannelWeights(channelData.length);
+  const blockLoudnesses = computeBlockLoudnesses(weighted, channelWeights, blockSize, hopSize);
+
+  if (blockLoudnesses.length === 0) return -Infinity;
+  return Math.max(...blockLoudnesses);
+}
+
+/**
+ * Measure LUFS-S max (maximum short-term loudness).
+ * Ungated max of 3000ms blocks with 100ms hop.
+ */
+export function measureLufsSMax(channelData: Float32Array[], sampleRate: number): number {
+  const blockSize = Math.round(3.0 * sampleRate);
+  const hopSize = Math.round(0.1 * sampleRate);
+
+  const weighted = kWeightChannels(channelData, sampleRate);
+  const channelWeights = getChannelWeights(channelData.length);
+  const blockLoudnesses = computeBlockLoudnesses(weighted, channelWeights, blockSize, hopSize);
+
+  if (blockLoudnesses.length === 0) return -Infinity;
+  return Math.max(...blockLoudnesses);
+}
+
+/**
+ * Compute all three LUFS values with a single K-weighting pass.
+ */
+export function measureAllLufs(
+  channelData: Float32Array[],
+  sampleRate: number,
+): { lufsI: number; lufsMMax: number; lufsSMax: number } {
+  const weighted = kWeightChannels(channelData, sampleRate);
+  const channelWeights = getChannelWeights(channelData.length);
+
+  // LUFS-I and LUFS-M both use 400ms blocks, 100ms hop (75% overlap)
+  const mBlockSize = Math.round(0.4 * sampleRate);
+  const mHopSize = Math.round(mBlockSize * 0.25);
+  const mBlocks = computeBlockLoudnesses(weighted, channelWeights, mBlockSize, mHopSize);
+
+  const lufsI = integrateWithGating(mBlocks);
+  const lufsMMax = mBlocks.length === 0 ? -Infinity : Math.max(...mBlocks);
+
+  // LUFS-S uses 3000ms blocks, 100ms hop
+  const sBlockSize = Math.round(3.0 * sampleRate);
+  const sHopSize = Math.round(0.1 * sampleRate);
+  const sBlocks = computeBlockLoudnesses(weighted, channelWeights, sBlockSize, sHopSize);
+  const lufsSMax = sBlocks.length === 0 ? -Infinity : Math.max(...sBlocks);
+
+  return { lufsI, lufsMMax, lufsSMax };
 }

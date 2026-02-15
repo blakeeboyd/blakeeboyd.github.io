@@ -1,4 +1,5 @@
 import { NormalizerEditor } from '@/components/normalizer/NormalizerEditor';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 
 export function NormalizerPage() {
   return (
@@ -6,7 +7,9 @@ export function NormalizerPage() {
       <div className="sb-toolbar">
         <h2 className="sb-toolbar__title">Normalizer</h2>
       </div>
-      <NormalizerEditor />
+      <ErrorBoundary>
+        <NormalizerEditor />
+      </ErrorBoundary>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import type { OutputSettings, BitDepth } from '@/types/normalizer';
+import type { OutputSettings, BitDepth, MonoMode } from '@/types/normalizer';
 
 interface OutputSectionProps {
   settings: OutputSettings;
@@ -11,6 +11,12 @@ const BIT_DEPTHS: { value: BitDepth; label: string }[] = [
   { value: 32, label: '32-bit float' },
 ];
 
+const MONO_MODES: { value: MonoMode; label: string }[] = [
+  { value: 'off', label: 'Keep original' },
+  { value: 'downmix', label: 'Downmix to mono' },
+  { value: 'split', label: 'Split L/R to separate files' },
+];
+
 export function OutputSection({ settings, onChange }: OutputSectionProps) {
   return (
     <fieldset className="norm-section">
@@ -18,7 +24,7 @@ export function OutputSection({ settings, onChange }: OutputSectionProps) {
 
       <div className="norm-section__body">
         <div className="norm-field">
-          <label className="norm-field__label">Bit Depth</label>
+          <label className="norm-field__label" data-tooltip="Higher bit depth = larger file, more dynamic range">Bit Depth</label>
           <select
             className="norm-field__select"
             value={settings.bitDepth}
@@ -39,6 +45,19 @@ export function OutputSection({ settings, onChange }: OutputSectionProps) {
             placeholder="_normalized"
             onChange={(e) => onChange({ filenameSuffix: e.target.value })}
           />
+        </div>
+
+        <div className="norm-field">
+          <label className="norm-field__label" data-tooltip="Downmix combines channels; Split exports L/R separately">Channel Output</label>
+          <select
+            className="norm-field__select"
+            value={settings.monoMode}
+            onChange={(e) => onChange({ monoMode: e.target.value as MonoMode })}
+          >
+            {MONO_MODES.map(m => (
+              <option key={m.value} value={m.value}>{m.label}</option>
+            ))}
+          </select>
         </div>
       </div>
     </fieldset>

@@ -1,12 +1,16 @@
-import type { NormalizeSettings, NormalizationType, NormalizeCondition } from '@/types/normalizer';
+import type { NormalizeSettings, NormalizationType, NormalizeCondition, BatchNormMode } from '@/types/normalizer';
+import { NumericInput } from './NumericInput';
 
 interface NormalizeSectionProps {
   settings: NormalizeSettings;
   onChange: (patch: Partial<NormalizeSettings>) => void;
+  fileCount: number;
 }
 
 const NORM_TYPES: { value: NormalizationType; label: string }[] = [
   { value: 'lufs-i', label: 'LUFS-I (Integrated)' },
+  { value: 'lufs-m-max', label: 'LUFS-M Max (Momentary)' },
+  { value: 'lufs-s-max', label: 'LUFS-S Max (Short-term)' },
   { value: 'peak', label: 'Peak' },
   { value: 'true-peak', label: 'True Peak' },
   { value: 'rms-i', label: 'RMS-I' },
@@ -18,13 +22,21 @@ const CONDITIONS: { value: NormalizeCondition; label: string }[] = [
   { value: 'too-quiet', label: 'Only if too quiet' },
 ];
 
+const BATCH_NORM_MODES: { value: BatchNormMode; label: string }[] = [
+  { value: 'each', label: 'Each separately' },
+  { value: 'loudest', label: 'To loudest (album gain)' },
+  { value: 'album', label: 'Combined program' },
+];
+
 function getUnit(type: NormalizationType): string {
-  return type === 'lufs-i' ? 'LUFS' : 'dB';
+  return type === 'lufs-i' || type === 'lufs-m-max' || type === 'lufs-s-max' ? 'LUFS' : 'dB';
 }
 
 function getDefaultTarget(type: NormalizationType): number {
   switch (type) {
     case 'lufs-i': return -14;
+    case 'lufs-m-max': return -11;
+    case 'lufs-s-max': return -14;
     case 'rms-i': return -18;
     case 'peak': return -1;
     case 'true-peak': return -1;
@@ -32,7 +44,7 @@ function getDefaultTarget(type: NormalizationType): number {
   }
 }
 
-export function NormalizeSection({ settings, onChange }: NormalizeSectionProps) {
+export function NormalizeSection({ settings, onChange, fileCount }: NormalizeSectionProps) {
   return (
     <fieldset className="norm-section">
       <legend className="norm-section__legend">
@@ -49,7 +61,7 @@ export function NormalizeSection({ settings, onChange }: NormalizeSectionProps) 
       {settings.enabled && (
         <div className="norm-section__body">
           <div className="norm-field">
-            <label className="norm-field__label">Type</label>
+            <label className="norm-field__label" data-tooltip="Measurement method for loudness analysis">Type</label>
             <select
               className="norm-field__select"
               value={settings.type}
@@ -65,21 +77,21 @@ export function NormalizeSection({ settings, onChange }: NormalizeSectionProps) 
           </div>
 
           <div className="norm-field">
-            <label className="norm-field__label">Target</label>
+            <label className="norm-field__label" data-tooltip="Target loudness or peak level">Target</label>
             <div className="norm-field__input-group">
-              <input
-                type="number"
+              <NumericInput
                 className="norm-field__input"
                 value={settings.targetValue}
+                fallback={getDefaultTarget(settings.type)}
                 step={0.1}
-                onChange={(e) => onChange({ targetValue: parseFloat(e.target.value) || 0 })}
+                onChange={(v) => onChange({ targetValue: v })}
               />
               <span className="norm-field__unit">{getUnit(settings.type)}</span>
             </div>
           </div>
 
           <div className="norm-field">
-            <label className="norm-field__label">Condition</label>
+            <label className="norm-field__label" data-tooltip="When to apply normalization">Condition</label>
             <select
               className="norm-field__select"
               value={settings.condition}
@@ -90,6 +102,21 @@ export function NormalizeSection({ settings, onChange }: NormalizeSectionProps) 
               ))}
             </select>
           </div>
+
+          {fileCount > 1 && (
+            <div className="norm-field">
+              <label className="norm-field__label" data-tooltip="How to calculate gain across multiple files">Batch Mode</label>
+              <select
+                className="norm-field__select"
+                value={settings.batchMode}
+                onChange={(e) => onChange({ batchMode: e.target.value as BatchNormMode })}
+              >
+                {BATCH_NORM_MODES.map(m => (
+                  <option key={m.value} value={m.value}>{m.label}</option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       )}
     </fieldset>

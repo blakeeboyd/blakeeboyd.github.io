@@ -48,6 +48,44 @@ const PHASE_COEFFS: readonly number[][] = [
 const FILTER_ORDER = 12; // taps per phase
 
 /**
+ * Compute a per-sample true peak envelope across all channels.
+ * For each sample position, returns the max absolute value across all 4
+ * polyphase phases and all channels. Used by the limiter for true-peak mode.
+ */
+export function computeTruePeakEnvelope(channelData: Float32Array[]): Float32Array {
+  const numSamples = channelData[0].length;
+  const envelope = new Float32Array(numSamples);
+
+  for (let ch = 0; ch < channelData.length; ch++) {
+    const data = channelData[ch];
+    const len = data.length;
+
+    for (let i = 0; i < len; i++) {
+      let maxAtSample = 0;
+
+      for (let phase = 0; phase < 4; phase++) {
+        const coeffs = PHASE_COEFFS[phase];
+        let sum = 0;
+
+        for (let k = 0; k < FILTER_ORDER; k++) {
+          const idx = i - k;
+          if (idx >= 0 && idx < len) {
+            sum += data[idx] * coeffs[k];
+          }
+        }
+
+        const abs = Math.abs(sum);
+        if (abs > maxAtSample) maxAtSample = abs;
+      }
+
+      if (maxAtSample > envelope[i]) envelope[i] = maxAtSample;
+    }
+  }
+
+  return envelope;
+}
+
+/**
  * Measure true peak across all channels using 4x oversampling
  * Returns true peak level in dBTP
  */

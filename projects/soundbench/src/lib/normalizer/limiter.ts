@@ -5,6 +5,8 @@
  * applying smooth gain reduction to keep output below the ceiling.
  */
 
+import { computeTruePeakEnvelope } from './true-peak';
+
 /**
  * Apply brickwall limiting to multichannel audio in place.
  * Modifies the channelData arrays directly.
@@ -12,11 +14,13 @@
  * @param channelData - Array of Float32Array per channel (modified in place)
  * @param sampleRate - Sample rate in Hz
  * @param ceilingDb - Maximum output level in dBFS (e.g., -1.0)
+ * @param useTruePeak - When true, uses 4x oversampled peak detection
  */
 export function applyBrickwallLimiter(
   channelData: Float32Array[],
   sampleRate: number,
   ceilingDb: number,
+  useTruePeak?: boolean,
 ): void {
   const ceiling = Math.pow(10, ceilingDb / 20);
   const numChannels = channelData.length;
@@ -28,15 +32,22 @@ export function applyBrickwallLimiter(
   const releaseCoeff = 1.0 - Math.exp(-1.0 / (0.1 * sampleRate));
 
   // Compute peak envelope across all channels
-  // Find the maximum absolute sample at each time position
-  const peakEnv = new Float32Array(numSamples);
-  for (let i = 0; i < numSamples; i++) {
-    let maxAbs = 0;
-    for (let ch = 0; ch < numChannels; ch++) {
-      const abs = Math.abs(channelData[ch][i]);
-      if (abs > maxAbs) maxAbs = abs;
+  let peakEnv: Float32Array;
+
+  if (useTruePeak) {
+    // 4x oversampled true peak detection
+    peakEnv = computeTruePeakEnvelope(channelData);
+  } else {
+    // Simple sample peak detection
+    peakEnv = new Float32Array(numSamples);
+    for (let i = 0; i < numSamples; i++) {
+      let maxAbs = 0;
+      for (let ch = 0; ch < numChannels; ch++) {
+        const abs = Math.abs(channelData[ch][i]);
+        if (abs > maxAbs) maxAbs = abs;
+      }
+      peakEnv[i] = maxAbs;
     }
-    peakEnv[i] = maxAbs;
   }
 
   // Compute gain reduction curve with lookahead

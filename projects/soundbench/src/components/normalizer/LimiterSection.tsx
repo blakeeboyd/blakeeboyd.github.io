@@ -1,8 +1,10 @@
-import type { LimiterSettings, LimitType } from '@/types/normalizer';
+import type { LimiterSettings, LimitType, BatchLimitMode } from '@/types/normalizer';
+import { NumericInput } from './NumericInput';
 
 interface LimiterSectionProps {
   settings: LimiterSettings;
   onChange: (patch: Partial<LimiterSettings>) => void;
+  fileCount: number;
 }
 
 const LIMIT_TYPES: { value: LimitType; label: string }[] = [
@@ -10,7 +12,12 @@ const LIMIT_TYPES: { value: LimitType; label: string }[] = [
   { value: 'true-peak', label: 'True Peak' },
 ];
 
-export function LimiterSection({ settings, onChange }: LimiterSectionProps) {
+const BATCH_LIMIT_MODES: { value: BatchLimitMode; label: string }[] = [
+  { value: 'each', label: 'Each separately' },
+  { value: 'together', label: 'Linked (preserve relative levels)' },
+];
+
+export function LimiterSection({ settings, onChange, fileCount }: LimiterSectionProps) {
   return (
     <fieldset className="norm-section">
       <legend className="norm-section__legend">
@@ -27,7 +34,7 @@ export function LimiterSection({ settings, onChange }: LimiterSectionProps) {
       {settings.enabled && (
         <div className="norm-section__body">
           <div className="norm-field">
-            <label className="norm-field__label">Type</label>
+            <label className="norm-field__label" data-tooltip="True peak detects intersample peaks via oversampling">Type</label>
             <select
               className="norm-field__select"
               value={settings.type}
@@ -40,19 +47,34 @@ export function LimiterSection({ settings, onChange }: LimiterSectionProps) {
           </div>
 
           <div className="norm-field">
-            <label className="norm-field__label">Ceiling</label>
+            <label className="norm-field__label" data-tooltip="Maximum allowed peak level">Ceiling</label>
             <div className="norm-field__input-group">
-              <input
-                type="number"
+              <NumericInput
                 className="norm-field__input"
                 value={settings.ceiling}
+                fallback={-1}
                 step={0.1}
                 max={0}
-                onChange={(e) => onChange({ ceiling: parseFloat(e.target.value) || 0 })}
+                onChange={(v) => onChange({ ceiling: v })}
               />
               <span className="norm-field__unit">dB</span>
             </div>
           </div>
+
+          {fileCount > 1 && (
+            <div className="norm-field">
+              <label className="norm-field__label" data-tooltip="Linked mode preserves relative loudness between files">Batch Mode</label>
+              <select
+                className="norm-field__select"
+                value={settings.batchMode}
+                onChange={(e) => onChange({ batchMode: e.target.value as BatchLimitMode })}
+              >
+                {BATCH_LIMIT_MODES.map(m => (
+                  <option key={m.value} value={m.value}>{m.label}</option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       )}
     </fieldset>
