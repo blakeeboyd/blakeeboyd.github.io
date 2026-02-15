@@ -1,0 +1,209 @@
+/* ==========================================================================
+   Show Me — Educational overlay panel for normalizer
+   ========================================================================== */
+
+/* Toggle button in results table */
+.norm-showme__toggle {
+  padding: 4px 12px;
+  border: 1px solid var(--sb-color-edu);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--sb-color-edu);
+  font-size: 0.7rem;
+  font-family: var(--sb-font);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background var(--sb-transition-fast), color var(--sb-transition-fast);
+  white-space: nowrap;
+}
+
+.norm-showme__toggle:hover {
+  background: var(--sb-color-edu-dim);
+}
+
+.norm-showme__toggle--active {
+  background: var(--sb-color-edu);
+  color: #0f1117;
+}
+
+/* Panel container */
+.norm-showme {
+  margin-top: 16px;
+  border: 1px solid var(--sb-border-strong);
+  border-left: 3px solid var(--sb-color-edu);
+  border-radius: var(--sb-radius);
+  background: var(--sb-surface);
+  overflow: hidden;
+  animation: showme-slide-in 0.2s ease-out;
+}
+
+@keyframes showme-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.norm-showme__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--sb-border);
+  background: var(--sb-color-edu-dim);
+}
+
+.norm-showme__title {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--sb-color-edu);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.norm-showme__filename {
+  color: var(--sb-text-secondary);
+  font-weight: 400;
+}
+
+.norm-showme__close {
+  padding: 4px 8px;
+  border: none;
+  border-radius: var(--sb-radius-xs);
+  background: transparent;
+  color: var(--sb-text-tertiary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: color var(--sb-transition-fast), background var(--sb-transition-fast);
+}
+
+.norm-showme__close:hover {
+  color: var(--sb-text);
+  background: var(--sb-surface-raised);
+}
+
+/* Content body */
+.norm-showme__body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Sections */
+.norm-showme__section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.norm-showme__section-title {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sb-color-edu);
+}
+
+/* Waveform canvas container */
+.norm-showme__waveform {
+  width: 100%;
+  height: 160px;
+  border-radius: var(--sb-radius-sm);
+  background: var(--sb-surface-inset);
+  border: 1px solid var(--sb-border);
+  overflow: hidden;
+}
+
+.norm-showme__waveform canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Gain readout */
+.norm-showme__gain {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  border-radius: var(--sb-radius-sm);
+  background: var(--sb-surface-inset);
+  border: 1px solid var(--sb-border);
+  font-family: var(--sb-mono);
+  font-size: 1.1rem;
+  color: var(--sb-text-secondary);
+}
+
+.norm-showme__gain-value {
+  color: var(--sb-color-data);
+  font-weight: 600;
+}
+
+.norm-showme__gain-muted {
+  color: var(--sb-text-tertiary);
+  font-style: italic;
+  font-family: var(--sb-font);
+  font-size: 0.85rem;
+}
+
+/* LUFS meter container */
+.norm-showme__meter {
+  width: 100%;
+  height: 56px;
+  border-radius: var(--sb-radius-sm);
+  background: var(--sb-surface-inset);
+  border: 1px solid var(--sb-border);
+  overflow: hidden;
+}
+
+.norm-showme__meter canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Educational text */
+.norm-showme__text {
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: var(--sb-text-secondary);
+  font-weight: 300;
+}
+
+.norm-showme__text strong {
+  color: var(--sb-text);
+  font-weight: 500;
+}
+
+/* Callout note */
+.norm-showme__note {
+  padding: 10px 14px;
+  border-radius: var(--sb-radius-sm);
+  background: rgba(245, 158, 11, 0.06);
+  border: 1px solid rgba(245, 158, 11, 0.15);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--sb-text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .norm-showme__body {
+    padding: 12px;
+  }
+
+  .norm-showme__gain {
+    font-size: 0.9rem;
+    flex-wrap: wrap;
+  }
+}

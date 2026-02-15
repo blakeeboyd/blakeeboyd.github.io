@@ -32,6 +32,15 @@
   /* Tool type colors */
   --sb-color-norm: #10b981;
 
+  /* Educational / Show Me accent */
+  --sb-color-edu: #a78bfa;
+  --sb-color-edu-dim: rgba(167, 139, 250, 0.15);
+
+  /* Data visualization */
+  --sb-color-data: #22d3ee;
+  --sb-color-data-dim: rgba(34, 211, 238, 0.25);
+  --sb-color-data-secondary: #f59e0b;
+
   /* Shadows */
   --sb-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
   --sb-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);

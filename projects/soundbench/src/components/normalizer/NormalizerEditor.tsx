@@ -1,13 +1,16 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useNormalizerStore } from '@/store/normalizer-store';
 import { decodeAudioFile } from '@/lib/normalizer/decode';
+import { computeEnvelope } from '@/lib/normalizer/waveform-envelope';
 import { computeLoudestGain, computeAlbumGain, computeBatchLimiterReduction } from '@/lib/normalizer/batch-gain';
 import type { WorkerResponse, ProcessingJobSettings } from '@/types/normalizer';
+import type { WaveformEnvelope } from '@/types/waveform';
 import { FileDropZone } from './FileDropZone';
 import { FileList } from './FileList';
 import { NormalizerSettings } from './NormalizerSettings';
 import { ProcessingProgress } from './ProcessingProgress';
 import { ResultsPanel } from './ResultsPanel';
+import { ShowMePanel } from './show-me/ShowMePanel';
 
 // Inline worker import for single-bundle build
 import NormalizerWorker from '@/lib/normalizer/worker.ts?worker&inline';
@@ -15,6 +18,7 @@ import NormalizerWorker from '@/lib/normalizer/worker.ts?worker&inline';
 // Store decoded channel data keyed by file ID (kept outside React state
 // because Float32Arrays are large and should not be in Zustand)
 const decodedCache = new Map<string, { channelData: Float32Array[]; sampleRate: number }>();
+const envelopeCache = new Map<string, WaveformEnvelope>();
 
 export function NormalizerEditor() {
   const files = useNormalizerStore(s => s.files);
@@ -26,8 +30,12 @@ export function NormalizerEditor() {
   const updateFile = useNormalizerStore(s => s.updateFile);
   const setIsProcessing = useNormalizerStore(s => s.setIsProcessing);
   const getSettings = useNormalizerStore(s => s.getSettings);
+  const normalize = useNormalizerStore(s => s.normalize);
+  const trimFade = useNormalizerStore(s => s.trimFade);
+  const limiter = useNormalizerStore(s => s.limiter);
 
   const workerRef = useRef<Worker | null>(null);
+  const [showMeFileId, setShowMeFileId] = useState<string | null>(null);
 
   const handleAddFiles = useCallback(async (newFiles: File[]) => {
     addFiles(newFiles);
@@ -46,6 +54,7 @@ export function NormalizerEditor() {
           channelData: decoded.channelData,
           sampleRate: decoded.sampleRate,
         });
+        envelopeCache.set(entry.id, computeEnvelope(decoded.channelData));
 
         updateFile(entry.id, {
           status: 'ready',
@@ -83,11 +92,15 @@ export function NormalizerEditor() {
 
   const handleRemove = useCallback((id: string) => {
     decodedCache.delete(id);
+    envelopeCache.delete(id);
+    if (showMeFileId === id) setShowMeFileId(null);
     removeFile(id);
-  }, [removeFile]);
+  }, [removeFile, showMeFileId]);
 
   const handleClear = useCallback(() => {
     decodedCache.clear();
+    envelopeCache.clear();
+    setShowMeFileId(null);
     clearFiles();
   }, [clearFiles]);
 
@@ -278,8 +291,22 @@ export function NormalizerEditor() {
     sendProcessMessages(readyFiles, batchSettings);
   }, [getSettings, setIsProcessing, updateFile]);
 
+  const handleShowMe = useCallback((fileId: string) => {
+    setShowMeFileId(prev => prev === fileId ? null : fileId);
+  }, []);
+
   const readyCount = files.filter(f => f.status === 'ready' || f.status === 'done').length;
   const hasDone = files.some(f => f.status === 'done' && f.outputBuffer);
+
+  // Show Me panel data
+  const showMeFile = showMeFileId ? files.find(f => f.id === showMeFileId) : null;
+  const showMeEnvelope = showMeFileId ? envelopeCache.get(showMeFileId) : undefined;
+
+  const additionalProcessing: string[] = [];
+  if (trimFade.trimStart || trimFade.trimEnd) additionalProcessing.push('silence trimming');
+  if (trimFade.padStartMs > 0 || trimFade.padEndMs > 0) additionalProcessing.push('padding');
+  if (trimFade.fadeInMs > 0 || trimFade.fadeOutMs > 0) additionalProcessing.push('fades');
+  if (limiter.enabled) additionalProcessing.push('limiting');
 
   return (
     <div className="norm-editor">
@@ -295,7 +322,26 @@ export function NormalizerEditor() {
           </button>
         )}
 
-        {hasDone && <ResultsPanel files={files} filenameSuffix={output.filenameSuffix} />}
+        {hasDone && (
+          <ResultsPanel
+            files={files}
+            filenameSuffix={output.filenameSuffix}
+            onShowMe={handleShowMe}
+            showMeFileId={showMeFileId}
+          />
+        )}
+
+        {showMeFile && showMeFile.status === 'done' && showMeEnvelope && (
+          <ShowMePanel
+            file={showMeFile}
+            envelope={showMeEnvelope}
+            normalizeType={normalize.type}
+            targetValue={normalize.targetValue}
+            normalizeEnabled={normalize.enabled}
+            additionalProcessing={additionalProcessing}
+            onClose={() => setShowMeFileId(null)}
+          />
+        )}
       </div>
 
       <div className="norm-editor__sidebar">

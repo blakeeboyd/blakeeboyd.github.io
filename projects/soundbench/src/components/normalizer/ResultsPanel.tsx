@@ -4,6 +4,8 @@ import { createZip } from '@/lib/normalizer/zip';
 interface ResultsPanelProps {
   files: AudioFileEntry[];
   filenameSuffix: string;
+  onShowMe: (fileId: string) => void;
+  showMeFileId: string | null;
 }
 
 function formatDb(val: number | undefined): string {
@@ -38,7 +40,7 @@ function getOutputFilename(name: string, suffix: string): string {
   return `${getBaseName(name)}${suffix}.wav`;
 }
 
-export function ResultsPanel({ files, filenameSuffix }: ResultsPanelProps) {
+export function ResultsPanel({ files, filenameSuffix, onShowMe, showMeFileId }: ResultsPanelProps) {
   const doneFiles = files.filter(f => f.status === 'done' && f.outputBuffer);
 
   if (doneFiles.length === 0) return null;
@@ -83,6 +85,7 @@ export function ResultsPanel({ files, filenameSuffix }: ResultsPanelProps) {
             <th colSpan={2}>Peak (dB)</th>
             <th>Gain</th>
             <th></th>
+            <th></th>
           </tr>
           <tr className="norm-results__subheader">
             <th></th>
@@ -94,6 +97,7 @@ export function ResultsPanel({ files, filenameSuffix }: ResultsPanelProps) {
             <th>After</th>
             <th>Before</th>
             <th>After</th>
+            <th></th>
             <th></th>
             <th></th>
           </tr>
@@ -136,6 +140,14 @@ export function ResultsPanel({ files, filenameSuffix }: ResultsPanelProps) {
                     </button>
                   )}
                 </div>
+              </td>
+              <td>
+                <button
+                  className={`norm-showme__toggle${showMeFileId === f.id ? ' norm-showme__toggle--active' : ''}`}
+                  onClick={() => onShowMe(f.id)}
+                >
+                  Show Me
+                </button>
               </td>
             </tr>
           ))}
