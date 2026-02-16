@@ -61,8 +61,15 @@ When building new features:
     │       ├── gb.moylanEQ.export.json
     │       ├── dependencies.json
     │       └── media/          # Audio files (not tracked in git due to size)
-    ├── modular-synth/
-    │   └── index.html          # Main page (uses .container.wide)
+    ├── modular-daw/
+    │   ├── index.html          # Host page (loads bundled React app)
+    │   ├── assets/
+    │   │   ├── index.js        # Production bundle
+    │   │   └── index.css       # Production styles
+    │   ├── src/                # React source (Vite + TypeScript)
+    │   ├── package.json
+    │   ├── vite.config.ts
+    │   └── tsconfig.json
     ├── pairwise-matrix/
     │   ├── index.html          # Matrix tool (uses .container.wide)
     │   ├── guide.html          # User guide
@@ -80,6 +87,23 @@ When building new features:
     │   ├── index.html          # Timer main page (uses .container.wide)
     │   └── js/
     │       └── app.js          # Pure JavaScript, Web Audio API
+    ├── soundbench/
+    │   ├── index.html          # Host page (loads bundled React app)
+    │   ├── assets/
+    │   │   ├── index.js        # Production bundle
+    │   │   └── index.css       # Production styles
+    │   ├── src/                # React source (Vite + TypeScript)
+    │   │   ├── App.tsx         # Root component with router
+    │   │   ├── main.tsx        # Entry point
+    │   │   ├── components/     # UI components (normalizer/, show-me/, shared/)
+    │   │   ├── lib/            # DSP algorithms, worker, encoding
+    │   │   ├── pages/          # Route pages
+    │   │   ├── store/          # Zustand stores (normalizer, presets)
+    │   │   ├── styles/         # Scoped CSS (sb-/norm- prefix)
+    │   │   └── types/          # TypeScript types
+    │   ├── package.json
+    │   ├── vite.config.ts
+    │   └── tsconfig.json
     ├── advance/
     │   ├── index.html          # Host page (loads bundled React app)
     │   ├── guide.html          # User guide
@@ -114,6 +138,8 @@ When building new features:
         └── js/
             └── app.js          # Pure Web Audio API, stereo correlation meter
 ```
+
+**Redirect stubs:** Old category paths (`projects/creative-tools/`, `projects/ear-training/`, `projects/explorable-explanations/`) and renamed projects (`projects/sounddocs/`) contain redirect stubs that forward to the current flat structure.
 
 ## URL Conventions
 
@@ -543,9 +569,151 @@ Each EQ Chain: HPF/LSF → Peak → Peak → LPF/HSF (4 BiquadFilterNodes)
 **Key Files:**
 - `js/app.js` - Audio engine, canvas interaction, game logic
 
+### SoundBench
+
+A browser-based offline audio processing toolkit. The first tool is a loudness normalizer with batch processing, brickwall limiting, trim/pad/fade, and an educational "Show Me" layer that explains what the processing did to each file. Philosophy: "tools that teach."
+
+**Location:** `projects/soundbench/`
+
+**Key Features:**
+- Multi-file batch upload (drag-drop, WAV/MP3/OGG/FLAC/AAC/M4A)
+- Six normalization types: LUFS (Integrated, Momentary Max, Short-Term Max), Peak, True Peak, RMS
+- Normalization conditions: Always, Too Loud (only if above target), Too Quiet (only if below target)
+- Batch modes: Each file separately, Loudest file (match loudest to target), Album (average loudness)
+- Brickwall limiter (peak or true peak) with batch "together" mode
+- Silence trimming, padding, fade in/out (4 curve types: linear, equal-power, logarithmic, S-curve)
+- Output: 16/24/32-bit WAV, stereo/mono/split L+R, customizable filename suffix
+- Preset system (built-in: Streaming -14 LUFS, Broadcast -24 LUFS, EBU R128 ranges; user presets via localStorage)
+- Per-file before/after measurements in results table
+- Download individual files or batch ZIP
+- "Show Me" educational panel: waveform before/after overlay, gain readout, LUFS meter, educational text explaining what normalization is and why LUFS matters
+
+**Technical Stack:**
+- React 18 + TypeScript + Vite
+- Zustand for state management (normalizer store + preset store with persistence)
+- Web Worker for all DSP (inline via `?worker&inline` for single-bundle build)
+- ITU-R BS.1770-4 LUFS measurement (K-weighting, gating)
+- ITU-R BS.1509-3 True Peak (192 kHz upsampling)
+- Canvas 2D for waveform and LUFS meter visualizations
+- nanoid for ID generation
+
+**Architecture:**
+```
+src/
+├── App.tsx                  # Root component with Outlet
+├── main.tsx                 # Entry point, createHashRouter
+├── components/
+│   ├── layout/
+│   │   └── AppHeader.tsx    # Header with tool tabs
+│   ├── normalizer/
+│   │   ├── NormalizerEditor.tsx     # Main orchestrator (decode, cache, process)
+│   │   ├── NormalizerSettings.tsx   # Settings sidebar container
+│   │   ├── FileDropZone.tsx         # Drag-drop upload
+│   │   ├── FileList.tsx / FileRow.tsx
+│   │   ├── NormalizeSection.tsx     # Loudness normalization controls
+│   │   ├── TrimPadSection.tsx       # Trim, padding, fades
+│   │   ├── LimiterSection.tsx       # Brickwall limiter controls
+│   │   ├── OutputSection.tsx        # Bit depth, mono mode, suffix
+│   │   ├── PresetManager.tsx        # Preset load/save/delete
+│   │   ├── NumericInput.tsx         # Reusable numeric input
+│   │   ├── ProcessingProgress.tsx   # Progress bars during batch
+│   │   ├── ResultsPanel.tsx         # Results table with download/Show Me
+│   │   └── show-me/
+│   │       ├── ShowMePanel.tsx      # Educational panel container
+│   │       ├── WaveformCanvas.tsx   # Before/after waveform overlay (Canvas)
+│   │       ├── GainReadout.tsx      # Gain calculation display
+│   │       └── LufsMeter.tsx        # Horizontal LUFS position meter (Canvas)
+│   └── shared/
+│       └── ErrorBoundary.tsx
+├── lib/normalizer/
+│   ├── worker.ts            # Web Worker entry (measure + process messages)
+│   ├── pipeline.ts          # DSP pipeline orchestrator
+│   ├── decode.ts            # Web Audio API file decoding
+│   ├── lufs.ts              # ITU-R BS.1770-4 LUFS measurement
+│   ├── true-peak.ts         # True Peak measurement
+│   ├── rms.ts               # RMS measurement
+│   ├── limiter.ts           # Brickwall peak/true-peak limiter
+│   ├── trim.ts              # Silence trimming
+│   ├── pad.ts               # Silence padding
+│   ├── fade.ts              # Fade in/out (4 curve types)
+│   ├── mono.ts              # Stereo-to-mono downmix
+│   ├── wav-encoder.ts       # WAV file encoding
+│   ├── batch-gain.ts        # Multi-file batch normalization math
+│   ├── waveform-envelope.ts # Envelope extraction for visualization
+│   ├── built-in-presets.ts  # Streaming, broadcast, loudness range presets
+│   ├── messages.ts          # Worker message type definitions
+│   ├── zip.ts               # ZIP creation for batch download
+│   └── id.ts                # nanoid wrapper
+├── store/
+│   ├── normalizer-store.ts  # Files, settings, processing state
+│   └── preset-store.ts      # Presets with localStorage persistence
+├── types/
+│   ├── normalizer.ts        # AudioFileEntry, measurements, settings interfaces
+│   └── waveform.ts          # WaveformEnvelope type
+├── pages/
+│   ├── HomePage.tsx          # Tool gallery
+│   └── NormalizerPage.tsx    # Normalizer tool page
+└── styles/
+    ├── index.css             # Style imports
+    ├── tokens.css            # Design tokens (dark-only, scoped to .sb-app)
+    ├── layout.css            # Header, page layout
+    ├── normalizer.css        # Normalizer UI styles
+    └── show-me.css           # Educational panel styles
+```
+
+**Audio Processing Architecture:**
+```
+Main Thread                          Worker Thread
+─────────────                        ─────────────
+FileDropZone → decodeAudioFile()
+  → decodedCache (Float32Array[])
+  → envelopeCache (WaveformEnvelope)
+  → worker.postMessage('measure')    → LUFS/peak/RMS measurement
+  ← inputMeasurements                ← measurements response
+
+Process button
+  → worker.postMessage('process')    → Full pipeline:
+  ← progress updates                    measure → normalize → trim
+  ← result (WAV ArrayBuffer)            → pad → fade → limit → mono
+  ← outputMeasurements                  → measure → encode WAV
+```
+
+**Key Patterns:**
+- Large audio data (`Float32Array[]`) stored in module-scoped Maps (`decodedCache`, `envelopeCache`) outside Zustand to avoid React serialization
+- Worker uses `?worker&inline` import for single-bundle output (no separate worker file)
+- Batch two-pass: compute batch gains from measurements, then process all files with override
+- Waveform visualization uses downsampled envelope (2048 min/max bucket pairs, ~16KB) computed once at decode
+- "After" waveform = input envelope × `gainLinear` (exact for pure normalization; note shown when trim/fade/limiter also applied)
+- Zustand selectors: select primitives directly to avoid re-render loops
+
+**Build & Deploy:**
+- Dev: `cd projects/soundbench && npm run dev` (Vite dev server on localhost:5173)
+- Build: `npm run build` (tsc + Vite, copies dist/ to assets/)
+- Production: `index.html` loads `assets/index.js` and `assets/index.css`
+- Vite config includes custom plugin to proxy site-wide CSS/JS/images from `../../` during dev
+
+**CSS Architecture:**
+- Classes prefixed with `sb-` (app-wide) and `norm-` (normalizer-specific)
+- Dark-only design: tokens scoped to `.sb-app` class
+- Educational accent: `--sb-color-edu` (purple #a78bfa)
+- Data visualization: `--sb-color-data` (cyan #22d3ee)
+- Tool color: `--sb-color-norm` (green #10b981)
+
+**Worker Message Protocol:**
+- Requests: `{ type: 'measure' | 'process', fileId, channelData, sampleRate, settings? }`
+- Responses: `measurements`, `progress`, `result` (with WAV buffer), `error`
+- Settings carry optional `overrideGainDb` and `overrideLimiterReduction` for batch processing
+
+**File State Machine:**
+```
+pending → decoding → ready ←→ processing → done
+          ↓                        ↓
+          error ←←←←←←←←←←←←←←← error
+```
+
 ### Advance
 
-A browser-based suite of production documentation tools for live sound engineers: patch sheets, stage plots, and run-of-show documents. The only project on the site that uses a modern JS framework (React + TypeScript), built with Vite. Tagline: "Get ahead of the show."
+A browser-based suite of production documentation tools for live sound engineers: patch sheets, stage plots, and run-of-show documents. Built with React + TypeScript + Vite. Tagline: "Get ahead of the show."
 
 **Location:** `projects/advance/`
 
