@@ -10,6 +10,16 @@ const siteRoot = path.resolve(__dirname, '../..');
 export default defineConfig({
   plugins: [
     react(),
+    // Inject dev entry point so index.html stays clean for production
+    {
+      name: 'inject-dev-entry',
+      transformIndexHtml(html) {
+        return html.replace(
+          '</body>',
+          '  <script type="module" src="/src/main.tsx"></script>\n</body>',
+        );
+      },
+    },
     // Serve site-wide assets (css/, js/, images/) from site root in dev
     {
       name: 'serve-site-root',
