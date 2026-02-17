@@ -1,0 +1,406 @@
+/* ===========================================
+   Filter Identification - Project Styles
+   =========================================== */
+
+.fid-app {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+/* Source card layout */
+.fid-source-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+/* Filter header row (On/Bypass + label) */
+.fid-filter-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+}
+
+.fid-filter-toggles {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+/* Frequency response canvas */
+.fid-canvas-container {
+    position: relative;
+    width: 100%;
+    height: 160px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.fid-canvas-container canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* Test indicator */
+.fid-test-indicator {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: var(--color-accent-light);
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-accent);
+    animation: pulse-border 1.5s ease-in-out infinite;
+}
+
+.fid-test-indicator.hidden {
+    display: none;
+}
+
+[data-theme="dark"] .fid-test-indicator {
+    background: rgba(37, 99, 235, 0.15);
+}
+
+/* Mode bar */
+.fid-mode-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.fid-mode-buttons {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.fid-teaching-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.fid-teaching-controls.hidden {
+    display: none;
+}
+
+.fid-quiz-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.fid-quiz-controls.hidden {
+    display: none;
+}
+
+.fid-quiz-source {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    font-family: inherit;
+    background: var(--color-control-bg);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    cursor: pointer;
+}
+
+.fid-quiz-source:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.fid-score {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: 0.875rem;
+}
+
+.fid-score-label {
+    color: var(--color-text-muted);
+    font-weight: 500;
+}
+
+#quiz-score,
+#quiz-streak {
+    font-weight: 600;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+}
+
+/* Duration controls */
+.fid-duration-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.fid-duration-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.fid-duration-input {
+    width: 3rem;
+    padding: 0.25rem 0.375rem;
+    font-size: 0.75rem;
+    font-family: inherit;
+    font-weight: 500;
+    text-align: center;
+    background: var(--color-control-bg);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+}
+
+.fid-duration-input:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.fid-duration-input::-webkit-outer-spin-button,
+.fid-duration-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.fid-duration-input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* Selection card */
+.fid-selection-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+/* Parameter group (type, freq, gain) */
+.fid-param-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.fid-param-label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+/* Toggle button group */
+.fid-button-group {
+    display: flex;
+    gap: var(--spacing-xs);
+    flex-wrap: wrap;
+}
+
+/* Individual toggle button */
+.fid-toggle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-width: 72px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    background: var(--color-control-bg);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.fid-toggle:hover {
+    border-color: var(--color-text-muted);
+}
+
+.fid-toggle:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.fid-toggle.active {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+}
+
+[data-theme="dark"] .fid-toggle.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.fid-toggle.disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Vowel hint text below frequency label */
+.fid-toggle-main {
+    font-size: 0.8125rem;
+}
+
+.fid-toggle-hint {
+    font-size: 0.625rem;
+    opacity: 0.7;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+}
+
+.fid-toggle.active .fid-toggle-hint {
+    opacity: 0.85;
+}
+
+/* Quiz mode: hide hints */
+.fid-app.quiz-mode .fid-toggle-hint {
+    display: none;
+}
+
+/* Filter settings */
+.fid-settings-group {
+    padding-top: var(--spacing-xs);
+    border-top: 1px solid var(--color-border);
+}
+
+/* Q readout */
+.fid-q-readout {
+    font-size: 0.75rem;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    color: var(--color-text-muted);
+    padding-top: 2px;
+}
+
+.fid-q-readout.hidden {
+    display: none;
+}
+
+/* Hide settings in quiz mode */
+.fid-app.quiz-mode .fid-settings-group {
+    display: none;
+}
+
+/* Quiz answer submission */
+.fid-quiz-submit {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+}
+
+.fid-quiz-submit.hidden {
+    display: none;
+}
+
+/* Quiz result feedback */
+.fid-result {
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.fid-result.hidden {
+    display: none;
+}
+
+.fid-result.correct {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid var(--color-success);
+    color: var(--color-success);
+}
+
+.fid-result.incorrect {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--color-error);
+    color: var(--color-error);
+}
+
+[data-theme="dark"] .fid-result.correct {
+    background: rgba(34, 197, 94, 0.15);
+}
+
+[data-theme="dark"] .fid-result.incorrect {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+/* Guide table */
+.fid-guide-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8125rem;
+    margin: var(--spacing-sm) 0;
+}
+
+.fid-guide-table th,
+.fid-guide-table td {
+    padding: 0.375rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.fid-guide-table th {
+    font-weight: 600;
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.fid-guide-table td:first-child {
+    font-weight: 500;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+}
+
+.fid-guide-table td:nth-child(2) {
+    font-weight: 600;
+    color: var(--color-accent);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .fid-toggle {
+        min-width: 60px;
+        padding: 0.375rem 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .fid-toggle-main {
+        font-size: 0.75rem;
+    }
+
+    .fid-toggle-hint {
+        font-size: 0.5625rem;
+    }
+
+    .fid-mode-bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .fid-teaching-controls {
+        flex-wrap: wrap;
+    }
+
+    .fid-quiz-controls {
+        flex-wrap: wrap;
+    }
+}
