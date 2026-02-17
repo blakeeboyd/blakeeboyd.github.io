@@ -95,6 +95,15 @@
                     </div>
                 </div>
 
+                <!-- Multi-track controls (track selection + stereo viz) -->
+                <div class="fid-multitrack-controls hidden" id="multitrack-controls">
+                    <div class="fid-track-loading hidden" id="track-loading">Loading tracks...</div>
+                    <div class="fid-mixer" id="track-buttons"></div>
+                    <div class="fid-stereo-viz-container">
+                        <canvas id="stereo-viz-canvas" aria-label="Stereo waveform display"></canvas>
+                    </div>
+                </div>
+
                 <!-- Mode Toggle -->
                 <div class="fid-mode-bar">
                     <div class="fid-mode-buttons">
@@ -110,6 +119,7 @@
                             <option value="4">Sawtooth</option>
                         </select>
                         <button type="button" class="action-button action-button-primary" id="listen-btn">Listen</button>
+                        <button type="button" class="source-button" id="loop-btn">Loop</button>
                         <div class="fid-duration-controls">
                             <label class="fid-duration-label">Unfiltered <input type="number" class="fid-duration-input" id="teaching-bypass-dur" min="1" max="30" value="4">s</label>
                             <label class="fid-duration-label">Filtered <input type="number" class="fid-duration-input" id="teaching-filter-dur" min="1" max="30" value="5">s</label>
@@ -170,6 +180,7 @@
                         <div class="fid-button-group" id="type-buttons">
                             <button type="button" class="fid-toggle active" data-type="highpass">High-Pass</button>
                             <button type="button" class="fid-toggle" data-type="lowpass">Low-Pass</button>
+                            <button type="button" class="fid-toggle" data-type="bandpass">Bandpass</button>
                             <button type="button" class="fid-toggle" data-type="highshelf">High Shelf</button>
                             <button type="button" class="fid-toggle" data-type="lowshelf">Low Shelf</button>
                             <button type="button" class="fid-toggle" data-type="peaking">Peaking</button>

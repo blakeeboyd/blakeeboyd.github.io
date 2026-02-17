@@ -31,13 +31,16 @@ When building new features:
 │       ├── moylanEQ.css            # Frequency bands app styles
 │       ├── cancelledHarmonics.css  # Cancelled harmonics app styles
 │       ├── phaseCorrelation.css    # Phase correlation app styles
-│       └── eqMatching.css          # EQ matching ear training styles
+│       ├── eqMatching.css          # EQ matching ear training styles
+│       └── filterIdentification.css # Filter ID ear training styles
 ├── js/
 │   ├── theme.js            # Dark mode toggle
 │   ├── nav-component.js    # <site-nav> web component
 │   ├── contact-form.js     # Contact form submission handler
 │   ├── bandlab-parser.js   # BandLab parser JavaScript
 │   └── wip-modal.js        # Reusable "work in progress" modal
+├── audio/
+│   └── stadium-rock-mp3/   # Multi-track stems (MP3 192kbps, ~3MB total)
 ├── images/                 # Site images
 └── projects/
     ├── bandlab-parser/
@@ -51,6 +54,10 @@ When building new features:
     │   ├── index.html          # EQ matching game (uses .container.wide)
     │   └── js/
     │       └── app.js          # Web Audio API, canvas EQ visualization, game logic
+    ├── filter-id/
+    │   ├── index.html          # Filter ID ear training (uses .container.wide)
+    │   └── js/
+    │       └── app.js          # Web Audio API, IIR filters, canvas visualization
     ├── identifying-frequency-bands/
     │   ├── index.html          # Main page (uses .container.wide)
     │   ├── js/
@@ -568,6 +575,73 @@ Each EQ Chain: HPF/LSF → Peak → Peak → LPF/HSF (4 BiquadFilterNodes)
 
 **Key Files:**
 - `js/app.js` - Audio engine, canvas interaction, game logic
+
+### Filter Identification (Ear Training)
+
+Ear training tool for identifying filter types, frequencies, and gain settings by listening to audio processed through various EQ filters.
+
+**Location:** `projects/filter-id/`
+
+**Key Features:**
+- Five audio sources: Mute, Pink Noise (generated), User Audio (upload), Multi-track (built-in stems), Sawtooth (220 Hz oscillator)
+- Multi-track source with 7 stems (Drums, Tambourine, Bass, Guitar, Keys, Organ, Pad) and per-track mute/solo/volume mixer
+- Real-time stereo waveform visualization (L/R oscilloscope) for multi-track source
+- Seven filter types: High-Pass, Low-Pass, High Shelf, Low Shelf, Peaking, Bandpass, Notch
+- HP/LP filters cascade 1-4 BiquadFilterNodes for 12/24/48 dB/oct slopes (Butterworth Q per stage)
+- Shelf filters use IIRFilterNode with Audio EQ Cookbook coefficients (adjustable slope S parameter)
+- Peaking uses BiquadFilterNode with bandwidth-to-Q conversion
+- Real-time frequency response canvas visualization
+- Three modes: Practice (direct control), Teaching (listen sequence with selectable source, optional loop), Quiz (identify hidden filter)
+- Quiz drill system with configurable parameter subsets
+- Per-source gain memory
+- Formant-based frequency guide with "too much sounds..." descriptors
+
+**Technical Stack:**
+- Pure Web Audio API (no external dependencies)
+- BiquadFilterNode (HP/LP/peaking), IIRFilterNode (shelf)
+- ChannelSplitter + AnalyserNode x 2 for stereo visualization
+- Canvas 2D for filter response curve and stereo waveform
+- Project-specific styles in `/css/projects/filterIdentification.css`
+
+**Audio Architecture:**
+```
+Source (Pink Noise / User Audio / Multi-track / Sawtooth)
+  → sourceGain
+    → BiquadFilter(s) / IIRFilter → filterGain ──→ masterGain → destination
+    → bypassGain ─────────────────────────────────┘
+
+Multi-track routing:
+  BufferSourceNode[0..6] → GainNode[0..6] → trackMerge → ChannelSplitter → AnalyserL/R
+                                                        → sourceGain
+```
+
+**Multi-track:**
+- 7 stems loaded in parallel on first use (~3 MB total, MP3 192 kbps)
+- Mute/solo mixer: per-track M (mute) and S (exclusive solo) buttons with volume faders
+- All stems play by default (summing to full band sound)
+- All BufferSourceNodes start at the same scheduled time for sample-accurate sync
+- Audio files in `audio/stadium-rock-mp3/` (WAV originals in `audio/stadium-rock/`, gitignored)
+
+**State Management:**
+```javascript
+const state = {
+    currentSource: 0,           // 0=Mute, 1=Pink Noise, 2=User Audio, 3=Multi-track, 4=Sawtooth
+    filterType: 'highpass',
+    filterFreq: 500,
+    filterGainDb: 3,
+    filterBypassed: false,
+    mode: 'practice',           // 'practice' | 'teaching' | 'quiz'
+    multitrackBuffers: {},      // { drums: AudioBuffer, bass: AudioBuffer, ... }
+    multitrackMuted: [],        // boolean[] — per-track mute state
+    multitrackVolumes: [],      // number[] (0..1) — per-track volume
+    multitrackSoloed: null,     // null = no solo, or track key string (exclusive)
+    // ... per-source gain values, quiz state, test sequence state
+};
+```
+
+**Key Files:**
+- `js/app.js` - Complete application logic (audio engine, filters, visualization, quiz, modes)
+- `index.html` - Page structure with filter controls, mode bar, frequency guide
 
 ### SoundBench
 

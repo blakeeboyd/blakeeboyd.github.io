@@ -19,8 +19,10 @@
 
 const FREQUENCIES = [250, 500, 1000, 2000, 4000, 8000, 16000];
 const GAINS = [-12, -6, -3, 3, 6, 12];
-const FILTER_TYPES = ['highpass', 'lowpass', 'highshelf', 'lowshelf', 'peaking'];
-const PASS_FILTERS = ['highpass', 'lowpass']; // No gain parameter
+const FILTER_TYPES = ['highpass', 'lowpass', 'bandpass', 'highshelf', 'lowshelf', 'peaking'];
+const PASS_FILTERS = ['highpass', 'lowpass', 'bandpass']; // No gain parameter
+const BANDWIDTH_FILTERS = ['peaking', 'bandpass']; // Use bandwidth/Q control
+const SLOPE_FILTERS = ['highpass', 'lowpass']; // Cascade for steeper slopes
 
 // Bandwidth Q formula: Q = 1 / (2 * sinh(ln(2)/2 * BW))
 function bwToQ(octaves) {
@@ -32,6 +34,17 @@ const DEFAULT_PEAKING_BW = 2;    // octaves → Q ≈ 0.667
 const DEFAULT_SHELF_S = 1;       // Shelf slope (S=1 is standard; >1 steeper with resonance)
 const DEFAULT_PASS_SLOPE = 12;   // dB/oct (single 2nd-order filter)
 const SHELF_FILTERS = ['highshelf', 'lowshelf'];
+
+// Multi-track stem files
+const MULTITRACK_TRACKS = [
+    { key: 'drums',       label: 'Drums',      file: 'Stadium Rock - Drums.mp3' },
+    { key: 'tambourine',  label: 'Tamb.',      file: 'Stadium Rock - Tambourine.mp3' },
+    { key: 'bass',        label: 'Bass',       file: 'Stadium Rock - Bass.mp3' },
+    { key: 'guitar',      label: 'Guitar',     file: 'Stadium Rock - Guitar.mp3' },
+    { key: 'keys',        label: 'Keys',       file: 'Stadium Rock - Keys.mp3' },
+    { key: 'organ',       label: 'Organ',      file: 'Stadium Rock - Organ.mp3' },
+    { key: 'pad',         label: 'Pad',        file: 'Stadium Rock - Pad.mp3' }
+];
 
 // Butterworth Q values per stage for maximally-flat (no resonance bump) response.
 // Each 2nd-order stage in a higher-order Butterworth filter needs a specific Q
@@ -175,9 +188,20 @@ const state = {
     progressAnimationId: null,
 
     // Multi-track (built-in audio)
-    multitrackBuffer: null,
-    multitrackSource: null,
+    multitrackBuffers: {},       // { drums: AudioBuffer, bass: AudioBuffer, ... }
+    multitrackSources: [],       // Array of BufferSourceNode (one per track)
+    multitrackGains: [],         // Array of GainNode (one per track)
+    multitrackMerge: null,       // GainNode summing bus
+    multitrackMuted: [],         // boolean[] — per-track mute state
+    multitrackVolumes: [],       // number[] (0..1) — per-track volume
+    multitrackSoloed: null,      // null = no solo, or track key string (exclusive)
     multitrackLoading: false,
+
+    // Stereo visualization
+    stereoAnalyserL: null,
+    stereoAnalyserR: null,
+    stereoSplitter: null,
+    stereoVizAnimId: null,
 
     // Sawtooth oscillator
     sawtoothOscillator: null,
@@ -224,6 +248,7 @@ const state = {
     testAnimationId: null,
     testStartTime: 0,
     testPhase: null, // 'bypass' | 'filter' | null — for canvas animation
+    testLoop: false, // loop the test sequence continuously
 
     // Test durations (seconds) — user-adjustable
     testBypass1: TEST_BYPASS_1,
@@ -283,6 +308,9 @@ function createAudioContext() {
     // Build the filter chain (sourceGain → filters → filterGain)
     buildFilterChain();
 
+    // Build multitrack audio graph (gain nodes, analysers)
+    buildMultitrackGraph();
+
     // Generate pink noise
     generatePinkNoiseBuffer();
 }
@@ -322,7 +350,7 @@ function buildFilterChain() {
         state.filter = state.audioContext.createIIRFilter(
             coeffs.feedforward, coeffs.feedback
         );
-    } else if (PASS_FILTERS.includes(state.filterType)) {
+    } else if (SLOPE_FILTERS.includes(state.filterType)) {
         // HP/LP: cascade BiquadFilterNodes with Butterworth Q per stage
         var numStages = state.passSlope / 12;
         state.filter = state.audioContext.createBiquadFilter();
@@ -334,7 +362,7 @@ function buildFilterChain() {
             state.extraFilters.push(extra);
         }
     } else {
-        // Peaking: single BiquadFilterNode
+        // Peaking / Bandpass: single BiquadFilterNode
         state.filter = state.audioContext.createBiquadFilter();
         applyFilterParams(state.filter, 0, 1);
     }
@@ -363,14 +391,50 @@ function applyFilterParams(filterNode, stageIndex, totalStages) {
 
     filterNode.frequency.setTargetAtTime(state.filterFreq, t, 0.02);
 
-    if (state.filterType === 'peaking') {
+    if (BANDWIDTH_FILTERS.includes(state.filterType)) {
         filterNode.Q.setTargetAtTime(bwToQ(state.peakingBW), t, 0.02);
-        filterNode.gain.setTargetAtTime(state.filterGainDb, t, 0.02);
-    } else if (PASS_FILTERS.includes(state.filterType)) {
+        filterNode.gain.setTargetAtTime(
+            state.filterType === 'peaking' ? state.filterGainDb : 0, t, 0.02
+        );
+    } else if (SLOPE_FILTERS.includes(state.filterType)) {
         var qValues = BUTTERWORTH_Q[totalStages] || BUTTERWORTH_Q[1];
         filterNode.Q.setTargetAtTime(qValues[stageIndex], t, 0.02);
         filterNode.gain.setTargetAtTime(0, t, 0.02);
     }
+}
+
+// ============================================
+// Multi-track Audio Graph
+// ============================================
+
+function buildMultitrackGraph() {
+    // Summing bus for all tracks
+    state.multitrackMerge = state.audioContext.createGain();
+    state.multitrackMerge.gain.value = 1;
+
+    // Initialize mixer state arrays
+    state.multitrackMuted = MULTITRACK_TRACKS.map(function () { return false; });
+    state.multitrackVolumes = MULTITRACK_TRACKS.map(function () { return 1; });
+    state.multitrackSoloed = null;
+
+    // Per-track gain nodes — all default to 1 (full band = all stems)
+    state.multitrackGains = MULTITRACK_TRACKS.map(function (track) {
+        var g = state.audioContext.createGain();
+        g.gain.value = 1;
+        g.connect(state.multitrackMerge);
+        return g;
+    });
+
+    // Stereo visualization: split L/R from the summing bus
+    state.stereoSplitter = state.audioContext.createChannelSplitter(2);
+    state.stereoAnalyserL = state.audioContext.createAnalyser();
+    state.stereoAnalyserR = state.audioContext.createAnalyser();
+    state.stereoAnalyserL.fftSize = 2048;
+    state.stereoAnalyserR.fftSize = 2048;
+
+    state.multitrackMerge.connect(state.stereoSplitter);
+    state.stereoSplitter.connect(state.stereoAnalyserL, 0);
+    state.stereoSplitter.connect(state.stereoAnalyserR, 1);
 }
 
 // ============================================
@@ -425,7 +489,7 @@ async function startAudio() {
             return;
         }
     } else if (state.currentSource === 3) {
-        if (state.multitrackBuffer) {
+        if (hasMultitrackLoaded()) {
             startMultitrack();
         } else {
             return;
@@ -457,10 +521,8 @@ function stopAudio() {
         state.userAudioSource = null;
     }
 
-    if (state.multitrackSource) {
-        state.multitrackSource.stop();
-        state.multitrackSource.disconnect();
-        state.multitrackSource = null;
+    if (state.multitrackSources.length > 0) {
+        stopMultitrackSources();
     }
 
     if (state.sawtoothOscillator) {
@@ -523,37 +585,254 @@ function startUserAudio(offset) {
 // Multi-track (Built-in Audio)
 // ============================================
 
+function hasMultitrackLoaded() {
+    return Object.keys(state.multitrackBuffers).length > 0;
+}
+
 async function loadMultitrackAudio() {
-    if (state.multitrackBuffer || state.multitrackLoading) return;
+    if (hasMultitrackLoaded() || state.multitrackLoading) return;
 
     state.multitrackLoading = true;
+    updateMultitrackLoadingUI(true);
 
     try {
-        var response = await fetch('../../audio/stadium-rock-mp3/Stadium Rock - Full Band.mp3');
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        var arrayBuffer = await response.arrayBuffer();
-        state.multitrackBuffer = await state.audioContext.decodeAudioData(arrayBuffer);
+        var basePath = '../../audio/stadium-rock-mp3/';
+        var promises = MULTITRACK_TRACKS.map(function (track) {
+            return fetch(basePath + track.file)
+                .then(function (r) {
+                    if (!r.ok) throw new Error('HTTP ' + r.status + ' for ' + track.file);
+                    return r.arrayBuffer();
+                })
+                .then(function (ab) {
+                    return state.audioContext.decodeAudioData(ab);
+                })
+                .then(function (buffer) {
+                    return { key: track.key, buffer: buffer };
+                });
+        });
+
+        var results = await Promise.all(promises);
+        results.forEach(function (r) {
+            state.multitrackBuffers[r.key] = r.buffer;
+        });
+
         state.multitrackLoading = false;
+        updateMultitrackLoadingUI(false);
+        buildMultitrackTrackButtons();
     } catch (error) {
         console.error('Error loading multi-track audio:', error);
         state.multitrackLoading = false;
+        updateMultitrackLoadingUI(false);
         alert('Could not load built-in audio. Check that the audio files are available.');
     }
 }
 
 function startMultitrack() {
-    if (!state.multitrackBuffer) return;
+    if (!hasMultitrackLoaded()) return;
 
-    if (state.multitrackSource) {
-        state.multitrackSource.stop();
-        state.multitrackSource.disconnect();
+    // Stop any existing sources
+    stopMultitrackSources();
+
+    // Create and start all sources simultaneously
+    state.multitrackSources = MULTITRACK_TRACKS.map(function (track, i) {
+        var src = state.audioContext.createBufferSource();
+        src.buffer = state.multitrackBuffers[track.key];
+        src.loop = true;
+        src.connect(state.multitrackGains[i]);
+        return src;
+    });
+
+    // Connect summing bus to sourceGain
+    state.multitrackMerge.connect(state.sourceGain);
+
+    // Apply current mute/solo/volume state to gain nodes
+    applyMultitrackGains();
+
+    // Start all at the same time for sample-accurate sync
+    var startTime = state.audioContext.currentTime + 0.01;
+    state.multitrackSources.forEach(function (src) {
+        src.start(startTime);
+    });
+
+    // Start stereo visualization
+    startStereoVisualization();
+}
+
+function stopMultitrackSources() {
+    state.multitrackSources.forEach(function (src) {
+        if (src) {
+            try { src.stop(); } catch (e) { /* already stopped */ }
+            try { src.disconnect(); } catch (e) { /* not connected */ }
+        }
+    });
+    state.multitrackSources = [];
+
+    if (state.multitrackMerge) {
+        try { state.multitrackMerge.disconnect(state.sourceGain); } catch (e) { /* not connected */ }
     }
 
-    state.multitrackSource = state.audioContext.createBufferSource();
-    state.multitrackSource.buffer = state.multitrackBuffer;
-    state.multitrackSource.loop = true;
-    state.multitrackSource.connect(state.sourceGain);
-    state.multitrackSource.start();
+    stopStereoVisualization();
+}
+
+function applyMultitrackGains() {
+    if (!state.audioContext) return;
+    var t = state.audioContext.currentTime;
+    var anySoloed = (state.multitrackSoloed !== null);
+
+    MULTITRACK_TRACKS.forEach(function (track, i) {
+        var effective;
+        if (anySoloed) {
+            effective = (track.key === state.multitrackSoloed) ? state.multitrackVolumes[i] : 0;
+        } else {
+            effective = state.multitrackMuted[i] ? 0 : state.multitrackVolumes[i];
+        }
+        state.multitrackGains[i].gain.setTargetAtTime(effective, t, 0.02);
+    });
+
+    updateMultitrackButtons();
+}
+
+function toggleMuteTrack(index) {
+    state.multitrackMuted[index] = !state.multitrackMuted[index];
+    applyMultitrackGains();
+}
+
+function toggleSoloTrack(trackKey) {
+    if (state.multitrackSoloed === trackKey) {
+        state.multitrackSoloed = null;
+    } else {
+        state.multitrackSoloed = trackKey;
+    }
+    applyMultitrackGains();
+}
+
+function setTrackVolume(index, value) {
+    state.multitrackVolumes[index] = value;
+    applyMultitrackGains();
+}
+
+function buildMultitrackTrackButtons() {
+    var container = document.getElementById('track-buttons');
+    if (!container) return;
+    container.innerHTML = '';
+
+    MULTITRACK_TRACKS.forEach(function (track, i) {
+        var strip = document.createElement('div');
+        strip.className = 'fid-channel-strip';
+        strip.dataset.track = track.key;
+
+        var label = document.createElement('span');
+        label.className = 'fid-channel-label';
+        label.textContent = track.label;
+
+        var muteBtn = document.createElement('button');
+        muteBtn.type = 'button';
+        muteBtn.className = 'fid-channel-btn fid-mute-btn';
+        muteBtn.textContent = 'M';
+        muteBtn.title = 'Mute ' + track.label;
+        muteBtn.addEventListener('click', function () {
+            toggleMuteTrack(i);
+        });
+
+        var soloBtn = document.createElement('button');
+        soloBtn.type = 'button';
+        soloBtn.className = 'fid-channel-btn fid-solo-btn';
+        soloBtn.textContent = 'S';
+        soloBtn.title = 'Solo ' + track.label;
+        soloBtn.addEventListener('click', function () {
+            toggleSoloTrack(track.key);
+        });
+
+        var slider = document.createElement('input');
+        slider.type = 'range';
+        slider.className = 'fid-channel-fader';
+        slider.min = '0';
+        slider.max = '1';
+        slider.step = '0.01';
+        slider.value = '1';
+        slider.setAttribute('aria-label', track.label + ' volume');
+        slider.addEventListener('input', function () {
+            setTrackVolume(i, parseFloat(this.value));
+        });
+
+        strip.appendChild(label);
+        strip.appendChild(muteBtn);
+        strip.appendChild(soloBtn);
+        strip.appendChild(slider);
+        container.appendChild(strip);
+    });
+
+    updateMultitrackButtons();
+}
+
+function updateMultitrackButtons() {
+    var anySoloed = (state.multitrackSoloed !== null);
+
+    document.querySelectorAll('.fid-channel-strip').forEach(function (strip) {
+        var trackKey = strip.dataset.track;
+        var i = MULTITRACK_TRACKS.findIndex(function (t) { return t.key === trackKey; });
+        if (i < 0) return;
+
+        var muteBtn = strip.querySelector('.fid-mute-btn');
+        var soloBtn = strip.querySelector('.fid-solo-btn');
+
+        if (muteBtn) muteBtn.classList.toggle('active', state.multitrackMuted[i]);
+        if (soloBtn) soloBtn.classList.toggle('active', state.multitrackSoloed === trackKey);
+
+        // Dim strips that are effectively silent
+        var silent;
+        if (anySoloed) {
+            silent = (state.multitrackSoloed !== trackKey);
+        } else {
+            silent = state.multitrackMuted[i];
+        }
+        strip.classList.toggle('fid-channel-silenced', silent);
+    });
+}
+
+function updateMultitrackLoadingUI(loading) {
+    var loadingEl = document.getElementById('track-loading');
+    var buttonsEl = document.getElementById('track-buttons');
+    if (loadingEl) loadingEl.classList.toggle('hidden', !loading);
+    if (buttonsEl) buttonsEl.classList.toggle('hidden', loading);
+}
+
+/**
+ * Preload multitrack audio when Multi-track is selected from a dropdown.
+ * Creates the audio context if needed and triggers loading + button build.
+ */
+async function preloadMultitrack() {
+    if (hasMultitrackLoaded() || state.multitrackLoading) return;
+    if (!state.audioContext) createAudioContext();
+    await loadMultitrackAudio();
+}
+
+/**
+ * Show or hide the multitrack controls based on the active source.
+ * In practice mode, checks state.currentSource.
+ * In teaching/quiz mode, checks the dropdown value.
+ */
+function updateMultitrackControlsVisibility() {
+    var controls = document.getElementById('multitrack-controls');
+    if (!controls) return;
+
+    var wasHidden = controls.classList.contains('hidden');
+
+    var isMultitrack = false;
+    if (state.mode === 'practice') {
+        isMultitrack = (state.currentSource === 3);
+    } else if (state.mode === 'teaching') {
+        isMultitrack = (parseInt(document.getElementById('teaching-source-select').value) === 3);
+    } else if (state.mode === 'quiz') {
+        isMultitrack = (parseInt(document.getElementById('quiz-source-select').value) === 3);
+    }
+
+    controls.classList.toggle('hidden', !isMultitrack);
+
+    // Draw idle waveform when controls become visible (needs a frame for layout)
+    if (isMultitrack && wasHidden && !state.stereoVizAnimId) {
+        requestAnimationFrame(drawStereoWaveformIdle);
+    }
 }
 
 // ============================================
@@ -614,6 +893,9 @@ async function setSource(source) {
         playbackControls.classList.add('hidden');
     }
 
+    // Show/hide multitrack controls
+    updateMultitrackControlsVisibility();
+
     updateSourceButtons();
 
     // Auto-play for continuous sources
@@ -621,10 +903,10 @@ async function setSource(source) {
         await startAudio();
     } else if (source === 3) {
         // Load multi-track audio if not already loaded, then auto-play
-        if (!state.multitrackBuffer) {
+        if (!hasMultitrackLoaded()) {
             await loadMultitrackAudio();
         }
-        if (state.multitrackBuffer) {
+        if (hasMultitrackLoaded()) {
             await startAudio();
         }
     } else if (source === 4) {
@@ -796,10 +1078,10 @@ function setFilterGainDb(gain) {
 
 function updateFilterQ() {
     if (!state.filter) return;
-    if (state.filterType === 'peaking') {
+    if (BANDWIDTH_FILTERS.includes(state.filterType)) {
         var t = state.audioContext.currentTime;
         state.filter.Q.setTargetAtTime(bwToQ(state.peakingBW), t, 0.02);
-    } else if (PASS_FILTERS.includes(state.filterType)) {
+    } else if (SLOPE_FILTERS.includes(state.filterType)) {
         // For HP/LP, rebuild chain to apply correct Butterworth Q per stage
         buildFilterChain();
     } else {
@@ -851,8 +1133,23 @@ function runTest(options) {
     options = options || {};
     state.testRunning = true;
 
+    // Store options for looping
+    state._testOptions = options;
+
     // Ensure audio context
     if (!state.audioContext) createAudioContext();
+
+    // Start audio if not playing
+    const wasPlaying = state.isPlaying;
+    if (!state.isPlaying) {
+        startAudio();
+    }
+
+    scheduleTestCycle(wasPlaying);
+}
+
+function scheduleTestCycle(wasPlaying) {
+    var options = state._testOptions || {};
 
     const t = state.audioContext.currentTime;
     const b1 = state.testBypass1;
@@ -870,18 +1167,18 @@ function runTest(options) {
     state.filterGain.gain.setValueAtTime(0, t + b1 + filt);
     state.bypassGain.gain.setValueAtTime(1, t + b1 + filt);
 
-    // Start audio if not playing
-    const wasPlaying = state.isPlaying;
-    if (!state.isPlaying) {
-        startAudio();
-    }
-
     // Show test indicator
     state.testStartTime = t;
     showTestIndicator();
 
-    // Schedule end
+    // Schedule end of this cycle
     const endTimeout = setTimeout(function () {
+        // If looping, restart the cycle
+        if (state.testLoop && state.testRunning) {
+            scheduleTestCycle(wasPlaying);
+            return;
+        }
+
         if (options.alwaysStop || !wasPlaying) {
             stopAudio();
         }
@@ -897,6 +1194,7 @@ function runTest(options) {
 
         state.testRunning = false;
         state.testPhase = null;
+        state._testOptions = null;
         hideTestIndicator();
         state.testTimeoutIds = [];
         updateBypassButtons();
@@ -919,6 +1217,7 @@ function cancelTest() {
 
     state.testRunning = false;
     state.testPhase = null;
+    state._testOptions = null;
     hideTestIndicator();
     updateBypassButtons();
     drawFilterCanvas();
@@ -940,9 +1239,41 @@ function cancelTest() {
     }
 }
 
+function setTestLoop(enabled) {
+    state.testLoop = enabled;
+    var btn = document.getElementById('loop-btn');
+    if (btn) btn.classList.toggle('active', enabled);
+}
+
+/**
+ * Stop a running test sequence and reset all mode buttons to their default labels.
+ * Called from event handlers when the user clicks a button that currently says "Stop".
+ */
+function stopTestSequence() {
+    cancelTest();
+    stopAudio();
+
+    // Reset teaching button
+    document.getElementById('listen-btn').textContent = 'Listen';
+
+    // Reset quiz buttons
+    document.getElementById('new-question-btn').textContent = 'New Question';
+    var playBtn = document.getElementById('play-again-btn');
+    playBtn.textContent = 'Play Again';
+    playBtn.disabled = !state.quizAnswer;
+
+    document.getElementById('new-question-btn').disabled = false;
+}
+
 function showTestIndicator() {
     const indicator = document.getElementById('test-indicator');
     indicator.classList.remove('hidden');
+
+    // Cancel any existing animation frame to avoid stacking when looping
+    if (state.testAnimationId) {
+        cancelAnimationFrame(state.testAnimationId);
+        state.testAnimationId = null;
+    }
 
     function updateIndicator() {
         if (!state.testRunning) return;
@@ -996,18 +1327,18 @@ function hideTestIndicator() {
 // ============================================
 
 async function teachingListen() {
-    if (state.testRunning) return;
+    var listenBtn = document.getElementById('listen-btn');
 
     var source = parseInt(document.getElementById('teaching-source-select').value);
     if (source === 2 && !state.userAudioBuffer) {
         alert('Upload an audio file first (switch to Practice mode to upload).');
         return;
     }
-    if (source === 3 && !state.multitrackBuffer) {
+    if (source === 3 && !hasMultitrackLoaded()) {
         // Try to load it on the fly
         if (!state.audioContext) createAudioContext();
         await loadMultitrackAudio();
-        if (!state.multitrackBuffer) return;
+        if (!hasMultitrackLoaded()) return;
     }
 
     if (!state.audioContext) createAudioContext();
@@ -1023,14 +1354,14 @@ async function teachingListen() {
     // Ensure filter is active
     setFilterBypassed(false);
 
-    // Disable listen button during playback
-    document.getElementById('listen-btn').disabled = true;
+    // Toggle button to Stop
+    listenBtn.textContent = 'Stop';
 
     // Run the bypass/filter/bypass sequence, mute after
     runTest({
         alwaysStop: true,
         onEnd: function () {
-            document.getElementById('listen-btn').disabled = false;
+            listenBtn.textContent = 'Listen';
         }
     });
 }
@@ -1040,8 +1371,8 @@ async function teachingListen() {
 // ============================================
 
 async function newQuestion() {
-    // Cancel any running test
-    if (state.testRunning) cancelTest();
+    var newBtn = document.getElementById('new-question-btn');
+    var playBtn = document.getElementById('play-again-btn');
 
     const drill = QUIZ_DRILLS[state.quizDrill];
 
@@ -1099,9 +1430,9 @@ async function newQuestion() {
         alert('Upload an audio file first (switch to Practice mode to upload).');
         return;
     }
-    if (quizSource === 3 && !state.multitrackBuffer) {
+    if (quizSource === 3 && !hasMultitrackLoaded()) {
         await loadMultitrackAudio();
-        if (!state.multitrackBuffer) return;
+        if (!hasMultitrackLoaded()) return;
     }
 
     // Switch to the quiz source (without auto-playing pink noise)
@@ -1109,28 +1440,32 @@ async function newQuestion() {
     state.currentSource = quizSource;
     updateGainForSource(quizSource);
 
-    // Disable new question during playback, enable play again after
-    document.getElementById('new-question-btn').disabled = true;
-    document.getElementById('play-again-btn').disabled = true;
+    // Toggle buttons to Stop during playback
+    newBtn.textContent = 'Stop';
+    playBtn.disabled = true;
 
     // Run the test sequence, mute after
     runTest({
         alwaysStop: true,
         onEnd: function () {
-            document.getElementById('new-question-btn').disabled = false;
-            document.getElementById('play-again-btn').disabled = false;
+            newBtn.textContent = 'New Question';
+            playBtn.textContent = 'Play Again';
+            playBtn.disabled = false;
         }
     });
 }
 
 async function playAgain() {
-    if (state.testRunning || !state.quizAnswer) return;
+    var newBtn = document.getElementById('new-question-btn');
+    var playBtn = document.getElementById('play-again-btn');
+
+    if (!state.quizAnswer) return;
 
     var quizSource = parseInt(document.getElementById('quiz-source-select').value);
     if (quizSource === 2 && !state.userAudioBuffer) return;
-    if (quizSource === 3 && !state.multitrackBuffer) {
+    if (quizSource === 3 && !hasMultitrackLoaded()) {
         await loadMultitrackAudio();
-        if (!state.multitrackBuffer) return;
+        if (!hasMultitrackLoaded()) return;
     }
 
     // Ensure source is set
@@ -1138,14 +1473,16 @@ async function playAgain() {
     state.currentSource = quizSource;
     updateGainForSource(quizSource);
 
-    document.getElementById('new-question-btn').disabled = true;
-    document.getElementById('play-again-btn').disabled = true;
+    // Toggle buttons to Stop during playback
+    playBtn.textContent = 'Stop';
+    newBtn.disabled = true;
 
     runTest({
         alwaysStop: true,
         onEnd: function () {
-            document.getElementById('new-question-btn').disabled = false;
-            document.getElementById('play-again-btn').disabled = false;
+            newBtn.textContent = 'New Question';
+            newBtn.disabled = false;
+            playBtn.textContent = 'Play Again';
         }
     });
 }
@@ -1315,7 +1652,8 @@ function formatFilterName(type) {
         lowpass: 'Low-Pass',
         highshelf: 'High Shelf',
         lowshelf: 'Low Shelf',
-        peaking: 'Peaking'
+        peaking: 'Peaking',
+        bandpass: 'Bandpass'
     };
     return names[type] || type;
 }
@@ -1331,7 +1669,7 @@ function formatFreq(freq) {
 
 function setMode(mode) {
     // Stop everything when switching modes
-    if (state.testRunning) cancelTest();
+    if (state.testRunning) stopTestSequence();
     if (state.isPlaying) stopAudio();
 
     state.mode = mode;
@@ -1394,6 +1732,9 @@ function setMode(mode) {
         clearSelectionButtons();
         updateSubmitButton();
     }
+
+    // Show multitrack controls if Multi-track is selected in the mode's dropdown
+    updateMultitrackControlsVisibility();
 
     updateModeButtons();
 }
@@ -1468,11 +1809,11 @@ function updateSettingsVisibility() {
     var bwGroup = document.getElementById('settings-bandwidth');
     var shelfQGroup = document.getElementById('settings-shelf-q');
 
-    if (PASS_FILTERS.includes(state.filterType)) {
+    if (SLOPE_FILTERS.includes(state.filterType)) {
         slopeGroup.classList.remove('hidden');
         bwGroup.classList.add('hidden');
         shelfQGroup.classList.add('hidden');
-    } else if (state.filterType === 'peaking') {
+    } else if (BANDWIDTH_FILTERS.includes(state.filterType)) {
         slopeGroup.classList.add('hidden');
         bwGroup.classList.remove('hidden');
         shelfQGroup.classList.add('hidden');
@@ -1510,11 +1851,11 @@ function updateQReadout() {
     var readout = document.getElementById('q-readout');
     if (!readout) return;
 
-    if (state.filterType === 'peaking') {
+    if (BANDWIDTH_FILTERS.includes(state.filterType)) {
         var q = bwToQ(state.peakingBW);
         readout.textContent = 'Q = ' + q.toFixed(2) + '  (BW = ' + state.peakingBW + ' oct)';
         readout.classList.remove('hidden');
-    } else if (PASS_FILTERS.includes(state.filterType)) {
+    } else if (SLOPE_FILTERS.includes(state.filterType)) {
         var qValues = BUTTERWORTH_Q[state.passSlope / 12] || BUTTERWORTH_Q[1];
         if (qValues.length === 1) {
             readout.textContent = 'Q = ' + qValues[0].toFixed(3);
@@ -1531,7 +1872,7 @@ function updateQReadout() {
 
 function setPassSlope(slope) {
     state.passSlope = slope;
-    if (state.audioContext && PASS_FILTERS.includes(state.filterType)) {
+    if (state.audioContext && SLOPE_FILTERS.includes(state.filterType)) {
         buildFilterChain();
     }
     updateSettingsButtons();
@@ -1632,7 +1973,7 @@ function drawFilterCanvas() {
             vizCoeffs.feedforward, vizCoeffs.feedback, vizFreqArray, 44100
         );
     } else {
-        // HP/LP/Peaking: use BiquadFilterNode.getFrequencyResponse
+        // HP/LP/Peaking/Bandpass: use BiquadFilterNode.getFrequencyResponse
         if (!state.vizContext) {
             state.vizContext = new OfflineAudioContext(1, 1, 44100);
         }
@@ -1641,13 +1982,13 @@ function drawFilterCanvas() {
         vf.frequency.value = state.filterFreq;
         vf.gain.value = PASS_FILTERS.includes(state.filterType) ? 0 : state.filterGainDb;
 
-        if (state.filterType === 'peaking') {
+        if (BANDWIDTH_FILTERS.includes(state.filterType)) {
             vf.Q.value = bwToQ(state.peakingBW);
         } else {
             vf.Q.value = 0.7071; // placeholder for per-stage Butterworth
         }
 
-        if (PASS_FILTERS.includes(state.filterType)) {
+        if (SLOPE_FILTERS.includes(state.filterType)) {
             // Cascaded HP/LP: multiply per-stage responses
             var numStages = state.passSlope / 12;
             var qValues = BUTTERWORTH_Q[numStages] || BUTTERWORTH_Q[1];
@@ -1666,7 +2007,7 @@ function drawFilterCanvas() {
                 }
             }
         } else {
-            // Peaking: single stage
+            // Peaking / Bandpass: single stage
             vf.getFrequencyResponse(vizFreqArray, magResponse, phaseResponse);
         }
     }
@@ -1762,6 +2103,108 @@ function drawVizGrid(ctx, w, h, plotWidth, plotHeight, pad, isDark) {
         ctx.textAlign = 'right';
         ctx.fillText((gain > 0 ? '+' : '') + gain, pad.left - 4, y + 3);
     }
+}
+
+// ============================================
+// Stereo Waveform Visualization
+// ============================================
+
+function drawStereoWaveformIdle() {
+    var silence = new Float32Array(1024);
+    drawStereoWaveform(silence, silence);
+}
+
+function startStereoVisualization() {
+    if (state.stereoVizAnimId) return;
+    if (!state.stereoAnalyserL || !state.stereoAnalyserR) return;
+
+    var bufferLength = state.stereoAnalyserL.frequencyBinCount;
+    var leftData = new Float32Array(bufferLength);
+    var rightData = new Float32Array(bufferLength);
+
+    function draw() {
+        state.stereoVizAnimId = requestAnimationFrame(draw);
+        state.stereoAnalyserL.getFloatTimeDomainData(leftData);
+        state.stereoAnalyserR.getFloatTimeDomainData(rightData);
+        drawStereoWaveform(leftData, rightData);
+    }
+
+    draw();
+}
+
+function stopStereoVisualization() {
+    if (state.stereoVizAnimId) {
+        cancelAnimationFrame(state.stereoVizAnimId);
+        state.stereoVizAnimId = null;
+    }
+}
+
+function drawStereoWaveform(leftData, rightData) {
+    var canvas = document.getElementById('stereo-viz-canvas');
+    if (!canvas) return;
+
+    var container = canvas.parentElement;
+    var dpr = window.devicePixelRatio || 1;
+    var w = container.clientWidth;
+    var h = container.clientHeight;
+
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+
+    var ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+    // Background
+    ctx.fillStyle = isDark ? '#1a1a2e' : '#f8f9fb';
+    ctx.fillRect(0, 0, w, h);
+
+    var halfH = h / 2;
+
+    // Center divider
+    ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, halfH);
+    ctx.lineTo(w, halfH);
+    ctx.stroke();
+
+    // L/R labels
+    ctx.font = '9px SF Mono, Monaco, Inconsolata, monospace';
+    ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.25)';
+    ctx.textAlign = 'left';
+    ctx.fillText('L', 4, 12);
+    ctx.fillText('R', 4, halfH + 12);
+
+    // Draw channels
+    var leftColor = isDark ? '#60a5fa' : '#2563eb';
+    var rightColor = isDark ? '#34d399' : '#10b981';
+    drawWaveformChannel(ctx, leftData, 0, halfH, w, leftColor);
+    drawWaveformChannel(ctx, rightData, halfH, halfH, w, rightColor);
+}
+
+function drawWaveformChannel(ctx, data, yOffset, height, width, color) {
+    var centerY = yOffset + height / 2;
+    var amplitude = height / 2 * 0.85;
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+
+    for (var i = 0; i < width; i++) {
+        var idx = Math.floor(i * data.length / width);
+        var val = data[idx];
+        var y = centerY - val * amplitude;
+
+        if (i === 0) {
+            ctx.moveTo(i, y);
+        } else {
+            ctx.lineTo(i, y);
+        }
+    }
+
+    ctx.stroke();
 }
 
 // ============================================
@@ -1881,10 +2324,32 @@ function setupEventListeners() {
         setFilterBypassed(!state.filterBypassed);
     });
 
-    // Teaching mode: Listen button
+    // Teaching mode: Listen button (doubles as Stop during playback)
     document.getElementById('listen-btn').addEventListener('click', function () {
+        if (state.testRunning) {
+            stopTestSequence();
+            return;
+        }
         if (!state.audioContext) createAudioContext();
         teachingListen();
+    });
+
+    // Loop toggle button (teaching mode)
+    document.getElementById('loop-btn').addEventListener('click', function () {
+        setTestLoop(!state.testLoop);
+    });
+
+    // Source dropdowns: show/hide multitrack controls + preload on change
+    document.getElementById('teaching-source-select').addEventListener('change', function () {
+        updateMultitrackControlsVisibility();
+        var isMultitrack = parseInt(this.value) === 3;
+        if (isMultitrack) preloadMultitrack();
+        // Auto-enable loop for multi-track
+        setTestLoop(isMultitrack);
+    });
+    document.getElementById('quiz-source-select').addEventListener('change', function () {
+        updateMultitrackControlsVisibility();
+        if (parseInt(this.value) === 3) preloadMultitrack();
     });
 
     // Filter type buttons
@@ -1999,14 +2464,22 @@ function setupEventListeners() {
         });
     });
 
-    // New question button
+    // New question button (doubles as Stop during playback)
     document.getElementById('new-question-btn').addEventListener('click', function () {
+        if (state.testRunning) {
+            stopTestSequence();
+            return;
+        }
         if (!state.audioContext) createAudioContext();
         newQuestion();
     });
 
-    // Play again button
+    // Play again button (doubles as Stop during playback)
     document.getElementById('play-again-btn').addEventListener('click', function () {
+        if (state.testRunning) {
+            stopTestSequence();
+            return;
+        }
         if (!state.audioContext) createAudioContext();
         playAgain();
     });
