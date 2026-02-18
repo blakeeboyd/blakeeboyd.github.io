@@ -31,4 +31,12 @@ export interface ProcessorInstance {
   getReductionDb?(): number;
   /** For composite processors: get an internal sub-processor by its internalId */
   getInternalProcessor?(internalId: string): ProcessorInstance | undefined;
+  /** Connect a microphone input for recording */
+  setRecordInput?(source: AudioNode, monitoring: boolean): void;
+  /** Disconnect the recording input */
+  clearRecordInput?(): void;
+  /** Start capturing audio into a buffer */
+  startRecording?(startTime: number, offset: number): void;
+  /** Stop capturing and return the recorded buffer + timeline offset */
+  stopRecording?(): { buffer: AudioBuffer; startOffset: number } | null;
 }

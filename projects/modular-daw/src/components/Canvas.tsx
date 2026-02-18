@@ -28,6 +28,7 @@ import { WaveformEditor } from './WaveformEditor';
 import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { Toast } from './Toast';
 import { useEditorStore } from '../store/editor-store';
+import { useAutoSave } from '../hooks/use-auto-save';
 
 export function Canvas({ allowedModules }: { allowedModules?: string[] }) {
   const { nodes, edges, onNodesChange, onEdgesChange, onConnect, isSession } = useScopedGraph();
@@ -35,6 +36,7 @@ export function Canvas({ allowedModules }: { allowedModules?: string[] }) {
   const scopeStack = useScopeStore(s => s.scopeStack);
 
   const { initialize } = useAudioEngine();
+  useAutoSave();
   const [audioReady, setAudioReady] = useState(false);
 
   const nodeTypes = useMemo(() => getNodeTypes(), []);
@@ -147,6 +149,8 @@ export function Canvas({ allowedModules }: { allowedModules?: string[] }) {
         for (const rid of selectedRegionIds) {
           removeRegion(rid);
         }
+      } else if (e.key === 'l' && !e.ctrlKey && !e.metaKey) {
+        useTransportStore.getState().toggleLoop();
       } else if (e.key === '?') {
         e.preventDefault();
         setShowShortcuts(prev => !prev);

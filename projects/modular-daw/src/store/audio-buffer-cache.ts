@@ -21,6 +21,14 @@ export function removeBuffer(id: string): void {
   cache.delete(id);
 }
 
+export function getAllBufferIds(): string[] {
+  return Array.from(cache.keys());
+}
+
+export function clearAllBuffers(): void {
+  cache.clear();
+}
+
 /**
  * Downsample an AudioBuffer to a fixed number of bins by computing
  * the max absolute sample value within each bin. Averages all channels

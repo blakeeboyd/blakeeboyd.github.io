@@ -65,6 +65,7 @@ export interface EditorState {
   setOverlapMode(mode: OverlapMode): void;
   selectRegions(ids: string[]): void;
   getRegionsForTrack(trackId: string): Region[];
+  loadRegions(regions: Record<string, Region[]>): void;
 }
 
 export const useEditorStore = create<EditorState>()(
@@ -229,6 +230,10 @@ export const useEditorStore = create<EditorState>()(
 
       getRegionsForTrack(trackId) {
         return get().regions[trackId] ?? [];
+      },
+
+      loadRegions(regions) {
+        set({ regions, selectedRegionIds: [] });
       },
     }),
     {

@@ -8,6 +8,7 @@ import { NodeSlider } from '../../components/NodeSlider';
 import { formatTime } from '../../utils/format-time';
 import { useEditorStore } from '../../store/editor-store';
 import { useMuteMap } from '../../hooks/use-mute-state';
+import { useRecordingStore } from '../../store/recording-store';
 import { drawWaveform } from './waveform-utils';
 import type { DawNode } from '../../types/graph';
 
@@ -18,6 +19,9 @@ export function TrackNode({ id, data }: NodeProps<DawNode>) {
   const toggleSolo = useGraphStore(s => s.toggleSolo);
   const muteMap = useMuteMap();
   const isDimmed = muteMap.get(id) ?? false;
+  const isArmed = useRecordingStore(s => s.armedTrackIds.includes(id));
+  const isRecording = useRecordingStore(s => s.isRecording);
+  const toggleArm = useRecordingStore(s => s.toggleArm);
   const volume = data.parameters.volume ?? 0;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -127,6 +131,8 @@ export function TrackNode({ id, data }: NodeProps<DawNode>) {
     'daw-node daw-node--io daw-node--track',
     isDimmed ? 'daw-node--dimmed' : '',
     data.soloed ? 'daw-node--soloed' : '',
+    isArmed ? 'daw-node--armed' : '',
+    isArmed && isRecording ? 'daw-node--recording' : '',
   ].join(' ');
 
   return (
@@ -134,6 +140,11 @@ export function TrackNode({ id, data }: NodeProps<DawNode>) {
       <div className="daw-node__header">
         <span>Track</span>
         <div className="daw-node__sm-buttons">
+          <button
+            className={`daw-node__sm-btn daw-node__sm-btn--record ${isArmed ? 'active' : ''}`}
+            onClick={(e) => { e.stopPropagation(); toggleArm(id); }}
+            title="Record arm"
+          >R</button>
           <button
             className={`daw-node__sm-btn daw-node__sm-btn--solo ${data.soloed ? 'active' : ''}`}
             onClick={(e) => { e.stopPropagation(); toggleSolo(id, !e.shiftKey); }}

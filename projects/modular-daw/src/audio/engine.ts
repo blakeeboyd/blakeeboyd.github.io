@@ -290,6 +290,37 @@ export class AudioEngine {
     this.currentMuteState = new Map(muteMap);
   }
 
+  /** Connect a mic source to a track processor for recording */
+  setRecordInput(trackId: string, source: AudioNode, monitoring: boolean): void {
+    const proc = this.processors.get(trackId);
+    proc?.setRecordInput?.(source, monitoring);
+  }
+
+  /** Disconnect recording input from a track processor */
+  clearRecordInput(trackId: string): void {
+    const proc = this.processors.get(trackId);
+    proc?.clearRecordInput?.();
+  }
+
+  /** Start recording on a track processor */
+  startRecording(trackId: string, offset: number): void {
+    if (!this.ctx) return;
+    const proc = this.processors.get(trackId);
+    proc?.startRecording?.(this.ctx.currentTime, offset);
+  }
+
+  /** Stop recording on a track processor and return the captured buffer */
+  stopRecording(trackId: string): { buffer: AudioBuffer; startOffset: number } | null {
+    const proc = this.processors.get(trackId);
+    return proc?.stopRecording?.() ?? null;
+  }
+
+  /** Measure the total output latency in seconds */
+  measureLatency(): number {
+    if (!this.ctx) return 0;
+    return (this.ctx.baseLatency ?? 0) + (this.ctx.outputLatency ?? 0);
+  }
+
   /** Get a live processor instance by node ID (for metering/visualization) */
   getProcessor(nodeId: string): ProcessorInstance | undefined {
     return this.processors.get(nodeId);

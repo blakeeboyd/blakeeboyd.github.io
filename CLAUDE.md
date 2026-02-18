@@ -74,6 +74,18 @@ When building new features:
     │   │   ├── index.js        # Production bundle
     │   │   └── index.css       # Production styles
     │   ├── src/                # React source (Vite + TypeScript)
+    │   │   ├── App.tsx         # Root component
+    │   │   ├── main.tsx        # Entry point
+    │   │   ├── audio/          # Engine, reconciler, input manager
+    │   │   ├── components/     # Canvas, TransportBar, Editor, SessionManager
+    │   │   ├── edges/          # Audio and parameter cable components
+    │   │   ├── hooks/          # use-audio-engine, use-auto-save, use-undo-redo
+    │   │   ├── lib/            # IndexedDB wrapper, session serializer
+    │   │   ├── modules/        # 42 modules (manifest + processor + node each)
+    │   │   ├── store/          # Zustand stores (graph, editor, transport, recording, session)
+    │   │   ├── styles/         # Dark-first design (daw- prefix)
+    │   │   ├── types/          # TypeScript types (audio, graph, modules, region)
+    │   │   └── utils/          # Connection validation, grid, peaks cache
     │   ├── package.json
     │   ├── vite.config.ts
     │   └── tsconfig.json
@@ -857,6 +869,129 @@ src/
 - Zustand selectors: use `useShallow` for selectors that return arrays/objects, select primitives directly to avoid infinite re-render loops
 - Each tool page follows the pattern: load document on route change, auto-save on state changes, undo/redo via temporal store
 - Stage plot elements use pointer events (not drag API) for smooth drag/resize
+
+### Modular DAW
+
+A browser-based DAW that exposes all audio routing as a visual modular patching environment. Users see and build all signal flow explicitly by connecting modules with virtual patch cables. Core philosophy: the functionality of digital production tools, with the visibility of analog signal flow.
+
+**Location:** `projects/modular-daw/`
+**Spec:** `modular-daw-spec.md` (9 phases, 68 items)
+
+**Key Features:**
+- Visual node-graph patching canvas (React Flow) with 42 audio modules
+- State-driven architecture: abstract graph (Zustand) is the source of truth, audio engine reconciles to match
+- Track module with region-based EDL playback, multi-track waveform editor with tool modes (pointer, trim, slice, fade, zoom, draw)
+- 5 dynamics processors (compressor, limiter, gate, expander, de-esser) built as composite modules from atomic DSP primitives, with "enter scope" to see internals
+- 5 metering modules (level meter, spectrum analyzer, oscilloscope, correlation meter, loudness meter)
+- Effects: EQ, filter, delay, reverb, chorus, flanger, phaser, waveshaper, bitcrusher, tape saturation
+- Routing: mixer, splitter, merger, A/B compare
+- Solo/mute with graph traversal resolution, solo-safe system
+- Recording pipeline with microphone input, latency compensation, record-arm per track
+- Metronome module with look-ahead scheduling
+- Loop playback with visual loop region
+- Session save/load to IndexedDB (audio buffers as raw ArrayBuffers)
+- Auto-save every 30s after first manual save
+- Grid/snap system, keyboard shortcuts, module search, undo/redo
+- Dark-first design system with custom design tokens
+
+**Technical Stack:**
+- React 18 + TypeScript + Vite
+- React Flow (@xyflow/react) for node graph
+- Zustand for state management (graph, editor, transport, recording, session stores)
+- Zundo for undo/redo middleware
+- Web Audio API for all audio processing (no AudioWorklet yet)
+- IndexedDB for session persistence (OPFS rejected: GitHub Pages lacks cross-origin isolation headers)
+- Canvas 2D for waveform rendering, meters, visualizations
+- nanoid for ID generation
+
+**Architecture:**
+```
+src/
+├── App.tsx / main.tsx          # Entry points
+├── audio/
+│   ├── engine.ts               # Reconciler (state → Web Audio graph)
+│   ├── audio-context.ts        # Shared AudioContext singleton
+│   ├── input-manager.ts        # getUserMedia wrapper
+│   ├── solo-mute-resolver.ts   # Graph traversal for solo/mute
+│   ├── composite-factory.ts    # Internal graph instantiation
+│   └── channel-utils.ts        # Mono/stereo handling
+├── components/
+│   ├── Canvas.tsx              # Main graph canvas
+│   ├── TransportBar.tsx        # Play/Stop/Record/BPM/Loop
+│   ├── Toolbar.tsx             # Undo/Redo/Sessions/Fullscreen
+│   ├── ModulePanel.tsx         # Module palette with search
+│   ├── WaveformEditor.tsx      # Multi-track editor panel
+│   ├── SessionManager.tsx      # Save/Load modal
+│   └── editor/                 # TimelineCanvas, TimeRuler, PlayheadOverlay, EditorToolbar
+├── edges/                      # AudioEdge (red), ParameterEdge (amber)
+├── hooks/
+│   ├── use-audio-engine.ts     # Bridge: stores → engine + recording lifecycle
+│   ├── use-auto-save.ts        # 30s interval auto-save
+│   └── use-undo-redo.ts        # Ctrl+Z/Y keyboard handling
+├── lib/
+│   ├── session-db.ts           # IndexedDB wrapper (sessions + audio-buffers stores)
+│   └── session-serializer.ts   # Capture/restore/new session
+├── modules/                    # 42 modules, each: manifest.ts, processor.ts, Node.tsx
+│   ├── index.ts                # Module registry
+│   └── [module-name]/          # Per-module files
+├── store/
+│   ├── graph-store.ts          # Nodes + edges (Zundo undo/redo)
+│   ├── editor-store.ts         # Regions + selection + tools (Zundo)
+│   ├── transport-store.ts      # Play/stop/position/BPM/loop
+│   ├── recording-store.ts      # Armed tracks, recording state
+│   ├── session-store.ts        # Current session ID/name
+│   ├── audio-buffer-cache.ts   # In-memory buffer store
+│   └── scope-store.ts          # Composite module navigation
+├── styles/                     # tokens.css, canvas.css, nodes.css, edges.css, editor.css
+├── types/                      # audio.ts, graph.ts, modules.ts, region.ts
+└── utils/                      # validate-connection, format-time, grid, peaks-cache
+```
+
+**Module System:**
+Every module follows a three-file pattern:
+- `manifest.ts`: Ports (id, direction, signalType, channelFormat), parameters (id, min, max, default, unit), category, singleton flag, soloSafe flag, optional `composition.internalGraph` for composites
+- `processor.ts`: `ProcessorFactory` function that creates a `ProcessorInstance` with `inputs`/`outputs` AudioNode maps, `setParameter()`, `dispose()`, and optional playback/recording methods
+- `Node.tsx`: React component rendered inside the React Flow node
+
+**Composite Modules:**
+Complex modules (compressor, limiter, gate, expander, de-esser) define an `internalGraph` in their manifest. The user can "enter" the composite (double-click) to see and edit the internal atomic primitives. Breadcrumb navigation shows the scope path.
+
+**Audio Engine Reconciler (5-step diff-and-patch):**
+1. Diff nodes: find added, removed, changed
+2. Manage processors: create/dispose ProcessorInstances
+3. Update parameters on existing processors
+4. Diff edges: find added/removed connections
+5. Manage connections: create/remove Web Audio connections with GainNode gates (80ms crossfade)
+
+**Session Persistence:**
+- IndexedDB database `modular-daw` with `sessions` and `audio-buffers` object stores
+- Audio stored as raw `ArrayBuffer[]` channel data, reconstructed to `AudioBuffer` on restore
+- Auto-save subscribes to store changes, saves every 30s if dirty (only after first manual save)
+
+**Recording Pipeline:**
+- Record arm toggles on track nodes
+- `input-manager.ts` wraps `getUserMedia` with stream caching
+- ScriptProcessorNode (4096 buffer) captures Float32Array chunks
+- Latency compensation: `ctx.baseLatency + ctx.outputLatency` subtracted from region position
+
+**CSS Architecture:**
+- All classes prefixed with `daw-`
+- Dark-first design tokens in `tokens.css` scoped to `.daw-app`
+- Category colors for module borders: red (generator), blue (effect), green (I/O), cyan (routing), gray (utility), teal (atomic)
+- Signal colors: red (audio cables), amber (parameter cables)
+
+**Build & Deploy:**
+- Dev: `cd projects/modular-daw && npm run dev`
+- Build: `npm run build` (tsc + Vite, output to assets/)
+- Production: `index.html` loads `assets/index.js` and `assets/index.css`
+- Vite config includes custom plugin to proxy site-wide CSS/JS/images from `../../` during dev
+
+**Implementation Status (as of Phase 4A):**
+- Phases 1-3 complete (core framework, track module, effects/routing)
+- Visual overhaul complete
+- Phase 4A complete (loop playback, metronome, recording, sessions, auto-save)
+- Phase 4B deferred (automation, loop recording, comping, session versioning)
+- Phases 5-9 not started
 
 ## Design Inspiration
 

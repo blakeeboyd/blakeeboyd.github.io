@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useUndoRedo } from '../hooks/use-undo-redo';
 import { PerformanceMeter } from './PerformanceMeter';
+import { SessionManager } from './SessionManager';
 
 interface ToolbarProps {
   onToggleFullscreen: () => void;
@@ -9,6 +10,7 @@ interface ToolbarProps {
 export function Toolbar({ onToggleFullscreen }: ToolbarProps) {
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showSessions, setShowSessions] = useState(false);
 
   useEffect(() => {
     const handler = () => setIsFullscreen(!!document.fullscreenElement);
@@ -18,6 +20,17 @@ export function Toolbar({ onToggleFullscreen }: ToolbarProps) {
 
   return (
     <div className="daw-toolbar">
+      <button
+        className="daw-toolbar__btn"
+        onClick={() => setShowSessions(true)}
+        title="Sessions"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+        </svg>
+      </button>
+      <div className="daw-toolbar__sep" />
       <button
         className="daw-toolbar__btn"
         onClick={undo}
@@ -64,6 +77,7 @@ export function Toolbar({ onToggleFullscreen }: ToolbarProps) {
       </button>
       <div className="daw-toolbar__sep" />
       <PerformanceMeter />
+      {showSessions && <SessionManager onClose={() => setShowSessions(false)} />}
     </div>
   );
 }

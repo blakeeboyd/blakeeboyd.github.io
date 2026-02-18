@@ -1,14 +1,20 @@
 import { useCallback } from 'react';
 import { useTransportStore } from '../store/transport-store';
+import { useRecordingStore } from '../store/recording-store';
 import { formatTime } from '../utils/format-time';
 
 export function TransportBar() {
   const isPlaying = useTransportStore(s => s.isPlaying);
   const position = useTransportStore(s => s.position);
+  const loopEnabled = useTransportStore(s => s.loopEnabled);
   const play = useTransportStore(s => s.play);
   const stop = useTransportStore(s => s.stop);
   const pause = useTransportStore(s => s.pause);
   const seek = useTransportStore(s => s.seek);
+  const toggleLoop = useTransportStore(s => s.toggleLoop);
+  const isRecording = useRecordingStore(s => s.isRecording);
+  const hasArmedTracks = useRecordingStore(s => s.armedTrackIds.length > 0);
+  const setRecording = useRecordingStore(s => s.setRecording);
 
   const handlePlayPause = useCallback(() => {
     if (isPlaying) {
@@ -19,8 +25,19 @@ export function TransportBar() {
   }, [isPlaying, play, pause]);
 
   const handleStop = useCallback(() => {
+    if (isRecording) {
+      setRecording(false);
+    }
     stop();
-  }, [stop]);
+  }, [stop, isRecording, setRecording]);
+
+  const handleRecord = useCallback(() => {
+    if (isRecording) {
+      setRecording(false);
+    } else if (hasArmedTracks) {
+      setRecording(true);
+    }
+  }, [isRecording, hasArmedTracks, setRecording]);
 
   const handleReturnToZero = useCallback(() => {
     seek(0);
@@ -64,6 +81,29 @@ export function TransportBar() {
       >
         <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
           <rect x="3" y="3" width="8" height="8" rx="1" />
+        </svg>
+      </button>
+      <button
+        className={`daw-transport__btn ${loopEnabled ? 'active' : ''}`}
+        onClick={toggleLoop}
+        title={`Loop ${loopEnabled ? 'on' : 'off'} (L)`}
+        aria-label={`Toggle loop ${loopEnabled ? 'off' : 'on'}`}
+      >
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M10 3H5a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6H4" />
+          <polyline points="8,1 10,3 8,5" />
+          <polyline points="6,9 4,11 6,13" />
+        </svg>
+      </button>
+      <button
+        className={`daw-transport__btn daw-transport__btn--record ${isRecording ? 'active' : ''}`}
+        onClick={handleRecord}
+        disabled={!hasArmedTracks && !isRecording}
+        title={isRecording ? 'Stop recording' : hasArmedTracks ? 'Record' : 'Arm a track first'}
+        aria-label={isRecording ? 'Stop recording' : 'Record'}
+      >
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+          <circle cx="7" cy="7" r="5" />
         </svg>
       </button>
       <div className="daw-transport__position">

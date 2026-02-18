@@ -19,6 +19,15 @@ export const trackFactory: ProcessorFactory = {
     let regions: Region[] = [];
     let activeSources: ActiveSource[] = [];
 
+    // Recording state
+    let recordSource: AudioNode | null = null;
+    let monitorGain: GainNode | null = null;
+    let scriptProcessor: ScriptProcessorNode | null = null;
+    let recordingChunks: Float32Array[] = [];
+    let isRecording = false;
+    let recordStartOffset = 0;
+    const RECORD_BUFFER_SIZE = 4096;
+
     function stopPlayback() {
       for (const { source, fadeGain } of activeSources) {
         try { source.stop(); } catch { /* already stopped */ }
@@ -101,8 +110,90 @@ export const trackFactory: ProcessorFactory = {
       schedulePlayback,
       stopPlayback,
 
+      setRecordInput(source: AudioNode, monitoring: boolean) {
+        // Clear any previous input
+        if (scriptProcessor) {
+          try { scriptProcessor.disconnect(); } catch { /* ok */ }
+          scriptProcessor = null;
+        }
+        if (monitorGain) {
+          try { monitorGain.disconnect(); } catch { /* ok */ }
+          monitorGain = null;
+        }
+
+        recordSource = source;
+
+        // ScriptProcessorNode for capture
+        scriptProcessor = ctx.createScriptProcessor(RECORD_BUFFER_SIZE, 1, 1);
+        scriptProcessor.onaudioprocess = (e) => {
+          if (!isRecording) return;
+          // Copy the input data (it gets reused by the browser)
+          const input = e.inputBuffer.getChannelData(0);
+          recordingChunks.push(new Float32Array(input));
+          // Pass-through silence so the node stays active
+          e.outputBuffer.getChannelData(0).fill(0);
+        };
+
+        source.connect(scriptProcessor);
+        scriptProcessor.connect(ctx.destination); // ScriptProcessor must be connected to stay alive
+
+        // Monitor path
+        monitorGain = ctx.createGain();
+        monitorGain.gain.value = monitoring ? 1 : 0;
+        source.connect(monitorGain);
+        monitorGain.connect(gainNode);
+      },
+
+      clearRecordInput() {
+        if (scriptProcessor) {
+          try { scriptProcessor.disconnect(); } catch { /* ok */ }
+          if (recordSource) {
+            try { recordSource.disconnect(scriptProcessor); } catch { /* ok */ }
+          }
+          scriptProcessor = null;
+        }
+        if (monitorGain) {
+          try { monitorGain.disconnect(); } catch { /* ok */ }
+          if (recordSource) {
+            try { recordSource.disconnect(monitorGain); } catch { /* ok */ }
+          }
+          monitorGain = null;
+        }
+        recordSource = null;
+      },
+
+      startRecording(_startTime: number, offset: number) {
+        recordingChunks = [];
+        recordStartOffset = offset;
+        isRecording = true;
+      },
+
+      stopRecording(): { buffer: AudioBuffer; startOffset: number } | null {
+        isRecording = false;
+        if (recordingChunks.length === 0) return null;
+
+        // Stitch chunks into a single AudioBuffer
+        const totalSamples = recordingChunks.reduce((sum, c) => sum + c.length, 0);
+        const buffer = ctx.createBuffer(1, totalSamples, ctx.sampleRate);
+        const channelData = buffer.getChannelData(0);
+        let writePos = 0;
+        for (const chunk of recordingChunks) {
+          channelData.set(chunk, writePos);
+          writePos += chunk.length;
+        }
+        recordingChunks = [];
+
+        return { buffer, startOffset: recordStartOffset };
+      },
+
       dispose() {
         stopPlayback();
+        if (scriptProcessor) {
+          try { scriptProcessor.disconnect(); } catch { /* ok */ }
+        }
+        if (monitorGain) {
+          try { monitorGain.disconnect(); } catch { /* ok */ }
+        }
         gainNode.disconnect();
       },
     };

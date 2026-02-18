@@ -191,6 +191,10 @@ import { probeManifest } from './atomic/probe/manifest';
 import { probeFactory } from './atomic/probe/processor';
 import { ProbeNode } from './atomic/probe/ProbeNode';
 
+import { metronomeManifest } from './metronome/manifest';
+import { metronomeFactory } from './metronome/processor';
+import { MetronomeNode } from './metronome/MetronomeNode';
+
 /** Register all built-in modules. Call once at startup. */
 export function registerAllModules(): void {
   registerModule({
@@ -353,6 +357,11 @@ export function registerAllModules(): void {
     factory: loudnessMeterFactory,
     component: LoudnessMeterModuleNode,
   });
+  registerModule({
+    manifest: metronomeManifest,
+    factory: metronomeFactory,
+    component: MetronomeNode,
+  });
 
   // Internal display nodes
   registerModule({ manifest: portNodeManifest, factory: portNodeFactory, component: PortNode });
@@ -411,6 +420,7 @@ const moduleTable: Record<string, { manifest: any; factory: any; component: any 
   'oscilloscope': { manifest: oscilloscopeManifest, factory: oscilloscopeFactory, component: OscilloscopeModuleNode },
   'correlation-meter': { manifest: correlationMeterManifest, factory: correlationMeterFactory, component: CorrelationMeterModuleNode },
   'loudness-meter': { manifest: loudnessMeterManifest, factory: loudnessMeterFactory, component: LoudnessMeterModuleNode },
+  'metronome': { manifest: metronomeManifest, factory: metronomeFactory, component: MetronomeNode },
   'port-node': { manifest: portNodeManifest, factory: portNodeFactory, component: PortNode },
   'envelope-detector': { manifest: envelopeDetectorManifest, factory: envelopeDetectorFactory, component: EnvelopeDetectorNode },
   'gain-computer': { manifest: gainComputerManifest, factory: gainComputerFactory, component: GainComputerNode },

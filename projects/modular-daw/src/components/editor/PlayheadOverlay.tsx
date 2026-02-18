@@ -30,10 +30,42 @@ export function PlayheadOverlay({ width, height }: PlayheadOverlayProps) {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, width, height);
 
-      const position = useTransportStore.getState().position;
+      const transport = useTransportStore.getState();
       const currentZoom = useEditorStore.getState().zoom;
       const currentScrollX = useEditorStore.getState().scrollX;
-      const x = (position - currentScrollX) * currentZoom;
+
+      // Draw loop region highlight
+      if (transport.loopEnabled && transport.loopEnd > transport.loopStart) {
+        const loopStartX = (transport.loopStart - currentScrollX) * currentZoom;
+        const loopEndX = (transport.loopEnd - currentScrollX) * currentZoom;
+        const lx = Math.max(0, loopStartX);
+        const rx = Math.min(width, loopEndX);
+
+        if (rx > lx) {
+          ctx.fillStyle = 'rgba(37, 99, 235, 0.08)';
+          ctx.fillRect(lx, 0, rx - lx, height);
+
+          // Loop boundary lines
+          ctx.strokeStyle = 'rgba(37, 99, 235, 0.4)';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([4, 3]);
+          if (loopStartX >= 0 && loopStartX <= width) {
+            ctx.beginPath();
+            ctx.moveTo(Math.round(loopStartX) + 0.5, 0);
+            ctx.lineTo(Math.round(loopStartX) + 0.5, height);
+            ctx.stroke();
+          }
+          if (loopEndX >= 0 && loopEndX <= width) {
+            ctx.beginPath();
+            ctx.moveTo(Math.round(loopEndX) + 0.5, 0);
+            ctx.lineTo(Math.round(loopEndX) + 0.5, height);
+            ctx.stroke();
+          }
+          ctx.setLineDash([]);
+        }
+      }
+
+      const x = (transport.position - currentScrollX) * currentZoom;
 
       // Only draw if in view
       if (x >= -1 && x <= width + 1) {

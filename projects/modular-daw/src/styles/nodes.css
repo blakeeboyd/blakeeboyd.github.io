@@ -950,3 +950,232 @@
   color: var(--daw-accent);
   border-color: var(--daw-accent);
 }
+
+/* --------------------------------------------------------------------------
+   Record arm / recording
+   -------------------------------------------------------------------------- */
+
+.daw-node__sm-btn--record.active {
+  background: var(--daw-error);
+  border-color: var(--daw-error);
+  color: #fff;
+}
+
+.daw-node--armed {
+  box-shadow: 0 0 0 2px var(--daw-error), var(--daw-shadow-module);
+}
+
+.daw-node--recording {
+  animation: daw-record-pulse 1s ease-in-out infinite;
+}
+
+@keyframes daw-record-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px var(--daw-error), var(--daw-shadow-module); }
+  50% { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.5), var(--daw-shadow-module); }
+}
+
+.daw-transport__btn--record {
+  color: var(--daw-error);
+}
+
+.daw-transport__btn--record.active {
+  color: #fff;
+  background: var(--daw-error);
+  animation: daw-record-btn-pulse 1s ease-in-out infinite;
+}
+
+.daw-transport__btn--record:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+@keyframes daw-record-btn-pulse {
+  0%, 100% { background: var(--daw-error); }
+  50% { background: rgba(239, 68, 68, 0.6); }
+}
+
+/* --------------------------------------------------------------------------
+   Session manager modal
+   -------------------------------------------------------------------------- */
+
+.daw-session-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.daw-session-manager {
+  background: var(--daw-surface);
+  border: 1px solid var(--daw-border-strong);
+  border-radius: var(--daw-radius-sm);
+  box-shadow: var(--daw-shadow-popover);
+  width: 360px;
+  max-height: 80vh;
+  overflow-y: auto;
+  font-family: var(--daw-font);
+  color: var(--daw-text);
+}
+
+.daw-session-manager__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--daw-border);
+}
+
+.daw-session-manager__close {
+  border: none;
+  background: transparent;
+  color: var(--daw-text-label);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+}
+
+.daw-session-manager__close:hover {
+  color: var(--daw-text);
+}
+
+.daw-session-manager__body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.daw-session-manager__save-row {
+  display: flex;
+  gap: 6px;
+}
+
+.daw-session-manager__input {
+  flex: 1;
+  padding: 5px 8px;
+  font-size: 0.8rem;
+  font-family: var(--daw-font);
+  color: var(--daw-text);
+  background: var(--daw-surface-inset);
+  border: 1px solid var(--daw-border-strong);
+  border-radius: var(--daw-radius-xs);
+  outline: none;
+}
+
+.daw-session-manager__input:focus {
+  border-color: var(--daw-accent);
+}
+
+.daw-session-manager__btn {
+  padding: 5px 10px;
+  font-size: 0.75rem;
+  font-family: var(--daw-font);
+  font-weight: 600;
+  border: 1px solid var(--daw-border-strong);
+  border-radius: var(--daw-radius-xs);
+  background: transparent;
+  color: var(--daw-text);
+  cursor: pointer;
+  transition: all var(--daw-transition-fast);
+  white-space: nowrap;
+}
+
+.daw-session-manager__btn:hover:not(:disabled) {
+  border-color: var(--daw-accent);
+  background: var(--daw-accent);
+  color: #fff;
+}
+
+.daw-session-manager__btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.daw-session-manager__btn--new {
+  width: 100%;
+}
+
+.daw-session-manager__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.daw-session-manager__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border: 1px solid var(--daw-border);
+  border-radius: var(--daw-radius-xs);
+  gap: 8px;
+}
+
+.daw-session-manager__item.active {
+  border-color: var(--daw-accent);
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.daw-session-manager__item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.daw-session-manager__item-name {
+  font-size: 0.8rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.daw-session-manager__item-date {
+  font-size: 0.65rem;
+  color: var(--daw-text-label);
+}
+
+.daw-session-manager__item-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.daw-session-manager__btn--sm {
+  padding: 3px 8px;
+  font-size: 0.7rem;
+  font-family: var(--daw-font);
+  border: 1px solid var(--daw-border-strong);
+  border-radius: var(--daw-radius-xs);
+  background: transparent;
+  color: var(--daw-text-label);
+  cursor: pointer;
+  transition: all var(--daw-transition-fast);
+}
+
+.daw-session-manager__btn--sm:hover:not(:disabled) {
+  border-color: var(--daw-accent);
+  color: var(--daw-text);
+}
+
+.daw-session-manager__btn--danger:hover:not(:disabled) {
+  border-color: var(--daw-error);
+  color: var(--daw-error);
+}
+
+.daw-session-manager__btn--sm:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.daw-session-manager__status {
+  font-size: 0.7rem;
+  color: var(--daw-text-label);
+  text-align: center;
+}
