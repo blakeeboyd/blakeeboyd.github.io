@@ -10,15 +10,15 @@ export function PatchSheetEditor() {
   return (
     <div>
       <PatchSheetMetadata />
-      <div className="adv-tabs">
+      <div className="advc-tabs">
         <button
-          className={`adv-tab${activeTab === 'inputs' ? ' adv-tab--active' : ''}`}
+          className={`advc-tab${activeTab === 'inputs' ? ' advc-tab--active' : ''}`}
           onClick={() => setActiveTab('inputs')}
         >
           Inputs
         </button>
         <button
-          className={`adv-tab${activeTab === 'outputs' ? ' adv-tab--active' : ''}`}
+          className={`advc-tab${activeTab === 'outputs' ? ' advc-tab--active' : ''}`}
           onClick={() => setActiveTab('outputs')}
         >
           Outputs

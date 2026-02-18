@@ -14,9 +14,9 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const TYPE_CLASSES: Record<string, string> = {
-  'patch-sheet': 'adv-doc-card__icon--patch',
-  'stage-plot': 'adv-doc-card__icon--stage',
-  'run-of-show': 'adv-doc-card__icon--ros',
+  'patch-sheet': 'advc-doc-card__icon--patch',
+  'stage-plot': 'advc-doc-card__icon--stage',
+  'run-of-show': 'advc-doc-card__icon--ros',
 };
 
 function timeAgo(iso: string): string {
@@ -33,18 +33,18 @@ function timeAgo(iso: string): string {
 export function DocumentCard({ doc, isActive, onClick, onDelete }: DocumentCardProps) {
   return (
     <div
-      className={`adv-doc-card${isActive ? ' adv-doc-card--active' : ''}`}
+      className={`advc-doc-card${isActive ? ' advc-doc-card--active' : ''}`}
       onClick={onClick}
     >
-      <div className={`adv-doc-card__icon ${TYPE_CLASSES[doc.type]}`}>
+      <div className={`advc-doc-card__icon ${TYPE_CLASSES[doc.type]}`}>
         {TYPE_LABELS[doc.type]}
       </div>
-      <div className="adv-doc-card__info">
-        <p className="adv-doc-card__name">{doc.name}</p>
-        <p className="adv-doc-card__meta">{timeAgo(doc.lastEditedAt)}</p>
+      <div className="advc-doc-card__info">
+        <p className="advc-doc-card__name">{doc.name}</p>
+        <p className="advc-doc-card__meta">{timeAgo(doc.lastEditedAt)}</p>
       </div>
       <button
-        className="adv-btn adv-btn--sm adv-btn--icon adv-btn--danger adv-doc-card__delete"
+        className="advc-btn advc-btn--sm advc-btn--icon advc-btn--danger advc-doc-card__delete"
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(); }}
         title="Delete"
       >

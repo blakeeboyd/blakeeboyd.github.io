@@ -35,7 +35,7 @@ export function StageCanvas() {
   const dims = STAGE_DIMENSIONS[stageSize];
 
   const handleCanvasClick = useCallback((e: React.MouseEvent) => {
-    if (e.target === canvasRef.current || (e.target as HTMLElement).classList.contains('adv-stage-canvas__label')) {
+    if (e.target === canvasRef.current || (e.target as HTMLElement).classList.contains('advc-stage-canvas__label')) {
       selectElement(null);
     }
   }, [selectElement]);
@@ -102,11 +102,11 @@ export function StageCanvas() {
   return (
     <div
       ref={canvasRef}
-      className={`adv-stage-canvas${gridSnap ? ' adv-stage-canvas--grid' : ''}`}
+      className={`advc-stage-canvas${gridSnap ? ' advc-stage-canvas--grid' : ''}`}
       style={{ width: dims.width, height: dims.height }}
       onClick={handleCanvasClick}
     >
-      <span className="adv-stage-canvas__label">AUDIENCE</span>
+      <span className="advc-stage-canvas__label">AUDIENCE</span>
       {backgroundImage && (
         <img
           src={backgroundImage}

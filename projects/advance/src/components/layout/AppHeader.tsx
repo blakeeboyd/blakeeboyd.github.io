@@ -5,15 +5,15 @@ export function AppHeader() {
   const isHome = location.pathname === '/';
 
   return (
-    <header className="adv-header">
+    <header className="advc-header">
       <NavLink to="/" style={{ textDecoration: 'none' }}>
-        <h1 className="adv-header__title">Advance</h1>
+        <h1 className="advc-header__title">Advance</h1>
       </NavLink>
-      <nav className="adv-header__nav">
+      <nav className="advc-header__nav">
         <NavLink
           to="/"
           end
-          className={`adv-header__home${isHome ? ' adv-header__home--active' : ''}`}
+          className={`advc-header__home${isHome ? ' advc-header__home--active' : ''}`}
           aria-label="All tools"
           title="All tools"
         >
@@ -27,7 +27,7 @@ export function AppHeader() {
         <NavLink
           to="/patch-sheets"
           className={({ isActive }) =>
-            `adv-header__tab${isActive ? ' adv-header__tab--active' : ''}`
+            `advc-header__tab${isActive ? ' advc-header__tab--active' : ''}`
           }
         >
           Patch Sheets
@@ -35,7 +35,7 @@ export function AppHeader() {
         <NavLink
           to="/stage-plots"
           className={({ isActive }) =>
-            `adv-header__tab${isActive ? ' adv-header__tab--active' : ''}`
+            `advc-header__tab${isActive ? ' advc-header__tab--active' : ''}`
           }
         >
           Stage Plots
@@ -43,12 +43,12 @@ export function AppHeader() {
         <NavLink
           to="/run-of-show"
           className={({ isActive }) =>
-            `adv-header__tab${isActive ? ' adv-header__tab--active' : ''}`
+            `advc-header__tab${isActive ? ' advc-header__tab--active' : ''}`
           }
         >
           Run of Show
         </NavLink>
-        <a href="guide.html" className="adv-header__tab adv-header__guide" target="_blank" rel="noopener">
+        <a href="guide.html" className="advc-header__tab advc-header__guide" target="_blank" rel="noopener">
           Guide
         </a>
       </nav>

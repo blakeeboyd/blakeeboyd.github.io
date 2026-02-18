@@ -60,17 +60,17 @@ export function RunOfShowEditor() {
   }, [reorderItems]);
 
   return (
-    <div className="adv-ros-editor">
-      <div className="adv-ros-editor__actions">
-        <button className="adv-btn adv-btn--sm" onClick={() => addItem()}>+ Add Item</button>
-        <button className="adv-btn adv-btn--sm" onClick={() => addSectionHeader()}>+ Section Header</button>
-        <button className="adv-btn adv-btn--sm" onClick={recalculateTimes} title="Recalculate times from start + duration">
+    <div className="advc-ros-editor">
+      <div className="advc-ros-editor__actions">
+        <button className="advc-btn advc-btn--sm" onClick={() => addItem()}>+ Add Item</button>
+        <button className="advc-btn advc-btn--sm" onClick={() => addSectionHeader()}>+ Section Header</button>
+        <button className="advc-btn advc-btn--sm" onClick={recalculateTimes} title="Recalculate times from start + duration">
           Recalculate Times
         </button>
       </div>
       <ColumnManager />
-      <div className="adv-table-wrap">
-        <table className="adv-table">
+      <div className="advc-table-wrap">
+        <table className="advc-table">
           <thead>
             <tr>
               <th style={{ width: 28 }} />
@@ -90,11 +90,11 @@ export function RunOfShowEditor() {
                   <tr
                     key={item.id}
                     data-index={index}
-                    className={`adv-ros-header-row${dragIndex !== null && dropIndex === index ? ' adv-row--drop-target' : ''}`}
-                    style={{ background: item.highlightColor ?? 'var(--adv-surface-header)' }}
+                    className={`advc-ros-header-row${dragIndex !== null && dropIndex === index ? ' advc-row--drop-target' : ''}`}
+                    style={{ background: item.highlightColor ?? 'var(--advc-surface-header)' }}
                   >
                     <td colSpan={totalColSpan} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span className="adv-drag-handle" onPointerDown={(e) => handleDragStart(index, e)}>
+                      <span className="advc-drag-handle" onPointerDown={(e) => handleDragStart(index, e)}>
                         <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
                           <circle cx="3.5" cy="2" r="1.2"/><circle cx="8.5" cy="2" r="1.2"/>
                           <circle cx="3.5" cy="6" r="1.2"/><circle cx="8.5" cy="6" r="1.2"/>
@@ -102,13 +102,13 @@ export function RunOfShowEditor() {
                         </svg>
                       </span>
                       <input
-                        className="adv-ros-header-row__title"
+                        className="advc-ros-header-row__title"
                         value={item.headerTitle}
                         onChange={(e) => updateItem(item.id, { headerTitle: e.target.value })}
                         placeholder="Section title"
                       />
                       <button
-                        className="adv-btn adv-btn--sm adv-btn--icon adv-btn--danger"
+                        className="advc-btn advc-btn--sm advc-btn--icon advc-btn--danger"
                         onClick={() => removeItem(item.id)}
                         title="Delete section"
                       >
@@ -125,11 +125,11 @@ export function RunOfShowEditor() {
                 <tr
                   key={item.id}
                   data-index={index}
-                  className={`${item.highlightColor ? 'adv-row--highlighted' : ''}${dragIndex !== null && dropIndex === index ? ' adv-row--drop-target' : ''}`}
+                  className={`${item.highlightColor ? 'advc-row--highlighted' : ''}${dragIndex !== null && dropIndex === index ? ' advc-row--drop-target' : ''}`}
                   style={item.highlightColor ? { background: item.highlightColor + '22' } : undefined}
                 >
                   <td>
-                    <span className="adv-drag-handle" onPointerDown={(e) => handleDragStart(index, e)}>
+                    <span className="advc-drag-handle" onPointerDown={(e) => handleDragStart(index, e)}>
                       <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
                         <circle cx="3.5" cy="2" r="1.2"/><circle cx="8.5" cy="2" r="1.2"/>
                         <circle cx="3.5" cy="6" r="1.2"/><circle cx="8.5" cy="6" r="1.2"/>
@@ -137,7 +137,7 @@ export function RunOfShowEditor() {
                       </svg>
                     </span>
                   </td>
-                  <td className="adv-table__num">
+                  <td className="advc-table__num">
                     <EditableCell value={item.itemNumber} onChange={(v) => updateItem(item.id, { itemNumber: v })} />
                   </td>
                   <td>
@@ -169,19 +169,19 @@ export function RunOfShowEditor() {
                   <td style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                     <div style={{ position: 'relative' }}>
                       <button
-                        className="adv-ros-color-btn"
-                        style={{ background: item.highlightColor ?? 'var(--adv-surface-inset)' }}
+                        className="advc-ros-color-btn"
+                        style={{ background: item.highlightColor ?? 'var(--advc-surface-inset)' }}
                         onClick={() => setColorPickerOpen(colorPickerOpen === item.id ? null : item.id)}
                         title="Row color"
                       />
                       {colorPickerOpen === item.id && (
-                        <div className="adv-ros-color-popover">
+                        <div className="advc-ros-color-popover">
                           <ColorPicker value={item.highlightColor} onChange={(c) => { setItemHighlight(item.id, c); setColorPickerOpen(null); }} />
                         </div>
                       )}
                     </div>
                     <button
-                      className="adv-btn adv-btn--sm adv-btn--icon adv-btn--danger"
+                      className="advc-btn advc-btn--sm advc-btn--icon advc-btn--danger"
                       onClick={() => removeItem(item.id)}
                       title="Delete row"
                     >
@@ -197,7 +197,7 @@ export function RunOfShowEditor() {
         </table>
       </div>
       {items.length === 0 && (
-        <p style={{ textAlign: 'center', color: 'var(--adv-text-tertiary)', fontSize: '0.85rem', padding: '24px 0' }}>
+        <p style={{ textAlign: 'center', color: 'var(--advc-text-tertiary)', fontSize: '0.85rem', padding: '24px 0' }}>
           No items yet. Add items or section headers to build your timeline.
         </p>
       )}

@@ -17,13 +17,13 @@ export function ColumnManager() {
   };
 
   return (
-    <div className="adv-col-manager">
-      <span style={{ fontSize: '0.7rem', color: 'var(--adv-text-tertiary)', marginRight: 4 }}>Columns:</span>
+    <div className="advc-col-manager">
+      <span style={{ fontSize: '0.7rem', color: 'var(--advc-text-tertiary)', marginRight: 4 }}>Columns:</span>
       {customColumns.map(col => (
-        <span key={col.id} className="adv-col-tag">
+        <span key={col.id} className="advc-col-tag">
           {col.name}
           <button
-            className="adv-col-tag__remove"
+            className="advc-col-tag__remove"
             onClick={() => removeCustomColumn(col.id)}
             title="Remove column"
           >
@@ -32,7 +32,7 @@ export function ColumnManager() {
         </span>
       ))}
       {adding ? (
-        <span className="adv-col-tag">
+        <span className="advc-col-tag">
           <input
             autoFocus
             value={newName}
@@ -45,17 +45,17 @@ export function ColumnManager() {
             style={{
               background: 'transparent',
               border: 'none',
-              color: 'var(--adv-text)',
+              color: 'var(--advc-text)',
               fontSize: '0.75rem',
               width: 80,
               outline: 'none',
-              fontFamily: 'var(--adv-font)',
+              fontFamily: 'var(--advc-font)',
             }}
             placeholder="Column name"
           />
         </span>
       ) : (
-        <button className="adv-btn adv-btn--sm" onClick={() => setAdding(true)}>+ Column</button>
+        <button className="advc-btn advc-btn--sm" onClick={() => setAdding(true)}>+ Column</button>
       )}
     </div>
   );

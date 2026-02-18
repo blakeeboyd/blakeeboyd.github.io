@@ -44,23 +44,23 @@ export function Sidebar({ type, basePath }: SidebarProps) {
   };
 
   return (
-    <aside className="adv-sidebar">
-      <div className="adv-sidebar__header">
-        <h2 className="adv-sidebar__title">Documents</h2>
-        <button className="adv-btn adv-btn--primary adv-btn--sm" onClick={handleCreate}>
+    <aside className="advc-sidebar">
+      <div className="advc-sidebar__header">
+        <h2 className="advc-sidebar__title">Documents</h2>
+        <button className="advc-btn advc-btn--primary advc-btn--sm" onClick={handleCreate}>
           + New
         </button>
       </div>
       {documents.length > 3 && (
         <input
-          className="adv-sidebar__search"
+          className="advc-sidebar__search"
           placeholder="Search..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
       )}
       {filtered.length === 0 ? (
-        <p style={{ fontSize: '0.8rem', color: 'var(--adv-text-tertiary)', padding: '8px 0' }}>
+        <p style={{ fontSize: '0.8rem', color: 'var(--advc-text-tertiary)', padding: '8px 0' }}>
           {documents.length === 0 ? 'No documents yet. Create one to get started.' : 'No matches.'}
         </p>
       ) : (

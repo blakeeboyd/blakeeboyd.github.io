@@ -21,13 +21,13 @@ export function HomePage() {
     .slice(0, 5);
 
   return (
-    <div className="adv-home">
-      <h2 className="adv-home__title">Advance</h2>
-      <p className="adv-home__subtitle">Get ahead of the show. Patch sheets, stage plots, and run of show for live sound.</p>
+    <div className="advc-home">
+      <h2 className="advc-home__title">Advance</h2>
+      <p className="advc-home__subtitle">Get ahead of the show. Patch sheets, stage plots, and run of show for live sound.</p>
 
-      <div className="adv-home__tools">
-        <Link to="/patch-sheets" className="adv-tool-card" style={{ textDecoration: 'none' }}>
-          <div className="adv-tool-card__icon" style={{ background: 'var(--adv-color-patch)' }}>
+      <div className="advc-home__tools">
+        <Link to="/patch-sheets" className="advc-tool-card" style={{ textDecoration: 'none' }}>
+          <div className="advc-tool-card__icon" style={{ background: 'var(--advc-color-patch)' }}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
               <polyline points="14 2 14 8 20 8" />
@@ -35,12 +35,12 @@ export function HomePage() {
               <line x1="16" y1="17" x2="8" y2="17" />
             </svg>
           </div>
-          <h3 className="adv-tool-card__name">Patch Sheet</h3>
-          <p className="adv-tool-card__desc">Input/output channel mapping for live shows. Track microphones, connections, and signal routing.</p>
+          <h3 className="advc-tool-card__name">Patch Sheet</h3>
+          <p className="advc-tool-card__desc">Input/output channel mapping for live shows. Track microphones, connections, and signal routing.</p>
         </Link>
 
-        <Link to="/stage-plots" className="adv-tool-card" style={{ textDecoration: 'none' }}>
-          <div className="adv-tool-card__icon" style={{ background: 'var(--adv-color-stage)' }}>
+        <Link to="/stage-plots" className="advc-tool-card" style={{ textDecoration: 'none' }}>
+          <div className="advc-tool-card__icon" style={{ background: 'var(--advc-color-stage)' }}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
               <circle cx="8.5" cy="8.5" r="1.5" />
@@ -48,26 +48,26 @@ export function HomePage() {
               <circle cx="12" cy="14" r="1.5" />
             </svg>
           </div>
-          <h3 className="adv-tool-card__name">Stage Plot</h3>
-          <p className="adv-tool-card__desc">Visual stage layout designer. Place instruments, monitors, and equipment on a 2D canvas.</p>
+          <h3 className="advc-tool-card__name">Stage Plot</h3>
+          <p className="advc-tool-card__desc">Visual stage layout designer. Place instruments, monitors, and equipment on a 2D canvas.</p>
         </Link>
 
-        <Link to="/run-of-show" className="adv-tool-card" style={{ textDecoration: 'none' }}>
-          <div className="adv-tool-card__icon" style={{ background: 'var(--adv-color-ros)' }}>
+        <Link to="/run-of-show" className="advc-tool-card" style={{ textDecoration: 'none' }}>
+          <div className="advc-tool-card__icon" style={{ background: 'var(--advc-color-ros)' }}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10" />
               <polyline points="12 6 12 12 16 14" />
             </svg>
           </div>
-          <h3 className="adv-tool-card__name">Run of Show</h3>
-          <p className="adv-tool-card__desc">Event timeline editor with auto-calculated start times, custom columns, and section headers.</p>
+          <h3 className="advc-tool-card__name">Run of Show</h3>
+          <p className="advc-tool-card__desc">Event timeline editor with auto-calculated start times, custom columns, and section headers.</p>
         </Link>
 
       </div>
 
       {recent.length > 0 && (
-        <div className="adv-home__recent">
-          <h4 className="adv-home__recent-title">Recent Documents</h4>
+        <div className="advc-home__recent">
+          <h4 className="advc-home__recent-title">Recent Documents</h4>
           {recent.map(doc => (
             <Link key={doc.id} to={`${TOOL_PATH[doc.type]}/${doc.id}`} style={{ textDecoration: 'none' }}>
               <DocumentCard

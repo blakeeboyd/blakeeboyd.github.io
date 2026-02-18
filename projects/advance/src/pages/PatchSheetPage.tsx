@@ -52,9 +52,9 @@ export function PatchSheetPage() {
   };
 
   return (
-    <div className="adv-page">
+    <div className="advc-page">
       <Sidebar type="patch-sheet" basePath="/patch-sheets" />
-      <div className="adv-main">
+      <div className="advc-main">
         {id && documentId ? (
           <>
             <Toolbar

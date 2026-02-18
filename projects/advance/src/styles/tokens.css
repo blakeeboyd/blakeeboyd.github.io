@@ -1,54 +1,54 @@
 /* ==========================================================================
    Advance Design Tokens
-   Scoped to .adv-app so they override site variables within the app
+   Scoped to .advc-app so they override site variables within the app
    without leaking to the page chrome. Always dark — no theme switching.
    ========================================================================== */
 
-.adv-app {
+.advc-app {
   /* Surfaces */
-  --adv-bg: #0f1117;
-  --adv-surface: #1a1d27;
-  --adv-surface-header: #22262f;
-  --adv-surface-inset: #0a0c12;
-  --adv-surface-raised: #2a2e3a;
+  --advc-bg: #0f1117;
+  --advc-surface: #1a1d27;
+  --advc-surface-header: #22262f;
+  --advc-surface-inset: #0a0c12;
+  --advc-surface-raised: #2a2e3a;
 
   /* Borders */
-  --adv-border: rgba(255, 255, 255, 0.06);
-  --adv-border-strong: rgba(255, 255, 255, 0.12);
-  --adv-border-focus: rgba(59, 130, 246, 0.4);
+  --advc-border: rgba(255, 255, 255, 0.06);
+  --advc-border-strong: rgba(255, 255, 255, 0.12);
+  --advc-border-focus: rgba(59, 130, 246, 0.4);
 
   /* Text */
-  --adv-text: #f3f4f6;
-  --adv-text-secondary: #9ca3af;
-  --adv-text-tertiary: #6b7280;
+  --advc-text: #f3f4f6;
+  --advc-text-secondary: #9ca3af;
+  --advc-text-tertiary: #6b7280;
 
   /* Accent */
-  --adv-accent: #3b82f6;
-  --adv-accent-hover: #2563eb;
-  --adv-success: #22c55e;
-  --adv-warning: #f59e0b;
-  --adv-error: #ef4444;
+  --advc-accent: #3b82f6;
+  --advc-accent-hover: #2563eb;
+  --advc-success: #22c55e;
+  --advc-warning: #f59e0b;
+  --advc-error: #ef4444;
 
   /* Tool type colors */
-  --adv-color-patch: #3b82f6;
-  --adv-color-stage: #8b5cf6;
-  --adv-color-ros: #f59e0b;
+  --advc-color-patch: #3b82f6;
+  --advc-color-stage: #8b5cf6;
+  --advc-color-ros: #f59e0b;
 
   /* Shadows */
-  --adv-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --adv-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --adv-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --advc-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --advc-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --advc-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
 
   /* Sizing */
-  --adv-radius: 8px;
-  --adv-radius-sm: 6px;
-  --adv-radius-xs: 4px;
+  --advc-radius: 8px;
+  --advc-radius-sm: 6px;
+  --advc-radius-xs: 4px;
 
   /* Typography */
-  --adv-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --adv-mono: 'SF Mono', 'Fira Code', monospace;
+  --advc-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --advc-mono: 'SF Mono', 'Fira Code', monospace;
 
   /* Transitions */
-  --adv-transition-fast: 0.12s ease;
-  --adv-transition-normal: 0.2s ease;
+  --advc-transition-fast: 0.12s ease;
+  --advc-transition-normal: 0.2s ease;
 }

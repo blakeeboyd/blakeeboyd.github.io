@@ -30,18 +30,18 @@ export function ElementPalette() {
         const items = ELEMENT_TYPES.filter(e => e.category === cat.key);
         if (items.length === 0) return null;
         return (
-          <div key={cat.key} className="adv-stage-panel__section">
-            <h3 className="adv-stage-panel__title">{cat.label}</h3>
-            <div className="adv-palette">
+          <div key={cat.key} className="advc-stage-panel__section">
+            <h3 className="advc-stage-panel__title">{cat.label}</h3>
+            <div className="advc-palette">
               {items.map(el => (
                 <button
                   key={el.type}
-                  className="adv-palette__item"
+                  className="advc-palette__item"
                   onClick={() => handleAdd(el.type)}
                   title={el.name}
                 >
-                  <span className="adv-palette__item-icon">{el.icon}</span>
-                  <span className="adv-palette__item-name">{el.name}</span>
+                  <span className="advc-palette__item-icon">{el.icon}</span>
+                  <span className="advc-palette__item-name">{el.name}</span>
                 </button>
               ))}
             </div>
@@ -49,9 +49,9 @@ export function ElementPalette() {
         );
       })}
 
-      <div className="adv-stage-panel__section">
-        <h3 className="adv-stage-panel__title">Background</h3>
-        <div className="adv-bg-upload">
+      <div className="advc-stage-panel__section">
+        <h3 className="advc-stage-panel__title">Background</h3>
+        <div className="advc-bg-upload">
           <input
             ref={fileRef}
             type="file"
@@ -66,8 +66,8 @@ export function ElementPalette() {
                 alt="Background preview"
                 style={{ width: '100%', height: 60, objectFit: 'cover', borderRadius: 4 }}
               />
-              <div className="adv-props__row">
-                <span className="adv-props__label">Opacity</span>
+              <div className="advc-props__row">
+                <span className="advc-props__label">Opacity</span>
                 <input
                   type="range"
                   min="0.05"
@@ -77,17 +77,17 @@ export function ElementPalette() {
                   onChange={(e) => setBackground(backgroundImage, Number(e.target.value))}
                   style={{ flex: 1 }}
                 />
-                <span style={{ fontSize: '0.7rem', color: 'var(--adv-text-tertiary)', minWidth: 28 }}>
+                <span style={{ fontSize: '0.7rem', color: 'var(--advc-text-tertiary)', minWidth: 28 }}>
                   {Math.round(backgroundOpacity * 100)}%
                 </span>
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
-                <button className="adv-btn adv-btn--sm" onClick={() => fileRef.current?.click()}>Replace</button>
-                <button className="adv-btn adv-btn--sm adv-btn--danger" onClick={() => setBackground(null)}>Remove</button>
+                <button className="advc-btn advc-btn--sm" onClick={() => fileRef.current?.click()}>Replace</button>
+                <button className="advc-btn advc-btn--sm advc-btn--danger" onClick={() => setBackground(null)}>Remove</button>
               </div>
             </>
           ) : (
-            <div className="adv-bg-upload__drop" onClick={() => fileRef.current?.click()}>
+            <div className="advc-bg-upload__drop" onClick={() => fileRef.current?.click()}>
               Click to upload background image
             </div>
           )}

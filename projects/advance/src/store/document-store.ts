@@ -76,6 +76,28 @@ export const useDocumentStore = create<DocumentRegistryState>()(
           .filter(d => d.type === type)
           .sort((a, b) => b.lastEditedAt.localeCompare(a.lastEditedAt)),
     }),
-    { name: 'adv-documents' }
+    {
+      name: 'advc-documents',
+      // Migrate from old 'adv-documents' key
+      storage: {
+        getItem: (name: string) => {
+          let raw = localStorage.getItem(name);
+          if (!raw && name === 'advc-documents') {
+            raw = localStorage.getItem('adv-documents');
+            if (raw) {
+              localStorage.setItem(name, raw);
+              localStorage.removeItem('adv-documents');
+            }
+          }
+          return raw ? JSON.parse(raw) : null;
+        },
+        setItem: (name: string, value: unknown) => {
+          localStorage.setItem(name, JSON.stringify(value));
+        },
+        removeItem: (name: string) => {
+          localStorage.removeItem(name);
+        },
+      },
+    }
   )
 );

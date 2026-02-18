@@ -51,9 +51,9 @@ export function RunOfShowPage() {
   };
 
   return (
-    <div className="adv-page">
+    <div className="advc-page">
       <Sidebar type="run-of-show" basePath="/run-of-show" />
-      <div className="adv-main">
+      <div className="advc-main">
         {id && documentId ? (
           <>
             <Toolbar

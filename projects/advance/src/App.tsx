@@ -3,7 +3,7 @@ import { AppHeader } from './components/layout/AppHeader';
 
 export function App() {
   return (
-    <div className="adv-app">
+    <div className="advc-app">
       <AppHeader />
       <Outlet />
     </div>

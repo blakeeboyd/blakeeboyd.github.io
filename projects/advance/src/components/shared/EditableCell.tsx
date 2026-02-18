@@ -28,7 +28,7 @@ export function EditableCell(props: EditableCellProps) {
   if (props.type === 'checkbox') {
     return (
       <input
-        className="adv-editable__checkbox"
+        className="advc-editable__checkbox"
         type="checkbox"
         checked={props.value}
         onChange={(e) => props.onChange(e.target.checked)}
@@ -39,7 +39,7 @@ export function EditableCell(props: EditableCellProps) {
   if (props.type === 'select') {
     return (
       <select
-        className="adv-editable__select"
+        className="advc-editable__select"
         value={props.value}
         onChange={(e) => props.onChange(e.target.value)}
       >
@@ -84,7 +84,7 @@ function EditableText({ value, onChange, placeholder }: { value: string; onChang
     return (
       <input
         ref={inputRef}
-        className="adv-editable__input"
+        className="advc-editable__input"
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onBlur={commit}
@@ -99,9 +99,9 @@ function EditableText({ value, onChange, placeholder }: { value: string; onChang
 
   return (
     <div
-      className="adv-editable"
+      className="advc-editable"
       onClick={() => setEditing(true)}
-      style={{ color: value ? undefined : 'var(--adv-text-tertiary)' }}
+      style={{ color: value ? undefined : 'var(--advc-text-tertiary)' }}
     >
       {value || placeholder || '—'}
     </div>

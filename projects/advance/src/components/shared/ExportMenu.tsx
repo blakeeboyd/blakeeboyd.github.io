@@ -46,8 +46,8 @@ export function ExportMenu({ getExportData, documentName, onImport, onExportPdf 
   };
 
   return (
-    <div className="adv-export-menu" ref={menuRef}>
-      <button className="adv-btn adv-btn--sm" onClick={() => setOpen(!open)}>
+    <div className="advc-export-menu" ref={menuRef}>
+      <button className="advc-btn advc-btn--sm" onClick={() => setOpen(!open)}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
           <polyline points="7 10 12 15 17 10" />
@@ -56,22 +56,22 @@ export function ExportMenu({ getExportData, documentName, onImport, onExportPdf 
         Export
       </button>
       {open && (
-        <div className="adv-export-menu__dropdown">
-          <button className="adv-export-menu__item" onClick={handleExportJson}>
+        <div className="advc-export-menu__dropdown">
+          <button className="advc-export-menu__item" onClick={handleExportJson}>
             Export JSON
           </button>
           {onExportPdf && (
-            <button className="adv-export-menu__item" onClick={() => { onExportPdf(); setOpen(false); }}>
+            <button className="advc-export-menu__item" onClick={() => { onExportPdf(); setOpen(false); }}>
               Export PDF
             </button>
           )}
-          <button className="adv-export-menu__item" onClick={() => { window.print(); setOpen(false); }}>
+          <button className="advc-export-menu__item" onClick={() => { window.print(); setOpen(false); }}>
             Print
           </button>
           {onImport && (
             <>
-              <hr style={{ border: 'none', borderTop: '1px solid var(--adv-border)', margin: '4px 0' }} />
-              <button className="adv-export-menu__item" onClick={() => fileRef.current?.click()}>
+              <hr style={{ border: 'none', borderTop: '1px solid var(--advc-border)', margin: '4px 0' }} />
+              <button className="advc-export-menu__item" onClick={() => fileRef.current?.click()}>
                 Import JSON
               </button>
             </>

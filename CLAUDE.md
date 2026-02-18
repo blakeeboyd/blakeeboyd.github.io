@@ -837,7 +837,7 @@ src/
 │   ├── patch-sheet-store.ts  # Patch sheet state (temporal)
 │   ├── stage-plot-store.ts   # Stage plot state (temporal)
 │   └── run-of-show-store.ts  # Run of show state (temporal)
-├── styles/              # Scoped CSS (adv- prefix, CSS variables)
+├── styles/              # Scoped CSS (advc- prefix, CSS variables)
 └── types/               # TypeScript interfaces for each document type
 ```
 
@@ -848,7 +848,7 @@ src/
 - Vite config includes a custom plugin to proxy site-wide CSS/JS/images from `../../` during dev
 
 **CSS Architecture:**
-- All classes prefixed with `adv-` to avoid conflicts with site CSS
+- All classes prefixed with `advc-` to avoid conflicts with site CSS (not `adv-`, which ad blockers match as "advertisement")
 - CSS variables defined in `tokens.css` (colors, radii, shadows, transitions)
 - Separate files: `layout.css`, `components.css`, `stage-plot.css`, `run-of-show.css`
 - Print media queries in each CSS file

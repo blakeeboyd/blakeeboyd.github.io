@@ -19,9 +19,9 @@ export function StageSizeSelector() {
   const toggleGridSnap = useStagePlotStore(s => s.toggleGridSnap);
 
   return (
-    <div className="adv-stage-size">
+    <div className="advc-stage-size">
       <select
-        className="adv-stage-size__select"
+        className="advc-stage-size__select"
         value={stageSize}
         onChange={(e) => setStageSize(e.target.value as StageSize)}
       >
@@ -29,7 +29,7 @@ export function StageSizeSelector() {
           <option key={s.value} value={s.value}>{s.label}</option>
         ))}
       </select>
-      <label className="adv-stage-size__snap">
+      <label className="advc-stage-size__snap">
         <input type="checkbox" checked={gridSnap} onChange={toggleGridSnap} />
         <span>Snap</span>
       </label>

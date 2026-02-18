@@ -26,7 +26,7 @@ export function StageElementComponent({ element, isSelected, onSelect, onDragSta
 
   return (
     <div
-      className={`adv-stage-element${isSelected ? ' adv-stage-element--selected' : ''}`}
+      className={`advc-stage-element${isSelected ? ' advc-stage-element--selected' : ''}`}
       style={{
         left: element.x,
         top: element.y,
@@ -38,13 +38,13 @@ export function StageElementComponent({ element, isSelected, onSelect, onDragSta
       }}
       onPointerDown={handlePointerDown}
     >
-      <span className="adv-stage-element__icon">{icon}</span>
+      <span className="advc-stage-element__icon">{icon}</span>
       {element.labelVisible && (
-        <span className="adv-stage-element__label">{element.label}</span>
+        <span className="advc-stage-element__label">{element.label}</span>
       )}
       {isSelected && (
         <div
-          className="adv-stage-element__resize adv-stage-element__resize--se"
+          className="advc-stage-element__resize advc-stage-element__resize--se"
           onPointerDown={handleResizeDown}
         />
       )}

@@ -52,12 +52,12 @@ export function OutputTable() {
   }, [reorderOutputs]);
 
   return (
-    <div className="adv-patch-editor">
-      <div className="adv-patch-editor__actions">
-        <button className="adv-btn adv-btn--sm" onClick={() => addOutput()}>+ Add Output</button>
+    <div className="advc-patch-editor">
+      <div className="advc-patch-editor__actions">
+        <button className="advc-btn advc-btn--sm" onClick={() => addOutput()}>+ Add Output</button>
       </div>
-      <div className="adv-table-wrap">
-        <table className="adv-table">
+      <div className="advc-table-wrap">
+        <table className="advc-table">
           <thead>
             <tr>
               <th style={{ width: 28 }} />
@@ -76,14 +76,14 @@ export function OutputTable() {
               <tr
                 key={ch.id}
                 data-index={i}
-                className={dragIndex !== null && dropIndex === i ? 'adv-row--drop-target' : ''}
+                className={dragIndex !== null && dropIndex === i ? 'advc-row--drop-target' : ''}
               >
                 <td>
-                  <span className="adv-drag-handle" onPointerDown={(e) => handleDragStart(i, e)}>
+                  <span className="advc-drag-handle" onPointerDown={(e) => handleDragStart(i, e)}>
                     <DragGrip />
                   </span>
                 </td>
-                <td className="adv-table__num">
+                <td className="advc-table__num">
                   <EditableCell value={ch.channelNumber} onChange={(v) => updateOutput(ch.id, { channelNumber: v })} placeholder={String(i + 1)} />
                 </td>
                 <td>
@@ -106,7 +106,7 @@ export function OutputTable() {
                 </td>
                 <td>
                   <button
-                    className="adv-btn adv-btn--sm adv-btn--icon adv-btn--danger"
+                    className="advc-btn advc-btn--sm advc-btn--icon advc-btn--danger"
                     onClick={() => removeOutput(ch.id)}
                     title="Delete row"
                   >
@@ -122,7 +122,7 @@ export function OutputTable() {
         </table>
       </div>
       {outputs.length === 0 && (
-        <p style={{ textAlign: 'center', color: 'var(--adv-text-tertiary)', fontSize: '0.85rem', padding: '24px 0' }}>
+        <p style={{ textAlign: 'center', color: 'var(--advc-text-tertiary)', fontSize: '0.85rem', padding: '24px 0' }}>
           No output channels. Click "+ Add Output" to start.
         </p>
       )}

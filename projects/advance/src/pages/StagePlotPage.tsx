@@ -37,7 +37,7 @@ export function StagePlotPage() {
   const saveStatus = useAutoSave(documentId, saveToStorage, [stageSize, elements, backgroundImage, backgroundOpacity]);
 
   const handleExportPdf = useCallback(() => {
-    const canvasEl = document.querySelector('.adv-stage-canvas') as HTMLElement | null;
+    const canvasEl = document.querySelector('.advc-stage-canvas') as HTMLElement | null;
     if (!canvasEl) return;
     const name = getDocument(documentId!)?.name ?? 'Stage Plot';
     exportStagePlotPdf(canvasEl, name);
@@ -54,9 +54,9 @@ export function StagePlotPage() {
   };
 
   return (
-    <div className="adv-page">
+    <div className="advc-page">
       <Sidebar type="stage-plot" basePath="/stage-plots" />
-      <div className="adv-main">
+      <div className="advc-main">
         {id && documentId ? (
           <>
             <Toolbar

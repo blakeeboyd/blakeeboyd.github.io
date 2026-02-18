@@ -10,16 +10,16 @@ interface ColorPickerProps {
 
 export function ColorPicker({ value, onChange }: ColorPickerProps) {
   return (
-    <div className="adv-color-picker">
+    <div className="advc-color-picker">
       <button
-        className={`adv-color-swatch adv-color-swatch--none${value === null ? ' adv-color-swatch--active' : ''}`}
+        className={`advc-color-swatch advc-color-swatch--none${value === null ? ' advc-color-swatch--active' : ''}`}
         onClick={() => onChange(null)}
         title="No color"
       />
       {COLORS.map(color => (
         <button
           key={color}
-          className={`adv-color-swatch${value === color ? ' adv-color-swatch--active' : ''}`}
+          className={`advc-color-swatch${value === color ? ' advc-color-swatch--active' : ''}`}
           style={{ background: color }}
           onClick={() => onChange(color)}
           title={color}
