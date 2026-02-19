@@ -31,6 +31,7 @@ function bwToQ(octaves) {
 
 // Defaults
 const DEFAULT_PEAKING_BW = 2;    // octaves → Q ≈ 0.667
+const DEFAULT_BANDPASS_BW = 1;   // octaves → Q ≈ 1.414
 const DEFAULT_SHELF_S = 1;       // Shelf slope (S=1 is standard; >1 steeper with resonance)
 const DEFAULT_PASS_SLOPE = 12;   // dB/oct (single 2nd-order filter)
 const SHELF_FILTERS = ['highshelf', 'lowshelf'];
@@ -1201,6 +1202,13 @@ function setFilterType(type) {
     var wasPass = PASS_FILTERS.includes(state.filterType);
     var isPass = PASS_FILTERS.includes(type);
     state.filterType = type;
+
+    // Set default bandwidth per filter type
+    if (type === 'bandpass') {
+        state.peakingBW = DEFAULT_BANDPASS_BW;
+    } else if (type === 'peaking') {
+        state.peakingBW = DEFAULT_PEAKING_BW;
+    }
 
     // Rebuild filter chain (handles cascading for HP/LP, Q for shelf/peaking)
     if (state.audioContext) {
@@ -3164,6 +3172,253 @@ function setupEventListeners() {
         playAgain();
     });
 
+    // Demo tour button
+    document.getElementById('demo-btn').addEventListener('click', function () {
+        Tour.start();
+    });
+
+}
+
+// ============================================
+// Practice Demo Tour
+// ============================================
+
+var Tour = {
+    steps: [
+        {
+            target: null,
+            title: 'Welcome',
+            text: 'Filter Identification is an ear training tool. You\'ll learn to recognize different filter types and frequencies by listening to how they shape audio. Let\'s walk through the controls.'
+        },
+        {
+            target: '.fid-toolbar-row:first-child',
+            title: 'Mode',
+            text: 'There are three modes. <strong>Practice</strong> gives you direct control of all parameters. <strong>Teaching</strong> plays a listen sequence so you can hear the difference. <strong>Quiz</strong> tests your ability to identify a hidden filter.'
+        },
+        {
+            target: '.fid-source-row',
+            title: 'Source',
+            text: 'Choose your audio source. <strong>Pink Noise</strong> is ideal for hearing filter shapes because it has equal energy per octave. You can also upload your own audio, use built-in multi-track stems, or a synthetic sawtooth tone.'
+        },
+        {
+            target: '.fid-filter-header',
+            title: 'Filter Display',
+            text: 'This canvas shows the filter\'s frequency response. The horizontal axis is frequency (20 Hz to 20 kHz, logarithmic). The vertical axis is gain in dB. The curve shows how the filter boosts or cuts each frequency.'
+        },
+        {
+            target: '#type-buttons',
+            title: 'Filter Type',
+            text: 'Select a filter type. <strong>High-Pass</strong> and <strong>Low-Pass</strong> remove frequencies below or above the cutoff. <strong>Shelving</strong> filters boost or cut a range. <strong>Peaking</strong> targets a band around the center frequency. <strong>Bandpass</strong> isolates a narrow range.'
+        },
+        {
+            target: '#freq-buttons',
+            title: 'Frequency',
+            text: 'Pick the center or cutoff frequency. The hints below each button show what a narrow boost at that frequency sounds like in pink noise. Try saying the vowel sounds while you listen.'
+        },
+        {
+            target: '#gain-group',
+            title: 'Gain',
+            text: 'Set how much the filter boosts or cuts. Positive values boost, negative values cut. Try extreme settings first (+12 or -12 dB) to make the effect obvious, then move to subtler settings.'
+        },
+        {
+            target: null,
+            title: 'Ready',
+            text: 'You\'re ready to start. Select a source, press Play, and experiment with different filter settings. When you\'re comfortable identifying filters by ear, try <strong>Teaching</strong> mode for guided listening or <strong>Quiz</strong> mode to test yourself.'
+        }
+    ],
+    currentStep: 0,
+    overlayEl: null,
+    cardEl: null,
+    prevHighlight: null,
+
+    start: function () {
+        // Switch to practice mode
+        if (state.mode !== 'practice') {
+            setMode('practice');
+        }
+
+        // Make sure gain group is visible for the tour
+        document.getElementById('gain-group').classList.remove('hidden');
+
+        this.currentStep = 0;
+        this.createElements();
+        this.showStep(0);
+    },
+
+    createElements: function () {
+        // Overlay
+        this.overlayEl = document.createElement('div');
+        this.overlayEl.className = 'fid-tour-overlay';
+        this.overlayEl.addEventListener('click', this.skip.bind(this));
+        document.body.appendChild(this.overlayEl);
+
+        // Card
+        this.cardEl = document.createElement('div');
+        this.cardEl.className = 'fid-tour-card';
+        document.body.appendChild(this.cardEl);
+    },
+
+    showStep: function (index) {
+        var step = this.steps[index];
+        if (!step) { this.cleanup(); return; }
+        this.currentStep = index;
+
+        // Remove previous highlight
+        if (this.prevHighlight) {
+            this.prevHighlight.classList.remove('fid-tour-highlight');
+            this.prevHighlight = null;
+        }
+
+        // Build card content
+        var isLast = index === this.steps.length - 1;
+        var html = '<div class="fid-tour-step">Step ' + (index + 1) + ' of ' + this.steps.length + '</div>';
+        html += '<h3>' + step.title + '</h3>';
+        html += '<p>' + step.text + '</p>';
+        html += '<div class="fid-tour-actions">';
+        html += '<button type="button" class="fid-tour-skip">Skip</button>';
+        html += '<button type="button" class="fid-tour-next">' + (isLast ? 'Done' : 'Next') + '</button>';
+        html += '</div>';
+        this.cardEl.innerHTML = html;
+
+        // Wire buttons
+        var self = this;
+        this.cardEl.querySelector('.fid-tour-skip').addEventListener('click', function () { self.skip(); });
+        this.cardEl.querySelector('.fid-tour-next').addEventListener('click', function () {
+            if (isLast) { self.cleanup(); } else { self.next(); }
+        });
+
+        // Highlight target
+        if (step.target) {
+            var el = document.querySelector(step.target);
+            if (el) {
+                el.classList.add('fid-tour-highlight');
+                this.prevHighlight = el;
+                // Hide overlay (box-shadow on highlight creates its own)
+                this.overlayEl.style.display = 'none';
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // Position card below the highlighted element
+                var self2 = this;
+                setTimeout(function () { self2.positionCard(el); }, 300);
+                return;
+            }
+        }
+
+        // No target: center the card, show overlay
+        this.overlayEl.style.display = '';
+        this.centerCard();
+    },
+
+    positionCard: function (targetEl) {
+        var card = this.cardEl;
+        // Reset position for measurement
+        card.style.top = '0';
+        card.style.left = '0';
+        card.style.transform = 'none';
+
+        var targetRect = targetEl.getBoundingClientRect();
+        var cardRect = card.getBoundingClientRect();
+        var margin = 12;
+
+        var top = targetRect.bottom + margin;
+        var left = targetRect.left + (targetRect.width / 2) - (cardRect.width / 2);
+
+        // Keep within viewport
+        if (left < margin) left = margin;
+        if (left + cardRect.width > window.innerWidth - margin) {
+            left = window.innerWidth - cardRect.width - margin;
+        }
+        // If card would go below viewport, position above
+        if (top + cardRect.height > window.innerHeight - margin) {
+            top = targetRect.top - cardRect.height - margin;
+        }
+
+        card.style.top = top + 'px';
+        card.style.left = left + 'px';
+    },
+
+    centerCard: function () {
+        this.cardEl.style.top = '50%';
+        this.cardEl.style.left = '50%';
+        this.cardEl.style.transform = 'translate(-50%, -50%)';
+    },
+
+    next: function () {
+        this.showStep(this.currentStep + 1);
+    },
+
+    skip: function () {
+        this.cleanup();
+    },
+
+    cleanup: function () {
+        if (this.prevHighlight) {
+            this.prevHighlight.classList.remove('fid-tour-highlight');
+            this.prevHighlight = null;
+        }
+        if (this.overlayEl) {
+            this.overlayEl.remove();
+            this.overlayEl = null;
+        }
+        if (this.cardEl) {
+            this.cardEl.remove();
+            this.cardEl = null;
+        }
+
+        // Restore gain group visibility based on current filter type
+        if (PASS_FILTERS.includes(state.filterType)) {
+            document.getElementById('gain-group').classList.add('hidden');
+        }
+    }
+};
+
+// ============================================
+// Tooltips
+// ============================================
+
+function initTooltips() {
+    var tooltipEl = document.createElement('div');
+    tooltipEl.className = 'global-tooltip';
+    tooltipEl.style.cssText = 'position:fixed;z-index:10000;background:var(--color-card-bg);border:1px solid var(--color-border);border-radius:8px;padding:12px;box-shadow:0 4px 20px rgba(0,0,0,0.25);font-size:0.8rem;line-height:1.5;color:var(--color-text);max-width:280px;opacity:0;visibility:hidden;transition:opacity 0.15s,visibility 0.15s;pointer-events:none;';
+    document.body.appendChild(tooltipEl);
+
+    var triggers = document.querySelectorAll('.info-trigger');
+
+    triggers.forEach(function(trigger) {
+        var content = trigger.querySelector('.info-tooltip');
+        if (!content) return;
+
+        function showTooltip() {
+            tooltipEl.innerHTML = content.innerHTML;
+            tooltipEl.style.opacity = '1';
+            tooltipEl.style.visibility = 'visible';
+
+            var rect = trigger.getBoundingClientRect();
+            var tooltipRect = tooltipEl.getBoundingClientRect();
+            var margin = 8;
+
+            var top = rect.bottom + margin;
+            var left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+
+            if (left < margin) left = margin;
+            if (left + tooltipRect.width > window.innerWidth - margin) {
+                left = window.innerWidth - tooltipRect.width - margin;
+            }
+
+            tooltipEl.style.top = top + 'px';
+            tooltipEl.style.left = left + 'px';
+        }
+
+        function hideTooltip() {
+            tooltipEl.style.opacity = '0';
+            tooltipEl.style.visibility = 'hidden';
+        }
+
+        trigger.addEventListener('mouseenter', showTooltip);
+        trigger.addEventListener('mouseleave', hideTooltip);
+        trigger.addEventListener('focus', showTooltip);
+        trigger.addEventListener('blur', hideTooltip);
+    });
 }
 
 // ============================================
@@ -3172,6 +3427,7 @@ function setupEventListeners() {
 
 function init() {
     setupEventListeners();
+    initTooltips();
 
     // Set initial UI state
     updateSourceButtons();

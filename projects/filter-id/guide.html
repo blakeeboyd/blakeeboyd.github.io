@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Guide to the Filter Identification ear training tool: modes, audio sources, filter types, frequency associations, and quiz drills.">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Filter Identification Guide - Blake Boyd</title>
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake E. Boyd">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="stylesheet" href="../../css/base.css">
+    <link rel="stylesheet" href="../../css/layout.css">
+    <link rel="stylesheet" href="../../css/components.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="../../js/theme.js"></script>
+    <script src="../../js/nav-component.js" defer></script>
+    <style>
+        .guide-layout {
+            display: grid;
+            grid-template-columns: 1fr 200px;
+            gap: 3rem;
+            align-items: start;
+        }
+
+        .guide-content {
+            min-width: 0;
+        }
+
+        .guide-content h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .guide-content h2:first-of-type {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+        }
+
+        .guide-content h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        .guide-content p {
+            margin: 0 0 1rem;
+            line-height: 1.7;
+        }
+
+        .guide-content ul,
+        .guide-content ol {
+            margin: 0 0 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .guide-content li {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        .guide-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.875rem;
+        }
+
+        .guide-table th,
+        .guide-table td {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--color-border);
+            text-align: left;
+        }
+
+        .guide-table th {
+            background: var(--color-bg);
+            font-weight: 600;
+        }
+
+        .toc-sidebar {
+            position: sticky;
+            top: 2rem;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-header {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.375rem;
+        }
+
+        .toc-list a {
+            display: block;
+            font-size: 0.8125rem;
+            color: var(--color-text-muted);
+            text-decoration: none;
+            padding: 0.25rem 0;
+            transition: color 0.15s ease;
+        }
+
+        .toc-list a:hover {
+            color: var(--color-text);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            text-decoration: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--color-accent);
+        }
+
+        .back-link svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .guide-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .toc-sidebar {
+                position: relative;
+                top: 0;
+                order: -1;
+                margin-bottom: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container wide">
+        <site-nav base="../../"></site-nav>
+
+        <main id="main-content">
+            <a href="./" class="back-link">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Back to Filter Identification
+            </a>
+
+            <section class="hero">
+                <h1>Filter Identification Guide</h1>
+                <p class="subtitle">Learn to recognize filter types and frequencies by ear.</p>
+            </section>
+
+            <div class="guide-layout">
+                <div class="guide-content">
+                    <h2 id="quick-start">Quick Start</h2>
+                    <ol>
+                        <li>Select <strong>Pink Noise</strong> as your source and press any source button to start audio.</li>
+                        <li>Make sure the filter is <strong>On</strong> (not bypassed).</li>
+                        <li>Choose a filter type (start with <strong>Peaking</strong>).</li>
+                        <li>Set the gain to <strong>+12 dB</strong> so the effect is obvious.</li>
+                        <li>Click through each frequency button and listen to how the sound changes.</li>
+                        <li>Try the vowel sounds listed under each button while you listen. You should hear the match.</li>
+                        <li>Once you can identify frequencies, try <strong>Teaching</strong> mode for guided listening or <strong>Quiz</strong> mode to test yourself.</li>
+                    </ol>
+
+                    <h2 id="modes">Modes</h2>
+
+                    <h3>Practice</h3>
+                    <p>Full control of all filter parameters. Use this to explore how each filter type, frequency, and gain setting shapes the sound. Toggle the filter on and off to hear the difference. The spectrum analyser (when enabled) shows you a real-time visual of the frequency content.</p>
+
+                    <h3>Teaching</h3>
+                    <p>Plays a timed sequence: unfiltered audio for a set duration, then the same audio with the filter applied. You control how long each segment plays and whether the sequence loops. This mode trains your ear to hear the "before and after" in quick succession, which makes filter effects much easier to identify.</p>
+
+                    <h3>Quiz</h3>
+                    <p>A hidden filter is applied and you must identify its parameters. Select the filter type, frequency, and gain you think match what you hear, then submit your answer. The tool shows your result and keeps a running score and streak counter. Quiz drills let you focus on specific parameter subsets (filter types only, frequencies only, or all parameters).</p>
+
+                    <h2 id="sources">Audio Sources</h2>
+                    <ul>
+                        <li><strong>Mute:</strong> No audio output. The filter visualization still updates so you can see the curve shape.</li>
+                        <li><strong>Pink Noise:</strong> Random noise with equal energy per octave. This is the ideal source for ear training because every frequency region starts at the same perceived loudness, making filter effects easy to hear.</li>
+                        <li><strong>User Audio:</strong> Upload your own audio file (WAV, MP3, OGG, FLAC). Useful for hearing how filters affect real recordings.</li>
+                        <li><strong>Multi-track:</strong> A set of built-in stems (drums, bass, guitar, keys, organ, pad, tambourine) that play together. Use the mixer to mute, solo, or adjust individual tracks. Good for hearing filters on complex, realistic material.</li>
+                        <li><strong>Sawtooth:</strong> A synthesized 220 Hz sawtooth wave with rich harmonic content. Every harmonic is present at a predictable amplitude, making it easy to hear exactly which harmonics the filter affects.</li>
+                    </ul>
+
+                    <h2 id="filter-types">Filter Types</h2>
+                    <ul>
+                        <li><strong>High-Pass:</strong> Removes frequencies below the cutoff. Everything above passes through. Use the slope setting (12, 24, or 48 dB/octave) to control how steeply frequencies are rejected.</li>
+                        <li><strong>Low-Pass:</strong> Removes frequencies above the cutoff. Everything below passes through. Same slope options as high-pass.</li>
+                        <li><strong>Bandpass:</strong> Lets only a band of frequencies through, centered on the cutoff frequency. Frequencies above and below are attenuated. The bandwidth setting controls how wide the pass band is.</li>
+                        <li><strong>High Shelf:</strong> Boosts or cuts all frequencies above a transition point. The slope parameter (S) controls how abrupt the transition is: S=1 is standard, higher values create a steeper shelf with possible overshoot.</li>
+                        <li><strong>Low Shelf:</strong> Boosts or cuts all frequencies below a transition point. Same slope parameter as high shelf.</li>
+                        <li><strong>Peaking:</strong> Boosts or cuts a band of frequencies centered on the selected frequency. The bandwidth setting (in octaves) controls how wide or narrow the bell curve is.</li>
+                    </ul>
+
+                    <h2 id="frequency-guide">Frequency Guide</h2>
+
+                    <h3>What are formants?</h3>
+                    <p>Your vocal cords produce a raw buzz, a complex tone rich in harmonics. That buzz travels through the vocal tract (throat, mouth, nasal cavity), which acts as a resonant filter. By changing the shape of your tongue, jaw, and lips, you amplify certain frequency regions and suppress others. The resonant peaks that result are called <strong>formants</strong>.</p>
+                    <p>Vowels are defined almost entirely by their first two formants. Say "OO" (as in "food") and then slowly shift to "EE" (as in "bee") without stopping your voice. You will feel your tongue rise and your jaw close. What you are hearing is the formant frequencies sweeping upward: the dominant resonance moves from around 250 Hz to around 4 kHz. The raw buzz from your vocal cords stays the same. Only the filtering changes.</p>
+                    <p>Consonants work differently. Sounds like S and T are produced by turbulent airflow through narrow constrictions in the mouth. They generate broadband noise concentrated in the high frequencies (8 kHz and above) rather than harmonic resonances. These sibilant and fricative sounds do not have formants in the same way vowels do, but they occupy characteristic frequency regions that are equally useful for ear training.</p>
+
+                    <h3>Frequency-to-sound associations</h3>
+                    <p>When you boost a narrow peak in pink noise at each of these frequencies, a recognizable speech sound emerges. The lower five correspond to vowel formants. The upper two correspond to consonant energy regions. These associations give your ears a mnemonic anchor for identifying where in the spectrum a filter is acting.</p>
+
+                    <table class="guide-table">
+                        <thead>
+                            <tr>
+                                <th>Frequency</th>
+                                <th>Sound</th>
+                                <th>As in</th>
+                                <th>Too much sounds...</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>250 Hz</td>
+                                <td>U / OO</td>
+                                <td>"food"</td>
+                                <td>Muddy</td>
+                            </tr>
+                            <tr>
+                                <td>500 Hz</td>
+                                <td>O</td>
+                                <td>"no"</td>
+                                <td>Woofy</td>
+                            </tr>
+                            <tr>
+                                <td>1 kHz</td>
+                                <td>AH</td>
+                                <td>"aha"</td>
+                                <td>Boxy</td>
+                            </tr>
+                            <tr>
+                                <td>2 kHz</td>
+                                <td>EH</td>
+                                <td>"let"</td>
+                                <td>Bitey</td>
+                            </tr>
+                            <tr>
+                                <td>4 kHz</td>
+                                <td>EE</td>
+                                <td>"bee"</td>
+                                <td>Tinny</td>
+                            </tr>
+                            <tr>
+                                <td>8 kHz</td>
+                                <td>S (sibilance)</td>
+                                <td>"sam"</td>
+                                <td>Crispy</td>
+                            </tr>
+                            <tr>
+                                <td>16 kHz</td>
+                                <td>TS (air)</td>
+                                <td>"cats"</td>
+                                <td>Shimmery</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>How to practice</h3>
+                    <p>Try this: boost a peaking filter by +12 dB at each frequency in pink noise and slowly listen through each one. You should hear the vowel sounds emerge. Once you can hear "OO" at 250 Hz and "EE" at 4 kHz, you have two solid reference points an octave apart. The other vowels fill in the gaps.</p>
+                    <p>The subjective descriptors ("muddy," "boxy," "tinny") describe what a mix sounds like when too much energy accumulates in that range. Learning to hear these qualities is the foundation of effective EQ decisions.</p>
+
+                    <h3>Bandwidth vs Q</h3>
+                    <p>The "width" of a filter can be described two ways. <strong>Bandwidth</strong> is measured in octaves: a 2-octave bandwidth centered at 1 kHz affects the range from roughly 500 Hz to 2 kHz. <strong>Q</strong> (quality factor) is the inverse: higher Q means a narrower, more focused filter. The two are related by the formula Q&nbsp;=&nbsp;1&nbsp;/&nbsp;(2&nbsp;&times;&nbsp;sinh(ln2/2&nbsp;&times;&nbsp;BW)), so a 2-octave bandwidth gives Q&nbsp;&asymp;&nbsp;0.67 and a &frac12;-octave bandwidth gives Q&nbsp;&asymp;&nbsp;2.54.</p>
+                    <p>For high-pass and low-pass filters, Q controls the resonance at the cutoff frequency. Q&nbsp;=&nbsp;0.707 produces a maximally flat (Butterworth) response with no bump. Higher Q values create a resonance peak that emphasizes frequencies near the cutoff before the slope kicks in.</p>
+                    <p>Shelf filters use a separate "slope" parameter (S) from the Audio EQ Cookbook. S&nbsp;=&nbsp;1 is the standard shape. Lower S values produce a gentler, more gradual transition. Higher S values produce a steeper transition with an overshoot that can dip below 0&nbsp;dB (for boosts) or above (for cuts) before settling at the shelf level.</p>
+
+                    <h2 id="quiz-drills">Quiz Drills</h2>
+
+                    <h3>All Parameters</h3>
+                    <p>The default drill. A random filter type, frequency, and gain are chosen. You must identify all three. This is the most challenging drill and the closest to real-world EQ decision-making.</p>
+
+                    <h3>Filter Types</h3>
+                    <p>Only the filter type is hidden. You choose a fixed frequency and the tool picks a random filter type at that frequency. This focuses your ear on the difference between high-pass, low-pass, shelving, peaking, and bandpass shapes.</p>
+
+                    <h3>Frequencies</h3>
+                    <p>Only the frequency is hidden. You choose a fixed filter type and the tool picks a random frequency. This focuses your ear on recognizing where in the spectrum the filter is acting, using the formant associations as anchors.</p>
+
+                    <h3>Gain Direction</h3>
+                    <p>The gain direction selector (Both, Boost only, Cut only) controls whether the quiz uses positive gains, negative gains, or both. Start with "Boost only" because boosts are easier to hear, then progress to "Cut only" and finally "Both" for the full challenge.</p>
+
+                    <h2 id="privacy">Privacy</h2>
+                    <p>This tool runs entirely in your browser. No audio data or settings are sent to any server. If you upload audio, it stays in your browser's memory and is discarded when you close the page.</p>
+                </div>
+
+                <aside class="toc-sidebar" aria-label="Table of contents">
+                    <h2 class="toc-header">Contents</h2>
+                    <ul class="toc-list">
+                        <li><a href="#quick-start">Quick Start</a></li>
+                        <li><a href="#modes">Modes</a></li>
+                        <li><a href="#sources">Audio Sources</a></li>
+                        <li><a href="#filter-types">Filter Types</a></li>
+                        <li><a href="#frequency-guide">Frequency Guide</a></li>
+                        <li><a href="#quiz-drills">Quiz Drills</a></li>
+                        <li><a href="#privacy">Privacy</a></li>
+                    </ul>
+                </aside>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; <span class="footer-year"></span> Blake Boyd</p>
+        </footer>
+    </div>
+</body>
+</html>

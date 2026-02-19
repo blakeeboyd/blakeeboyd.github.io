@@ -43,6 +43,10 @@
             <div class="page-header">
                 <h1 class="page-title">Filter Identification</h1>
                 <p class="page-subtitle">Train your ears to recognize filter types and frequencies</p>
+                <div class="fid-header-links">
+                    <a href="guide.html" class="fid-header-link">Guide</a>
+                    <button type="button" class="fid-header-link" id="demo-btn">Demo</button>
+                </div>
             </div>
 
             <div class="fid-app">
@@ -50,7 +54,7 @@
                 <div class="fid-toolbar">
                     <div class="fid-toolbar-row">
                         <div class="fid-toolbar-group">
-                            <span class="fid-toolbar-label">Mode</span>
+                            <span class="fid-toolbar-label">Mode<button class="info-trigger" aria-label="Mode info">i<span class="info-tooltip" role="tooltip"><strong>Practice:</strong> Direct control of all filter parameters.<br><strong>Teaching:</strong> Listen to a sequence of unfiltered then filtered audio.<br><strong>Quiz:</strong> Identify the hidden filter by ear.</span></button></span>
                             <div class="fid-toolbar-buttons">
                                 <button type="button" class="fid-toolbar-btn active" data-mode="practice">Practice</button>
                                 <button type="button" class="fid-toolbar-btn" data-mode="teaching">Teaching</button>
@@ -60,7 +64,7 @@
                     </div>
                     <div class="fid-toolbar-row fid-source-row">
                         <div class="fid-toolbar-group">
-                            <span class="fid-toolbar-label">Source</span>
+                            <span class="fid-toolbar-label">Source<button class="info-trigger" aria-label="Source info">i<span class="info-tooltip" role="tooltip">Audio source for the filter.<br><strong>Pink Noise</strong> has equal energy per octave, ideal for hearing filter shapes.<br><strong>User Audio</strong> lets you upload a file.<br><strong>Multi-track</strong> loads built-in stems with a mixer.<br><strong>Sawtooth</strong> is a synthesized tone with rich harmonic content.</span></button></span>
                             <div class="fid-toolbar-buttons">
                                 <button type="button" class="fid-toolbar-btn active" data-source="0">Mute</button>
                                 <button type="button" class="fid-toolbar-btn" data-source="1">Pink Noise</button>
@@ -196,11 +200,11 @@
                     <!-- Filter On/Bypass + Visualization -->
                     <div class="fid-param-group fid-filter-header" id="filter-header">
                         <div class="fid-filter-header-row">
-                            <h3 class="fid-param-label">Filter</h3>
+                            <h3 class="fid-param-label">Filter<button class="info-trigger" aria-label="Filter info">i<span class="info-tooltip" role="tooltip">Toggle the filter on or off (bypass). When bypassed, you hear the unfiltered source.</span></button></h3>
                             <div class="fid-filter-toggles">
                                 <button type="button" class="fid-toolbar-btn active" id="filter-on-btn">On</button>
                             </div>
-                            <span class="fid-param-label">Spectrum</span>
+                            <span class="fid-param-label">Spectrum<button class="info-trigger" aria-label="Spectrum info">i<span class="info-tooltip" role="tooltip">Show a real-time 1/6-octave spectrum analyser behind the filter curve. Bars show post-filter frequency content.</span></button></span>
                             <div class="fid-filter-toggles">
                                 <button type="button" class="fid-toolbar-btn" id="spectrum-btn">Off</button>
                             </div>
@@ -230,7 +234,7 @@
 
                     <!-- Filter Type -->
                     <div class="fid-param-group">
-                        <h3 class="fid-param-label">Type</h3>
+                        <h3 class="fid-param-label">Type<button class="info-trigger" aria-label="Filter type info">i<span class="info-tooltip" role="tooltip">The shape of the filter.<br><strong>High/Low-Pass</strong> remove frequencies above/below the cutoff.<br><strong>Shelving</strong> filters boost or cut above/below a frequency.<br><strong>Peaking</strong> boosts or cuts a band around the center frequency.<br><strong>Bandpass</strong> lets only a band through.</span></button></h3>
                         <div class="fid-button-group" id="type-buttons">
                             <button type="button" class="fid-toggle active" data-type="highpass">High-Pass</button>
                             <button type="button" class="fid-toggle" data-type="lowpass">Low-Pass</button>
@@ -243,7 +247,7 @@
 
                     <!-- Frequency -->
                     <div class="fid-param-group">
-                        <h3 class="fid-param-label">Freq</h3>
+                        <h3 class="fid-param-label">Freq<button class="info-trigger" aria-label="Frequency info">i<span class="info-tooltip" role="tooltip">Center or cutoff frequency of the filter. The vowel hints show what a narrow boost at each frequency sounds like in pink noise.</span></button></h3>
                         <div class="fid-button-group" id="freq-buttons">
                             <button type="button" class="fid-toggle" data-freq="250">
                                 <span class="fid-toggle-main">250 Hz</span>
@@ -267,18 +271,18 @@
                             </button>
                             <button type="button" class="fid-toggle" data-freq="8000">
                                 <span class="fid-toggle-main">8 kHz</span>
-                                <span class="fid-toggle-hint">Sibilance</span>
+                                <span class="fid-toggle-hint">S "sam"</span>
                             </button>
                             <button type="button" class="fid-toggle" data-freq="16000">
                                 <span class="fid-toggle-main">16 kHz</span>
-                                <span class="fid-toggle-hint">Air</span>
+                                <span class="fid-toggle-hint">TS "cats"</span>
                             </button>
                         </div>
                     </div>
 
                     <!-- Gain (hidden for HP/LP) -->
                     <div class="fid-param-group hidden" id="gain-group">
-                        <h3 class="fid-param-label">Gain</h3>
+                        <h3 class="fid-param-label">Gain<button class="info-trigger" aria-label="Gain info">i<span class="info-tooltip" role="tooltip">How much the filter boosts or cuts, in decibels.</span></button></h3>
                         <div class="fid-button-group" id="gain-buttons">
                             <button type="button" class="fid-toggle" data-gain="-12">-12 dB</button>
                             <button type="button" class="fid-toggle" data-gain="-6">-6 dB</button>
@@ -291,7 +295,7 @@
 
                     <!-- Filter Settings -->
                     <div class="fid-param-group fid-settings-group" id="filter-settings">
-                        <h3 class="fid-param-label">Shape</h3>
+                        <h3 class="fid-param-label">Shape<button class="info-trigger" aria-label="Shape info">i<span class="info-tooltip" role="tooltip">For high/low-pass: steepness of the slope (12, 24, or 48 dB/octave).<br>For peaking: bandwidth in octaves.<br>For shelf: slope parameter S.</span></button></h3>
                         <div class="fid-settings-content">
                             <div id="settings-slope">
                                 <div class="fid-button-group" id="slope-buttons">
@@ -339,85 +343,6 @@
                     </div>
                 </div>
 
-                <!-- Frequency Guide -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Frequency Guide</h2>
-                    </div>
-                    <div class="background-content">
-                        <h3>What are formants?</h3>
-                        <p>Your vocal cords produce a raw buzz, a complex tone rich in harmonics. That buzz travels through the vocal tract (throat, mouth, nasal cavity), which acts as a resonant filter. By changing the shape of your tongue, jaw, and lips, you amplify certain frequency regions and suppress others. The resonant peaks that result are called <strong>formants</strong>.</p>
-                        <p>Vowels are defined almost entirely by their first two formants. Say "OO" (as in "food") and then slowly shift to "EE" (as in "bee") without stopping your voice. You will feel your tongue rise and your jaw close. What you are hearing is the formant frequencies sweeping upward: the dominant resonance moves from around 250 Hz to around 4 kHz. The raw buzz from your vocal cords stays the same. Only the filtering changes.</p>
-                        <p>Consonants work differently. Sounds like S and T are produced by turbulent airflow through narrow constrictions in the mouth. They generate broadband noise concentrated in the high frequencies (8 kHz and above) rather than harmonic resonances. These sibilant and fricative sounds do not have formants in the same way vowels do, but they occupy characteristic frequency regions that are equally useful for ear training.</p>
-
-                        <h3>Frequency-to-sound associations</h3>
-                        <p>When you boost a narrow peak in pink noise at each of these frequencies, a recognizable speech sound emerges. The lower five correspond to vowel formants. The upper two correspond to consonant energy regions. These associations give your ears a mnemonic anchor for identifying where in the spectrum a filter is acting.</p>
-
-                        <table class="fid-guide-table">
-                            <thead>
-                                <tr>
-                                    <th>Frequency</th>
-                                    <th>Sound</th>
-                                    <th>As in</th>
-                                    <th>Too much sounds...</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>250 Hz</td>
-                                    <td>U / OO</td>
-                                    <td>"food"</td>
-                                    <td>Muddy</td>
-                                </tr>
-                                <tr>
-                                    <td>500 Hz</td>
-                                    <td>O</td>
-                                    <td>"no"</td>
-                                    <td>Woofy</td>
-                                </tr>
-                                <tr>
-                                    <td>1 kHz</td>
-                                    <td>AH</td>
-                                    <td>"aha"</td>
-                                    <td>Boxy</td>
-                                </tr>
-                                <tr>
-                                    <td>2 kHz</td>
-                                    <td>EH</td>
-                                    <td>"let"</td>
-                                    <td>Bitey</td>
-                                </tr>
-                                <tr>
-                                    <td>4 kHz</td>
-                                    <td>EE</td>
-                                    <td>"bee"</td>
-                                    <td>Tinny</td>
-                                </tr>
-                                <tr>
-                                    <td>8 kHz</td>
-                                    <td>S (sibilance)</td>
-                                    <td>"sam"</td>
-                                    <td>Crispy</td>
-                                </tr>
-                                <tr>
-                                    <td>16 kHz</td>
-                                    <td>TS (air)</td>
-                                    <td>"tsunami"</td>
-                                    <td>Shimmery</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <h3>How to practice</h3>
-                        <p>Try this: boost a peaking filter by +12 dB at each frequency in pink noise and slowly listen through each one. You should hear the vowel sounds emerge. Once you can hear "OO" at 250 Hz and "EE" at 4 kHz, you have two solid reference points an octave apart. The other vowels fill in the gaps.</p>
-                        <p>The subjective descriptors ("muddy," "boxy," "tinny") describe what a mix sounds like when too much energy accumulates in that range. Learning to hear these qualities is the foundation of effective EQ decisions.</p>
-
-                        <h3>Bandwidth vs Q</h3>
-                        <p>The "width" of a filter can be described two ways. <strong>Bandwidth</strong> is measured in octaves: a 2-octave bandwidth centered at 1 kHz affects the range from roughly 500 Hz to 2 kHz. <strong>Q</strong> (quality factor) is the inverse: higher Q means a narrower, more focused filter. The two are related by the formula Q&nbsp;=&nbsp;1&nbsp;/&nbsp;(2&nbsp;&times;&nbsp;sinh(ln2/2&nbsp;&times;&nbsp;BW)), so a 2-octave bandwidth gives Q&nbsp;&asymp;&nbsp;0.67 and a &frac12;-octave bandwidth gives Q&nbsp;&asymp;&nbsp;2.54.</p>
-                        <p>For high-pass and low-pass filters, Q controls the resonance at the cutoff frequency. Q&nbsp;=&nbsp;0.707 produces a maximally flat (Butterworth) response with no bump. Higher Q values create a resonance peak that emphasizes frequencies near the cutoff before the slope kicks in.</p>
-                        <p>Shelf filters use a separate "slope" parameter (S) from the Audio EQ Cookbook. S&nbsp;=&nbsp;1 is the standard shape. Lower S values produce a gentler, more gradual transition. Higher S values produce a steeper transition with an overshoot that can dip below 0&nbsp;dB (for boosts) or above (for cuts) before settling at the shelf level.</p>
-                    </div>
-                </div>
             </div>
         </main>
 

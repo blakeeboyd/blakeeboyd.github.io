@@ -204,7 +204,6 @@
     align-items: center;
     gap: var(--spacing-sm);
     padding-top: var(--spacing-sm);
-    padding-left: 62px;
     border-top: 1px solid var(--color-border);
 }
 
@@ -889,4 +888,116 @@
     .fid-quiz-controls {
         flex-wrap: wrap;
     }
+}
+
+/* ===========================================
+   Header Links (Guide + Demo)
+   =========================================== */
+
+.fid-header-links {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-xs);
+}
+
+.fid-header-link {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.8125rem;
+    color: var(--color-accent);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: none;
+    font-family: inherit;
+    transition: color var(--transition-fast);
+}
+
+.fid-header-link:hover {
+    color: var(--color-accent-hover);
+    text-decoration: underline;
+}
+
+/* ===========================================
+   Practice Demo Tour
+   =========================================== */
+
+.fid-tour-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    transition: opacity 0.2s;
+}
+
+.fid-tour-card {
+    position: fixed;
+    z-index: 1002;
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    max-width: 360px;
+    width: calc(100vw - 32px);
+    line-height: 1.6;
+    font-size: 0.875rem;
+    color: var(--color-text);
+}
+
+.fid-tour-card h3 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.fid-tour-card p {
+    margin: 0 0 12px;
+}
+
+.fid-tour-step {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-bottom: 12px;
+}
+
+.fid-tour-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+}
+
+.fid-tour-actions button {
+    padding: 6px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 0.8125rem;
+    font-family: inherit;
+    cursor: pointer;
+    border: 1px solid var(--color-border);
+    background: var(--color-card-bg);
+    color: var(--color-text);
+    transition: all var(--transition-fast);
+}
+
+.fid-tour-actions button:hover {
+    background: var(--color-bg);
+}
+
+.fid-tour-actions .fid-tour-next {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: #fff;
+}
+
+.fid-tour-actions .fid-tour-next:hover {
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+}
+
+.fid-tour-highlight {
+    position: relative;
+    z-index: 1001;
+    border-radius: 8px;
+    box-shadow: 0 0 0 4px var(--color-accent), 0 0 0 9999px rgba(0, 0, 0, 0.6);
 }
