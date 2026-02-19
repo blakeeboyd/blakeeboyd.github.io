@@ -46,22 +46,40 @@
             </div>
 
             <div class="fid-app">
-                <!-- Source + Playback Card -->
-                <div class="card fid-source-card">
-                    <div class="card-header">
-                        <h2 class="card-title">Audio Source</h2>
+                <!-- Toolbar -->
+                <div class="fid-toolbar">
+                    <div class="fid-toolbar-row">
+                        <div class="fid-toolbar-group">
+                            <span class="fid-toolbar-label">Mode</span>
+                            <div class="fid-toolbar-buttons">
+                                <button type="button" class="fid-toolbar-btn active" data-mode="practice">Practice</button>
+                                <button type="button" class="fid-toolbar-btn" data-mode="teaching">Teaching</button>
+                                <button type="button" class="fid-toolbar-btn" data-mode="quiz">Quiz</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="source-buttons">
-                        <button type="button" class="source-button active" data-source="0">Mute</button>
-                        <button type="button" class="source-button" data-source="1">Pink Noise</button>
-                        <button type="button" class="source-button" data-source="2">User Audio</button>
-                        <button type="button" class="source-button" data-source="3">Multi-track</button>
-                        <button type="button" class="source-button" data-source="4">Sawtooth</button>
+                    <div class="fid-toolbar-row fid-source-row">
+                        <div class="fid-toolbar-group">
+                            <span class="fid-toolbar-label">Source</span>
+                            <div class="fid-toolbar-buttons">
+                                <button type="button" class="fid-toolbar-btn active" data-source="0">Mute</button>
+                                <button type="button" class="fid-toolbar-btn" data-source="1">Pink Noise</button>
+                                <button type="button" class="fid-toolbar-btn" data-source="2">User Audio</button>
+                                <button type="button" class="fid-toolbar-btn" data-source="3">Multi-track</button>
+                                <button type="button" class="fid-toolbar-btn" data-source="4">Sawtooth</button>
+                            </div>
+                        </div>
+                        <div class="fid-toolbar-group fid-toolbar-gain">
+                            <span class="fid-toolbar-label">Gain</span>
+                            <input type="range" class="fid-toolbar-slider" id="gain-slider" min="-70" max="6" value="-24" step="1">
+                            <span class="fid-toolbar-value" id="gain-display">-24 dB</span>
+                        </div>
                     </div>
-                    <div class="upload-area hidden" id="upload-area">
+                    <!-- User audio upload + playback (inside toolbar, after source row) -->
+                    <div class="upload-area fid-source-extras hidden" id="upload-area">
                         <input type="file" id="audio-file-input" accept="audio/*" hidden>
-                        <label for="audio-file-input" class="upload-label">
-                            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <label for="audio-file-input" class="upload-label fid-upload-compact">
+                            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                                 <polyline points="17 8 12 3 7 8"></polyline>
                                 <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -69,12 +87,12 @@
                             <span>Drop audio file or click to upload</span>
                         </label>
                     </div>
-                    <div class="playback-controls hidden" id="playback-controls">
-                        <button type="button" class="play-button" id="play-button" aria-label="Play">
-                            <svg class="icon-play" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <div class="playback-controls fid-source-extras hidden" id="playback-controls">
+                        <button type="button" class="play-button fid-play-sm" id="play-button" aria-label="Play">
+                            <svg class="icon-play" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                                 <polygon points="5,3 19,12 5,21"></polygon>
                             </svg>
-                            <svg class="icon-pause" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                            <svg class="icon-pause" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                                 <rect x="6" y="4" width="4" height="16"></rect>
                                 <rect x="14" y="4" width="4" height="16"></rect>
                             </svg>
@@ -86,69 +104,83 @@
                             <span class="time-display" id="time-display">0:00 / 0:00</span>
                         </div>
                     </div>
-                    <div class="gain-control">
-                        <label class="control-label">Gain</label>
-                        <div class="gain-row">
-                            <input type="range" class="gain-slider" id="gain-slider" min="-70" max="6" value="-24" step="1">
-                            <span class="gain-text" id="gain-display">-24 dB</span>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Multi-track controls (track selection + stereo viz) -->
-                <div class="fid-multitrack-controls hidden" id="multitrack-controls">
-                    <div class="fid-track-loading hidden" id="track-loading">Loading tracks...</div>
-                    <div class="fid-mixer" id="track-buttons"></div>
-                    <div class="fid-stereo-viz-container">
-                        <canvas id="stereo-viz-canvas" aria-label="Stereo waveform display"></canvas>
-                    </div>
-                </div>
-
-                <!-- Mode Toggle -->
-                <div class="fid-mode-bar">
-                    <div class="fid-mode-buttons">
-                        <button type="button" class="source-button active" data-mode="practice">Practice</button>
-                        <button type="button" class="source-button" data-mode="teaching">Teaching</button>
-                        <button type="button" class="source-button" data-mode="quiz">Quiz</button>
-                    </div>
+                    <!-- Mode-specific controls (inside toolbar) -->
                     <div class="fid-teaching-controls hidden" id="teaching-controls">
+                        <label class="fid-dropdown-label">Source
                         <select class="fid-quiz-source" id="teaching-source-select">
                             <option value="1">Pink Noise</option>
                             <option value="2">User Audio</option>
                             <option value="3">Multi-track</option>
                             <option value="4">Sawtooth</option>
                         </select>
+                        </label>
                         <button type="button" class="action-button action-button-primary" id="listen-btn">Listen</button>
-                        <button type="button" class="source-button" id="loop-btn">Loop</button>
+                        <button type="button" class="fid-toolbar-btn" id="loop-btn">Loop</button>
                         <div class="fid-duration-controls">
-                            <label class="fid-duration-label">Unfiltered <input type="number" class="fid-duration-input" id="teaching-bypass-dur" min="1" max="30" value="4">s</label>
-                            <label class="fid-duration-label">Filtered <input type="number" class="fid-duration-input" id="teaching-filter-dur" min="1" max="30" value="5">s</label>
+                            <label class="fid-duration-label">unfiltered <input type="number" class="fid-duration-input" id="teaching-bypass-dur" min="1" max="30" value="4">s</label>
+                            <label class="fid-duration-label">filtered <input type="number" class="fid-duration-input" id="teaching-filter-dur" min="1" max="30" value="5">s</label>
                         </div>
                     </div>
                     <div class="fid-quiz-controls hidden" id="quiz-controls">
-                        <select class="fid-quiz-source" id="quiz-source-select">
-                            <option value="1">Pink Noise</option>
-                            <option value="2">User Audio</option>
-                            <option value="3">Multi-track</option>
-                            <option value="4">Sawtooth</option>
-                        </select>
-                        <select class="fid-quiz-source" id="quiz-drill-select">
-                            <option value="all">All Parameters</option>
-                            <option value="filterTypesAt1k">Filter Types at 1 kHz</option>
-                        </select>
-                        <button type="button" class="action-button action-button-primary" id="new-question-btn">New Question</button>
-                        <button type="button" class="action-button" id="play-again-btn" disabled>Play Again</button>
-                        <div class="fid-duration-controls">
-                            <label class="fid-duration-label">Unfiltered <input type="number" class="fid-duration-input" id="quiz-bypass-dur" min="1" max="30" value="4">s</label>
-                            <label class="fid-duration-label">Filtered <input type="number" class="fid-duration-input" id="quiz-filter-dur" min="1" max="30" value="5">s</label>
+                        <div class="fid-quiz-row">
+                            <label class="fid-dropdown-label">Source
+                            <select class="fid-quiz-source" id="quiz-source-select">
+                                <option value="1">Pink Noise</option>
+                                <option value="2">User Audio</option>
+                                <option value="3">Multi-track</option>
+                                <option value="4">Sawtooth</option>
+                            </select>
+                            </label>
+                            <label class="fid-dropdown-label">Drill
+                            <select class="fid-quiz-source" id="quiz-drill-select">
+                                <option value="all">All Parameters</option>
+                                <option value="filterTypes">Filter Types</option>
+                                <option value="frequencies">Frequencies</option>
+                            </select>
+                            </label>
+                            <label class="fid-dropdown-label hidden" id="quiz-drill-freq-label">At
+                            <select class="fid-quiz-source" id="quiz-drill-freq">
+                                <option value="250">250 Hz</option>
+                                <option value="500">500 Hz</option>
+                                <option value="1000" selected>1 kHz</option>
+                                <option value="2000">2 kHz</option>
+                                <option value="4000">4 kHz</option>
+                                <option value="8000">8 kHz</option>
+                                <option value="16000">16 kHz</option>
+                            </select>
+                            </label>
+                            <label class="fid-dropdown-label hidden" id="quiz-drill-type-label">Filter
+                            <select class="fid-quiz-source" id="quiz-drill-type">
+                                <option value="highpass">High-Pass</option>
+                                <option value="lowpass">Low-Pass</option>
+                                <option value="bandpass">Bandpass</option>
+                                <option value="highshelf">High Shelf</option>
+                                <option value="lowshelf">Low Shelf</option>
+                                <option value="peaking" selected>Peaking</option>
+                            </select>
+                            </label>
+                            <label class="fid-dropdown-label" id="quiz-gain-dir-label">Gain
+                            <select class="fid-quiz-source" id="quiz-gain-dir">
+                                <option value="both">Both</option>
+                                <option value="boost" selected>Boost only</option>
+                                <option value="cut">Cut only</option>
+                            </select>
+                            </label>
                         </div>
-                        <div class="fid-score">
-                            <span class="fid-score-label">Score:</span>
-                            <span id="quiz-score">0/0</span>
-                        </div>
-                        <div class="fid-score">
-                            <span class="fid-score-label">Streak:</span>
-                            <span id="quiz-streak">0</span>
+                        <div class="fid-quiz-row">
+                            <div class="fid-duration-controls">
+                                <label class="fid-duration-label">unfiltered <input type="number" class="fid-duration-input" id="quiz-bypass-dur" min="1" max="30" value="4">s</label>
+                                <label class="fid-duration-label">filtered <input type="number" class="fid-duration-input" id="quiz-filter-dur" min="1" max="30" value="5">s</label>
+                            </div>
+                            <div class="fid-score">
+                                <span class="fid-score-label">Score:</span>
+                                <span id="quiz-score">0/0</span>
+                            </div>
+                            <div class="fid-score">
+                                <span class="fid-score-label">Streak:</span>
+                                <span id="quiz-streak">0</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -159,14 +191,18 @@
                     <span id="test-countdown"></span>
                 </div>
 
-                <!-- Filter Selection Grid -->
+                <!-- Filter Display + Controls -->
                 <div class="card fid-selection-card">
                     <!-- Filter On/Bypass + Visualization -->
                     <div class="fid-param-group fid-filter-header" id="filter-header">
                         <div class="fid-filter-header-row">
                             <h3 class="fid-param-label">Filter</h3>
                             <div class="fid-filter-toggles">
-                                <button type="button" class="source-button active" id="filter-on-btn">On</button>
+                                <button type="button" class="fid-toolbar-btn active" id="filter-on-btn">On</button>
+                            </div>
+                            <span class="fid-param-label">Spectrum</span>
+                            <div class="fid-filter-toggles">
+                                <button type="button" class="fid-toolbar-btn" id="spectrum-btn">Off</button>
                             </div>
                         </div>
                         <div class="fid-canvas-container">
@@ -174,9 +210,27 @@
                         </div>
                     </div>
 
+                    <!-- Quiz comparison view (hidden until answer submitted) -->
+                    <div class="fid-param-group fid-quiz-compare hidden" id="quiz-compare">
+                        <div class="fid-compare-row">
+                            <div class="fid-compare-panel">
+                                <h4 class="fid-compare-label" id="compare-user-label">Your Answer</h4>
+                                <div class="fid-canvas-container fid-compare-canvas">
+                                    <canvas id="compare-user-canvas"></canvas>
+                                </div>
+                            </div>
+                            <div class="fid-compare-panel">
+                                <h4 class="fid-compare-label" id="compare-correct-label">Correct Answer</h4>
+                                <div class="fid-canvas-container fid-compare-canvas">
+                                    <canvas id="compare-correct-canvas"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Filter Type -->
                     <div class="fid-param-group">
-                        <h3 class="fid-param-label">Filter Type</h3>
+                        <h3 class="fid-param-label">Type</h3>
                         <div class="fid-button-group" id="type-buttons">
                             <button type="button" class="fid-toggle active" data-type="highpass">High-Pass</button>
                             <button type="button" class="fid-toggle" data-type="lowpass">Low-Pass</button>
@@ -189,7 +243,7 @@
 
                     <!-- Frequency -->
                     <div class="fid-param-group">
-                        <h3 class="fid-param-label">Frequency</h3>
+                        <h3 class="fid-param-label">Freq</h3>
                         <div class="fid-button-group" id="freq-buttons">
                             <button type="button" class="fid-toggle" data-freq="250">
                                 <span class="fid-toggle-main">250 Hz</span>
@@ -237,40 +291,52 @@
 
                     <!-- Filter Settings -->
                     <div class="fid-param-group fid-settings-group" id="filter-settings">
-                        <h3 class="fid-param-label">Filter Shape</h3>
-                        <div id="settings-slope">
-                            <div class="fid-button-group" id="slope-buttons">
-                                <button type="button" class="fid-toggle active" data-slope="12">12 dB/oct</button>
-                                <button type="button" class="fid-toggle" data-slope="24">24 dB/oct</button>
-                                <button type="button" class="fid-toggle" data-slope="48">48 dB/oct</button>
+                        <h3 class="fid-param-label">Shape</h3>
+                        <div class="fid-settings-content">
+                            <div id="settings-slope">
+                                <div class="fid-button-group" id="slope-buttons">
+                                    <button type="button" class="fid-toggle active" data-slope="12">12 dB/oct</button>
+                                    <button type="button" class="fid-toggle" data-slope="24">24 dB/oct</button>
+                                    <button type="button" class="fid-toggle" data-slope="48">48 dB/oct</button>
+                                </div>
                             </div>
-                        </div>
-                        <div id="settings-bandwidth" class="hidden">
-                            <div class="fid-button-group" id="bw-buttons">
-                                <button type="button" class="fid-toggle" data-bw="0.5">&frac12; oct</button>
-                                <button type="button" class="fid-toggle" data-bw="1">1 oct</button>
-                                <button type="button" class="fid-toggle active" data-bw="2">2 oct</button>
-                                <button type="button" class="fid-toggle" data-bw="3">3 oct</button>
+                            <div id="settings-bandwidth" class="hidden">
+                                <div class="fid-button-group" id="bw-buttons">
+                                    <button type="button" class="fid-toggle" data-bw="0.5">&frac12; oct</button>
+                                    <button type="button" class="fid-toggle" data-bw="1">1 oct</button>
+                                    <button type="button" class="fid-toggle active" data-bw="2">2 oct</button>
+                                    <button type="button" class="fid-toggle" data-bw="3">3 oct</button>
+                                </div>
                             </div>
-                        </div>
-                        <div id="settings-shelf-q" class="hidden">
-                            <div class="fid-button-group" id="shelf-q-buttons">
-                                <button type="button" class="fid-toggle" data-q="0.5">Gentle</button>
-                                <button type="button" class="fid-toggle active" data-q="1">Standard</button>
-                                <button type="button" class="fid-toggle" data-q="2">Steep</button>
-                                <button type="button" class="fid-toggle" data-q="4">Resonant</button>
+                            <div id="settings-shelf-q" class="hidden">
+                                <div class="fid-button-group" id="shelf-q-buttons">
+                                    <button type="button" class="fid-toggle" data-q="0.5">Gentle</button>
+                                    <button type="button" class="fid-toggle active" data-q="1">Standard</button>
+                                    <button type="button" class="fid-toggle" data-q="2">Steep</button>
+                                    <button type="button" class="fid-toggle" data-q="4">Resonant</button>
+                                </div>
                             </div>
+                            <span class="fid-q-readout" id="q-readout"></span>
                         </div>
-                        <span class="fid-q-readout" id="q-readout"></span>
                     </div>
 
                     <!-- Quiz Answer Submission -->
                     <div class="fid-quiz-submit hidden" id="quiz-submit">
                         <button type="button" class="action-button action-button-primary" id="submit-answer-btn" disabled>Submit Answer</button>
+                        <button type="button" class="action-button" id="play-again-btn" disabled>Play Again</button>
                     </div>
 
                     <!-- Quiz Result -->
                     <div class="fid-result hidden" id="quiz-result"></div>
+
+                    <!-- Multi-track controls (mixer + stereo viz) -->
+                    <div class="fid-multitrack-controls hidden" id="multitrack-controls">
+                        <div class="fid-track-loading hidden" id="track-loading">Loading tracks...</div>
+                        <div class="fid-mixer" id="track-buttons"></div>
+                        <div class="fid-stereo-viz-container">
+                            <canvas id="stereo-viz-canvas" aria-label="Stereo waveform display"></canvas>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Frequency Guide -->

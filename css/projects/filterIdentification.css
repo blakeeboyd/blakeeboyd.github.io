@@ -5,14 +5,242 @@
 .fid-app {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
 }
 
-/* Source card layout */
-.fid-source-card {
+/* ===========================================
+   Toolbar (Source + Gain + Mode in one strip)
+   =========================================== */
+
+.fid-toolbar {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
+    padding: 10px var(--spacing-sm);
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+}
+
+/* Hide source+gain row and extras in teaching/quiz mode (they have their own source picker) */
+.teaching-mode .fid-source-row,
+.quiz-mode .fid-source-row,
+.teaching-mode .fid-source-extras,
+.quiz-mode .fid-source-extras {
+    display: none !important;
+}
+
+.fid-toolbar-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.fid-toolbar-row + .fid-toolbar-row {
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+}
+
+.fid-toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.fid-toolbar-gain {
+    flex: 1;
+    min-width: 120px;
+}
+
+.fid-toolbar-label {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    width: 50px;
+    flex-shrink: 0;
+}
+
+.fid-toolbar-buttons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.fid-toolbar-buttons .fid-toolbar-btn + .fid-toolbar-btn::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: 20%;
+    height: 60%;
+    width: 1px;
+    background: var(--color-border);
+}
+
+.fid-toolbar-buttons .fid-toolbar-btn {
+    position: relative;
+}
+
+.fid-toolbar-btn {
+    padding: 7px 14px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: inherit;
+    background: var(--color-control-bg);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+}
+
+.fid-toolbar-btn:hover {
+    border-color: var(--color-text-muted);
+}
+
+.fid-toolbar-btn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.fid-toolbar-btn.active {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+}
+
+[data-theme="dark"] .fid-toolbar-btn.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.fid-toolbar-slider {
+    flex: 1;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--color-border);
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.fid-toolbar-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    border: none;
+    cursor: pointer;
+}
+
+.fid-toolbar-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    border: none;
+    cursor: pointer;
+}
+
+.fid-toolbar-slider:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.fid-toolbar-value {
+    font-size: 0.6875rem;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    color: var(--color-text-muted);
+    min-width: 3.5em;
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* Source extras (upload area, playback controls) */
+.fid-source-extras {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.fid-source-extras.hidden {
+    display: none !important;
+}
+
+/* Override upload-area padding for compact version (inside toolbar) */
+.upload-area.fid-source-extras {
+    padding: var(--spacing-xs) 0;
+}
+
+.fid-upload-compact {
+    flex-direction: row;
+    gap: var(--spacing-xs);
+    font-size: 0.8125rem;
+}
+
+/* Smaller play button for the compact toolbar */
+.fid-play-sm {
+    width: 32px;
+    height: 32px;
+}
+
+/* Override playback-controls padding for compact version (inside toolbar) */
+.playback-controls.fid-source-extras {
+    padding: 6px 0;
+}
+
+/* ===========================================
+   Mode-specific controls
+   =========================================== */
+
+.fid-teaching-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    padding-left: 62px;
+    border-top: 1px solid var(--color-border);
+}
+
+.fid-teaching-controls.hidden {
+    display: none;
+}
+
+.fid-quiz-controls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+}
+
+.fid-quiz-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.fid-quiz-controls.hidden {
+    display: none;
+}
+
+/* Filter header + quiz compare: keep column layout (canvas spans full width) */
+.fid-filter-header,
+.fid-quiz-compare {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.fid-filter-header .fid-param-label {
+    width: auto;
+    padding-top: 0;
 }
 
 /* Filter header row (On/Bypass + label) */
@@ -26,7 +254,7 @@
 .fid-filter-toggles {
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: 3px;
 }
 
 /* Frequency response canvas */
@@ -49,11 +277,11 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
-    padding: var(--spacing-sm);
+    padding: 6px var(--spacing-sm);
     background: var(--color-accent-light);
     border: 1px solid var(--color-accent);
     border-radius: var(--radius-sm);
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-weight: 500;
     color: var(--color-accent);
     animation: pulse-border 1.5s ease-in-out infinite;
@@ -67,42 +295,9 @@
     background: rgba(37, 99, 235, 0.15);
 }
 
-/* Mode bar */
-.fid-mode-bar {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
-    flex-wrap: wrap;
-}
-
-.fid-mode-buttons {
-    display: flex;
-    gap: var(--spacing-xs);
-}
-
-.fid-teaching-controls {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-}
-
-.fid-teaching-controls.hidden {
-    display: none;
-}
-
-.fid-quiz-controls {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
-}
-
-.fid-quiz-controls.hidden {
-    display: none;
-}
-
 .fid-quiz-source {
-    padding: 0.375rem 0.5rem;
-    font-size: 0.8125rem;
+    padding: 4px 6px;
+    font-size: 0.75rem;
     font-weight: 500;
     font-family: inherit;
     background: var(--color-control-bg);
@@ -117,16 +312,35 @@
     outline-offset: 2px;
 }
 
+.fid-dropdown-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.fid-dropdown-label.hidden {
+    display: none;
+}
+
 .fid-score {
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
-    font-size: 0.875rem;
+    gap: 4px;
+    font-size: 0.75rem;
 }
 
 .fid-score-label {
     color: var(--color-text-muted);
     font-weight: 500;
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
 #quiz-score,
@@ -146,10 +360,12 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 0.75rem;
+    font-size: 0.625rem;
     color: var(--color-text-muted);
-    font-weight: 500;
+    font-weight: 600;
     white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .fid-duration-input {
@@ -180,31 +396,38 @@
     -moz-appearance: textfield;
 }
 
-/* Selection card */
+/* Selection card — tighter padding */
 .fid-selection-card {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
 }
 
 /* Parameter group (type, freq, gain) */
 .fid-param-group {
     display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
+    align-items: flex-start;
+    gap: 12px;
 }
 
 .fid-param-label {
-    font-size: 0.8125rem;
-    font-weight: 500;
+    font-size: 0.625rem;
+    font-weight: 600;
     color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     margin: 0;
+    width: 50px;
+    flex-shrink: 0;
+    line-height: 1;
+    padding-top: 8px;
 }
 
 /* Toggle button group */
 .fid-button-group {
     display: flex;
-    gap: var(--spacing-xs);
+    gap: 4px;
     flex-wrap: wrap;
 }
 
@@ -213,10 +436,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
-    min-width: 72px;
-    padding: 0.5rem 0.75rem;
-    font-size: 0.8125rem;
+    gap: 1px;
+    min-width: 64px;
+    padding: 8px 14px;
+    font-size: 0.875rem;
     font-weight: 500;
     background: var(--color-control-bg);
     border: 1.5px solid var(--color-border);
@@ -247,7 +470,8 @@
     color: white;
 }
 
-.fid-toggle.disabled {
+.fid-toggle.disabled,
+.fid-toggle:disabled {
     opacity: 0.35;
     cursor: not-allowed;
     pointer-events: none;
@@ -255,12 +479,12 @@
 
 /* Vowel hint text below frequency label */
 .fid-toggle-main {
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
 }
 
 .fid-toggle-hint {
-    font-size: 0.625rem;
-    opacity: 0.7;
+    font-size: 0.5625rem;
+    opacity: 0.65;
     font-weight: 400;
     letter-spacing: 0.02em;
 }
@@ -278,6 +502,13 @@
 .fid-settings-group {
     padding-top: var(--spacing-xs);
     border-top: 1px solid var(--color-border);
+    margin-top: 2px;
+}
+
+.fid-settings-content {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
 /* Q readout */
@@ -292,9 +523,56 @@
     display: none;
 }
 
-/* Hide settings in quiz mode */
+/* Hide settings and filter toggles in quiz mode */
 .fid-app.quiz-mode .fid-settings-group {
     display: none;
+}
+
+.fid-app.quiz-mode .fid-filter-toggles {
+    display: none;
+}
+
+.fid-app.quiz-mode .fid-mixer {
+    display: none;
+}
+
+/* Quiz comparison split view */
+.fid-quiz-compare.hidden {
+    display: none;
+}
+
+.fid-compare-row {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.fid-compare-panel {
+    flex: 1;
+    min-width: 0;
+}
+
+.fid-compare-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 var(--spacing-xs) 0;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.fid-compare-label.correct {
+    color: var(--color-success);
+}
+
+.fid-compare-label.incorrect {
+    color: var(--color-error);
+}
+
+.fid-compare-canvas {
+    height: 130px;
 }
 
 /* Quiz answer submission */
@@ -302,7 +580,7 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
-    padding-top: var(--spacing-sm);
+    padding-top: var(--spacing-xs);
     border-top: 1px solid var(--color-border);
 }
 
@@ -312,9 +590,9 @@
 
 /* Quiz result feedback */
 .fid-result {
-    padding: var(--spacing-sm);
+    padding: 6px var(--spacing-sm);
     border-radius: var(--radius-sm);
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-weight: 500;
 }
 
@@ -380,6 +658,8 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xs);
+    padding-top: var(--spacing-xs);
+    border-top: 1px solid var(--color-border);
 }
 
 .fid-multitrack-controls.hidden {
@@ -387,52 +667,67 @@
 }
 
 /* Mixer */
+/* Mixer: horizontal row of vertical channel strips */
 .fid-mixer {
     display: flex;
-    flex-direction: column;
     gap: 2px;
+    justify-content: center;
+    padding: var(--spacing-xs) 0;
 }
 
-/* Channel strip */
+/* Channel strip — vertical column */
 .fid-channel-strip {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 4px;
-    padding: 2px 0;
+    gap: 6px;
+    width: 56px;
+    padding: 8px 4px;
+    border-radius: var(--radius-sm);
+    background: var(--color-control-bg);
+    border: 1px solid var(--color-border);
+    transition: opacity var(--transition-fast);
 }
 
 .fid-channel-strip.fid-channel-silenced {
-    opacity: 0.45;
+    opacity: 0.4;
 }
 
-/* Track label */
+/* Track label at top */
 .fid-channel-label {
-    font-size: 0.6875rem;
-    font-weight: 500;
+    font-size: 0.5625rem;
+    font-weight: 600;
     color: var(--color-text);
-    min-width: 42px;
-    text-align: right;
-    flex-shrink: 0;
+    text-align: center;
+    line-height: 1.1;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-/* M/S buttons */
+/* M/S button row */
+.fid-channel-ms {
+    display: flex;
+    gap: 2px;
+}
+
 .fid-channel-btn {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     padding: 0;
-    font-size: 0.5625rem;
+    font-size: 0.5rem;
     font-weight: 700;
     font-family: inherit;
-    background: var(--color-control-bg);
+    background: transparent;
     border: 1px solid var(--color-border);
-    border-radius: 3px;
+    border-radius: 2px;
     color: var(--color-text-muted);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all var(--transition-fast);
-    flex-shrink: 0;
 }
 
 .fid-channel-btn:hover {
@@ -441,7 +736,7 @@
 
 .fid-channel-btn:focus-visible {
     outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
+    outline-offset: 1px;
 }
 
 .fid-mute-btn.active {
@@ -456,35 +751,60 @@
     color: #1a1a1a;
 }
 
-/* Volume fader */
+/* Fader wrapper — gives the vertical slider a fixed height */
+.fid-fader-wrap {
+    position: relative;
+    width: 28px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Level meter behind fader */
+.fid-channel-meter {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 100%;
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+/* Vertical fader — rotate a horizontal range input */
 .fid-channel-fader {
-    flex: 1;
+    width: 100px;
     height: 4px;
-    min-width: 40px;
     -webkit-appearance: none;
     appearance: none;
     background: var(--color-border);
     border-radius: 2px;
     cursor: pointer;
+    transform: rotate(-90deg);
+    transform-origin: center center;
 }
 
 .fid-channel-fader::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--color-text);
-    border: none;
+    width: 16px;
+    height: 10px;
+    border-radius: 2px;
+    background: linear-gradient(to bottom, #d4d4d4, #a3a3a3);
+    border: 1px solid #737373;
     cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .fid-channel-fader::-moz-range-thumb {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--color-text);
-    border: none;
+    width: 16px;
+    height: 10px;
+    border-radius: 2px;
+    background: linear-gradient(to bottom, #d4d4d4, #a3a3a3);
+    border: 1px solid #737373;
     cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .fid-channel-fader:focus-visible {
@@ -492,16 +812,23 @@
     outline-offset: 2px;
 }
 
+[data-theme="dark"] .fid-channel-strip {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
 [data-theme="dark"] .fid-channel-fader {
-    background: var(--color-border);
+    background: rgba(255, 255, 255, 0.12);
 }
 
 [data-theme="dark"] .fid-channel-fader::-webkit-slider-thumb {
-    background: #e5e5e5;
+    background: linear-gradient(to bottom, #737373, #525252);
+    border-color: #404040;
 }
 
 [data-theme="dark"] .fid-channel-fader::-moz-range-thumb {
-    background: #e5e5e5;
+    background: linear-gradient(to bottom, #737373, #525252);
+    border-color: #404040;
 }
 
 .fid-track-loading {
@@ -532,23 +859,27 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+    .fid-toolbar {
+        gap: var(--spacing-xs);
+    }
+
+    .fid-toolbar-btn {
+        padding: 4px 8px;
+        font-size: 0.6875rem;
+    }
+
     .fid-toggle {
-        min-width: 60px;
-        padding: 0.375rem 0.5rem;
-        font-size: 0.75rem;
+        min-width: 56px;
+        padding: 5px 8px;
+        font-size: 0.6875rem;
     }
 
     .fid-toggle-main {
-        font-size: 0.75rem;
+        font-size: 0.6875rem;
     }
 
     .fid-toggle-hint {
-        font-size: 0.5625rem;
-    }
-
-    .fid-mode-bar {
-        flex-direction: column;
-        align-items: flex-start;
+        font-size: 0.5rem;
     }
 
     .fid-teaching-controls {

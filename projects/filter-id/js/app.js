@@ -152,14 +152,25 @@ const QUIZ_DRILLS = {
         fixedGain: null,
         guessFields: ['type', 'freq', 'gain']
     },
-    filterTypesAt1k: {
-        label: 'Filter Types at 1 kHz',
+    filterTypes: {
+        label: 'Filter Types',
         types: FILTER_TYPES,
-        freqs: [1000],
+        freqs: null,
         gains: [-12, 12],
-        fixedFreq: 1000,
+        fixedFreq: 1000,            // default; user picks via drill freq selector
         fixedGain: 12,
-        guessFields: ['type', 'gain']
+        guessFields: ['type', 'gain'],
+        userPicksFreq: true         // show frequency picker in quiz controls
+    },
+    frequencies: {
+        label: 'Frequencies',
+        types: FILTER_TYPES,
+        freqs: null,
+        gains: [-12, 12],
+        fixedType: 'peaking',       // default; user picks via drill type selector
+        fixedGain: 12,
+        guessFields: ['freq', 'gain'],
+        userPicksType: true         // show type picker in quiz controls
     }
 };
 
@@ -191,9 +202,13 @@ const state = {
     multitrackBuffers: {},       // { drums: AudioBuffer, bass: AudioBuffer, ... }
     multitrackSources: [],       // Array of BufferSourceNode (one per track)
     multitrackGains: [],         // Array of GainNode (one per track)
+    multitrackPanners: [],       // Array of StereoPannerNode (one per track)
+    multitrackAnalysers: [],     // Array of AnalyserNode (one per track, for meters)
+    multitrackMeterAnimId: null, // rAF ID for meter animation
     multitrackMerge: null,       // GainNode summing bus
     multitrackMuted: [],         // boolean[] — per-track mute state
     multitrackVolumes: [],       // number[] (0..1) — per-track volume
+    multitrackPans: [],          // number[] (-1..1) — per-track pan (not yet exposed in UI)
     multitrackSoloed: null,      // null = no solo, or track key string (exclusive)
     multitrackLoading: false,
 
@@ -202,6 +217,13 @@ const state = {
     stereoAnalyserR: null,
     stereoSplitter: null,
     stereoVizAnimId: null,
+
+    // Spectrum analyser (1/3-octave overlay)
+    preMasterMerge: null,
+    spectrumAnalyser: null,       // post-filter (what you hear)
+    spectrumRefAnalyser: null,    // pre-filter (reference level)
+    spectrumAnimId: null,
+    spectrumEnabled: false,
 
     // Sawtooth oscillator
     sawtoothOscillator: null,
@@ -235,7 +257,10 @@ const state = {
 
     // Quiz
     quizDrill: 'all', // key into QUIZ_DRILLS
+    quizGainDirection: 'boost', // 'boost' | 'cut' | 'both'
     quizAnswer: null, // { type, freq, gain }
+    quizPreviousAnswer: null, // previous question's answer (to avoid repeats)
+    quizSpectrumSnapshot: null, // { bands: Float32Array, refPeakDb: number } captured during filtered phase
     quizSelection: { type: null, freq: null, gain: null },
     quizCorrect: 0,
     quizTotal: 0,
@@ -286,9 +311,27 @@ function createAudioContext() {
     state.masterGain.gain.value = dbToLinear(state.pinkNoiseGainValue);
     state.masterGain.connect(state.audioContext.destination);
 
+    // Pre-master merge node: filter + bypass paths merge here before masterGain.
+    // Spectrum analyser taps this node so the display is independent of the volume knob.
+    state.preMasterMerge = state.audioContext.createGain();
+    state.preMasterMerge.gain.value = 1;
+    state.preMasterMerge.connect(state.masterGain);
+
+    // Post-filter spectrum analyser (taps pre-master signal for 1/3-octave display)
+    state.spectrumAnalyser = state.audioContext.createAnalyser();
+    state.spectrumAnalyser.fftSize = 8192;
+    state.spectrumAnalyser.smoothingTimeConstant = 0.8;
+    state.preMasterMerge.connect(state.spectrumAnalyser);
+
     // Source gain (pre-filter)
     state.sourceGain = state.audioContext.createGain();
     state.sourceGain.gain.value = 1;
+
+    // Pre-filter reference analyser (taps sourceGain for normalization reference)
+    state.spectrumRefAnalyser = state.audioContext.createAnalyser();
+    state.spectrumRefAnalyser.fftSize = 8192;
+    state.spectrumRefAnalyser.smoothingTimeConstant = 0.8;
+    state.sourceGain.connect(state.spectrumRefAnalyser);
 
     // Filter path gain (for on/bypass switching)
     state.filterGain = state.audioContext.createGain();
@@ -298,12 +341,12 @@ function createAudioContext() {
     state.bypassGain = state.audioContext.createGain();
     state.bypassGain.gain.value = 0;
 
-    // Bypass path: sourceGain → bypassGain → masterGain
+    // Bypass path: sourceGain → bypassGain → preMasterMerge
     state.sourceGain.connect(state.bypassGain);
-    state.bypassGain.connect(state.masterGain);
+    state.bypassGain.connect(state.preMasterMerge);
 
-    // filterGain → masterGain (static, never rebuilt)
-    state.filterGain.connect(state.masterGain);
+    // filterGain → preMasterMerge (static, never rebuilt)
+    state.filterGain.connect(state.preMasterMerge);
 
     // Build the filter chain (sourceGain → filters → filterGain)
     buildFilterChain();
@@ -415,14 +458,28 @@ function buildMultitrackGraph() {
     // Initialize mixer state arrays
     state.multitrackMuted = MULTITRACK_TRACKS.map(function () { return false; });
     state.multitrackVolumes = MULTITRACK_TRACKS.map(function () { return 1; });
+    state.multitrackPans = MULTITRACK_TRACKS.map(function () { return 0; });
     state.multitrackSoloed = null;
 
-    // Per-track gain nodes — all default to 1 (full band = all stems)
-    state.multitrackGains = MULTITRACK_TRACKS.map(function (track) {
+    // Per-track: GainNode → StereoPannerNode → summing bus
+    //                    └→ AnalyserNode (for meter, dead-end tap)
+    state.multitrackGains = [];
+    state.multitrackPanners = [];
+    state.multitrackAnalysers = [];
+    MULTITRACK_TRACKS.forEach(function () {
         var g = state.audioContext.createGain();
         g.gain.value = 1;
-        g.connect(state.multitrackMerge);
-        return g;
+        var p = state.audioContext.createStereoPanner();
+        p.pan.value = 0;
+        var a = state.audioContext.createAnalyser();
+        a.fftSize = 256;
+        a.smoothingTimeConstant = 0.85;
+        g.connect(p);
+        g.connect(a); // meter tap (before panner, shows pre-pan level)
+        p.connect(state.multitrackMerge);
+        state.multitrackGains.push(g);
+        state.multitrackPanners.push(p);
+        state.multitrackAnalysers.push(a);
     });
 
     // Stereo visualization: split L/R from the summing bus
@@ -500,6 +557,8 @@ async function startAudio() {
 
     state.isPlaying = true;
     updatePlayButton();
+    startSpectrumAnimation();
+    if (state.currentSource === 3) startMultitrackMeters();
 }
 
 function stopAudio() {
@@ -537,6 +596,8 @@ function stopAudio() {
     }
 
     state.isPlaying = false;
+    stopSpectrumAnimation();
+    stopMultitrackMeters();
     updatePlayButton();
 }
 
@@ -566,6 +627,7 @@ function startUserAudio(offset) {
     state.userAudioSource.onended = function () {
         if (state.isPlaying && state.currentSource === 2) {
             state.isPlaying = false;
+            stopSpectrumAnimation();
             state.userAudioPausedAt = 0;
             updatePlayButton();
             updateProgressBar(0);
@@ -711,6 +773,13 @@ function setTrackVolume(index, value) {
     applyMultitrackGains();
 }
 
+function setTrackPan(index, value) {
+    state.multitrackPans[index] = value;
+    if (state.multitrackPanners[index] && state.audioContext) {
+        state.multitrackPanners[index].pan.setTargetAtTime(value, state.audioContext.currentTime, 0.02);
+    }
+}
+
 function buildMultitrackTrackButtons() {
     var container = document.getElementById('track-buttons');
     if (!container) return;
@@ -721,9 +790,14 @@ function buildMultitrackTrackButtons() {
         strip.className = 'fid-channel-strip';
         strip.dataset.track = track.key;
 
+        // Track name at top
         var label = document.createElement('span');
         label.className = 'fid-channel-label';
         label.textContent = track.label;
+
+        // M/S buttons row
+        var msRow = document.createElement('div');
+        msRow.className = 'fid-channel-ms';
 
         var muteBtn = document.createElement('button');
         muteBtn.type = 'button';
@@ -743,6 +817,17 @@ function buildMultitrackTrackButtons() {
             toggleSoloTrack(track.key);
         });
 
+        msRow.appendChild(muteBtn);
+        msRow.appendChild(soloBtn);
+
+        // Vertical fader with meter
+        var faderWrap = document.createElement('div');
+        faderWrap.className = 'fid-fader-wrap';
+
+        var meter = document.createElement('canvas');
+        meter.className = 'fid-channel-meter';
+        meter.dataset.trackIndex = i;
+
         var slider = document.createElement('input');
         slider.type = 'range';
         slider.className = 'fid-channel-fader';
@@ -755,10 +840,13 @@ function buildMultitrackTrackButtons() {
             setTrackVolume(i, parseFloat(this.value));
         });
 
+        faderWrap.appendChild(meter);
+        faderWrap.appendChild(slider);
+
+        // Assemble strip: label → M/S → fader
         strip.appendChild(label);
-        strip.appendChild(muteBtn);
-        strip.appendChild(soloBtn);
-        strip.appendChild(slider);
+        strip.appendChild(msRow);
+        strip.appendChild(faderWrap);
         container.appendChild(strip);
     });
 
@@ -795,6 +883,93 @@ function updateMultitrackLoadingUI(loading) {
     var buttonsEl = document.getElementById('track-buttons');
     if (loadingEl) loadingEl.classList.toggle('hidden', !loading);
     if (buttonsEl) buttonsEl.classList.toggle('hidden', loading);
+}
+
+// Shared buffer for meter RMS calculation
+var meterTimeDomainBuf = null;
+
+function drawMultitrackMeters() {
+    var canvases = document.querySelectorAll('.fid-channel-meter');
+    if (!canvases.length || !state.multitrackAnalysers.length) return;
+
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+    canvases.forEach(function (canvas) {
+        var idx = parseInt(canvas.dataset.trackIndex);
+        var analyser = state.multitrackAnalysers[idx];
+        if (!analyser) return;
+
+        var dpr = window.devicePixelRatio || 1;
+        var w = canvas.clientWidth;
+        var h = canvas.clientHeight;
+        if (w === 0 || h === 0) return;
+
+        if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
+            canvas.width = w * dpr;
+            canvas.height = h * dpr;
+        }
+
+        var ctx = canvas.getContext('2d');
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        // Get RMS level
+        var bufLen = analyser.frequencyBinCount;
+        if (!meterTimeDomainBuf || meterTimeDomainBuf.length !== bufLen) {
+            meterTimeDomainBuf = new Float32Array(bufLen);
+        }
+        analyser.getFloatTimeDomainData(meterTimeDomainBuf);
+
+        var sum = 0;
+        for (var s = 0; s < bufLen; s++) {
+            sum += meterTimeDomainBuf[s] * meterTimeDomainBuf[s];
+        }
+        var rms = Math.sqrt(sum / bufLen);
+        var db = rms > 0 ? 20 * Math.log10(rms) : -100;
+
+        // Map dB to height (0 dB = full, -60 dB = empty)
+        var normalized = Math.max(0, Math.min(1, (db + 60) / 60));
+        var meterHeight = normalized * h;
+
+        // Clear
+        ctx.clearRect(0, 0, w, h);
+
+        // Background track
+        ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)';
+        ctx.fillRect(0, 0, w, h);
+
+        // Meter fill (green, yellow at top, red at very top)
+        if (meterHeight > 0) {
+            var meterY = h - meterHeight;
+            var gradient = ctx.createLinearGradient(0, h, 0, 0);
+            gradient.addColorStop(0, isDark ? '#22c55e' : '#16a34a');
+            gradient.addColorStop(0.7, isDark ? '#facc15' : '#ca8a04');
+            gradient.addColorStop(1, isDark ? '#ef4444' : '#dc2626');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, meterY, w, meterHeight);
+        }
+    });
+}
+
+function startMultitrackMeters() {
+    if (state.multitrackMeterAnimId) return;
+
+    function loop() {
+        state.multitrackMeterAnimId = requestAnimationFrame(loop);
+        drawMultitrackMeters();
+    }
+    loop();
+}
+
+function stopMultitrackMeters() {
+    if (state.multitrackMeterAnimId) {
+        cancelAnimationFrame(state.multitrackMeterAnimId);
+        state.multitrackMeterAnimId = null;
+    }
+    // Clear meters
+    document.querySelectorAll('.fid-channel-meter').forEach(function (canvas) {
+        var ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
 }
 
 /**
@@ -943,7 +1118,7 @@ function updateSliderFill(slider) {
     const max = parseFloat(slider.max);
     const val = parseFloat(slider.value);
     const percentage = ((val - min) / (max - min)) * 100;
-    slider.style.background = `linear-gradient(90deg, #2563eb 0%, #3b82f6 ${percentage}%, var(--color-control-bg) ${percentage}%, var(--color-control-bg) 100%)`;
+    slider.style.background = `linear-gradient(90deg, #2563eb 0%, #3b82f6 ${percentage}%, var(--color-border) ${percentage}%, var(--color-border) 100%)`;
 }
 
 // ============================================
@@ -1257,12 +1432,10 @@ function stopTestSequence() {
     document.getElementById('listen-btn').textContent = 'Listen';
 
     // Reset quiz buttons
-    document.getElementById('new-question-btn').textContent = 'New Question';
     var playBtn = document.getElementById('play-again-btn');
     playBtn.textContent = 'Play Again';
     playBtn.disabled = !state.quizAnswer;
-
-    document.getElementById('new-question-btn').disabled = false;
+    updateSubmitButton();
 }
 
 function showTestIndicator() {
@@ -1305,6 +1478,24 @@ function showTestIndicator() {
         if (prevPhase !== state.testPhase) {
             updateBypassButtons();
             drawFilterCanvas();
+
+            // In quiz mode, capture spectrum snapshot mid-way through filtered phase
+            if (state.mode === 'quiz' && state.testPhase === 'filter' && state.spectrumAnalyser) {
+                // Delay capture by 1s to let the analyser settle
+                setTimeout(function () {
+                    if (state.testPhase === 'filter') {
+                        var bands = getSpectrumBands(state.spectrumAnalyser);
+                        var refBands = getSpectrumBands(state.spectrumRefAnalyser);
+                        var refPeak = -Infinity;
+                        if (refBands) {
+                            for (var r = 0; r < refBands.length; r++) {
+                                if (refBands[r] > refPeak) refPeak = refBands[r];
+                            }
+                        }
+                        state.quizSpectrumSnapshot = bands ? { bands: new Float32Array(bands), refPeakDb: refPeak } : null;
+                    }
+                }, 1000);
+            }
         }
 
         state.testAnimationId = requestAnimationFrame(updateIndicator);
@@ -1371,27 +1562,35 @@ async function teachingListen() {
 // ============================================
 
 async function newQuestion() {
-    var newBtn = document.getElementById('new-question-btn');
+    var submitBtn = document.getElementById('submit-answer-btn');
     var playBtn = document.getElementById('play-again-btn');
 
     const drill = QUIZ_DRILLS[state.quizDrill];
+    const prev = state.quizPreviousAnswer;
 
-    // Pick random filter type from drill's allowed types
-    const types = drill.types;
-    const type = types[Math.floor(Math.random() * types.length)];
-
-    // Pick random frequency (drill may lock it)
-    const freqPool = drill.freqs || FREQUENCIES;
-    const freq = drill.fixedFreq || freqPool[Math.floor(Math.random() * freqPool.length)];
-
-    // Pick random gain (only for shelf/peaking)
-    let gain = null;
-    if (!PASS_FILTERS.includes(type)) {
-        const gainPool = drill.gains || GAINS;
-        gain = gainPool[Math.floor(Math.random() * gainPool.length)];
-    }
+    // Pick random parameters, avoiding exact repeat of previous question
+    var type, freq, gain, attempts = 0;
+    do {
+        type = drill.fixedType || drill.types[Math.floor(Math.random() * drill.types.length)];
+        var freqPool = drill.freqs || FREQUENCIES;
+        freq = drill.fixedFreq || freqPool[Math.floor(Math.random() * freqPool.length)];
+        gain = null;
+        if (!PASS_FILTERS.includes(type)) {
+            var gainPool = drill.gains || GAINS;
+            // Filter by boost/cut direction preference
+            if (state.quizGainDirection === 'boost') {
+                gainPool = gainPool.filter(function (g) { return g > 0; });
+            } else if (state.quizGainDirection === 'cut') {
+                gainPool = gainPool.filter(function (g) { return g < 0; });
+            }
+            gain = gainPool[Math.floor(Math.random() * gainPool.length)];
+        }
+        attempts++;
+    } while (prev && attempts < 20 &&
+        type === prev.type && freq === prev.freq && gain === prev.gain);
 
     state.quizAnswer = { type: type, freq: freq, gain: gain };
+    state.quizPreviousAnswer = { type: type, freq: freq, gain: gain };
     state.quizRevealed = false;
 
     // Clear user selection
@@ -1418,8 +1617,25 @@ async function newQuestion() {
     // Show/hide parameter groups based on drill
     updateQuizParamVisibility(drill);
 
-    // Hide result
+    // Hide result, reset comparison to blank labels
     document.getElementById('quiz-result').classList.add('hidden');
+    document.getElementById('filter-header').classList.add('hidden');
+    var compareEl = document.getElementById('quiz-compare');
+    compareEl.classList.remove('hidden');
+    var userLabel = document.getElementById('compare-user-label');
+    var correctLabel = document.getElementById('compare-correct-label');
+    userLabel.textContent = 'Your Answer';
+    correctLabel.textContent = 'Correct';
+    userLabel.className = 'fid-compare-label';
+    correctLabel.className = 'fid-compare-label';
+    var flatConfig = { type: 'peaking', freq: 1000, gain: 0 };
+    requestAnimationFrame(function () {
+        drawFilterConfigToCanvas(document.getElementById('compare-user-canvas'), flatConfig, null);
+        drawFilterConfigToCanvas(document.getElementById('compare-correct-canvas'), flatConfig, null);
+    });
+
+    // Clear spectrum snapshot
+    state.quizSpectrumSnapshot = null;
 
     // Enable submit (will check selections before allowing)
     updateSubmitButton();
@@ -1440,15 +1656,15 @@ async function newQuestion() {
     state.currentSource = quizSource;
     updateGainForSource(quizSource);
 
-    // Toggle buttons to Stop during playback
-    newBtn.textContent = 'Stop';
-    playBtn.disabled = true;
+    // Play Again becomes Stop during playback; submit shows Submit Answer (disabled until selections)
+    playBtn.textContent = 'Stop';
+    playBtn.disabled = false;
+    updateSubmitButton();
 
     // Run the test sequence, mute after
     runTest({
         alwaysStop: true,
         onEnd: function () {
-            newBtn.textContent = 'New Question';
             playBtn.textContent = 'Play Again';
             playBtn.disabled = false;
         }
@@ -1456,7 +1672,7 @@ async function newQuestion() {
 }
 
 async function playAgain() {
-    var newBtn = document.getElementById('new-question-btn');
+    var submitBtn = document.getElementById('submit-answer-btn');
     var playBtn = document.getElementById('play-again-btn');
 
     if (!state.quizAnswer) return;
@@ -1473,23 +1689,29 @@ async function playAgain() {
     state.currentSource = quizSource;
     updateGainForSource(quizSource);
 
-    // Toggle buttons to Stop during playback
+    // Play Again becomes Stop during playback
     playBtn.textContent = 'Stop';
-    newBtn.disabled = true;
+    playBtn.disabled = false;
 
     runTest({
         alwaysStop: true,
         onEnd: function () {
-            newBtn.textContent = 'New Question';
-            newBtn.disabled = false;
             playBtn.textContent = 'Play Again';
         }
     });
 }
 
 function updateQuizParamVisibility(drill) {
+    var typeGroup = document.querySelector('#type-buttons').closest('.fid-param-group');
     var freqGroup = document.querySelector('#freq-buttons').closest('.fid-param-group');
     var gainGroup = document.getElementById('gain-group');
+
+    // Type: hide if not a guess field (e.g., fixed type in Frequencies drill)
+    if (!drill.guessFields.includes('type')) {
+        typeGroup.classList.add('hidden');
+    } else {
+        typeGroup.classList.remove('hidden');
+    }
 
     // Frequency: hide if not a guess field (e.g., fixed at 1 kHz)
     if (!drill.guessFields.includes('freq')) {
@@ -1498,21 +1720,49 @@ function updateQuizParamVisibility(drill) {
         freqGroup.classList.remove('hidden');
     }
 
-    // Gain: start hidden, will show when user picks a non-pass type
+    // Gain: show/hide based on whether gain is guessable
     if (!drill.guessFields.includes('gain')) {
+        gainGroup.classList.add('hidden');
+    } else if (drill.fixedType) {
+        // Fixed type drill: show gain immediately if type has gain, hide if pass filter
+        if (PASS_FILTERS.includes(drill.fixedType)) {
+            gainGroup.classList.add('hidden');
+        } else {
+            gainGroup.classList.remove('hidden');
+        }
+    } else {
+        // User picks type: start hidden, will show when user picks a non-pass type
         gainGroup.classList.add('hidden');
     }
 
-    // Filter gain buttons to only show drill-relevant values
+    // Filter gain buttons to only show drill-relevant values + direction
     var drillGains = drill.gains || GAINS;
+    var dir = state.quizGainDirection;
+    var selectableGainBtns = [];
     document.querySelectorAll('#gain-buttons .fid-toggle').forEach(function (btn) {
         var val = parseInt(btn.dataset.gain);
-        if (drillGains.includes(val)) {
+        var inDrill = drillGains.includes(val);
+        var inDir = dir === 'both' || (dir === 'boost' && val > 0) || (dir === 'cut' && val < 0);
+        if (inDrill && inDir) {
             btn.classList.remove('hidden');
+            btn.disabled = false;
+            selectableGainBtns.push(btn);
+        } else if (inDrill) {
+            // Show but disable (e.g., -12 dB visible but greyed out in boost-only)
+            btn.classList.remove('hidden');
+            btn.disabled = true;
+            btn.classList.remove('active');
         } else {
             btn.classList.add('hidden');
         }
     });
+
+    // Auto-select and lock if only one selectable gain button
+    if (selectableGainBtns.length === 1) {
+        var autoGain = parseInt(selectableGainBtns[0].dataset.gain);
+        selectableGainBtns[0].disabled = true;
+        handleQuizGainSelection(autoGain);
+    }
 
     // Filter freq buttons similarly if drill constrains them
     var drillFreqs = drill.freqs || FREQUENCIES;
@@ -1526,15 +1776,29 @@ function updateQuizParamVisibility(drill) {
     });
 }
 
+function updateGainDirVisibility(drill) {
+    var label = document.getElementById('quiz-gain-dir-label');
+    // Show if drill can produce gain-bearing filters
+    var hasGainFilters = drill.types.some(function (t) { return !PASS_FILTERS.includes(t); });
+    // If drill has a fixed type that's a pass filter, hide
+    if (drill.fixedType && PASS_FILTERS.includes(drill.fixedType)) {
+        hasGainFilters = false;
+    }
+    label.classList.toggle('hidden', !hasGainFilters);
+}
+
 function clearSelectionButtons() {
     document.querySelectorAll('#type-buttons .fid-toggle').forEach(function (btn) {
         btn.classList.remove('active');
+        btn.disabled = false;
     });
     document.querySelectorAll('#freq-buttons .fid-toggle').forEach(function (btn) {
         btn.classList.remove('active');
+        btn.disabled = false;
     });
     document.querySelectorAll('#gain-buttons .fid-toggle').forEach(function (btn) {
         btn.classList.remove('active');
+        btn.disabled = false;
     });
 }
 
@@ -1582,10 +1846,17 @@ function handleQuizGainSelection(gain) {
 
 function updateSubmitButton() {
     const btn = document.getElementById('submit-answer-btn');
-    if (!state.quizAnswer || state.quizRevealed) {
-        btn.disabled = true;
+    if (state.quizRevealed) {
+        btn.textContent = 'New Question';
+        btn.disabled = false;
         return;
     }
+    if (!state.quizAnswer) {
+        btn.textContent = 'New Question';
+        btn.disabled = false;
+        return;
+    }
+    btn.textContent = 'Submit Answer';
 
     const sel = state.quizSelection;
     const drill = QUIZ_DRILLS[state.quizDrill];
@@ -1594,7 +1865,8 @@ function updateSubmitButton() {
     var ready = true;
     if (fields.includes('type') && !sel.type) ready = false;
     if (fields.includes('freq') && !sel.freq) ready = false;
-    if (fields.includes('gain') && sel.type && !PASS_FILTERS.includes(sel.type) && sel.gain === null) ready = false;
+    var effectiveType = sel.type || drill.fixedType;
+    if (fields.includes('gain') && effectiveType && !PASS_FILTERS.includes(effectiveType) && sel.gain === null) ready = false;
 
     btn.disabled = !ready;
 }
@@ -1644,6 +1916,66 @@ function submitAnswer() {
     document.getElementById('quiz-streak').textContent = state.quizStreak;
 
     updateSubmitButton();
+
+    // Show the comparison view
+    showQuizComparison(allCorrect);
+}
+
+function showQuizComparison(allCorrect) {
+    var answer = state.quizAnswer;
+    var sel = state.quizSelection;
+    var drill = QUIZ_DRILLS[state.quizDrill];
+    var spectrum = state.quizSpectrumSnapshot;
+
+    // Build the user's guess config
+    var effectiveType = sel.type || drill.fixedType || 'peaking';
+    var userConfig = {
+        type: effectiveType,
+        freq: sel.freq || (drill.fixedFreq || answer.freq),
+        gain: sel.gain !== null ? sel.gain : (PASS_FILTERS.includes(effectiveType) ? null : 0)
+    };
+    // For drills with fixed freq, use that freq for the user's config too
+    if (drill.fixedFreq) {
+        userConfig.freq = drill.fixedFreq;
+    }
+
+    // Show comparison with answer details
+    document.getElementById('filter-header').classList.add('hidden');
+    var compareEl = document.getElementById('quiz-compare');
+    compareEl.classList.remove('hidden');
+
+    // Label the panels
+    var userLabel = document.getElementById('compare-user-label');
+    var correctLabel = document.getElementById('compare-correct-label');
+
+    var userDesc = formatFilterName(userConfig.type) + ' at ' + formatFreq(userConfig.freq);
+    if (userConfig.gain !== null && !PASS_FILTERS.includes(userConfig.type)) {
+        userDesc += ', ' + (userConfig.gain > 0 ? '+' : '') + userConfig.gain + ' dB';
+    }
+    var correctDesc = formatFilterName(answer.type) + ' at ' + formatFreq(answer.freq);
+    if (answer.gain !== null && !PASS_FILTERS.includes(answer.type)) {
+        correctDesc += ', ' + (answer.gain > 0 ? '+' : '') + answer.gain + ' dB';
+    }
+
+    userLabel.textContent = 'Your Answer: ' + userDesc;
+    correctLabel.textContent = 'Correct: ' + correctDesc;
+
+    userLabel.className = 'fid-compare-label ' + (allCorrect ? 'correct' : 'incorrect');
+    correctLabel.className = 'fid-compare-label correct';
+
+    // Render both canvases (use requestAnimationFrame to ensure layout is computed)
+    requestAnimationFrame(function () {
+        drawFilterConfigToCanvas(
+            document.getElementById('compare-user-canvas'),
+            userConfig,
+            spectrum
+        );
+        drawFilterConfigToCanvas(
+            document.getElementById('compare-correct-canvas'),
+            answer,
+            spectrum
+        );
+    });
 }
 
 function formatFilterName(type) {
@@ -1675,26 +2007,24 @@ function setMode(mode) {
     state.mode = mode;
 
     const app = document.querySelector('.fid-app');
-    const sourceCard = document.querySelector('.fid-source-card');
     const filterHeader = document.getElementById('filter-header');
     const teachingControls = document.getElementById('teaching-controls');
     const quizControls = document.getElementById('quiz-controls');
     const quizSubmit = document.getElementById('quiz-submit');
 
     // Hide everything first
-    app.classList.remove('quiz-mode');
-    sourceCard.classList.add('hidden');
+    app.classList.remove('quiz-mode', 'teaching-mode');
     filterHeader.classList.add('hidden');
     teachingControls.classList.add('hidden');
     quizControls.classList.add('hidden');
     quizSubmit.classList.add('hidden');
     document.getElementById('quiz-result').classList.add('hidden');
+    document.getElementById('quiz-compare').classList.add('hidden');
 
     // Restore all buttons visible (drills may have hidden some)
     restoreAllButtons();
 
     if (mode === 'practice') {
-        sourceCard.classList.remove('hidden');
         filterHeader.classList.remove('hidden');
 
         // Restore practice state: re-apply filter from current selections
@@ -1703,6 +2033,7 @@ function setMode(mode) {
         setFilterGainDb(state.filterGainDb);
 
     } else if (mode === 'teaching') {
+        app.classList.add('teaching-mode');
         filterHeader.classList.remove('hidden');
         teachingControls.classList.remove('hidden');
 
@@ -1729,8 +2060,25 @@ function setMode(mode) {
         document.getElementById('quiz-streak').textContent = '0';
         document.getElementById('play-again-btn').disabled = true;
 
+        // Show comparison view with blank labels and flat canvases
+        var compareEl = document.getElementById('quiz-compare');
+        compareEl.classList.remove('hidden');
+        var userLabel = document.getElementById('compare-user-label');
+        var correctLabel = document.getElementById('compare-correct-label');
+        userLabel.textContent = 'Your Answer';
+        correctLabel.textContent = 'Correct';
+        userLabel.className = 'fid-compare-label';
+        correctLabel.className = 'fid-compare-label';
+
         clearSelectionButtons();
         updateSubmitButton();
+
+        // Draw blank canvases (flat 0 dB response)
+        var flatConfig = { type: 'peaking', freq: 1000, gain: 0 };
+        requestAnimationFrame(function () {
+            drawFilterConfigToCanvas(document.getElementById('compare-user-canvas'), flatConfig, null);
+            drawFilterConfigToCanvas(document.getElementById('compare-correct-canvas'), flatConfig, null);
+        });
     }
 
     // Show multitrack controls if Multi-track is selected in the mode's dropdown
@@ -1742,9 +2090,11 @@ function setMode(mode) {
 function restoreAllButtons() {
     document.querySelectorAll('#freq-buttons .fid-toggle').forEach(function (btn) {
         btn.classList.remove('hidden');
+        btn.disabled = false;
     });
     document.querySelectorAll('#gain-buttons .fid-toggle').forEach(function (btn) {
         btn.classList.remove('hidden');
+        btn.disabled = false;
     });
     document.querySelector('#freq-buttons').closest('.fid-param-group').classList.remove('hidden');
 }
@@ -1754,7 +2104,7 @@ function restoreAllButtons() {
 // ============================================
 
 function updateSourceButtons() {
-    document.querySelectorAll('.fid-source-card .source-button').forEach(function (btn) {
+    document.querySelectorAll('.fid-toolbar [data-source]').forEach(function (btn) {
         btn.classList.toggle('active', parseInt(btn.dataset.source) === state.currentSource);
     });
 }
@@ -1792,7 +2142,7 @@ function updateBypassButtons() {
 }
 
 function updateModeButtons() {
-    document.querySelectorAll('.fid-mode-buttons .source-button').forEach(function (btn) {
+    document.querySelectorAll('.fid-toolbar [data-mode]').forEach(function (btn) {
         btn.classList.toggle('active', btn.dataset.mode === state.mode);
     });
 }
@@ -1932,7 +2282,143 @@ function gainToY(gain, plotHeight) {
     return ((VIZ_MAX_GAIN - gain) / (VIZ_MAX_GAIN - VIZ_MIN_GAIN)) * plotHeight;
 }
 
-function drawFilterCanvas() {
+// ============================================
+// 64-Band Spectrum Analyser
+// ============================================
+
+// 64 logarithmically spaced center frequencies (20 Hz – 20 kHz)
+const SPECTRUM_NUM_BANDS = 64;
+const SPECTRUM_BANDS = (function () {
+    var bands = [];
+    var logMin = Math.log(20);
+    var logMax = Math.log(20000);
+    for (var i = 0; i < SPECTRUM_NUM_BANDS; i++) {
+        bands.push(Math.exp(logMin + (i / (SPECTRUM_NUM_BANDS - 1)) * (logMax - logMin)));
+    }
+    return bands;
+})();
+
+// Band edges: geometric mean between adjacent centers
+const SPECTRUM_EDGES = (function () {
+    var edges = [];
+    edges.push(SPECTRUM_BANDS[0] / Math.pow(SPECTRUM_BANDS[1] / SPECTRUM_BANDS[0], 0.5));
+    for (var i = 0; i < SPECTRUM_BANDS.length - 1; i++) {
+        edges.push(Math.sqrt(SPECTRUM_BANDS[i] * SPECTRUM_BANDS[i + 1]));
+    }
+    edges.push(SPECTRUM_BANDS[SPECTRUM_BANDS.length - 1] * Math.pow(SPECTRUM_BANDS[SPECTRUM_BANDS.length - 1] / SPECTRUM_BANDS[SPECTRUM_BANDS.length - 2], 0.5));
+    return edges;
+})();
+
+// Reusable buffers for FFT data (allocated once)
+var spectrumDataArray = null;
+var spectrumRefDataArray = null;
+
+function getSpectrumBands(analyser) {
+    if (!analyser) return null;
+
+    var bufferLength = analyser.frequencyBinCount;
+
+    if (!spectrumDataArray || spectrumDataArray.length !== bufferLength) {
+        spectrumDataArray = new Float32Array(bufferLength);
+    }
+
+    analyser.getFloatFrequencyData(spectrumDataArray);
+
+    var sampleRate = state.audioContext.sampleRate;
+    var binWidth = sampleRate / analyser.fftSize;
+    var bandLevels = new Float32Array(SPECTRUM_BANDS.length);
+
+    for (var b = 0; b < SPECTRUM_BANDS.length; b++) {
+        var lowBin = Math.max(1, Math.floor(SPECTRUM_EDGES[b] / binWidth));
+        var highBin = Math.min(bufferLength - 1, Math.ceil(SPECTRUM_EDGES[b + 1] / binWidth));
+
+        var sum = 0;
+        var count = 0;
+        for (var i = lowBin; i <= highBin; i++) {
+            sum += spectrumDataArray[i];
+            count++;
+        }
+        bandLevels[b] = count > 0 ? sum / count : -100;
+    }
+
+    return bandLevels;
+}
+
+// Smoothed reference peak (from pre-filter signal) for stable normalization
+var spectrumRefPeakDb = -100;
+
+function drawSpectrumBars(ctx, plotWidth, plotHeight, pad, isDark) {
+    // Get post-filter spectrum (what the user hears)
+    var bandLevels = getSpectrumBands(state.spectrumAnalyser);
+    if (!bandLevels) return;
+
+    // Get pre-filter spectrum for reference normalization
+    var refLevels = getSpectrumBands(state.spectrumRefAnalyser);
+    var refPeakDb = -Infinity;
+    if (refLevels) {
+        for (var r = 0; r < refLevels.length; r++) {
+            if (refLevels[r] > refPeakDb) refPeakDb = refLevels[r];
+        }
+    }
+    if (refPeakDb < -100) return;
+
+    // Smooth the reference peak: rise fast, fall slowly
+    if (refPeakDb > spectrumRefPeakDb) {
+        spectrumRefPeakDb = refPeakDb;
+    } else {
+        spectrumRefPeakDb += (refPeakDb - spectrumRefPeakDb) * 0.02;
+    }
+
+    // Normalize against the pre-filter peak so the filter's effect is visible:
+    // unfiltered bands reach full height, filtered bands drop proportionally
+    var dynamicRange = 60;
+    var maxDb = spectrumRefPeakDb + 3;
+    var minDb = maxDb - dynamicRange;
+    var barColor = isDark ? 'rgba(96, 165, 250, 0.25)' : 'rgba(37, 99, 235, 0.15)';
+    var gap = 1;
+
+    ctx.fillStyle = barColor;
+
+    for (var b = 0; b < SPECTRUM_BANDS.length; b++) {
+        var x1 = pad.left + freqToX(Math.max(SPECTRUM_EDGES[b], VIZ_MIN_FREQ), plotWidth);
+        var x2 = pad.left + freqToX(Math.min(SPECTRUM_EDGES[b + 1], VIZ_MAX_FREQ), plotWidth);
+        var barWidth = x2 - x1;
+        if (barWidth < 1) barWidth = 1;
+
+        var normalized = Math.max(0, Math.min(1, (bandLevels[b] - minDb) / dynamicRange));
+        var barHeight = normalized * plotHeight;
+        var barY = pad.top + plotHeight - barHeight;
+
+        ctx.fillRect(x1 + gap / 2, barY, barWidth - gap, barHeight);
+    }
+}
+
+function startSpectrumAnimation() {
+    if (state.spectrumAnimId) return;
+    if (!state.spectrumEnabled) return;
+
+    function draw() {
+        state.spectrumAnimId = requestAnimationFrame(draw);
+        drawFilterCanvas(true);
+    }
+    draw();
+}
+
+function stopSpectrumAnimation() {
+    if (state.spectrumAnimId) {
+        cancelAnimationFrame(state.spectrumAnimId);
+        state.spectrumAnimId = null;
+    }
+    spectrumRefPeakDb = -100; // reset smoothed peak for next session
+    drawFilterCanvas();
+}
+
+function drawFilterCanvas(fromAnimLoop) {
+    // When the spectrum animation loop is running, skip redundant calls
+    // from filter controls etc. — the next rAF frame will pick up the changes.
+    // This prevents double-draws that cause flickering.
+    if (!fromAnimLoop && state.spectrumAnimId) return;
+
     var canvas = document.getElementById('filter-canvas');
     if (!canvas) return;
 
@@ -1959,7 +2445,16 @@ function drawFilterCanvas() {
     // Grid
     drawVizGrid(ctx, w, h, plotWidth, plotHeight, pad, isDark);
 
-    // Compute frequency response using an OfflineAudioContext for accuracy
+    // In quiz mode before reveal: show only the grid (no curve, no spectrum)
+    if (state.mode === 'quiz' && !state.quizRevealed) {
+        return;
+    }
+
+    // Spectrum bars (behind filter curve)
+    if (state.spectrumEnabled && state.spectrumAnalyser && state.isPlaying) {
+        drawSpectrumBars(ctx, plotWidth, plotHeight, pad, isDark);
+    }
+
     // Compute frequency response
     var magResponse = new Float32Array(VIZ_NUM_POINTS);
     var phaseResponse = new Float32Array(VIZ_NUM_POINTS);
@@ -2051,6 +2546,129 @@ function drawFilterCanvas() {
     ctx.fill();
 
     ctx.restore();
+}
+
+/**
+ * Render a specific filter config + optional frozen spectrum to any canvas.
+ * Used for the quiz comparison view.
+ * @param {HTMLCanvasElement} canvas
+ * @param {object} config - { type, freq, gain }
+ * @param {object|null} spectrum - { bands: Float32Array, refPeakDb: number } or null
+ * @param {string} accentOverride - optional accent color for the curve
+ */
+function drawFilterConfigToCanvas(canvas, config, spectrum, accentOverride) {
+    if (!canvas) return;
+
+    var container = canvas.parentElement;
+    var dpr = window.devicePixelRatio || 1;
+    var w = container.clientWidth;
+    var h = container.clientHeight;
+
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+
+    var ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    var pad = VIZ_PADDING;
+    var plotWidth = w - pad.left - pad.right;
+    var plotHeight = h - pad.top - pad.bottom;
+
+    // Background
+    ctx.fillStyle = isDark ? '#1a1a2e' : '#f8f9fb';
+    ctx.fillRect(0, 0, w, h);
+
+    // Grid
+    drawVizGrid(ctx, w, h, plotWidth, plotHeight, pad, isDark);
+
+    // Frozen spectrum bars
+    if (spectrum && spectrum.bands) {
+        var dynamicRange = 60;
+        var maxDb = spectrum.refPeakDb + 3;
+        var minDb = maxDb - dynamicRange;
+        var barColor = isDark ? 'rgba(96, 165, 250, 0.25)' : 'rgba(37, 99, 235, 0.15)';
+        ctx.fillStyle = barColor;
+
+        for (var b = 0; b < SPECTRUM_BANDS.length && b < spectrum.bands.length; b++) {
+            var x1 = pad.left + freqToX(Math.max(SPECTRUM_EDGES[b], VIZ_MIN_FREQ), plotWidth);
+            var x2 = pad.left + freqToX(Math.min(SPECTRUM_EDGES[b + 1], VIZ_MAX_FREQ), plotWidth);
+            var barWidth = x2 - x1;
+            if (barWidth < 1) barWidth = 1;
+            var normalized = Math.max(0, Math.min(1, (spectrum.bands[b] - minDb) / dynamicRange));
+            var barHeight = normalized * plotHeight;
+            var barY = pad.top + plotHeight - barHeight;
+            ctx.fillRect(x1 + 0.5, barY, barWidth - 1, barHeight);
+        }
+    }
+
+    // Compute frequency response for this config
+    var magResponse = new Float32Array(VIZ_NUM_POINTS);
+    var phaseResponse = new Float32Array(VIZ_NUM_POINTS);
+    var filterType = config.type;
+    var filterFreq = config.freq;
+    var filterGainDb = config.gain !== null ? config.gain : 0;
+
+    if (SHELF_FILTERS.includes(filterType)) {
+        var vizCoeffs = computeShelfCoefficients(filterType, filterFreq, filterGainDb, 1, 44100);
+        magResponse = computeIIRFrequencyResponse(vizCoeffs.feedforward, vizCoeffs.feedback, vizFreqArray, 44100);
+    } else {
+        if (!state.vizContext) {
+            state.vizContext = new OfflineAudioContext(1, 1, 44100);
+        }
+        var vf = state.vizContext.createBiquadFilter();
+        vf.type = filterType;
+        vf.frequency.value = filterFreq;
+        vf.gain.value = PASS_FILTERS.includes(filterType) ? 0 : filterGainDb;
+
+        if (BANDWIDTH_FILTERS.includes(filterType)) {
+            vf.Q.value = bwToQ(2); // default 2 octave bandwidth
+        } else {
+            vf.Q.value = 0.7071;
+        }
+
+        if (SLOPE_FILTERS.includes(filterType)) {
+            var numStages = 1; // default 12 dB/oct for quiz display
+            var qValues = BUTTERWORTH_Q[numStages] || BUTTERWORTH_Q[1];
+            var tempMag = new Float32Array(VIZ_NUM_POINTS);
+            var tempPhase = new Float32Array(VIZ_NUM_POINTS);
+            for (var si = 0; si < VIZ_NUM_POINTS; si++) magResponse[si] = 1.0;
+            for (var stage = 0; stage < numStages; stage++) {
+                vf.Q.value = qValues[stage];
+                vf.getFrequencyResponse(vizFreqArray, tempMag, tempPhase);
+                for (var si2 = 0; si2 < VIZ_NUM_POINTS; si2++) magResponse[si2] *= tempMag[si2];
+            }
+        } else {
+            vf.getFrequencyResponse(vizFreqArray, magResponse, phaseResponse);
+        }
+    }
+
+    // Draw curve
+    var accentColor = accentOverride || (isDark ? '#60a5fa' : '#2563eb');
+    var fillColor = isDark ? 'rgba(96, 165, 250, 0.12)' : 'rgba(37, 99, 235, 0.08)';
+
+    ctx.strokeStyle = accentColor;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+
+    var zeroY = pad.top + gainToY(0, plotHeight);
+
+    for (var i = 0; i < VIZ_NUM_POINTS; i++) {
+        var x = pad.left + (i / (VIZ_NUM_POINTS - 1)) * plotWidth;
+        var gainDb2 = 20 * Math.log10(magResponse[i]);
+        gainDb2 = Math.max(VIZ_MIN_GAIN, Math.min(VIZ_MAX_GAIN, gainDb2));
+        var y = pad.top + gainToY(gainDb2, plotHeight);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+
+    ctx.stroke();
+
+    var lastX = pad.left + plotWidth;
+    ctx.lineTo(lastX, zeroY);
+    ctx.lineTo(pad.left, zeroY);
+    ctx.closePath();
+    ctx.fillStyle = fillColor;
+    ctx.fill();
 }
 
 function drawVizGrid(ctx, w, h, plotWidth, plotHeight, pad, isDark) {
@@ -2225,7 +2843,7 @@ function setupEventListeners() {
     }, { once: true });
 
     // Source buttons
-    document.querySelectorAll('.fid-source-card .source-button').forEach(function (btn) {
+    document.querySelectorAll('.fid-toolbar [data-source]').forEach(function (btn) {
         btn.addEventListener('click', function () {
             if (!state.audioContext) createAudioContext();
             setSource(parseInt(btn.dataset.source));
@@ -2324,6 +2942,18 @@ function setupEventListeners() {
         setFilterBypassed(!state.filterBypassed);
     });
 
+    // Spectrum analyser toggle
+    document.getElementById('spectrum-btn').addEventListener('click', function () {
+        state.spectrumEnabled = !state.spectrumEnabled;
+        this.classList.toggle('active', state.spectrumEnabled);
+        this.textContent = state.spectrumEnabled ? 'On' : 'Off';
+        if (state.spectrumEnabled && state.isPlaying) {
+            startSpectrumAnimation();
+        } else {
+            stopSpectrumAnimation();
+        }
+    });
+
     // Teaching mode: Listen button (doubles as Stop during playback)
     document.getElementById('listen-btn').addEventListener('click', function () {
         if (state.testRunning) {
@@ -2395,7 +3025,7 @@ function setupEventListeners() {
     });
 
     // Mode buttons
-    document.querySelectorAll('.fid-mode-buttons .source-button').forEach(function (btn) {
+    document.querySelectorAll('.fid-toolbar [data-mode]').forEach(function (btn) {
         btn.addEventListener('click', function () {
             setMode(btn.dataset.mode);
         });
@@ -2438,6 +3068,55 @@ function setupEventListeners() {
         var drill = QUIZ_DRILLS[state.quizDrill];
         updateQuizParamVisibility(drill);
         updateSubmitButton();
+        // Show/hide drill frequency picker (label wraps the select)
+        var drillFreqLabel = document.getElementById('quiz-drill-freq-label');
+        if (drill.userPicksFreq) {
+            drillFreqLabel.classList.remove('hidden');
+        } else {
+            drillFreqLabel.classList.add('hidden');
+        }
+        // Show/hide drill type picker
+        var drillTypeLabel = document.getElementById('quiz-drill-type-label');
+        if (drill.userPicksType) {
+            drillTypeLabel.classList.remove('hidden');
+        } else {
+            drillTypeLabel.classList.add('hidden');
+        }
+        // Show/hide gain direction picker
+        updateGainDirVisibility(drill);
+    });
+
+    // Drill frequency picker (for "Filter Types" drill)
+    document.getElementById('quiz-drill-freq').addEventListener('change', function () {
+        var drill = QUIZ_DRILLS[state.quizDrill];
+        if (drill.userPicksFreq) {
+            drill.fixedFreq = parseInt(this.value);
+        }
+    });
+
+    // Drill type picker (for "Frequencies" drill)
+    document.getElementById('quiz-drill-type').addEventListener('change', function () {
+        var drill = QUIZ_DRILLS[state.quizDrill];
+        if (drill.userPicksType) {
+            drill.fixedType = this.value;
+            // Update gain visibility based on new type
+            var gainGroup = document.getElementById('gain-group');
+            if (drill.guessFields.includes('gain') && !PASS_FILTERS.includes(this.value)) {
+                gainGroup.classList.remove('hidden');
+            } else {
+                gainGroup.classList.add('hidden');
+            }
+            // Update gain direction picker visibility
+            updateGainDirVisibility(drill);
+        }
+    });
+
+    // Gain direction picker (boost/cut/both)
+    document.getElementById('quiz-gain-dir').addEventListener('change', function () {
+        state.quizGainDirection = this.value;
+        // Refresh gain button visibility
+        var drill = QUIZ_DRILLS[state.quizDrill];
+        updateQuizParamVisibility(drill);
     });
 
     // Duration inputs (teaching + quiz share state)
@@ -2464,14 +3143,15 @@ function setupEventListeners() {
         });
     });
 
-    // New question button (doubles as Stop during playback)
-    document.getElementById('new-question-btn').addEventListener('click', function () {
-        if (state.testRunning) {
-            stopTestSequence();
-            return;
+    // Submit / New Question toggle button
+    document.getElementById('submit-answer-btn').addEventListener('click', function () {
+        if (state.quizRevealed || !state.quizAnswer) {
+            // In "New Question" state
+            if (!state.audioContext) createAudioContext();
+            newQuestion();
+        } else {
+            submitAnswer();
         }
-        if (!state.audioContext) createAudioContext();
-        newQuestion();
     });
 
     // Play again button (doubles as Stop during playback)
@@ -2482,11 +3162,6 @@ function setupEventListeners() {
         }
         if (!state.audioContext) createAudioContext();
         playAgain();
-    });
-
-    // Submit answer button
-    document.getElementById('submit-answer-btn').addEventListener('click', function () {
-        submitAnswer();
     });
 
 }
