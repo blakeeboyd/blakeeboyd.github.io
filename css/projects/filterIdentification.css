@@ -895,8 +895,7 @@
    =========================================== */
 
 .fid-toolbar-group > .info-trigger,
-.fid-param-group > .info-trigger,
-.fid-filter-header-row > .info-trigger {
+.fid-param-group > .info-trigger {
     margin-left: -8px;
     flex-shrink: 0;
     align-self: center;
