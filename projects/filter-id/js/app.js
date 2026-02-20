@@ -3297,50 +3297,12 @@ var Tour = {
                 this.overlayEl.style.display = 'none';
                 el.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-                // Position card below the highlighted element
-                var self2 = this;
-                setTimeout(function () { self2.positionCard(el); }, 300);
                 return;
             }
         }
 
-        // No target: center the card, show overlay
+        // No target: show overlay
         this.overlayEl.style.display = '';
-        this.centerCard();
-    },
-
-    positionCard: function (targetEl) {
-        var card = this.cardEl;
-        // Reset position for measurement
-        card.style.top = '0';
-        card.style.left = '0';
-        card.style.transform = 'none';
-
-        var targetRect = targetEl.getBoundingClientRect();
-        var cardRect = card.getBoundingClientRect();
-        var margin = 12;
-
-        var top = targetRect.bottom + margin;
-        var left = targetRect.left + (targetRect.width / 2) - (cardRect.width / 2);
-
-        // Keep within viewport
-        if (left < margin) left = margin;
-        if (left + cardRect.width > window.innerWidth - margin) {
-            left = window.innerWidth - cardRect.width - margin;
-        }
-        // If card would go below viewport, position above
-        if (top + cardRect.height > window.innerHeight - margin) {
-            top = targetRect.top - cardRect.height - margin;
-        }
-
-        card.style.top = top + 'px';
-        card.style.left = left + 'px';
-    },
-
-    centerCard: function () {
-        this.cardEl.style.top = '50%';
-        this.cardEl.style.left = '50%';
-        this.cardEl.style.transform = 'translate(-50%, -50%)';
     },
 
     next: function () {
