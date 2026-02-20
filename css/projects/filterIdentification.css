@@ -891,32 +891,43 @@
 }
 
 /* ===========================================
-   Header Links (Guide + Demo)
+   Info trigger spacing (override components-audio.css)
    =========================================== */
 
-.fid-header-links {
-    display: flex;
-    gap: var(--spacing-sm);
-    margin-top: var(--spacing-xs);
+.fid-toolbar-group > .info-trigger,
+.fid-param-group > .info-trigger,
+.fid-filter-header-row > .info-trigger {
+    margin-left: -8px;
+    flex-shrink: 0;
+    align-self: center;
 }
 
-.fid-header-link {
-    display: inline-flex;
-    align-items: center;
-    font-size: 0.8125rem;
+.fid-param-group > .info-trigger {
+    align-self: flex-start;
+    margin-top: 8px;
+}
+
+/* ===========================================
+   Demo Button (in mode toolbar row)
+   =========================================== */
+
+.fid-demo-btn {
+    margin-left: auto;
+    font-size: 0.75rem;
+    font-weight: 500;
     color: var(--color-accent);
     background: none;
-    border: none;
-    padding: 0;
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-sm);
+    padding: 4px 12px;
     cursor: pointer;
-    text-decoration: none;
     font-family: inherit;
-    transition: color var(--transition-fast);
+    transition: all var(--transition-fast);
 }
 
-.fid-header-link:hover {
-    color: var(--color-accent-hover);
-    text-decoration: underline;
+.fid-demo-btn:hover {
+    background: var(--color-accent);
+    color: #fff;
 }
 
 /* ===========================================

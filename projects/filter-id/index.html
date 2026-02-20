@@ -42,11 +42,7 @@
         <main id="main-content">
             <div class="page-header">
                 <h1 class="page-title">Filter Identification</h1>
-                <p class="page-subtitle">Train your ears to recognize filter types and frequencies</p>
-                <div class="fid-header-links">
-                    <a href="guide.html" class="fid-header-link">Guide</a>
-                    <button type="button" class="fid-header-link" id="demo-btn">Demo</button>
-                </div>
+                <p class="page-subtitle">Train your ears to recognize filter types and frequencies. <a href="guide.html" style="color: var(--color-accent); font-weight: 500;">Guide &rarr;</a></p>
             </div>
 
             <div class="fid-app">
@@ -54,17 +50,20 @@
                 <div class="fid-toolbar">
                     <div class="fid-toolbar-row">
                         <div class="fid-toolbar-group">
-                            <span class="fid-toolbar-label">Mode<button class="info-trigger" aria-label="Mode info">i<span class="info-tooltip" role="tooltip"><strong>Practice:</strong> Direct control of all filter parameters.<br><strong>Teaching:</strong> Listen to a sequence of unfiltered then filtered audio.<br><strong>Quiz:</strong> Identify the hidden filter by ear.</span></button></span>
+                            <span class="fid-toolbar-label">Mode</span>
+                            <button class="info-trigger" aria-label="Mode info">i<span class="info-tooltip" role="tooltip"><strong>Practice:</strong> Direct control of all filter parameters.<br><strong>Teaching:</strong> Listen to a sequence of unfiltered then filtered audio.<br><strong>Quiz:</strong> Identify the hidden filter by ear.</span></button>
                             <div class="fid-toolbar-buttons">
                                 <button type="button" class="fid-toolbar-btn active" data-mode="practice">Practice</button>
                                 <button type="button" class="fid-toolbar-btn" data-mode="teaching">Teaching</button>
                                 <button type="button" class="fid-toolbar-btn" data-mode="quiz">Quiz</button>
                             </div>
                         </div>
+                        <button type="button" class="fid-demo-btn" id="demo-btn">Demo</button>
                     </div>
                     <div class="fid-toolbar-row fid-source-row">
                         <div class="fid-toolbar-group">
-                            <span class="fid-toolbar-label">Source<button class="info-trigger" aria-label="Source info">i<span class="info-tooltip" role="tooltip">Audio source for the filter.<br><strong>Pink Noise</strong> has equal energy per octave, ideal for hearing filter shapes.<br><strong>User Audio</strong> lets you upload a file.<br><strong>Multi-track</strong> loads built-in stems with a mixer.<br><strong>Sawtooth</strong> is a synthesized tone with rich harmonic content.</span></button></span>
+                            <span class="fid-toolbar-label">Source</span>
+                            <button class="info-trigger" aria-label="Source info">i<span class="info-tooltip" role="tooltip">Audio source for the filter.<br><strong>Pink Noise</strong> has equal energy per octave, ideal for hearing filter shapes.<br><strong>User Audio</strong> lets you upload a file.<br><strong>Multi-track</strong> loads built-in stems with a mixer.<br><strong>Sawtooth</strong> is a synthesized tone with rich harmonic content.</span></button>
                             <div class="fid-toolbar-buttons">
                                 <button type="button" class="fid-toolbar-btn active" data-source="0">Mute</button>
                                 <button type="button" class="fid-toolbar-btn" data-source="1">Pink Noise</button>
@@ -200,11 +199,13 @@
                     <!-- Filter On/Bypass + Visualization -->
                     <div class="fid-param-group fid-filter-header" id="filter-header">
                         <div class="fid-filter-header-row">
-                            <h3 class="fid-param-label">Filter<button class="info-trigger" aria-label="Filter info">i<span class="info-tooltip" role="tooltip">Toggle the filter on or off (bypass). When bypassed, you hear the unfiltered source.</span></button></h3>
+                            <h3 class="fid-param-label">Filter</h3>
+                            <button class="info-trigger" aria-label="Filter info">i<span class="info-tooltip" role="tooltip">Toggle the filter on or off (bypass). When bypassed, you hear the unfiltered source.</span></button>
                             <div class="fid-filter-toggles">
                                 <button type="button" class="fid-toolbar-btn active" id="filter-on-btn">On</button>
                             </div>
-                            <span class="fid-param-label">Spectrum<button class="info-trigger" aria-label="Spectrum info">i<span class="info-tooltip" role="tooltip">Show a real-time 1/6-octave spectrum analyser behind the filter curve. Bars show post-filter frequency content.</span></button></span>
+                            <span class="fid-param-label">Spectrum</span>
+                            <button class="info-trigger" aria-label="Spectrum info">i<span class="info-tooltip" role="tooltip">Show a real-time 1/6-octave spectrum analyser behind the filter curve. Bars show post-filter frequency content.</span></button>
                             <div class="fid-filter-toggles">
                                 <button type="button" class="fid-toolbar-btn" id="spectrum-btn">Off</button>
                             </div>
@@ -234,7 +235,8 @@
 
                     <!-- Filter Type -->
                     <div class="fid-param-group">
-                        <h3 class="fid-param-label">Type<button class="info-trigger" aria-label="Filter type info">i<span class="info-tooltip" role="tooltip">The shape of the filter.<br><strong>High/Low-Pass</strong> remove frequencies above/below the cutoff.<br><strong>Shelving</strong> filters boost or cut above/below a frequency.<br><strong>Peaking</strong> boosts or cuts a band around the center frequency.<br><strong>Bandpass</strong> lets only a band through.</span></button></h3>
+                        <h3 class="fid-param-label">Type</h3>
+                        <button class="info-trigger" aria-label="Filter type info">i<span class="info-tooltip" role="tooltip">The shape of the filter.<br><strong>High/Low-Pass</strong> remove frequencies above/below the cutoff.<br><strong>Shelving</strong> filters boost or cut above/below a frequency.<br><strong>Peaking</strong> boosts or cuts a band around the center frequency.<br><strong>Bandpass</strong> lets only a band through.</span></button>
                         <div class="fid-button-group" id="type-buttons">
                             <button type="button" class="fid-toggle active" data-type="highpass">High-Pass</button>
                             <button type="button" class="fid-toggle" data-type="lowpass">Low-Pass</button>
@@ -247,7 +249,8 @@
 
                     <!-- Frequency -->
                     <div class="fid-param-group">
-                        <h3 class="fid-param-label">Freq<button class="info-trigger" aria-label="Frequency info">i<span class="info-tooltip" role="tooltip">Center or cutoff frequency of the filter. The vowel hints show what a narrow boost at each frequency sounds like in pink noise.</span></button></h3>
+                        <h3 class="fid-param-label">Freq</h3>
+                        <button class="info-trigger" aria-label="Frequency info">i<span class="info-tooltip" role="tooltip">Center or cutoff frequency of the filter. The vowel hints show what a narrow boost at each frequency sounds like in pink noise.</span></button>
                         <div class="fid-button-group" id="freq-buttons">
                             <button type="button" class="fid-toggle" data-freq="250">
                                 <span class="fid-toggle-main">250 Hz</span>
@@ -282,7 +285,8 @@
 
                     <!-- Gain (hidden for HP/LP) -->
                     <div class="fid-param-group hidden" id="gain-group">
-                        <h3 class="fid-param-label">Gain<button class="info-trigger" aria-label="Gain info">i<span class="info-tooltip" role="tooltip">How much the filter boosts or cuts, in decibels.</span></button></h3>
+                        <h3 class="fid-param-label">Gain</h3>
+                        <button class="info-trigger" aria-label="Gain info">i<span class="info-tooltip" role="tooltip">How much the filter boosts or cuts, in decibels.</span></button>
                         <div class="fid-button-group" id="gain-buttons">
                             <button type="button" class="fid-toggle" data-gain="-12">-12 dB</button>
                             <button type="button" class="fid-toggle" data-gain="-6">-6 dB</button>
@@ -295,7 +299,8 @@
 
                     <!-- Filter Settings -->
                     <div class="fid-param-group fid-settings-group" id="filter-settings">
-                        <h3 class="fid-param-label">Shape<button class="info-trigger" aria-label="Shape info">i<span class="info-tooltip" role="tooltip">For high/low-pass: steepness of the slope (12, 24, or 48 dB/octave).<br>For peaking: bandwidth in octaves.<br>For shelf: slope parameter S.</span></button></h3>
+                        <h3 class="fid-param-label">Shape</h3>
+                        <button class="info-trigger" aria-label="Shape info">i<span class="info-tooltip" role="tooltip">For high/low-pass: steepness of the slope (12, 24, or 48 dB/octave).<br>For peaking: bandwidth in octaves.<br>For shelf: slope parameter S.</span></button>
                         <div class="fid-settings-content">
                             <div id="settings-slope">
                                 <div class="fid-button-group" id="slope-buttons">
