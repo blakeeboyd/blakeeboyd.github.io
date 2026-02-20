@@ -652,11 +652,12 @@
     color: var(--color-accent);
 }
 
-/* Multi-track controls */
+/* Multi-track controls — mixer left, waveform right */
 .fid-multitrack-controls {
     display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
+    flex-direction: row;
+    align-items: stretch;
+    gap: var(--spacing-sm);
     padding-top: var(--spacing-xs);
     border-top: 1px solid var(--color-border);
 }
@@ -665,12 +666,11 @@
     display: none;
 }
 
-/* Mixer */
 /* Mixer: horizontal row of vertical channel strips */
 .fid-mixer {
     display: flex;
     gap: 2px;
-    justify-content: center;
+    flex-shrink: 0;
     padding: var(--spacing-xs) 0;
 }
 
@@ -844,8 +844,9 @@
 /* Stereo waveform visualization */
 .fid-stereo-viz-container {
     position: relative;
-    width: 100%;
-    height: 100px;
+    flex: 1;
+    min-width: 0;
+    min-height: 140px;
     border-radius: var(--radius-sm);
     overflow: hidden;
 }
