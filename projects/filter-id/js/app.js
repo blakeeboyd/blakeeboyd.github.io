@@ -653,14 +653,14 @@ function hasMultitrackLoaded() {
 }
 
 /**
- * Sum all multitrack stems sample-by-sample and find the peak.
- * Set the summing bus gain so the combined signal peaks at -0.5 dBFS.
+ * Sum multitrack stems and find the peak of the combined signal.
+ * Set the summing bus gain so the mix peaks at -0.5 dBFS.
+ * Samples every 256th sample (~430k checks for a 3-min song) to stay fast.
  */
 function setMultitrackSumGain() {
     var buffers = MULTITRACK_TRACKS.map(function (t) { return state.multitrackBuffers[t.key]; });
     if (!buffers.length || !buffers[0]) return;
 
-    // Find the longest buffer and the number of output channels (max across stems)
     var maxLength = 0;
     var numChannels = 1;
     buffers.forEach(function (buf) {
@@ -668,17 +668,28 @@ function setMultitrackSumGain() {
         if (buf.numberOfChannels > numChannels) numChannels = buf.numberOfChannels;
     });
 
-    // Sum all stems and find the absolute peak across all channels
+    // Pre-fetch all channel data arrays to avoid repeated getChannelData calls
+    var channelArrays = []; // channelArrays[ch][bufIndex] = Float32Array
+    for (var ch = 0; ch < numChannels; ch++) {
+        var chData = [];
+        for (var b = 0; b < buffers.length; b++) {
+            var c = Math.min(ch, buffers[b].numberOfChannels - 1);
+            chData.push(buffers[b].getChannelData(c));
+        }
+        channelArrays.push(chData);
+    }
+
+    // Sample every 256th sample (plenty for peak detection)
+    var step = 256;
     var peak = 0;
     for (var ch = 0; ch < numChannels; ch++) {
-        for (var i = 0; i < maxLength; i++) {
+        var chData = channelArrays[ch];
+        for (var i = 0; i < maxLength; i += step) {
             var sum = 0;
-            for (var b = 0; b < buffers.length; b++) {
-                var c = Math.min(ch, buffers[b].numberOfChannels - 1);
-                var data = buffers[b].getChannelData(c);
-                if (i < data.length) sum += data[i];
+            for (var b = 0; b < chData.length; b++) {
+                if (i < chData[b].length) sum += chData[b][i];
             }
-            var abs = Math.abs(sum);
+            var abs = sum < 0 ? -sum : sum;
             if (abs > peak) peak = abs;
         }
     }
@@ -689,7 +700,7 @@ function setMultitrackSumGain() {
     var targetLinear = Math.pow(10, -0.5 / 20);
     var gain = targetLinear / peak;
 
-    // Only attenuate, never boost (if stems are already quiet, leave them)
+    // Only attenuate, never boost
     if (gain >= 1) return;
 
     state.multitrackMerge.gain.value = gain;
