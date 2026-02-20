@@ -224,7 +224,7 @@ const state = {
     spectrumAnalyser: null,       // post-filter (what you hear)
     spectrumRefAnalyser: null,    // pre-filter (reference level)
     spectrumAnimId: null,
-    spectrumEnabled: false,
+    spectrumEnabled: true,
 
     // Sawtooth oscillator
     sawtoothOscillator: null,
@@ -652,6 +652,49 @@ function hasMultitrackLoaded() {
     return Object.keys(state.multitrackBuffers).length > 0;
 }
 
+/**
+ * Sum all multitrack stems sample-by-sample and find the peak.
+ * Set the summing bus gain so the combined signal peaks at -0.5 dBFS.
+ */
+function setMultitrackSumGain() {
+    var buffers = MULTITRACK_TRACKS.map(function (t) { return state.multitrackBuffers[t.key]; });
+    if (!buffers.length || !buffers[0]) return;
+
+    // Find the longest buffer and the number of output channels (max across stems)
+    var maxLength = 0;
+    var numChannels = 1;
+    buffers.forEach(function (buf) {
+        if (buf.length > maxLength) maxLength = buf.length;
+        if (buf.numberOfChannels > numChannels) numChannels = buf.numberOfChannels;
+    });
+
+    // Sum all stems and find the absolute peak across all channels
+    var peak = 0;
+    for (var ch = 0; ch < numChannels; ch++) {
+        for (var i = 0; i < maxLength; i++) {
+            var sum = 0;
+            for (var b = 0; b < buffers.length; b++) {
+                var c = Math.min(ch, buffers[b].numberOfChannels - 1);
+                var data = buffers[b].getChannelData(c);
+                if (i < data.length) sum += data[i];
+            }
+            var abs = Math.abs(sum);
+            if (abs > peak) peak = abs;
+        }
+    }
+
+    if (peak <= 0) return;
+
+    // Target: -0.5 dBFS = 10^(-0.5/20) ≈ 0.9441
+    var targetLinear = Math.pow(10, -0.5 / 20);
+    var gain = targetLinear / peak;
+
+    // Only attenuate, never boost (if stems are already quiet, leave them)
+    if (gain >= 1) return;
+
+    state.multitrackMerge.gain.value = gain;
+}
+
 async function loadMultitrackAudio() {
     if (hasMultitrackLoaded() || state.multitrackLoading) return;
 
@@ -678,6 +721,9 @@ async function loadMultitrackAudio() {
         results.forEach(function (r) {
             state.multitrackBuffers[r.key] = r.buffer;
         });
+
+        // Set summing bus gain so the combined stems peak at -0.5 dBFS
+        setMultitrackSumGain();
 
         state.multitrackLoading = false;
         updateMultitrackLoadingUI(false);
