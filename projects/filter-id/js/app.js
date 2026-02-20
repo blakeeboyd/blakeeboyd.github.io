@@ -3221,6 +3221,11 @@ var Tour = {
             text: 'Set how much the filter boosts or cuts. Positive values boost, negative values cut. Try extreme settings first (+12 or -12 dB) to make the effect obvious, then move to subtler settings.'
         },
         {
+            target: '#filter-settings',
+            title: 'Shape',
+            text: 'Controls how the filter transitions between affected and unaffected frequencies. For <strong>high/low-pass</strong>, this is the slope steepness (12, 24, or 48 dB/octave). For <strong>peaking</strong> and <strong>bandpass</strong>, it sets the bandwidth in octaves (how wide the bell is). For <strong>shelf</strong> filters, it controls the slope parameter S (how abrupt the shelf edge is).'
+        },
+        {
             target: null,
             title: 'Ready',
             text: 'You\'re ready to start. Select a source, press Play, and experiment with different filter settings. When you\'re comfortable identifying filters by ear, try <strong>Teaching</strong> mode for guided listening or <strong>Quiz</strong> mode to test yourself.'
