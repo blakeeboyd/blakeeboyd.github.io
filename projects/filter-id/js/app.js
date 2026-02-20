@@ -3206,12 +3206,12 @@ var Tour = {
             text: 'This canvas shows the filter\'s frequency response. The horizontal axis is frequency (20 Hz to 20 kHz, logarithmic). The vertical axis is gain in dB. The curve shows how the filter boosts or cuts each frequency.'
         },
         {
-            target: '#type-buttons',
+            target: '#type-group',
             title: 'Filter Type',
             text: 'Select a filter type. <strong>High-Pass</strong> and <strong>Low-Pass</strong> remove frequencies below or above the cutoff. <strong>Shelving</strong> filters boost or cut a range. <strong>Peaking</strong> targets a band around the center frequency. <strong>Bandpass</strong> isolates a narrow range.'
         },
         {
-            target: '#freq-buttons',
+            target: '#freq-group',
             title: 'Frequency',
             text: 'Pick the center or cutoff frequency. The hints below each button show what a narrow boost at that frequency sounds like in pink noise. Try saying the vowel sounds while you listen.'
         },
