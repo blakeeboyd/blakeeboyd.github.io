@@ -3295,7 +3295,7 @@ var Tour = {
                 this.prevHighlight = el;
                 // Hide overlay (box-shadow on highlight creates its own)
                 this.overlayEl.style.display = 'none';
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
                 return;
             }

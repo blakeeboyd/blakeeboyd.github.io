@@ -912,21 +912,6 @@
 
 .fid-demo-btn {
     margin-left: auto;
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--color-accent);
-    background: none;
-    border: 1px solid var(--color-accent);
-    border-radius: var(--radius-sm);
-    padding: 4px 12px;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all var(--transition-fast);
-}
-
-.fid-demo-btn:hover {
-    background: var(--color-accent);
-    color: #fff;
 }
 
 /* ===========================================
@@ -944,7 +929,8 @@
 .fid-tour-card {
     position: fixed;
     bottom: 24px;
-    right: 24px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 1002;
     background: var(--color-card-bg);
     border: 1px solid var(--color-border);
