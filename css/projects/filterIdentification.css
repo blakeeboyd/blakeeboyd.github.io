@@ -22,9 +22,7 @@
     border-radius: var(--radius-sm);
 }
 
-/* Hide source+gain row and extras in teaching/quiz mode (they have their own source picker) */
-.teaching-mode .fid-source-row,
-.quiz-mode .fid-source-row,
+/* Hide upload/playback extras in teaching/quiz mode */
 .teaching-mode .fid-source-extras,
 .quiz-mode .fid-source-extras {
     display: none !important;

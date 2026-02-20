@@ -1051,14 +1051,7 @@ function updateMultitrackControlsVisibility() {
 
     var wasHidden = controls.classList.contains('hidden');
 
-    var isMultitrack = false;
-    if (state.mode === 'practice') {
-        isMultitrack = (state.currentSource === 3);
-    } else if (state.mode === 'teaching') {
-        isMultitrack = (parseInt(document.getElementById('teaching-source-select').value) === 3);
-    } else if (state.mode === 'quiz') {
-        isMultitrack = (parseInt(document.getElementById('quiz-source-select').value) === 3);
-    }
+    var isMultitrack = (state.currentSource === 3);
 
     controls.classList.toggle('hidden', !isMultitrack);
 
@@ -1129,21 +1122,32 @@ async function setSource(source) {
     // Show/hide multitrack controls
     updateMultitrackControlsVisibility();
 
+    // Auto-enable loop for multi-track in teaching mode
+    if (state.mode === 'teaching') {
+        setTestLoop(source === 3);
+    }
+
     updateSourceButtons();
 
-    // Auto-play for continuous sources
-    if (source === 1) {
-        await startAudio();
+    // Auto-play for continuous sources (practice mode only)
+    if (state.mode === 'practice') {
+        if (source === 1) {
+            await startAudio();
+        } else if (source === 3) {
+            if (!hasMultitrackLoaded()) {
+                await loadMultitrackAudio();
+            }
+            if (hasMultitrackLoaded()) {
+                await startAudio();
+            }
+        } else if (source === 4) {
+            await startAudio();
+        }
     } else if (source === 3) {
-        // Load multi-track audio if not already loaded, then auto-play
+        // Preload multitrack in teaching/quiz mode (don't auto-play)
         if (!hasMultitrackLoaded()) {
             await loadMultitrackAudio();
         }
-        if (hasMultitrackLoaded()) {
-            await startAudio();
-        }
-    } else if (source === 4) {
-        await startAudio();
     }
 }
 
@@ -1585,13 +1589,16 @@ function hideTestIndicator() {
 async function teachingListen() {
     var listenBtn = document.getElementById('listen-btn');
 
-    var source = parseInt(document.getElementById('teaching-source-select').value);
+    var source = state.currentSource;
+    if (source === 0) {
+        alert('Select an audio source first.');
+        return;
+    }
     if (source === 2 && !state.userAudioBuffer) {
         alert('Upload an audio file first (switch to Practice mode to upload).');
         return;
     }
     if (source === 3 && !hasMultitrackLoaded()) {
-        // Try to load it on the fly
         if (!state.audioContext) createAudioContext();
         await loadMultitrackAudio();
         if (!hasMultitrackLoaded()) return;
@@ -1705,8 +1712,12 @@ async function newQuestion() {
     // Enable submit (will check selections before allowing)
     updateSubmitButton();
 
-    // Set source from quiz dropdown and run test sequence
-    var quizSource = parseInt(document.getElementById('quiz-source-select').value);
+    // Use current source from unified source buttons
+    var quizSource = state.currentSource;
+    if (quizSource === 0) {
+        alert('Select an audio source first.');
+        return;
+    }
     if (quizSource === 2 && !state.userAudioBuffer) {
         alert('Upload an audio file first (switch to Practice mode to upload).');
         return;
@@ -1716,9 +1727,8 @@ async function newQuestion() {
         if (!hasMultitrackLoaded()) return;
     }
 
-    // Switch to the quiz source (without auto-playing pink noise)
+    // Stop current audio and apply gain for the source
     if (state.isPlaying) stopAudio();
-    state.currentSource = quizSource;
     updateGainForSource(quizSource);
 
     // Play Again becomes Stop during playback; submit shows Submit Answer (disabled until selections)
@@ -1742,16 +1752,15 @@ async function playAgain() {
 
     if (!state.quizAnswer) return;
 
-    var quizSource = parseInt(document.getElementById('quiz-source-select').value);
+    var quizSource = state.currentSource;
+    if (quizSource === 0) return;
     if (quizSource === 2 && !state.userAudioBuffer) return;
     if (quizSource === 3 && !hasMultitrackLoaded()) {
         await loadMultitrackAudio();
         if (!hasMultitrackLoaded()) return;
     }
 
-    // Ensure source is set
     if (state.isPlaying) stopAudio();
-    state.currentSource = quizSource;
     updateGainForSource(quizSource);
 
     // Play Again becomes Stop during playback
@@ -3032,19 +3041,6 @@ function setupEventListeners() {
     // Loop toggle button (teaching mode)
     document.getElementById('loop-btn').addEventListener('click', function () {
         setTestLoop(!state.testLoop);
-    });
-
-    // Source dropdowns: show/hide multitrack controls + preload on change
-    document.getElementById('teaching-source-select').addEventListener('change', function () {
-        updateMultitrackControlsVisibility();
-        var isMultitrack = parseInt(this.value) === 3;
-        if (isMultitrack) preloadMultitrack();
-        // Auto-enable loop for multi-track
-        setTestLoop(isMultitrack);
-    });
-    document.getElementById('quiz-source-select').addEventListener('change', function () {
-        updateMultitrackControlsVisibility();
-        if (parseInt(this.value) === 3) preloadMultitrack();
     });
 
     // Filter type buttons
