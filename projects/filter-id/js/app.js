@@ -30,7 +30,7 @@ function bwToQ(octaves) {
 }
 
 // Defaults
-const DEFAULT_PEAKING_BW = 2;    // octaves → Q ≈ 0.667
+const DEFAULT_PEAKING_BW = 1;    // octaves → Q ≈ 1.414
 const DEFAULT_BANDPASS_BW = 1;   // octaves → Q ≈ 1.414
 const DEFAULT_SHELF_S = 1;       // Shelf slope (S=1 is standard; >1 steeper with resonance)
 const DEFAULT_PASS_SLOPE = 12;   // dB/oct (single 2nd-order filter)
@@ -267,6 +267,8 @@ const state = {
     quizTotal: 0,
     quizStreak: 0,
     quizRevealed: false,
+    quizReplayCount: 0,
+    quizQuestionStartTime: 0,
 
     // Test
     testRunning: false,
@@ -559,6 +561,7 @@ async function startAudio() {
     state.isPlaying = true;
     updatePlayButton();
     startSpectrumAnimation();
+    if (state.currentSource === 2) startProgressUpdate();
     if (state.currentSource === 3) startMultitrackMeters();
 }
 
@@ -641,7 +644,6 @@ function startUserAudio(offset) {
 
     state.userAudioStartTime = state.audioContext.currentTime - offset;
     state.userAudioSource.start(0, offset);
-    startProgressUpdate();
 }
 
 // ============================================
@@ -1095,9 +1097,14 @@ async function togglePlayback() {
 
 async function setSource(source) {
     const wasPlaying = state.isPlaying;
+    var prevSource = state.currentSource;
     if (wasPlaying) stopAudio();
 
     state.currentSource = source;
+
+    if (window.FilterTelemetry) {
+        window.FilterTelemetry.track('source_switch', { previous: prevSource, source: source });
+    }
 
     // Update gain for this source
     updateGainForSource(source);
@@ -1510,6 +1517,7 @@ function stopTestSequence() {
 function showTestIndicator() {
     const indicator = document.getElementById('test-indicator');
     indicator.classList.remove('hidden');
+    indicator.classList.remove('paused');
 
     // Cancel any existing animation frame to avoid stacking when looping
     if (state.testAnimationId) {
@@ -1574,11 +1582,20 @@ function showTestIndicator() {
 }
 
 function hideTestIndicator() {
-    document.getElementById('test-indicator').classList.add('hidden');
-
     if (state.testAnimationId) {
         cancelAnimationFrame(state.testAnimationId);
         state.testAnimationId = null;
+    }
+
+    var indicator = document.getElementById('test-indicator');
+    // In teaching mode, keep indicator visible with "Paused" text
+    if (state.mode === 'teaching') {
+        indicator.classList.remove('hidden');
+        indicator.classList.add('paused');
+        document.getElementById('test-phase').textContent = 'Paused';
+        document.getElementById('test-countdown').textContent = '';
+    } else {
+        indicator.classList.add('hidden');
     }
 }
 
@@ -1736,6 +1753,10 @@ async function newQuestion() {
     playBtn.disabled = false;
     updateSubmitButton();
 
+    // Telemetry: reset counters for new question
+    state.quizReplayCount = 0;
+    state.quizQuestionStartTime = performance.now();
+
     // Run the test sequence, mute after
     runTest({
         alwaysStop: true,
@@ -1751,6 +1772,11 @@ async function playAgain() {
     var playBtn = document.getElementById('play-again-btn');
 
     if (!state.quizAnswer) return;
+
+    state.quizReplayCount++;
+    if (window.FilterTelemetry) {
+        window.FilterTelemetry.track('quiz_replay', { count: state.quizReplayCount });
+    }
 
     var quizSource = state.currentSource;
     if (quizSource === 0) return;
@@ -1969,6 +1995,26 @@ function submitAnswer() {
         state.quizStreak = 0;
     }
 
+    // Telemetry: quiz submission
+    if (window.FilterTelemetry) {
+        var sourceNames = ['mute', 'pink_noise', 'user_audio', 'multitrack', 'sawtooth'];
+        window.FilterTelemetry.track('quiz_submit', {
+            drill: state.quizDrill,
+            source: sourceNames[state.currentSource] || state.currentSource,
+            answer: { type: answer.type, freq: answer.freq, gain: answer.gain },
+            guess: { type: sel.type, freq: sel.freq, gain: sel.gain },
+            correct: allCorrect,
+            type_correct: typeCorrect,
+            freq_correct: freqCorrect,
+            gain_correct: gainCorrect,
+            response_ms: Math.round(performance.now() - state.quizQuestionStartTime),
+            replay_count: state.quizReplayCount,
+            spectrum_on: state.spectrumEnabled,
+            score: state.quizCorrect + '/' + state.quizTotal,
+            streak: state.quizStreak
+        });
+    }
+
     // Build result message
     const resultEl = document.getElementById('quiz-result');
     resultEl.classList.remove('hidden', 'correct', 'incorrect');
@@ -2074,17 +2120,26 @@ function formatFreq(freq) {
 // ============================================
 
 function setMode(mode) {
+    var prevMode = state.mode;
+    // Set mode first so hideTestIndicator() knows whether to keep it visible
+    state.mode = mode;
+
+    if (window.FilterTelemetry) {
+        window.FilterTelemetry.track('mode_switch', { previous: prevMode, mode: mode });
+    }
+
     // Stop everything when switching modes
     if (state.testRunning) stopTestSequence();
     if (state.isPlaying) stopAudio();
-
-    state.mode = mode;
 
     const app = document.querySelector('.fid-app');
     const filterHeader = document.getElementById('filter-header');
     const teachingControls = document.getElementById('teaching-controls');
     const quizControls = document.getElementById('quiz-controls');
     const quizSubmit = document.getElementById('quiz-submit');
+
+    // Switch to Mute before revealing practice UI so there's no flash
+    if (mode === 'practice') setSource(0);
 
     // Hide everything first
     app.classList.remove('quiz-mode', 'teaching-mode');
@@ -2111,6 +2166,16 @@ function setMode(mode) {
         filterHeader.classList.remove('hidden');
         teachingControls.classList.remove('hidden');
 
+        // Show indicator in idle state so the layout is stable
+        var indicator = document.getElementById('test-indicator');
+        indicator.classList.remove('hidden');
+        indicator.classList.add('paused');
+        document.getElementById('test-phase').textContent = 'Paused';
+        document.getElementById('test-countdown').textContent = '';
+
+        // Auto-switch off Mute (not available in teaching mode)
+        if (state.currentSource === 0) setSource(1);
+
         // Teaching mode: buttons control filter directly (like practice)
         // Re-apply current filter state
         setFilterType(state.filterType);
@@ -2121,6 +2186,9 @@ function setMode(mode) {
         app.classList.add('quiz-mode');
         quizControls.classList.remove('hidden');
         quizSubmit.classList.remove('hidden');
+
+        // Auto-switch off Mute (not available in quiz mode)
+        if (state.currentSource === 0) setSource(1);
 
         // Reset quiz state
         state.quizAnswer = null;
@@ -2696,7 +2764,7 @@ function drawFilterConfigToCanvas(canvas, config, spectrum, accentOverride) {
         vf.gain.value = PASS_FILTERS.includes(filterType) ? 0 : filterGainDb;
 
         if (BANDWIDTH_FILTERS.includes(filterType)) {
-            vf.Q.value = bwToQ(2); // default 2 octave bandwidth
+            vf.Q.value = bwToQ(state.peakingBW);
         } else {
             vf.Q.value = 0.7071;
         }
@@ -3021,6 +3089,9 @@ function setupEventListeners() {
         state.spectrumEnabled = !state.spectrumEnabled;
         this.classList.toggle('active', state.spectrumEnabled);
         this.textContent = state.spectrumEnabled ? 'On' : 'Off';
+        if (window.FilterTelemetry) {
+            window.FilterTelemetry.track('spectrum_toggle', { enabled: state.spectrumEnabled });
+        }
         if (state.spectrumEnabled && state.isPlaying) {
             startSpectrumAnimation();
         } else {
@@ -3450,6 +3521,29 @@ function initTooltips() {
 // ============================================
 
 function init() {
+    // Initialize telemetry (no-op if telemetry.js didn't load)
+    if (window.FilterTelemetry) {
+        window.FilterTelemetry.init();
+        window.FilterTelemetry.track('session_start', {
+            mode: state.mode,
+            source: state.currentSource
+        });
+
+        // Flush rich session-end data when page goes hidden
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'hidden') {
+                window.FilterTelemetry.endSession({
+                    duration_ms: Math.round(performance.now()),
+                    total_questions: state.quizTotal,
+                    correct: state.quizCorrect,
+                    accuracy: state.quizTotal > 0
+                        ? Math.round(state.quizCorrect / state.quizTotal * 100)
+                        : null
+                });
+            }
+        });
+    }
+
     setupEventListeners();
     initTooltips();
 

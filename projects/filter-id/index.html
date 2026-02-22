@@ -77,39 +77,40 @@
                                 <button type="button" class="fid-toolbar-btn" data-source="4">Sawtooth</button>
                             </div>
                         </div>
-                        <div class="fid-toolbar-group fid-toolbar-gain">
-                            <span class="fid-toolbar-label">Gain</span>
-                            <input type="range" class="fid-toolbar-slider" id="gain-slider" min="-70" max="6" value="-24" step="1">
-                            <span class="fid-toolbar-value" id="gain-display">-24 dB</span>
-                        </div>
-                    </div>
-                    <!-- User audio upload + playback (inside toolbar, after source row) -->
-                    <div class="upload-area fid-source-extras hidden" id="upload-area">
-                        <input type="file" id="audio-file-input" accept="audio/*" hidden>
-                        <label for="audio-file-input" class="upload-label fid-upload-compact">
-                            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="17 8 12 3 7 8"></polyline>
-                                <line x1="12" y1="3" x2="12" y2="15"></line>
-                            </svg>
-                            <span>Drop audio file or click to upload</span>
-                        </label>
-                    </div>
-                    <div class="playback-controls fid-source-extras hidden" id="playback-controls">
-                        <button type="button" class="play-button fid-play-sm" id="play-button" aria-label="Play">
-                            <svg class="icon-play" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                                <polygon points="5,3 19,12 5,21"></polygon>
-                            </svg>
-                            <svg class="icon-pause" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                                <rect x="6" y="4" width="4" height="16"></rect>
-                                <rect x="14" y="4" width="4" height="16"></rect>
-                            </svg>
-                        </button>
-                        <div class="progress-container">
-                            <div class="progress-bar" id="progress-bar">
-                                <div class="progress-fill" id="progress-fill"></div>
+                        <div class="fid-source-right">
+                            <div class="upload-area fid-source-extras hidden" id="upload-area">
+                                <input type="file" id="audio-file-input" accept="audio/*" hidden>
+                                <label for="audio-file-input" class="upload-label fid-upload-compact">
+                                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="17 8 12 3 7 8"></polyline>
+                                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                                    </svg>
+                                    <span>Drop audio file or click to upload</span>
+                                </label>
                             </div>
-                            <span class="time-display" id="time-display">0:00 / 0:00</span>
+                            <div class="playback-controls fid-source-extras hidden" id="playback-controls">
+                                <button type="button" class="play-button fid-play-sm" id="play-button" aria-label="Play">
+                                    <svg class="icon-play" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="5,3 19,12 5,21"></polygon>
+                                    </svg>
+                                    <svg class="icon-pause" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                        <rect x="6" y="4" width="4" height="16"></rect>
+                                        <rect x="14" y="4" width="4" height="16"></rect>
+                                    </svg>
+                                </button>
+                                <div class="progress-container">
+                                    <div class="progress-bar" id="progress-bar">
+                                        <div class="progress-fill" id="progress-fill"></div>
+                                    </div>
+                                    <span class="time-display" id="time-display">0:00 / 0:00</span>
+                                </div>
+                            </div>
+                            <div class="fid-toolbar-group fid-toolbar-gain">
+                                <span class="fid-toolbar-label">Gain</span>
+                                <input type="range" class="fid-toolbar-slider" id="gain-slider" min="-70" max="6" value="-24" step="1">
+                                <span class="fid-toolbar-value" id="gain-display">-24 dB</span>
+                            </div>
                         </div>
                     </div>
 
@@ -237,7 +238,7 @@
                     <!-- Frequency -->
                     <div class="fid-param-group" id="freq-group">
                         <h3 class="fid-param-label">Freq</h3>
-                        <button class="info-trigger" aria-label="Frequency info">i<span class="info-tooltip" role="tooltip">Center or cutoff frequency of the filter. The vowel hints show what a narrow boost at each frequency sounds like in pink noise.</span></button>
+                        <button class="info-trigger" aria-label="Frequency info">i<span class="info-tooltip" role="tooltip">Center or cutoff frequency of the filter. The vowel hints show what a +12 dB peaking boost (1 octave bandwidth) at each frequency sounds like in pink noise.</span></button>
                         <div class="fid-button-group" id="freq-buttons">
                             <button type="button" class="fid-toggle" data-freq="250">
                                 <span class="fid-toggle-main">250 Hz</span>
@@ -351,11 +352,28 @@
                 </div>
         </main>
 
+        <!-- Telemetry consent banner (fixed to viewport bottom) -->
+        <div class="fid-consent-banner hidden" id="fid-consent-banner">
+            <div class="fid-consent-content">
+                <p class="fid-consent-text">
+                    This tool can collect anonymous usage data (quiz answers, mode switches, timing)
+                    for teaching research. No personal information is recorded.
+                    <a href="guide.html#data-collection" class="fid-consent-link">Learn more</a>
+                </p>
+                <div class="fid-consent-actions">
+                    <button type="button" class="fid-consent-btn fid-consent-accept" id="fid-consent-accept">Allow</button>
+                    <button type="button" class="fid-consent-btn fid-consent-decline" id="fid-consent-decline">No thanks</button>
+                </div>
+            </div>
+            <button type="button" class="fid-toolbar-btn hidden" id="fid-download-session">Download Session</button>
+        </div>
+
         <footer>
             <p>&copy; <span class="footer-year"></span> Blake Boyd</p>
         </footer>
     </div>
 
+    <script src="js/telemetry.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

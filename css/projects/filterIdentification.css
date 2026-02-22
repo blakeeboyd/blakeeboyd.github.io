@@ -22,10 +22,13 @@
     border-radius: var(--radius-sm);
 }
 
-/* Hide upload/playback extras in teaching/quiz mode */
-.teaching-mode .fid-source-extras,
-.quiz-mode .fid-source-extras {
-    display: none !important;
+/* Right side of source row: gain slider + user audio upload/playback */
+.fid-source-right {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex: 1;
+    min-width: 0;
 }
 
 .fid-toolbar-row {
@@ -165,21 +168,27 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
+    flex: 1;
+    min-width: 0;
 }
 
 .fid-source-extras.hidden {
     display: none !important;
 }
 
-/* Override upload-area padding for compact version (inside toolbar) */
+/* Compact upload area inside the source toolbar row */
 .upload-area.fid-source-extras {
-    padding: var(--spacing-xs) 0;
+    padding: 6px var(--spacing-sm);
+    border-style: solid;
+    border-width: 1px;
+    border-radius: var(--radius-sm);
 }
 
 .fid-upload-compact {
     flex-direction: row;
     gap: var(--spacing-xs);
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
 }
 
 /* Smaller play button for the compact toolbar */
@@ -190,7 +199,7 @@
 
 /* Override playback-controls padding for compact version (inside toolbar) */
 .playback-controls.fid-source-extras {
-    padding: 6px 0;
+    padding: 0;
 }
 
 /* ===========================================
@@ -284,12 +293,23 @@
     animation: pulse-border 1.5s ease-in-out infinite;
 }
 
+.fid-test-indicator.paused {
+    animation: none;
+    border-color: var(--color-border);
+    color: var(--color-text-muted);
+    background: var(--color-bg);
+}
+
 .fid-test-indicator.hidden {
     display: none;
 }
 
 [data-theme="dark"] .fid-test-indicator {
     background: rgba(37, 99, 235, 0.15);
+}
+
+[data-theme="dark"] .fid-test-indicator.paused {
+    background: var(--color-bg);
 }
 
 .fid-quiz-source {
@@ -408,6 +428,14 @@
     gap: 12px;
 }
 
+/* Dividers between Type / Freq / Gain / Shape groups */
+#freq-group,
+#gain-group:not(.hidden),
+#filter-settings {
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--spacing-sm);
+}
+
 .fid-param-label {
     font-size: 0.625rem;
     font-weight: 600;
@@ -424,8 +452,23 @@
 /* Toggle button group */
 .fid-button-group {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     flex-wrap: wrap;
+}
+
+/* Vertical dividers between toggle buttons (matches toolbar button style) */
+.fid-button-group .fid-toggle {
+    position: relative;
+}
+
+.fid-button-group .fid-toggle + .fid-toggle::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: 20%;
+    height: 60%;
+    width: 1px;
+    background: var(--color-border);
 }
 
 /* Individual toggle button */
@@ -529,7 +572,15 @@
     display: none;
 }
 
-.fid-app.quiz-mode .fid-mixer {
+.fid-app.quiz-mode .fid-mixer,
+.fid-app.teaching-mode .fid-stereo-viz-container,
+.fid-app.quiz-mode .fid-stereo-viz-container {
+    display: none;
+}
+
+/* Hide Mute source button in teaching/quiz */
+.fid-app.teaching-mode .fid-toolbar-btn[data-source="0"],
+.fid-app.quiz-mode .fid-toolbar-btn[data-source="0"] {
     display: none;
 }
 
@@ -844,7 +895,6 @@
     position: relative;
     flex: 1;
     min-width: 0;
-    min-height: 140px;
     border-radius: var(--radius-sm);
     overflow: hidden;
 }
@@ -999,4 +1049,106 @@
     padding: 10px;
     margin: -10px;
     box-shadow: 0 0 0 6px var(--color-accent), 0 0 0 9999px rgba(0, 0, 0, 0.6);
+}
+
+/* ===========================================
+   Telemetry Consent Banner
+   =========================================== */
+
+.fid-consent-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--color-card-bg);
+    border-top: 1px solid var(--color-border);
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.fid-consent-banner.hidden {
+    display: none !important;
+}
+
+.fid-consent-content {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    max-width: 900px;
+}
+
+.fid-consent-text {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.fid-consent-link {
+    color: var(--color-accent);
+    text-decoration: underline;
+}
+
+.fid-consent-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.fid-consent-btn {
+    padding: 6px 14px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    font-family: inherit;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+}
+
+.fid-consent-accept {
+    background: var(--color-accent);
+    border: 1.5px solid var(--color-accent);
+    color: white;
+}
+
+[data-theme="dark"] .fid-consent-accept {
+    background: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.fid-consent-accept:hover {
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+}
+
+.fid-consent-decline {
+    background: var(--color-control-bg, #f3f4f6);
+    border: 1.5px solid var(--color-border);
+    color: var(--color-text);
+}
+
+.fid-consent-decline:hover {
+    border-color: var(--color-text-muted);
+}
+
+[data-theme="dark"] .fid-consent-banner {
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+    .fid-consent-content {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .fid-consent-actions {
+        justify-content: center;
+    }
 }
