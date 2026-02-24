@@ -1,0 +1,898 @@
+/* ===========================================
+   Compression Trainer - Project Styles
+   =========================================== */
+
+.ct-app {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+/* ===========================================
+   Toolbar (Source + Gain + Mode in one strip)
+   =========================================== */
+
+.ct-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    padding: 10px var(--spacing-sm);
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+}
+
+/* Hide upload/playback extras in teaching/quiz mode */
+.teaching-mode .ct-source-extras,
+.quiz-mode .ct-source-extras {
+    display: none !important;
+}
+
+.ct-toolbar-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.ct-toolbar-row + .ct-toolbar-row {
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+}
+
+.ct-toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ct-toolbar-gain {
+    flex: 1;
+    min-width: 120px;
+}
+
+.ct-toolbar-label {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    width: 50px;
+    flex-shrink: 0;
+}
+
+.ct-toolbar-buttons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ct-toolbar-buttons .ct-toolbar-btn + .ct-toolbar-btn::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: 20%;
+    height: 60%;
+    width: 1px;
+    background: var(--color-border);
+}
+
+.ct-toolbar-buttons .ct-toolbar-btn {
+    position: relative;
+}
+
+.ct-toolbar-btn {
+    padding: 7px 14px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: inherit;
+    background: var(--color-control-bg);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+}
+
+.ct-toolbar-btn:hover {
+    border-color: var(--color-text-muted);
+}
+
+.ct-toolbar-btn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.ct-toolbar-btn.active {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+}
+
+[data-theme="dark"] .ct-toolbar-btn.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.ct-toolbar-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.ct-toolbar-slider {
+    flex: 1;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--color-border);
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.ct-toolbar-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    border: none;
+    cursor: pointer;
+}
+
+.ct-toolbar-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    border: none;
+    cursor: pointer;
+}
+
+.ct-toolbar-slider:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.ct-toolbar-value {
+    font-size: 0.6875rem;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    color: var(--color-text-muted);
+    min-width: 3.5em;
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* Source extras (upload area, playback controls) */
+.ct-source-extras {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.ct-source-extras.hidden {
+    display: none !important;
+}
+
+.upload-area.ct-source-extras {
+    padding: var(--spacing-xs) 0;
+}
+
+.ct-upload-compact {
+    flex-direction: row;
+    gap: var(--spacing-xs);
+    font-size: 0.8125rem;
+}
+
+.ct-play-sm {
+    width: 32px;
+    height: 32px;
+}
+
+.playback-controls.ct-source-extras {
+    padding: 6px 0;
+}
+
+/* ===========================================
+   Mode-specific controls
+   =========================================== */
+
+.ct-teaching-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+    flex-wrap: wrap;
+}
+
+.ct-teaching-controls.hidden {
+    display: none !important;
+}
+
+.ct-duration-controls {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+}
+
+.ct-duration-label {
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.ct-duration-input {
+    width: 38px;
+    padding: 3px 4px;
+    font-size: 0.75rem;
+    font-family: inherit;
+    text-align: center;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xs);
+    background: var(--color-control-bg);
+    color: var(--color-text);
+}
+
+/* Teaching sequence panel */
+.ct-sequence-panel {
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+}
+
+.ct-sequence-panel.hidden {
+    display: none !important;
+}
+
+.ct-sequence-selector {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.ct-sequence-step {
+    margin-top: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+}
+
+.ct-sequence-step.hidden {
+    display: none !important;
+}
+
+.ct-step-indicator {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.ct-step-text {
+    margin: var(--spacing-xs) 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--color-text);
+    font-style: italic;
+}
+
+.ct-step-nav {
+    display: flex;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-xs);
+}
+
+.ct-source-recommendation {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-top: var(--spacing-xs);
+}
+
+.ct-source-recommendation.hidden {
+    display: none !important;
+}
+
+/* Quiz controls */
+.ct-quiz-controls {
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+}
+
+.ct-quiz-controls.hidden {
+    display: none !important;
+}
+
+.ct-quiz-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.ct-dropdown-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.ct-quiz-source {
+    font-size: 0.8125rem;
+    font-family: inherit;
+    padding: 5px 8px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xs);
+    background: var(--color-control-bg);
+    color: var(--color-text);
+}
+
+.ct-score {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8125rem;
+}
+
+.ct-score-label {
+    color: var(--color-text-muted);
+    font-weight: 500;
+}
+
+/* ===========================================
+   Test Indicator
+   =========================================== */
+
+.ct-test-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: 8px var(--spacing-sm);
+    background: var(--color-card-bg);
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 600;
+    animation: ct-pulse-border 1.5s ease-in-out infinite;
+}
+
+.ct-test-indicator.hidden {
+    display: none !important;
+}
+
+@keyframes ct-pulse-border {
+    0%, 100% { border-color: var(--color-accent); }
+    50% { border-color: transparent; }
+}
+
+/* ===========================================
+   Compressor Controls Card
+   =========================================== */
+
+.ct-controls-card {
+    padding: var(--spacing-sm);
+}
+
+.ct-compressor-header {
+    margin-bottom: var(--spacing-xs);
+}
+
+.ct-compressor-toggles {
+    display: flex;
+    gap: 6px;
+}
+
+.ct-param-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+}
+
+.ct-param-with-discrete {
+    flex-wrap: wrap;
+}
+
+.ct-param-label {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    width: 62px;
+    flex-shrink: 0;
+    margin: 0;
+}
+
+.ct-param-slider {
+    flex: 1;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--color-border);
+    border-radius: 2px;
+    cursor: pointer;
+    min-width: 100px;
+}
+
+.ct-param-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    border: none;
+    cursor: pointer;
+}
+
+.ct-param-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    border: none;
+    cursor: pointer;
+}
+
+.ct-param-slider:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.ct-param-value {
+    font-size: 0.6875rem;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    color: var(--color-text-muted);
+    min-width: 4.5em;
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* Discrete preset buttons */
+.ct-discrete-buttons {
+    display: flex;
+    gap: 4px;
+    width: 100%;
+    padding-left: 74px; /* align with slider (label width 62px + gap 12px) */
+}
+
+.ct-discrete-btn {
+    padding: 4px 10px;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    font-family: inherit;
+    background: var(--color-control-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xs);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+}
+
+.ct-discrete-btn:hover {
+    border-color: var(--color-text-muted);
+    color: var(--color-text);
+}
+
+.ct-discrete-btn.active {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+    font-weight: 600;
+}
+
+[data-theme="dark"] .ct-discrete-btn.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+/* ===========================================
+   Visualizations
+   =========================================== */
+
+.ct-viz-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.ct-viz-top {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.ct-canvas-container {
+    position: relative;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+}
+
+.ct-canvas-container canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.ct-transfer-curve {
+    flex: 1;
+    aspect-ratio: 1;
+    max-height: 300px;
+}
+
+.ct-gr-meter {
+    width: 60px;
+    height: 300px;
+    flex-shrink: 0;
+}
+
+.ct-envelope {
+    width: 100%;
+    height: 120px;
+}
+
+/* ===========================================
+   Quiz UI
+   =========================================== */
+
+.ct-quiz-compare {
+    padding: var(--spacing-sm) 0;
+}
+
+.ct-quiz-compare.hidden {
+    display: none !important;
+}
+
+.ct-compare-row {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.ct-compare-panel {
+    flex: 1;
+}
+
+.ct-compare-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+
+.ct-compare-canvas {
+    height: 130px;
+}
+
+.ct-quiz-answer-area {
+    padding: var(--spacing-sm) 0;
+}
+
+.ct-quiz-answer-area.hidden {
+    display: none !important;
+}
+
+.ct-quiz-answer-group {
+    margin-bottom: var(--spacing-xs);
+}
+
+.ct-quiz-answer-label {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+
+.ct-quiz-answer-buttons {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.ct-quiz-submit {
+    display: flex;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) 0;
+}
+
+.ct-quiz-submit.hidden {
+    display: none !important;
+}
+
+.ct-result {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.ct-result.hidden {
+    display: none !important;
+}
+
+.ct-result.correct {
+    background: color-mix(in srgb, var(--color-success) 15%, transparent);
+    color: var(--color-success);
+}
+
+.ct-result.incorrect {
+    background: color-mix(in srgb, var(--color-error) 15%, transparent);
+    color: var(--color-error);
+}
+
+/* ===========================================
+   Multi-track controls
+   =========================================== */
+
+.ct-multitrack-controls {
+    display: flex;
+    gap: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+}
+
+.ct-multitrack-controls.hidden {
+    display: none !important;
+}
+
+.ct-track-loading {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+}
+
+.ct-track-loading.hidden {
+    display: none !important;
+}
+
+.ct-mixer {
+    display: flex;
+    gap: 2px;
+}
+
+.ct-channel-strip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    width: 56px;
+}
+
+.ct-channel-label {
+    font-size: 0.5625rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.ct-channel-ms {
+    display: flex;
+    gap: 2px;
+}
+
+.ct-channel-btn {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    font-size: 0.5rem;
+    font-weight: 700;
+    font-family: inherit;
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    background: var(--color-control-bg);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-transform: uppercase;
+}
+
+.ct-channel-btn.muted {
+    background: var(--color-warning);
+    border-color: var(--color-warning);
+    color: white;
+}
+
+.ct-channel-btn.soloed {
+    background: #eab308;
+    border-color: #eab308;
+    color: white;
+}
+
+.ct-channel-silenced {
+    opacity: 0.4;
+}
+
+.ct-fader-wrap {
+    position: relative;
+    width: 28px;
+    height: 100px;
+}
+
+.ct-channel-meter {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 0;
+    background: var(--color-success);
+    border-radius: 1px;
+    transition: height 60ms linear;
+    opacity: 0.5;
+}
+
+.ct-channel-fader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-90deg);
+    width: 100px;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--color-border);
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.ct-channel-fader::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 10px;
+    height: 16px;
+    border-radius: 2px;
+    background: var(--color-text-muted);
+    border: none;
+    cursor: pointer;
+}
+
+.ct-channel-fader::-moz-range-thumb {
+    width: 10px;
+    height: 16px;
+    border-radius: 2px;
+    background: var(--color-text-muted);
+    border: none;
+    cursor: pointer;
+}
+
+[data-theme="dark"] .ct-channel-fader::-webkit-slider-thumb {
+    background: #94a3b8;
+}
+
+[data-theme="dark"] .ct-channel-fader::-moz-range-thumb {
+    background: #94a3b8;
+}
+
+.ct-stereo-viz-container {
+    flex: 1;
+    min-width: 0;
+    height: 108px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--color-card-bg);
+}
+
+.ct-stereo-viz-container canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* ===========================================
+   Compression Guide (collapsible)
+   =========================================== */
+
+.ct-guide summary {
+    cursor: pointer;
+    list-style: none;
+}
+
+.ct-guide summary::-webkit-details-marker {
+    display: none;
+}
+
+.ct-guide summary .card-title::after {
+    content: ' +';
+    font-weight: 400;
+    color: var(--color-text-muted);
+}
+
+.ct-guide[open] summary .card-title::after {
+    content: ' -';
+}
+
+.ct-guide blockquote {
+    border-left: 3px solid var(--color-accent);
+    padding-left: var(--spacing-sm);
+    margin: var(--spacing-xs) 0 var(--spacing-md) 0;
+    color: var(--color-text-muted);
+    font-style: italic;
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+.ct-guide h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-top: var(--spacing-sm);
+}
+
+/* ===========================================
+   Demo button
+   =========================================== */
+
+.ct-demo-btn.running {
+    background: var(--color-error);
+    border-color: var(--color-error);
+    color: white;
+}
+
+/* ===========================================
+   Responsive
+   =========================================== */
+
+@media (max-width: 900px) {
+    .ct-viz-top {
+        flex-direction: column;
+    }
+
+    .ct-transfer-curve {
+        max-height: 250px;
+    }
+
+    .ct-gr-meter {
+        width: 100%;
+        height: 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    .ct-toolbar-btn {
+        padding: 5px 10px;
+        font-size: 0.75rem;
+    }
+
+    .ct-toolbar-label {
+        width: 40px;
+        font-size: 0.5625rem;
+    }
+
+    .ct-param-label {
+        width: 50px;
+        font-size: 0.5625rem;
+    }
+
+    .ct-discrete-buttons {
+        padding-left: 62px;
+    }
+
+    .ct-discrete-btn {
+        padding: 3px 8px;
+        font-size: 0.625rem;
+    }
+
+    .ct-quiz-row {
+        gap: var(--spacing-sm);
+    }
+}

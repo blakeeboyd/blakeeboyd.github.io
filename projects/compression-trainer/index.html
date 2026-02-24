@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Train your ears to hear compression: threshold, ratio, attack, release, and knee with real-time visualizations.">
+    <title>Compression Trainer - Blake Boyd</title>
+    <!-- SEO -->
+    <link rel="canonical" href="https://blakeeboyd.github.io/projects/compression-trainer/">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Compression Trainer - Blake Boyd">
+    <meta property="og:description" content="Train your ears to hear compression: threshold, ratio, attack, release, and knee with real-time visualizations.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://blakeeboyd.github.io/projects/compression-trainer/">
+    <meta property="og:site_name" content="Blake Boyd">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Compression Trainer - Blake Boyd">
+    <meta name="twitter:description" content="Train your ears to hear compression: threshold, ratio, attack, release, and knee with real-time visualizations.">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake E. Boyd">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="stylesheet" href="../../css/base.css">
+    <link rel="stylesheet" href="../../css/layout.css">
+    <link rel="stylesheet" href="../../css/components.css">
+    <link rel="stylesheet" href="../../css/components-audio.css">
+    <link rel="stylesheet" href="../../css/projects/compressionTrainer.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="../../js/theme.js"></script>
+    <script src="../../js/nav-component.js" defer></script>
+</head>
+<body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div class="container wide">
+        <site-nav base="../../"></site-nav>
+
+        <main id="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Compression Trainer</h1>
+                <p class="page-subtitle">Train your ears to hear dynamic compression</p>
+            </div>
+
+            <div class="ct-app">
+                <!-- Toolbar -->
+                <div class="ct-toolbar">
+                    <div class="ct-toolbar-row">
+                        <div class="ct-toolbar-group">
+                            <span class="ct-toolbar-label">Mode</span>
+                            <button class="info-trigger" aria-label="Mode info">i<span class="info-tooltip" role="tooltip"><strong>Practice:</strong> Direct control of all compressor parameters.<br><strong>Teaching:</strong> Listen to uncompressed then compressed audio, with guided sequences.<br><strong>Quiz:</strong> Identify the hidden compression settings by ear.</span></button>
+                            <div class="ct-toolbar-buttons">
+                                <button type="button" class="ct-toolbar-btn active" data-mode="practice">Practice</button>
+                                <button type="button" class="ct-toolbar-btn" data-mode="teaching">Teaching</button>
+                                <button type="button" class="ct-toolbar-btn" data-mode="quiz">Quiz</button>
+                            </div>
+                        </div>
+                        <button type="button" class="demo-button ct-demo-btn" id="demo-btn">
+                            <svg aria-hidden="true" class="demo-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="5,3 19,12 5,21"></polygon>
+                            </svg>
+                            Demo
+                        </button>
+                    </div>
+                    <div class="ct-toolbar-row ct-source-row">
+                        <div class="ct-toolbar-group">
+                            <span class="ct-toolbar-label">Source</span>
+                            <button class="info-trigger" aria-label="Source info">i<span class="info-tooltip" role="tooltip">Audio source for compression.<br><strong>Pink Noise</strong> plays rhythmic bursts for hearing attack and release.<br><strong>User Audio</strong> lets you upload a file.<br><strong>Multi-track</strong> loads built-in stems with a mixer.<br><strong>Drum Loop</strong> is a short loop ideal for compression training.</span></button>
+                            <div class="ct-toolbar-buttons">
+                                <button type="button" class="ct-toolbar-btn active" data-source="0">Mute</button>
+                                <button type="button" class="ct-toolbar-btn" data-source="1">Pink Noise</button>
+                                <button type="button" class="ct-toolbar-btn" data-source="2">User Audio</button>
+                                <button type="button" class="ct-toolbar-btn" data-source="3">Multi-track</button>
+                                <button type="button" class="ct-toolbar-btn" data-source="4" disabled title="Coming soon">Drum Loop</button>
+                            </div>
+                        </div>
+                        <div class="ct-toolbar-group ct-toolbar-gain">
+                            <span class="ct-toolbar-label">Gain</span>
+                            <input type="range" class="ct-toolbar-slider" id="gain-slider" min="-70" max="6" value="-12" step="1" aria-label="Master gain">
+                            <span class="ct-toolbar-value" id="gain-display">-12 dB</span>
+                        </div>
+                    </div>
+                    <!-- User audio upload + playback -->
+                    <div class="upload-area ct-source-extras hidden" id="upload-area">
+                        <input type="file" id="audio-file-input" accept="audio/*" hidden>
+                        <label for="audio-file-input" class="upload-label ct-upload-compact">
+                            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                            <span>Drop audio file or click to upload</span>
+                        </label>
+                    </div>
+                    <div class="playback-controls ct-source-extras hidden" id="playback-controls">
+                        <button type="button" class="play-button ct-play-sm" id="play-button" aria-label="Play">
+                            <svg class="icon-play" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <polygon points="5,3 19,12 5,21"></polygon>
+                            </svg>
+                            <svg class="icon-pause" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <rect x="6" y="4" width="4" height="16"></rect>
+                                <rect x="14" y="4" width="4" height="16"></rect>
+                            </svg>
+                        </button>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="progress-bar">
+                                <div class="progress-fill" id="progress-fill"></div>
+                            </div>
+                            <span class="time-display" id="time-display">0:00 / 0:00</span>
+                        </div>
+                    </div>
+
+                    <!-- Teaching controls -->
+                    <div class="ct-teaching-controls hidden" id="teaching-controls">
+                        <button type="button" class="action-button action-button-primary" id="listen-btn">Listen</button>
+                        <button type="button" class="ct-toolbar-btn" id="loop-btn">Loop</button>
+                        <div class="ct-duration-controls">
+                            <label class="ct-duration-label">uncompressed <input type="number" class="ct-duration-input" id="teaching-bypass-dur" min="1" max="30" value="4">s</label>
+                            <label class="ct-duration-label">compressed <input type="number" class="ct-duration-input" id="teaching-filter-dur" min="1" max="30" value="5">s</label>
+                        </div>
+                    </div>
+
+                    <!-- Teaching sequence panel -->
+                    <div class="ct-sequence-panel hidden" id="sequence-panel">
+                        <div class="ct-sequence-selector">
+                            <label class="ct-dropdown-label">Sequence
+                            <select class="ct-quiz-source" id="sequence-select">
+                                <option value="">Manual (no sequence)</option>
+                                <option value="hearingCompression">Hearing Compression</option>
+                                <option value="attackTime">Attack Time</option>
+                                <option value="releaseTime">Release Time</option>
+                                <option value="knee">Knee</option>
+                                <option value="pumpingBreathing">Pumping &amp; Breathing</option>
+                            </select>
+                            </label>
+                        </div>
+                        <div class="ct-sequence-step hidden" id="sequence-step">
+                            <span class="ct-step-indicator" id="step-indicator"></span>
+                            <p class="ct-step-text" id="step-text"></p>
+                            <div class="ct-step-nav">
+                                <button type="button" class="ct-toolbar-btn" id="prev-step-btn">Previous</button>
+                                <button type="button" class="action-button action-button-primary" id="step-listen-btn">Listen</button>
+                                <button type="button" class="ct-toolbar-btn" id="next-step-btn">Next</button>
+                            </div>
+                            <p class="ct-source-recommendation hidden" id="source-recommendation"></p>
+                        </div>
+                    </div>
+
+                    <!-- Quiz controls -->
+                    <div class="ct-quiz-controls hidden" id="quiz-controls">
+                        <div class="ct-quiz-row">
+                            <label class="ct-dropdown-label">Drill
+                            <select class="ct-quiz-source" id="quiz-drill-select">
+                                <option value="isCompressed">Is It Compressed?</option>
+                                <option value="attackTime">Attack Time</option>
+                                <option value="releaseTime">Release Time</option>
+                                <option value="kneeType">Knee</option>
+                                <option value="attackRelease">Attack + Release</option>
+                                <option value="allParams">All Parameters</option>
+                            </select>
+                            </label>
+                            <div class="ct-duration-controls">
+                                <label class="ct-duration-label">uncompressed <input type="number" class="ct-duration-input" id="quiz-bypass-dur" min="1" max="30" value="4">s</label>
+                                <label class="ct-duration-label">compressed <input type="number" class="ct-duration-input" id="quiz-filter-dur" min="1" max="30" value="5">s</label>
+                            </div>
+                            <div class="ct-score">
+                                <span class="ct-score-label">Score:</span>
+                                <span id="quiz-score">0/0</span>
+                            </div>
+                            <div class="ct-score">
+                                <span class="ct-score-label">Streak:</span>
+                                <span id="quiz-streak">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Indicator (teaching + quiz modes) -->
+                <div class="ct-test-indicator hidden" id="test-indicator">
+                    <span id="test-phase"></span>
+                    <span id="test-countdown"></span>
+                </div>
+
+                <!-- Compressor Controls -->
+                <div class="card ct-controls-card" id="controls-card">
+                    <!-- Compressor On/Bypass -->
+                    <div class="ct-param-group ct-compressor-header">
+                        <h3 class="ct-param-label">Compressor</h3>
+                        <div class="ct-compressor-toggles">
+                            <button type="button" class="ct-toolbar-btn active" id="compressor-on-btn">On</button>
+                        </div>
+                    </div>
+
+                    <!-- Threshold -->
+                    <div class="ct-param-group" id="threshold-group">
+                        <h3 class="ct-param-label">Threshold</h3>
+                        <input type="range" class="ct-param-slider" id="threshold-slider" min="-60" max="0" value="-18" step="1" aria-label="Threshold">
+                        <span class="ct-param-value" id="threshold-display">-18 dB</span>
+                    </div>
+
+                    <!-- Ratio -->
+                    <div class="ct-param-group" id="ratio-group">
+                        <h3 class="ct-param-label">Ratio</h3>
+                        <input type="range" class="ct-param-slider" id="ratio-slider" min="1" max="20" value="4" step="0.5" aria-label="Ratio">
+                        <span class="ct-param-value" id="ratio-display">4:1</span>
+                    </div>
+
+                    <!-- Attack -->
+                    <div class="ct-param-group ct-param-with-discrete" id="attack-group">
+                        <h3 class="ct-param-label">Attack</h3>
+                        <input type="range" class="ct-param-slider" id="attack-slider" min="0" max="1" value="0.5" step="0.001" aria-label="Attack time">
+                        <span class="ct-param-value" id="attack-display">10 ms</span>
+                        <div class="ct-discrete-buttons" id="attack-buttons">
+                            <button type="button" class="ct-discrete-btn" data-attack="fast">Fast 2ms</button>
+                            <button type="button" class="ct-discrete-btn" data-attack="medium">Med 20ms</button>
+                            <button type="button" class="ct-discrete-btn" data-attack="slow">Slow 80ms</button>
+                        </div>
+                    </div>
+
+                    <!-- Release -->
+                    <div class="ct-param-group ct-param-with-discrete" id="release-group">
+                        <h3 class="ct-param-label">Release</h3>
+                        <input type="range" class="ct-param-slider" id="release-slider" min="0" max="1" value="0.5" step="0.001" aria-label="Release time">
+                        <span class="ct-param-value" id="release-display">250 ms</span>
+                        <div class="ct-discrete-buttons" id="release-buttons">
+                            <button type="button" class="ct-discrete-btn" data-release="fast">Fast 50ms</button>
+                            <button type="button" class="ct-discrete-btn" data-release="medium">Med 250ms</button>
+                            <button type="button" class="ct-discrete-btn" data-release="slow">Slow 800ms</button>
+                        </div>
+                    </div>
+
+                    <!-- Knee -->
+                    <div class="ct-param-group ct-param-with-discrete" id="knee-group">
+                        <h3 class="ct-param-label">Knee</h3>
+                        <input type="range" class="ct-param-slider" id="knee-slider" min="0" max="40" value="6" step="1" aria-label="Knee width">
+                        <span class="ct-param-value" id="knee-display">6 dB</span>
+                        <div class="ct-discrete-buttons" id="knee-buttons">
+                            <button type="button" class="ct-discrete-btn" data-knee="hard">Hard 0</button>
+                            <button type="button" class="ct-discrete-btn" data-knee="medium">Med 12</button>
+                            <button type="button" class="ct-discrete-btn" data-knee="soft">Soft 30</button>
+                        </div>
+                    </div>
+
+                    <!-- Makeup Gain -->
+                    <div class="ct-param-group" id="makeup-group">
+                        <h3 class="ct-param-label">Makeup</h3>
+                        <input type="range" class="ct-param-slider" id="makeup-slider" min="-12" max="24" value="0" step="0.5" aria-label="Makeup gain">
+                        <span class="ct-param-value" id="makeup-display">0 dB</span>
+                    </div>
+
+                    <!-- Quiz comparison view -->
+                    <div class="ct-param-group ct-quiz-compare hidden" id="quiz-compare">
+                        <div class="ct-compare-row">
+                            <div class="ct-compare-panel">
+                                <h4 class="ct-compare-label" id="compare-user-label">Your Answer</h4>
+                                <div class="ct-canvas-container ct-compare-canvas">
+                                    <canvas id="compare-user-canvas"></canvas>
+                                </div>
+                            </div>
+                            <div class="ct-compare-panel">
+                                <h4 class="ct-compare-label" id="compare-correct-label">Correct Answer</h4>
+                                <div class="ct-canvas-container ct-compare-canvas">
+                                    <canvas id="compare-correct-canvas"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quiz answer area (dynamic) -->
+                    <div class="ct-quiz-answer-area hidden" id="quiz-answer-area"></div>
+
+                    <!-- Quiz submit -->
+                    <div class="ct-quiz-submit hidden" id="quiz-submit">
+                        <button type="button" class="action-button action-button-primary" id="submit-answer-btn" disabled>Submit Answer</button>
+                        <button type="button" class="action-button" id="play-again-btn" disabled>Play Again</button>
+                    </div>
+
+                    <!-- Quiz result -->
+                    <div class="ct-result hidden" id="quiz-result"></div>
+
+                    <!-- Multi-track controls -->
+                    <div class="ct-multitrack-controls hidden" id="multitrack-controls">
+                        <div class="ct-track-loading hidden" id="track-loading">Loading tracks...</div>
+                        <div class="ct-mixer" id="track-buttons"></div>
+                        <div class="ct-stereo-viz-container">
+                            <canvas id="stereo-viz-canvas" aria-label="Stereo waveform display"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visualizations -->
+                <div class="ct-viz-container">
+                    <div class="ct-viz-top">
+                        <div class="ct-canvas-container ct-transfer-curve">
+                            <canvas id="transfer-canvas" aria-label="Compression transfer curve showing input vs output levels"></canvas>
+                        </div>
+                        <div class="ct-canvas-container ct-gr-meter">
+                            <canvas id="gr-canvas" aria-label="Gain reduction meter"></canvas>
+                        </div>
+                    </div>
+                    <div class="ct-canvas-container ct-envelope">
+                        <canvas id="envelope-canvas" aria-label="Scrolling amplitude envelope with gain reduction trace"></canvas>
+                    </div>
+                </div>
+
+                <!-- Compression Guide -->
+                <details class="card ct-guide">
+                    <summary class="card-header">
+                        <h2 class="card-title">Compression Guide</h2>
+                    </summary>
+                    <div class="background-content">
+                        <h3>Threshold</h3>
+                        <blockquote>"When does the compressor start working?" Below the threshold, audio passes through unchanged. Above it, the compressor reduces the level. Lower thresholds mean more of the signal gets compressed.</blockquote>
+
+                        <h3>Ratio</h3>
+                        <blockquote>"How much does it compress?" At 2:1, a signal 10 dB above threshold comes out only 5 dB above. At 4:1, it comes out 2.5 dB above. Higher ratios mean more aggressive compression. Above 10:1 is essentially limiting.</blockquote>
+
+                        <h3>Attack</h3>
+                        <blockquote>"What happens to the transient?" Fast attack catches the initial hit and smooths it out. Slow attack lets the transient punch through, then compresses the sustain. On a snare drum: fast attack kills the crack, slow attack preserves it.</blockquote>
+
+                        <h3>Release</h3>
+                        <blockquote>"How does it let go?" Fast release recovers quickly between hits, which can pump the level up audibly between transients. Slow release holds the gain reduction, creating a smoother but potentially "sat on" feel. Time the release to the music: the meter should return to zero just before the next downbeat.</blockquote>
+
+                        <h3>Knee</h3>
+                        <blockquote>"How does compression engage?" Hard knee (0 dB): compression snaps on at the threshold. The compressor is either working or it isn't. Soft knee (&gt;10 dB): compression eases in gradually around the threshold, producing a more transparent, musical character. The difference is subtle and most audible on dynamic material like vocals or acoustic guitar.</blockquote>
+
+                        <h3>Makeup Gain</h3>
+                        <blockquote>"Compensating for what you lost." Compression reduces loud peaks, which lowers the overall level. Makeup gain brings it back up. Always level-match when comparing compressed vs. uncompressed, or your ears will prefer whichever is louder.</blockquote>
+                    </div>
+                </details>
+
+            </div>
+
+            <div class="card" style="margin-top: var(--spacing-lg);">
+                <div class="card-header">
+                    <h2 class="card-title">About This Tool</h2>
+                </div>
+                <div class="background-content">
+                    <p>This tool trains your ears to hear what dynamic compression does to audio. Students often struggle with compression not because the math is hard, but because they don't know what to listen for. The real-time visualizations show what the compressor is doing while you listen, connecting the sound to the process.</p>
+                    <p style="margin-top: 1rem;">Start with pink noise and heavy compression (low threshold, high ratio) to hear the effect clearly. Then try the Teaching sequences to isolate individual parameters. The three discrete buttons (Fast/Medium/Slow) give you named anchors to build vocabulary around.</p>
+                    <p style="margin-top: 1rem;">I use this tool in my Critical Listening Skills class. If you find a use for it in your own work, I would love to hear about it. Please <a href="../../contact.html" style="color: var(--color-accent);">reach out</a>.</p>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; <span class="footer-year"></span> Blake Boyd</p>
+        </footer>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
