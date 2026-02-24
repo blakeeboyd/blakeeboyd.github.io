@@ -398,6 +398,14 @@
     padding: 6px 0;
 }
 
+/* Dividers between parameter groups */
+#attack-group,
+#knee-group,
+#makeup-group {
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--spacing-sm);
+}
+
 .ct-param-with-discrete {
     flex-wrap: wrap;
 }
