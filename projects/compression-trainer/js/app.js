@@ -49,10 +49,9 @@ var ATTACK_MAX = 0.1;
 var RELEASE_MIN = 0.01;
 var RELEASE_MAX = 1.0;
 
-// Pink noise gate timing (120 BPM quarter notes)
-var GATE_ON_DURATION = 0.300;   // seconds
-var GATE_OFF_DURATION = 0.200;  // seconds
-var GATE_PERIOD = GATE_ON_DURATION + GATE_OFF_DURATION;
+// Pink noise gate timing defaults
+var GATE_ON_DURATION_DEFAULT = 0.300;   // seconds
+var GATE_OFF_DURATION_DEFAULT = 0.200;  // seconds
 var GATE_LOOKAHEAD = 0.100;     // schedule 100ms ahead
 var GATE_INTERVAL = 25;         // check every 25ms
 
@@ -230,6 +229,12 @@ var state = {
     multitrackGainValue: -12,
     drumLoopGainValue: -12,
 
+    // Pink noise gate timing (seconds)
+    gateOnDuration: GATE_ON_DURATION_DEFAULT,
+    gateOffDuration: GATE_OFF_DURATION_DEFAULT,
+    gateAttack: 0.005,
+    gateRelease: 0.005,
+
     // Compressor parameters
     threshold: COMPRESSOR_DEFAULTS.threshold,
     ratio: COMPRESSOR_DEFAULTS.ratio,
@@ -262,6 +267,7 @@ var state = {
     testStartTime: 0,
     testPhase: null,
     testLoop: false,
+    testAudioLoopOffset: 0,
     testBypassDur: 4,
     testCompressedDur: 5,
 
@@ -435,15 +441,19 @@ function startNoiseGate() {
         var scheduleUntil = now + GATE_LOOKAHEAD;
 
         while (state.gateNextTime < scheduleUntil) {
+            var atk = state.gateAttack;
+            var rel = state.gateRelease;
             if (!state.gateIsOn) {
-                // Turn gate on
-                state.noiseGate.gain.setValueAtTime(1, state.gateNextTime);
-                state.gateNextTime += GATE_ON_DURATION;
+                // Turn gate on with attack ramp
+                state.noiseGate.gain.setValueAtTime(0, state.gateNextTime);
+                state.noiseGate.gain.linearRampToValueAtTime(1, state.gateNextTime + atk);
+                state.gateNextTime += state.gateOnDuration;
                 state.gateIsOn = true;
             } else {
-                // Turn gate off
-                state.noiseGate.gain.setValueAtTime(0, state.gateNextTime);
-                state.gateNextTime += GATE_OFF_DURATION;
+                // Turn gate off with release ramp
+                state.noiseGate.gain.setValueAtTime(1, state.gateNextTime);
+                state.noiseGate.gain.linearRampToValueAtTime(0, state.gateNextTime + rel);
+                state.gateNextTime += state.gateOffDuration;
                 state.gateIsOn = false;
             }
         }
@@ -573,6 +583,11 @@ function startUserAudio(offset) {
     state.userAudioSource.connect(state.sourceGain);
 
     state.userAudioSource.onended = function () {
+        // When loop is enabled, restart audio from the position where Listen was pressed
+        if (state.testLoop && state.currentSource === SOURCE_USER_AUDIO) {
+            startUserAudio(state.testAudioLoopOffset || 0);
+            return;
+        }
         if (state.isPlaying && state.currentSource === SOURCE_USER_AUDIO) {
             state.isPlaying = false;
             state.userAudioPausedAt = 0;
@@ -1177,13 +1192,17 @@ function updateSourceUI() {
     var uploadArea = document.getElementById('upload-area');
     var playbackControls = document.getElementById('playback-controls');
     var multitrackControls = document.getElementById('multitrack-controls');
+    var gateControls = document.getElementById('gate-controls');
 
     // Hide all source-specific UI
     uploadArea.classList.add('hidden');
     playbackControls.classList.add('hidden');
     multitrackControls.classList.add('hidden');
+    gateControls.classList.add('hidden');
 
-    if (state.currentSource === SOURCE_USER_AUDIO) {
+    if (state.currentSource === SOURCE_PINK_NOISE) {
+        gateControls.classList.remove('hidden');
+    } else if (state.currentSource === SOURCE_USER_AUDIO) {
         uploadArea.classList.remove('hidden');
         if (state.userAudioBuffer) {
             playbackControls.classList.remove('hidden');
@@ -1884,6 +1903,7 @@ function cancelTestSequence() {
     }
     state.testRunning = false;
     state.testPhase = null;
+    state.testAudioLoopOffset = 0;
     hideTestIndicator();
 
     // Restore compressor bypass state
@@ -1914,6 +1934,18 @@ function runTest(options) {
     state._testOptions = options;
 
     if (!state.audioContext) createAudioContext();
+
+    // Save the current playback position so we can loop back to it
+    if (state.currentSource === SOURCE_USER_AUDIO) {
+        if (state.isPlaying && state.userAudioSource) {
+            var elapsed = state.audioContext.currentTime - state.userAudioStartTime;
+            state.testAudioLoopOffset = Math.min(elapsed, state.userAudioDuration);
+        } else {
+            state.testAudioLoopOffset = state.userAudioPausedAt || 0;
+        }
+    } else {
+        state.testAudioLoopOffset = 0;
+    }
 
     var wasPlaying = state.isPlaying;
     if (!state.isPlaying) {
@@ -2702,7 +2734,7 @@ function startDemo() {
 
     var demoBtn = document.getElementById('demo-btn');
     demoBtn.classList.add('running');
-    demoBtn.innerHTML = '<svg aria-hidden="true" class="demo-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>Stop Demo';
+    demoBtn.innerHTML = '<svg aria-hidden="true" class="demo-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>Stop';
 
     // Ensure audio context and start pink noise if no source
     if (!state.audioContext) createAudioContext();
@@ -2754,7 +2786,7 @@ function stopDemo() {
 
     var demoBtn = document.getElementById('demo-btn');
     demoBtn.classList.remove('running');
-    demoBtn.innerHTML = '<svg aria-hidden="true" class="demo-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21"></polygon></svg>Demo';
+    demoBtn.innerHTML = '<svg aria-hidden="true" class="demo-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21"></polygon></svg>Walkthrough';
     demoBtn.title = '';
 }
 
@@ -2834,6 +2866,32 @@ function setupEventListeners() {
             if (!state.audioContext) createAudioContext();
             setSource(parseInt(btn.dataset.source));
         });
+    });
+
+    // Pink noise gate timing controls
+    var gateOnInput = document.getElementById('gate-on-dur');
+    var gateOffInput = document.getElementById('gate-off-dur');
+    gateOnInput.addEventListener('change', function() {
+        var ms = Math.max(50, Math.min(2000, parseInt(gateOnInput.value) || 300));
+        gateOnInput.value = ms;
+        state.gateOnDuration = ms / 1000;
+    });
+    gateOffInput.addEventListener('change', function() {
+        var ms = Math.max(50, Math.min(2000, parseInt(gateOffInput.value) || 200));
+        gateOffInput.value = ms;
+        state.gateOffDuration = ms / 1000;
+    });
+    var gateAttackInput = document.getElementById('gate-attack');
+    var gateReleaseInput = document.getElementById('gate-release');
+    gateAttackInput.addEventListener('change', function() {
+        var ms = Math.max(1, Math.min(500, parseInt(gateAttackInput.value) || 5));
+        gateAttackInput.value = ms;
+        state.gateAttack = ms / 1000;
+    });
+    gateReleaseInput.addEventListener('change', function() {
+        var ms = Math.max(1, Math.min(500, parseInt(gateReleaseInput.value) || 5));
+        gateReleaseInput.value = ms;
+        state.gateRelease = ms / 1000;
     });
 
     // Master gain slider

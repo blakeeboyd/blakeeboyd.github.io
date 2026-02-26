@@ -216,6 +216,7 @@
     display: flex;
     gap: var(--spacing-sm);
     align-items: center;
+    flex-wrap: wrap;
 }
 
 .ct-duration-label {
@@ -227,9 +228,9 @@
 }
 
 .ct-duration-input {
-    width: 38px;
-    padding: 3px 4px;
-    font-size: 0.75rem;
+    width: 56px;
+    padding: 4px 6px;
+    font-size: 0.8125rem;
     font-family: inherit;
     text-align: center;
     border: 1px solid var(--color-border);

@@ -62,7 +62,7 @@
                             <svg aria-hidden="true" class="demo-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polygon points="5,3 19,12 5,21"></polygon>
                             </svg>
-                            Demo
+                            Walkthrough
                         </button>
                     </div>
                     <div class="ct-toolbar-row ct-source-row">
@@ -83,6 +83,17 @@
                             <span class="ct-toolbar-value" id="gain-display">-12 dB</span>
                         </div>
                     </div>
+                    <!-- Pink noise gate controls -->
+                    <div class="ct-source-extras ct-gate-controls hidden" id="gate-controls">
+                        <span class="ct-toolbar-label">Gate</span>
+                        <div class="ct-duration-controls">
+                            <label class="ct-duration-label">on <input type="number" class="ct-duration-input" id="gate-on-dur" min="50" max="2000" step="10" value="300">ms</label>
+                            <label class="ct-duration-label">off <input type="number" class="ct-duration-input" id="gate-off-dur" min="50" max="2000" step="10" value="200">ms</label>
+                            <label class="ct-duration-label">attack <input type="number" class="ct-duration-input" id="gate-attack" min="1" max="500" step="1" value="5">ms</label>
+                            <label class="ct-duration-label">release <input type="number" class="ct-duration-input" id="gate-release" min="1" max="500" step="1" value="5">ms</label>
+                        </div>
+                    </div>
+
                     <!-- User audio upload + playback -->
                     <div class="upload-area ct-source-extras hidden" id="upload-area">
                         <input type="file" id="audio-file-input" accept="audio/*" hidden>
