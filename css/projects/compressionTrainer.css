@@ -857,6 +857,49 @@
 }
 
 /* ===========================================
+   Two-column layout (wide screens)
+   =========================================== */
+
+@media (min-width: 1000px) {
+    .ct-app {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-md);
+    }
+
+    .ct-toolbar {
+        grid-column: 1 / -1;
+    }
+
+    .ct-test-indicator {
+        grid-column: 1 / -1;
+    }
+
+    .ct-controls-card {
+        grid-column: 1;
+        align-self: start;
+    }
+
+    .ct-viz-container {
+        grid-column: 2;
+        align-self: start;
+    }
+
+    .ct-guide {
+        grid-column: 1 / -1;
+    }
+
+    .ct-transfer-curve {
+        max-height: none;
+    }
+
+    .ct-gr-meter {
+        height: auto;
+        align-self: stretch;
+    }
+}
+
+/* ===========================================
    Responsive
    =========================================== */
 
