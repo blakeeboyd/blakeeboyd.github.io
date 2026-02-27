@@ -273,7 +273,7 @@ var state = {
 
     // Visualization
     vizAnimId: null,
-    envelopeHistory: [],
+    envelopeHistory: null, // replaced with ring buffer in init()
     grPeakHold: 0,
     grPeakHoldTime: 0,
 
@@ -548,6 +548,7 @@ function stopAudio() {
     }
 
     state.isPlaying = false;
+    if (state.envelopeHistory) state.envelopeHistory.clear();
     stopVisualizationLoop();
     updatePlayButton();
 }
@@ -1067,11 +1068,9 @@ function drawStereoWaveform(leftData, rightData) {
     var w = container.clientWidth;
     var h = container.clientHeight;
 
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-
+    syncCanvasSize(canvas, w, h, dpr);
     var ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
 
@@ -1367,6 +1366,50 @@ function updatePlayButton() {
 
 var ENVELOPE_HISTORY_LENGTH = 180; // ~3 seconds at 60fps
 
+// Ring buffer for envelope history — O(1) push instead of O(n) shift (05.0149).
+function makeRingBuffer(capacity) {
+    var inputDb  = new Float32Array(capacity);
+    var outputDb = new Float32Array(capacity);
+    var gr       = new Float32Array(capacity);
+    var head = 0;  // index of oldest entry (wraps on push when full)
+    var count = 0; // number of valid entries (0..capacity)
+    return {
+        get capacity() { return capacity; },
+        get length() { return count; },
+        push: function (iDb, oDb, g) {
+            var idx = (head + count) % capacity;
+            if (count < capacity) {
+                count++;
+            } else {
+                head = (head + 1) % capacity; // overwrite oldest
+            }
+            inputDb[idx]  = iDb;
+            outputDb[idx] = oDb;
+            gr[idx]       = g;
+        },
+        get: function (i) {
+            var idx = (head + i) % capacity;
+            return { inputDb: inputDb[idx], outputDb: outputDb[idx], gr: gr[idx] };
+        },
+        clear: function () { head = 0; count = 0; }
+    };
+}
+
+// Cache canvas logical dimensions so we only reallocate the backing store on resize,
+// not every animation frame (05.0148).
+var canvasSizeCache = {};
+function syncCanvasSize(canvas, w, h, dpr) {
+    var key = canvas.id || canvas;
+    var cached = canvasSizeCache[key];
+    var pw = w * dpr;
+    var ph = h * dpr;
+    if (!cached || cached.pw !== pw || cached.ph !== ph) {
+        canvas.width = pw;
+        canvas.height = ph;
+        canvasSizeCache[key] = { pw: pw, ph: ph };
+    }
+}
+
 function startVisualizationLoop() {
     if (state.vizAnimId) return;
 
@@ -1441,10 +1484,9 @@ function drawTransferCurve() {
     var h = container.clientHeight;
     if (w === 0 || h === 0) return;
 
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
+    syncCanvasSize(canvas, w, h, dpr);
     var ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
 
@@ -1577,10 +1619,9 @@ function drawGainReductionMeter() {
     var h = container.clientHeight;
     if (w === 0 || h === 0) return;
 
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
+    syncCanvasSize(canvas, w, h, dpr);
     var ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
 
@@ -1678,10 +1719,9 @@ function drawScrollingEnvelope() {
     var h = container.clientHeight;
     if (w === 0 || h === 0) return;
 
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
+    syncCanvasSize(canvas, w, h, dpr);
     var ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
 
@@ -1690,10 +1730,7 @@ function drawScrollingEnvelope() {
         var inputDb = getRmsDb(state.inputAnalyser);
         var outputDb = getRmsDb(state.outputAnalyser);
         var gr = state.compressor ? Math.abs(state.compressor.reduction) : 0;
-        state.envelopeHistory.push({ inputDb: inputDb, outputDb: outputDb, gr: gr });
-        if (state.envelopeHistory.length > ENVELOPE_HISTORY_LENGTH) {
-            state.envelopeHistory.shift();
-        }
+        state.envelopeHistory.push(inputDb, outputDb, gr);
     }
 
     // Background
@@ -1722,7 +1759,8 @@ function drawScrollingEnvelope() {
     ctx.moveTo(0, envelopeH);
     for (var i = 0; i < history.length; i++) {
         var x = (i / (ENVELOPE_HISTORY_LENGTH - 1)) * w;
-        var norm = dbToNorm(history[i].inputDb);
+        var frame = history.get(i);
+        var norm = dbToNorm(frame.inputDb);
         var y = envelopeH - norm * envelopeH;
         ctx.lineTo(x, y);
     }
@@ -1736,7 +1774,8 @@ function drawScrollingEnvelope() {
     ctx.beginPath();
     for (var i = 0; i < history.length; i++) {
         var x = (i / (ENVELOPE_HISTORY_LENGTH - 1)) * w;
-        var norm = dbToNorm(history[i].inputDb);
+        var frame = history.get(i);
+        var norm = dbToNorm(frame.inputDb);
         var y = envelopeH - norm * envelopeH;
         if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
@@ -1748,7 +1787,8 @@ function drawScrollingEnvelope() {
     ctx.moveTo(0, envelopeH);
     for (var i = 0; i < history.length; i++) {
         var x = (i / (ENVELOPE_HISTORY_LENGTH - 1)) * w;
-        var norm = dbToNorm(history[i].outputDb);
+        var frame = history.get(i);
+        var norm = dbToNorm(frame.outputDb);
         var y = envelopeH - norm * envelopeH;
         ctx.lineTo(x, y);
     }
@@ -1762,7 +1802,8 @@ function drawScrollingEnvelope() {
     ctx.beginPath();
     for (var i = 0; i < history.length; i++) {
         var x = (i / (ENVELOPE_HISTORY_LENGTH - 1)) * w;
-        var norm = dbToNorm(history[i].outputDb);
+        var frame = history.get(i);
+        var norm = dbToNorm(frame.outputDb);
         var y = envelopeH - norm * envelopeH;
         if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
@@ -1801,7 +1842,7 @@ function drawScrollingEnvelope() {
     ctx.moveTo(0, grTop);
     for (var i = 0; i < history.length; i++) {
         var x = (i / (ENVELOPE_HISTORY_LENGTH - 1)) * w;
-        var grNorm = Math.min(history[i].gr / grMax, 1);
+        var grNorm = Math.min(history.get(i).gr / grMax, 1);
         var y = grTop + grNorm * grH;
         ctx.lineTo(x, y);
     }
@@ -1815,7 +1856,7 @@ function drawScrollingEnvelope() {
     ctx.beginPath();
     for (var i = 0; i < history.length; i++) {
         var x = (i / (ENVELOPE_HISTORY_LENGTH - 1)) * w;
-        var grNorm = Math.min(history[i].gr / grMax, 1);
+        var grNorm = Math.min(history.get(i).gr / grMax, 1);
         var y = grTop + grNorm * grH;
         if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
@@ -2340,6 +2381,9 @@ function startQuiz() {
     state.quizRevealed = false;
     state.quizSelection = {};
 
+    // Reset bypass so each drill starts with compressor on
+    if (state.compressorBypassed) setCompressorBypassed(false);
+
     // Generate and apply question
     state.quizAnswer = generateQuizQuestion();
     applyQuizAnswer(state.quizAnswer);
@@ -2803,6 +2847,7 @@ function setupKeyboardShortcuts() {
             case ' ':
                 e.preventDefault();
                 if (!state.audioContext) createAudioContext();
+                if (state.audioContext.state === 'suspended') state.audioContext.resume();
                 setCompressorBypassed(!state.compressorBypassed);
                 break;
             case '1':
@@ -3138,6 +3183,8 @@ function setupEventListeners() {
 // ============================================
 
 function init() {
+    state.envelopeHistory = makeRingBuffer(ENVELOPE_HISTORY_LENGTH);
+
     setupEventListeners();
     setupKeyboardShortcuts();
     initTooltips();
