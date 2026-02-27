@@ -277,6 +277,7 @@ const state = {
     testStartTime: 0,
     testPhase: null, // 'bypass' | 'filter' | null — for canvas animation
     testLoop: false, // loop the test sequence continuously
+    testAudioLoopOffset: 0, // user audio position when Listen was pressed
 
     // Test durations (seconds) — user-adjustable
     testBypass1: TEST_BYPASS_1,
@@ -629,6 +630,11 @@ function startUserAudio(offset) {
     state.userAudioSource.connect(state.sourceGain);
 
     state.userAudioSource.onended = function () {
+        // When loop is enabled, restart audio from the position where Listen was pressed
+        if (state.testLoop && state.currentSource === 2) {
+            startUserAudio(state.testAudioLoopOffset || 0);
+            return;
+        }
         if (state.isPlaying && state.currentSource === 2) {
             state.isPlaying = false;
             stopSpectrumAnimation();
@@ -1390,6 +1396,18 @@ function runTest(options) {
     // Ensure audio context
     if (!state.audioContext) createAudioContext();
 
+    // Save the current playback position so we can loop back to it
+    if (state.currentSource === 2 /* user audio */) {
+        if (state.isPlaying && state.userAudioSource) {
+            var elapsed = state.audioContext.currentTime - state.userAudioStartTime;
+            state.testAudioLoopOffset = Math.min(elapsed, state.userAudioDuration);
+        } else {
+            state.testAudioLoopOffset = state.userAudioPausedAt || 0;
+        }
+    } else {
+        state.testAudioLoopOffset = 0;
+    }
+
     // Start audio if not playing
     const wasPlaying = state.isPlaying;
     if (!state.isPlaying) {
@@ -1469,6 +1487,7 @@ function cancelTest() {
     state.testRunning = false;
     state.testPhase = null;
     state._testOptions = null;
+    state.testAudioLoopOffset = 0;
     hideTestIndicator();
     updateBypassButtons();
     drawFilterCanvas();
@@ -2088,7 +2107,7 @@ function showQuizComparison(allCorrect) {
         drawFilterConfigToCanvas(
             document.getElementById('compare-user-canvas'),
             userConfig,
-            spectrum
+            null
         );
         drawFilterConfigToCanvas(
             document.getElementById('compare-correct-canvas'),
