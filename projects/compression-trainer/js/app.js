@@ -3,7 +3,7 @@
  * Train your ears to hear dynamic compression.
  *
  * Audio Architecture:
- * Source (Pink Noise / User Audio / Multi-track / Drum Loop)
+ * Source (Pink Noise / User Audio / Multi-track)
  *   → sourceGain
  *     → DynamicsCompressorNode (threshold, knee, ratio, attack, release)
  *       → makeupGain (GainNode, manual dB control)
@@ -209,10 +209,6 @@ var state = {
     multitrackLoading: false,
     multitrackMeterAnimId: null,
 
-    // Drum loop
-    drumLoopBuffer: null,
-    drumLoopSource: null,
-
     // Stereo visualization
     stereoSplitter: null,
     stereoAnalyserL: null,
@@ -227,7 +223,6 @@ var state = {
     pinkNoiseGainValue: -12,
     userAudioGainValue: -12,
     multitrackGainValue: -12,
-    drumLoopGainValue: -12,
 
     // Pink noise gate timing (seconds)
     gateOnDuration: GATE_ON_DURATION_DEFAULT,
@@ -503,8 +498,7 @@ async function startAudio() {
             return;
         }
     } else if (state.currentSource === SOURCE_DRUM_LOOP) {
-        // TODO: implement when drum loop source is provided
-        return;
+        return; // not yet implemented
     }
 
     state.isPlaying = true;
@@ -534,12 +528,6 @@ function stopAudio() {
 
     if (state.multitrackSources.length > 0) {
         stopMultitrackSources();
-    }
-
-    if (state.drumLoopSource) {
-        state.drumLoopSource.stop();
-        state.drumLoopSource.disconnect();
-        state.drumLoopSource = null;
     }
 
     if (state.progressAnimationId) {
@@ -1166,7 +1154,6 @@ function saveGainForSource(source) {
     if (source === SOURCE_PINK_NOISE) state.pinkNoiseGainValue = val;
     else if (source === SOURCE_USER_AUDIO) state.userAudioGainValue = val;
     else if (source === SOURCE_MULTITRACK) state.multitrackGainValue = val;
-    else if (source === SOURCE_DRUM_LOOP) state.drumLoopGainValue = val;
 }
 
 function restoreGainForSource(source) {
@@ -1174,7 +1161,6 @@ function restoreGainForSource(source) {
     if (source === SOURCE_PINK_NOISE) val = state.pinkNoiseGainValue;
     else if (source === SOURCE_USER_AUDIO) val = state.userAudioGainValue;
     else if (source === SOURCE_MULTITRACK) val = state.multitrackGainValue;
-    else if (source === SOURCE_DRUM_LOOP) val = state.drumLoopGainValue;
     else val = -12;
 
     var slider = document.getElementById('gain-slider');
@@ -1287,13 +1273,15 @@ function setMakeupGain(value) {
 
 function setCompressorBypassed(bypassed) {
     state.compressorBypassed = bypassed;
-    var t = state.audioContext ? state.audioContext.currentTime : 0;
-    if (bypassed) {
-        state.compressedGain.gain.setTargetAtTime(0, t, 0.02);
-        state.bypassGain.gain.setTargetAtTime(1, t, 0.02);
-    } else {
-        state.compressedGain.gain.setTargetAtTime(1, t, 0.02);
-        state.bypassGain.gain.setTargetAtTime(0, t, 0.02);
+    if (state.compressedGain && state.bypassGain) {
+        var t = state.audioContext ? state.audioContext.currentTime : 0;
+        if (bypassed) {
+            state.compressedGain.gain.setTargetAtTime(0, t, 0.02);
+            state.bypassGain.gain.setTargetAtTime(1, t, 0.02);
+        } else {
+            state.compressedGain.gain.setTargetAtTime(1, t, 0.02);
+            state.bypassGain.gain.setTargetAtTime(0, t, 0.02);
+        }
     }
     updateBypassButton();
 }
@@ -1460,10 +1448,18 @@ function computeOutputDb(inputDb, threshold, ratio, knee) {
     return inputDb - computeGainReduction(inputDb, threshold, ratio, knee);
 }
 
+// Reusable buffer for getRmsDb — avoids allocating a new Float32Array every frame (05.0147).
+var _rmsBuffer = null;
+var _rmsBufferLen = 0;
+
 function getRmsDb(analyser) {
     if (!analyser) return -100;
     var bufLen = analyser.frequencyBinCount;
-    var data = new Float32Array(bufLen);
+    if (!_rmsBuffer || _rmsBufferLen !== bufLen) {
+        _rmsBuffer = new Float32Array(bufLen);
+        _rmsBufferLen = bufLen;
+    }
+    var data = _rmsBuffer;
     analyser.getFloatTimeDomainData(data);
 
     var sum = 0;
@@ -2810,9 +2806,14 @@ function runDemoStep() {
     if (step.params.release !== undefined) setRelease(step.params.release);
     if (step.params.knee !== undefined) setKnee(step.params.knee);
 
-    // Show label
+    // Show step indicator
     var demoBtn = document.getElementById('demo-btn');
     demoBtn.title = step.label;
+    var stepLabel = document.getElementById('demo-step-label');
+    if (stepLabel) {
+        stepLabel.textContent = (state.demoStep + 1) + ' / ' + DEMO_STEPS.length + ': ' + step.label;
+        stepLabel.hidden = false;
+    }
 
     // Schedule next step
     var timeout = setTimeout(function () {
@@ -2832,6 +2833,8 @@ function stopDemo() {
     demoBtn.classList.remove('running');
     demoBtn.innerHTML = '<svg aria-hidden="true" class="demo-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21"></polygon></svg>Walkthrough';
     demoBtn.title = '';
+    var stepLabel = document.getElementById('demo-step-label');
+    if (stepLabel) { stepLabel.hidden = true; stepLabel.textContent = ''; }
 }
 
 // ============================================

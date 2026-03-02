@@ -857,6 +857,19 @@
     color: white;
 }
 
+.ct-demo-group {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.ct-demo-label {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
 /* ===========================================
    Two-column layout (wide screens)
    =========================================== */
