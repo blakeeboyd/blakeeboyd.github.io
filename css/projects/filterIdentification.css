@@ -191,6 +191,47 @@
     white-space: nowrap;
 }
 
+/* Divider between player and compact upload button */
+.fid-playback-divider {
+    width: 1px;
+    height: 24px;
+    background: var(--color-border);
+    flex-shrink: 0;
+}
+
+/* Compact upload button shown alongside player */
+.fid-upload-compact-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: border-color var(--transition-fast);
+}
+
+.fid-upload-compact-btn:hover {
+    border-color: var(--color-text-muted);
+}
+
+.fid-upload-icon-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    color: var(--color-text-muted);
+}
+
+.fid-upload-icon-label:hover {
+    color: var(--color-text);
+}
+
 /* Smaller play button for the compact toolbar */
 .fid-play-sm {
     width: 32px;

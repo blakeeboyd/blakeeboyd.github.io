@@ -241,7 +241,7 @@ const state = {
 
     // Filter state
     filterType: 'highpass',
-    filterFreq: 500,
+    filterFreq: 250,
     filterGainDb: 3,
     filterBypassed: false,
 
@@ -3050,11 +3050,19 @@ function setupEventListeners() {
         }
     });
 
-    // File upload
+    // File upload (both initial and compact re-upload inputs)
     var fileInput = document.getElementById('audio-file-input');
     fileInput.addEventListener('change', function (e) {
         if (e.target.files.length > 0) {
             handleAudioFile(e.target.files[0]);
+        }
+    });
+    var fileInputCompact = document.getElementById('audio-file-input-compact');
+    fileInputCompact.addEventListener('change', function (e) {
+        if (e.target.files.length > 0) {
+            handleAudioFile(e.target.files[0]);
+            // Reset so the same file can be re-selected
+            e.target.value = '';
         }
     });
 
