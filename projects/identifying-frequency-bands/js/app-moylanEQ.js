@@ -51,10 +51,11 @@ async function setup() {
         dependencies = dependencies.map(d => d.file ? Object.assign({}, d, { file: "export/" + d.file }) : d);
     } catch (e) {}
 
-    // Create the device
-    let device;
+    // Create two RNBO devices (one per stereo channel) for stereo output
+    let deviceL, deviceR;
     try {
-        device = await RNBO.createDevice({ context, patcher });
+        deviceL = await RNBO.createDevice({ context, patcher });
+        deviceR = await RNBO.createDevice({ context, patcher });
     } catch (err) {
         if (typeof guardrails === "function") {
             guardrails({ error: err });
@@ -65,11 +66,40 @@ async function setup() {
     }
 
     // (Optional) Load the samples (We are using)
-    if (dependencies.length)
-        await device.loadDataBufferDependencies(dependencies);
+    if (dependencies.length) {
+        await deviceL.loadDataBufferDependencies(dependencies);
+        await deviceR.loadDataBufferDependencies(dependencies);
+    }
 
-    // Connect the device to the web audio graph
-    device.node.connect(outputNode);
+    // Stereo routing: each device processes one channel, merge back to stereo
+    // +6 dB boost compensates for RNBO patch internal gain loss
+    const merger = context.createChannelMerger(2);
+    const outputBoost = context.createGain();
+    outputBoost.gain.value = 2.0; // +6 dB
+    merger.connect(outputBoost);
+    outputBoost.connect(outputNode);
+    deviceL.node.connect(merger, 0, 0); // deviceL mono output → left channel
+    deviceR.node.connect(merger, 0, 1); // deviceR mono output → right channel
+    // Mono fill: routes deviceL to right channel for mono pink noise.
+    // Gain is 1.0 during pink noise, 0.0 during user audio.
+    const monoFill = context.createGain();
+    monoFill.gain.value = 0; // starts muted (source starts as Mute)
+    deviceL.node.connect(monoFill);
+    monoFill.connect(merger, 0, 1);
+
+    // Splitter for user audio: splits stereo into L/R for each device
+    const splitter = context.createChannelSplitter(2);
+
+    // Upmix nodes: force mono→stereo so each RNBO device receives the same
+    // channel on both inputs, matching the level of the original stereo path
+    const upmixToL = context.createGain();
+    upmixToL.channelCount = 2;
+    upmixToL.channelCountMode = 'explicit';
+    upmixToL.channelInterpretation = 'speakers';
+    const upmixToR = context.createGain();
+    upmixToR.channelCount = 2;
+    upmixToR.channelCountMode = 'explicit';
+    upmixToR.channelInterpretation = 'speakers';
 
     // (Optional) Extract the name and rnbo version of the patcher from the description
     // document.getElementById("patcher-title").innerText = (patcher.desc.meta.filename || "Unnamed Patcher") + " (v" + patcher.desc.meta.rnboversion + ")";
@@ -81,27 +111,38 @@ async function setup() {
     // makeInportForm(device);
 
     // (Optional) Attach listeners to outports so you can log messages from the RNBO patcher
-    attachOutports(device);
+    attachOutports(deviceL);
 
     // User Added
-    const inports = getInports(device);
+    const inports = getInports(deviceL);
     console.log("Inports:");
     console.log(inports);
-    const parameters = getParameters(device);
+    const parameters = getParameters(deviceL);
     console.log("Parameters");
     parameters.forEach((param) => {
         console.log(param);
     });
 
-    setupFilters(device);
-    setupBandControls(device);
-    // Create gain node for user audio (controlled by gain slider)
-    const userAudioGain = context.createGain();
-    userAudioGain.connect(device.node);
+    const devices = [deviceL, deviceR];
 
-    setupGain(device, userAudioGain);
-    setupAudioSource(device, context, userAudioGain);
-    setupDemo(device, context);
+    // Expose monoFill toggle for source switching
+    window._monoFill = monoFill;
+
+    setupFilters(devices);
+    setupBandControls(devices);
+    // Create gain node for user audio, route through splitter to both devices
+    const userAudioGain = context.createGain();
+    userAudioGain.connect(splitter);
+    // Left channel: splitter → upmix (mono→stereo via speakers interpretation) → deviceL
+    splitter.connect(upmixToL, 0);
+    upmixToL.connect(deviceL.node);
+    // Right channel: same pattern → deviceR
+    splitter.connect(upmixToR, 1);
+    upmixToR.connect(deviceR.node);
+
+    setupGain(devices, userAudioGain);
+    setupAudioSource(devices, context, userAudioGain);
+    setupDemo(devices, context);
     initTooltips();
     initPlayer2Toggle();
 
@@ -143,7 +184,7 @@ function loadRNBOScript(version) {
     });
 }
 
-  function setupFilters(device) {
+  function setupFilters(devices) {
     const filtersToggle = document.getElementById("filters-toggle");
     // Update band control visual state based on filter toggle
     function updateBandControlsVisualState(filtersEnabled) {
@@ -163,7 +204,7 @@ function loadRNBOScript(version) {
           bandState[band].soloed = false;
           updateBandUI(band);
         });
-        updateAllBands(device);
+        updateAllBands(devices);
       }
     };
     // Start with filters toggle off (no filtering by default)
@@ -171,7 +212,7 @@ function loadRNBOScript(version) {
     updateBandControlsVisualState(false);
     // Ensure RNBO starts bypassed
     const filterBypassEvent = new RNBO.MessageEvent(RNBO.TimeNow, "filter", [0]);
-    device.scheduleEvent(filterBypassEvent);
+    devices.forEach(d => d.scheduleEvent(filterBypassEvent));
   }
 
   // Band control state
@@ -192,7 +233,7 @@ function loadRNBOScript(version) {
     'veryHigh': 'Very High'
   };
 
-  function setupBandControls(device) {
+  function setupBandControls(devices) {
     // Initialize state for each band
     bandNames.forEach(band => {
       bandState[band] = {
@@ -216,7 +257,7 @@ function loadRNBOScript(version) {
           bandState[band].muted = !bandState[band].muted;
         }
         updateBandUI(band);
-        updateAllBands(device);
+        updateAllBands(devices);
       });
 
       soloBtn.addEventListener('click', (event) => {
@@ -229,12 +270,12 @@ function loadRNBOScript(version) {
           bandState[band].soloed = !bandState[band].soloed;
         }
         updateBandUI(band);
-        updateAllBands(device);
+        updateAllBands(devices);
       });
     });
 
     // Initialize all bands to enabled (not muted)
-    updateAllBands(device);
+    updateAllBands(devices);
   }
 
   function updateBandUI(band) {
@@ -261,7 +302,7 @@ function loadRNBOScript(version) {
     }
   }
 
-  function updateAllBands(device) {
+  function updateAllBands(devices) {
     const anySoloed = bandNames.some(b => bandState[b].soloed);
     const anyMuted = bandNames.some(b => bandState[b].muted);
 
@@ -272,7 +313,7 @@ function loadRNBOScript(version) {
       "filter",
       needsFiltering ? [1] : [0]
     );
-    device.scheduleEvent(filterEvent);
+    devices.forEach(d => d.scheduleEvent(filterEvent));
 
     bandNames.forEach(band => {
       let enabled;
@@ -286,24 +327,24 @@ function loadRNBOScript(version) {
         enabled = !bandState[band].muted;
       }
 
-      // Send message to RNBO
+      // Send message to both RNBO devices
       const messageEvent = new RNBO.MessageEvent(
         RNBO.TimeNow,
         band,
         enabled ? [1] : [0]
       );
-      device.scheduleEvent(messageEvent);
+      devices.forEach(d => d.scheduleEvent(messageEvent));
 
       // Update UI for implicit mute state
       updateBandUI(band);
     });
   }
 
-  function setupDemo(device, context) {
+  function setupDemo(devices, context) {
     const demoButton = document.getElementById('demo-button');
     const demoStatus = document.getElementById('demo-status');
     const demoStatusText = document.getElementById('demo-status-text');
-    const selectorParam = getParameter(device, 'audioFile_selector');
+    const selectorParams = devices.map(d => getParameter(d, 'audioFile_selector'));
     const filtersToggle = document.getElementById('filters-toggle');
 
     // Track whether we're using user audio for the demo
@@ -357,10 +398,10 @@ function loadRNBOScript(version) {
         // Use pink noise for demo (mute or pink noise selected, or no user audio loaded)
         demoUsingUserAudio = false;
 
-        // Switch to Pink Noise
-        if (selectorParam) {
-          selectorParam.value = 1;
-        }
+        // Switch to Pink Noise (deviceL only — mono pink noise, monoFill routes L→R)
+        if (selectorParams[0]) selectorParams[0].value = 1;
+        if (selectorParams[1]) selectorParams[1].value = 0;
+        window._monoFill.gain.value = 1;
         document.querySelectorAll('.source-button').forEach(btn => {
           btn.classList.toggle('active', parseInt(btn.dataset.source, 10) === 1);
         });
@@ -380,7 +421,7 @@ function loadRNBOScript(version) {
         bandState[band].soloed = false;
         updateBandUI(band);
       });
-      updateAllBands(device);
+      updateAllBands(devices);
 
       // Step 4: Show "Full Range" for 3 seconds, then start cycling
       demoStatus.classList.remove('hidden');
@@ -408,7 +449,7 @@ function loadRNBOScript(version) {
       // Solo this band
       bandState[band].soloed = true;
       updateBandUI(band);
-      updateAllBands(device);
+      updateAllBands(devices);
 
       // Show status
       demoStatus.classList.remove('hidden');
@@ -418,7 +459,7 @@ function loadRNBOScript(version) {
       demoTimeouts.push(setTimeout(() => {
         bandState[band].soloed = false;
         updateBandUI(band);
-        updateAllBands(device);
+        updateAllBands(devices);
         cycleThroughBands(index + 1);
       }, 3500));
     }
@@ -459,7 +500,7 @@ function loadRNBOScript(version) {
         bandState[band].soloed = false;
         updateBandUI(band);
       });
-      updateAllBands(device);
+      updateAllBands(devices);
 
       if (demoUsingUserAudio) {
         // Stop user audio playback and keep UI showing user audio selected
@@ -470,9 +511,8 @@ function loadRNBOScript(version) {
         demoUsingUserAudio = false;
       } else {
         // Switch to Mute source (original behavior for pink noise demo)
-        if (selectorParam) {
-          selectorParam.value = 0;
-        }
+        selectorParams.forEach(p => { if (p) p.value = 0; });
+        window._monoFill.gain.value = 0;
         document.querySelectorAll('.source-button').forEach(btn => {
           btn.classList.toggle('active', parseInt(btn.dataset.source, 10) === 0);
         });
@@ -485,10 +525,10 @@ function loadRNBOScript(version) {
 
   // Separate gain values for different sources
   let pinkNoiseGain = -24;
-  let userAudioGainValue = -12;
+  let userAudioGainValue = 0;
   let currentSource = 0; // 0=Mute, 1=Pink Noise, 2=User Audio
 
-  function setupGain(device, userAudioGain) {
+  function setupGain(devices, userAudioGain) {
     const gainSlider = document.getElementById("gain-slider");
     const gainValue = document.getElementsByClassName("gain-text")[0];
 
@@ -516,10 +556,10 @@ function loadRNBOScript(version) {
 
     // Set initial gains
     userAudioGain.gain.value = dbToLinear(userAudioGainValue);
-    const gainParam = getParameter(device, "gain");
-    if (gainParam) {
-      gainParam.value = pinkNoiseGain;
-    }
+    devices.forEach(d => {
+      const gp = getParameter(d, "gain");
+      if (gp) gp.value = pinkNoiseGain;
+    });
 
     // Update gain control visual state based on source
     const gainControl = document.getElementById("gain-control");
@@ -564,12 +604,12 @@ function loadRNBOScript(version) {
       updateSliderFill(this);
 
       if (currentSource === 1) {
-        // Pink Noise - update RNBO gain and store
+        // Pink Noise - update RNBO gain on both devices and store
         pinkNoiseGain = value;
-        const gainParam = getParameter(device, "gain");
-        if (gainParam) {
-          gainParam.value = value;
-        }
+        devices.forEach(d => {
+          const gp = getParameter(d, "gain");
+          if (gp) gp.value = value;
+        });
       } else {
         // User Audio (or Mute) - update user audio gain node and store
         userAudioGainValue = value;
@@ -581,7 +621,7 @@ function loadRNBOScript(version) {
   // Creates an independent audio player instance bound to a container element.
   // The onPlay callback is called before playback starts, allowing the coordinator
   // to pause other players (mutual exclusion).
-  function createPlayer(container, device, context, userAudioGain, onPlay, onFileLoaded) {
+  function createPlayer(container, devices, context, userAudioGain, onPlay, onFileLoaded) {
     // DOM elements scoped to this player's container
     const audioUploadSection = container.querySelector(".audio-upload-section");
     const fileInput = container.querySelector(".file-input:not(.file-input-compact)");
@@ -631,8 +671,8 @@ function loadRNBOScript(version) {
     let loopEnd = 0;
     let isDraggingHandle = null;
 
-    // Get the audio source selector parameter
-    const selectorParam = getParameter(device, "audioFile_selector");
+    // Get the audio source selector parameter from both devices
+    const selectorParams = devices.map(d => getParameter(d, 'audioFile_selector'));
 
     // Format time as MM:SS
     function formatTime(seconds) {
@@ -664,9 +704,7 @@ function loadRNBOScript(version) {
           cancelAnimationFrame(progressAnimationId);
           progressAnimationId = null;
         }
-        if (selectorParam) {
-          selectorParam.value = 0;
-        }
+        selectorParams.forEach(p => { if (p) p.value = 0; });
       }
     }
 
@@ -897,9 +935,7 @@ function loadRNBOScript(version) {
       audioSourceNode.connect(userAudioGain);
       audioSourceNode.onended = handlePlaybackEnded;
 
-      if (selectorParam) {
-        selectorParam.value = 2;
-      }
+      selectorParams.forEach(p => { if (p) p.value = 2; });
 
       startTime = context.currentTime;
       pausedAt = offset;
@@ -929,9 +965,7 @@ function loadRNBOScript(version) {
       updatePlayButton();
       container.classList.remove('player-active');
 
-      if (selectorParam) {
-        selectorParam.value = 0;
-      }
+      selectorParams.forEach(p => { if (p) p.value = 0; });
 
       console.log("User audio playback paused at", formatTime(pausedAt));
     }
@@ -1166,7 +1200,7 @@ function loadRNBOScript(version) {
   }
 
   // Coordinator: sets up two player instances with mutual exclusion
-  function setupAudioSource(device, context, userAudioGain) {
+  function setupAudioSource(devices, context, userAudioGain) {
     const container1 = document.getElementById('player-1');
     const container2 = document.getElementById('player-2');
 
@@ -1174,12 +1208,12 @@ function loadRNBOScript(version) {
     container1.classList.add('upload-inviting');
 
     const sourceButtons = document.querySelectorAll(".source-button");
-    const selectorParam = getParameter(device, "audioFile_selector");
+    const selectorParams = devices.map(d => getParameter(d, 'audioFile_selector'));
 
     let activePlayer = null;
 
     // Create players with mutual exclusion callbacks
-    const player1 = createPlayer(container1, device, context, userAudioGain, () => {
+    const player1 = createPlayer(container1, devices, context, userAudioGain, () => {
       player2.stop();
       activePlayer = player1;
     }, () => {
@@ -1191,7 +1225,7 @@ function loadRNBOScript(version) {
       }
     });
 
-    const player2 = createPlayer(container2, device, context, userAudioGain, () => {
+    const player2 = createPlayer(container2, devices, context, userAudioGain, () => {
       player1.stop();
       activePlayer = player2;
     });
@@ -1206,8 +1240,8 @@ function loadRNBOScript(version) {
     }
 
     // Initialize buttons from RNBO parameter
-    if (selectorParam) {
-      updateSourceButtons(selectorParam.value);
+    if (selectorParams[0]) {
+      updateSourceButtons(selectorParams[0].value);
     }
 
     // Handle source button clicks
@@ -1237,12 +1271,17 @@ function loadRNBOScript(version) {
           window.updateGainSliderForSource(value);
         }
 
-        if (selectorParam) {
-          if (value === 2) {
-            selectorParam.value = 0;
-          } else {
-            selectorParam.value = value;
-          }
+        if (value === 1) {
+          // Pink noise: deviceL only (mono), monoFill routes L→R
+          if (selectorParams[0]) selectorParams[0].value = 1;
+          if (selectorParams[1]) selectorParams[1].value = 0;
+          window._monoFill.gain.value = 1;
+        } else {
+          // User audio or mute: both devices, monoFill off
+          selectorParams.forEach(p => {
+            if (p) p.value = (value === 2) ? 0 : value;
+          });
+          window._monoFill.gain.value = 0;
         }
 
         console.log("Audio source changed to:", ["Mute", "Pink Noise", "User Audio"][value]);
