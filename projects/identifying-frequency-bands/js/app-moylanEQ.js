@@ -626,9 +626,12 @@ function loadRNBOScript(version) {
     const audioUploadSection = container.querySelector(".audio-upload-section");
     const fileInput = container.querySelector(".file-input:not(.file-input-compact)");
     const fileInputCompact = container.querySelector(".file-input-compact");
-    const fileInfo = container.querySelector(".audio-file-info");
+    const fileInfo = container.querySelector(".audio-info-row");
     const fileName = container.querySelector(".file-name");
     const fileDuration = container.querySelector(".file-duration");
+    const playerGainRow = container.querySelector(".player-gain-row");
+    const playerGainSlider = container.querySelector(".player-gain-slider");
+    const playerGainDisplay = container.querySelector(".player-gain-value");
     const playbackControls = container.querySelector(".playback-controls");
     const playButton = container.querySelector(".play-button");
     const playIcon = container.querySelector(".play-icon");
@@ -652,6 +655,31 @@ function loadRNBOScript(version) {
     // Upload areas
     const uploadArea = container.querySelector(".upload-area:not(.upload-area-compact)");
     const uploadAreaCompact = container.querySelector(".upload-area-compact");
+
+    // Per-player gain node: audioSourceNode → playerGain → userAudioGain
+    const playerGain = context.createGain();
+    playerGain.connect(userAudioGain);
+
+    function playerDbToLinear(db) {
+      return Math.pow(10, db / 20);
+    }
+
+    function updatePlayerGainFill() {
+      var min = parseFloat(playerGainSlider.min);
+      var max = parseFloat(playerGainSlider.max);
+      var val = parseFloat(playerGainSlider.value);
+      var pct = ((val - min) / (max - min)) * 100;
+      playerGainSlider.style.background = 'linear-gradient(90deg, #2563eb 0%, #3b82f6 ' + pct + '%, #e5e7eb ' + pct + '%, #e5e7eb 100%)';
+    }
+
+    playerGainSlider.addEventListener('input', function() {
+      var db = parseFloat(this.value);
+      playerGain.gain.value = playerDbToLinear(db);
+      playerGainDisplay.textContent = Math.round(db) + ' dB';
+      updatePlayerGainFill();
+    });
+
+    updatePlayerGainFill();
 
     // Cached waveform peaks (computed once per audio file)
     let waveformPeaks = null;
@@ -818,7 +846,7 @@ function loadRNBOScript(version) {
 
           audioSourceNode = context.createBufferSource();
           audioSourceNode.buffer = uploadedAudioBuffer;
-          audioSourceNode.connect(userAudioGain);
+          audioSourceNode.connect(playerGain);
           audioSourceNode.loop = false;
           audioSourceNode.onended = handlePlaybackEnded;
 
@@ -932,7 +960,7 @@ function loadRNBOScript(version) {
       audioSourceNode = context.createBufferSource();
       audioSourceNode.buffer = uploadedAudioBuffer;
       audioSourceNode.loop = false;
-      audioSourceNode.connect(userAudioGain);
+      audioSourceNode.connect(playerGain);
       audioSourceNode.onended = handlePlaybackEnded;
 
       selectorParams.forEach(p => { if (p) p.value = 2; });
@@ -1165,7 +1193,7 @@ function loadRNBOScript(version) {
         audioSourceNode = context.createBufferSource();
         audioSourceNode.buffer = uploadedAudioBuffer;
         audioSourceNode.loop = false;
-        audioSourceNode.connect(userAudioGain);
+        audioSourceNode.connect(playerGain);
         audioSourceNode.onended = handlePlaybackEnded;
 
         startTime = context.currentTime;

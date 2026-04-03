@@ -396,14 +396,22 @@
 }
 
 /* Audio file info display */
-.audio-file-info {
+.audio-info-row {
     margin-top: var(--spacing-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.audio-file-info {
     padding: var(--spacing-sm);
     background: var(--color-bg);
     border-radius: 0.375rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex: 1;
+    min-width: 0;
 }
 
 .audio-file-info .file-name {
@@ -420,6 +428,10 @@
     font-size: 0.75rem;
     color: var(--color-text-muted);
     font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+}
+
+.player-gain-row {
+    flex-shrink: 0;
 }
 
 /* Audio source selector */
