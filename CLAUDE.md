@@ -513,10 +513,11 @@ Interactive demonstration of stereo phase correlation showing how correlated and
   - Correlated + Inverted Polarity: Power valley (sound at speakers with hole in middle)
   - Uncorrelated + Same Polarity: Diffuse sound (no localization)
   - Uncorrelated + Inverted Polarity: No audible change
-- Three audio sources: Mute, Pink Noise (generated), User Audio (upload)
+- Four audio sources: Mute, Pink Noise (generated), User Audio (upload), Browser Tab (capture via getDisplayMedia, Chrome/Edge only)
 - Real-time stereo correlation meter (half-circle visualization)
 - Master gain control (-70 to 0 dB)
 - User audio file upload with stereo support
+- Browser Tab capture routes external tab audio through the stereo processing chain
 
 **Technical Stack:**
 - Pure Web Audio API (no external dependencies)
@@ -532,9 +533,11 @@ Pink Noise (correlated or uncorrelated)
     → LeftGain → Merger → MasterGain → destination
     → RightGain → PolarityGain (±1) → Merger
 
-User Audio (stereo)
+User Audio / Browser Tab (stereo)
     → Splitter → LeftGain → ...
               → RightGain → PolarityGain → ...
+
+Browser Tab: getDisplayMedia → MediaStreamSource → Splitter (same path as User Audio)
 
 AnalyserNode x2 (L/R channels) → Correlation calculation
 ```

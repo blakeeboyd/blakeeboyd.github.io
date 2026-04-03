@@ -1567,9 +1567,56 @@ function setupEventListeners() {
 // Initialization
 // ============================================
 
+function initTooltips() {
+    var tooltipEl = document.createElement('div');
+    tooltipEl.className = 'global-tooltip';
+    tooltipEl.style.cssText = 'position:fixed;z-index:10000;background:var(--color-card-bg);border:1px solid var(--color-border);border-radius:8px;padding:12px;box-shadow:0 4px 20px rgba(0,0,0,0.25);font-size:0.8rem;line-height:1.5;color:var(--color-text);max-width:280px;opacity:0;visibility:hidden;transition:opacity 0.15s,visibility 0.15s;pointer-events:none;';
+    document.body.appendChild(tooltipEl);
+
+    var triggers = document.querySelectorAll('.info-trigger');
+
+    triggers.forEach(function(trigger) {
+        var content = trigger.querySelector('.info-tooltip');
+        if (!content) return;
+
+        function showTooltip() {
+            tooltipEl.textContent = '';
+            Array.from(content.cloneNode(true).childNodes).forEach(function(n) { tooltipEl.appendChild(n); });
+            tooltipEl.style.opacity = '1';
+            tooltipEl.style.visibility = 'visible';
+
+            var rect = trigger.getBoundingClientRect();
+            var tooltipRect = tooltipEl.getBoundingClientRect();
+            var margin = 8;
+
+            var top = rect.bottom + margin;
+            var left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+
+            if (left < margin) left = margin;
+            if (left + tooltipRect.width > window.innerWidth - margin) {
+                left = window.innerWidth - tooltipRect.width - margin;
+            }
+
+            tooltipEl.style.top = top + 'px';
+            tooltipEl.style.left = left + 'px';
+        }
+
+        function hideTooltip() {
+            tooltipEl.style.opacity = '0';
+            tooltipEl.style.visibility = 'hidden';
+        }
+
+        trigger.addEventListener('mouseenter', showTooltip);
+        trigger.addEventListener('mouseleave', hideTooltip);
+        trigger.addEventListener('focus', showTooltip);
+        trigger.addEventListener('blur', hideTooltip);
+    });
+}
+
 function init() {
     createAudioContext();
     setupEventListeners();
+    initTooltips();
 
     // Draw initial meter state (empty polar scatter)
     drawPolarScatterMeter(0);
