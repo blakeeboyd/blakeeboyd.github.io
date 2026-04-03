@@ -126,6 +126,13 @@
                                 <span class="scenario-title">Polarity Inverted</span>
                                 <span class="scenario-subtitle">Diffuse Sound</span>
                             </button>
+                            <!-- Tab capture overlay (shown when Browser Tab selected) -->
+                        <div id="tab-capture-overlay" class="tab-capture-overlay hidden">
+                            <p class="tab-capture-title">Sharing <span id="tab-capture-name">another tab</span> to this tab</p>
+                            <div class="tab-capture-tip">
+                                <strong>Tip:</strong> Right-click the source tab and select "Mute tab" to avoid hearing double audio.
+                            </div>
+                        </div>
                             <!-- User audio section (shown when User Audio selected, replaces bottom row) -->
                         <div id="user-audio-section" class="user-audio-section hidden">
                             <div class="upload-area" id="upload-area">
@@ -191,6 +198,7 @@
                                 <button type="button" class="source-button active" data-source="0">Mute</button>
                                 <button type="button" class="source-button" data-source="1">Pink Noise</button>
                                 <button type="button" class="source-button" data-source="2">User Audio</button>
+                                <button type="button" class="source-button" data-source="3">Browser Tab</button>
                             </div>
                             <div class="gain-control">
                                 <label class="control-label" for="master-gain">Gain (dB)</label>

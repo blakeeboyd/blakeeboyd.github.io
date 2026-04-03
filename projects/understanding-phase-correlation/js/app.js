@@ -88,7 +88,12 @@ const state = {
 
     // Auto Demo state
     demoRunning: false,
-    demoTimeoutId: null
+    demoTimeoutId: null,
+
+    // Tab capture state
+    tabStream: null,
+    tabSourceNode: null,
+    tabSplitter: null
 };
 
 // ============================================
@@ -392,6 +397,104 @@ function startUserAudio(offset = 0) {
 
     // Start progress update
     startProgressUpdate();
+}
+
+// ============================================
+// Tab Audio Capture
+// ============================================
+
+function stopTabCapture() {
+    if (state.tabStream) {
+        state.tabStream.getTracks().forEach(function(t) { t.stop(); });
+        state.tabStream = null;
+    }
+    if (state.tabSourceNode) {
+        state.tabSourceNode.disconnect();
+        state.tabSourceNode = null;
+    }
+    if (state.tabSplitter) {
+        state.tabSplitter.disconnect();
+        state.tabSplitter = null;
+    }
+}
+
+async function startTabCapture() {
+    stopTabCapture();
+    try {
+        state.tabStream = await navigator.mediaDevices.getDisplayMedia({
+            video: true,
+            audio: {
+                echoCancellation: false,
+                noiseSuppression: false,
+                autoGainControl: false,
+                suppressLocalAudioPlayback: true
+            },
+            preferCurrentTab: false
+        });
+
+        // Get tab name from track labels before stopping video
+        var videoTracks = state.tabStream.getVideoTracks();
+        var audioTracks = state.tabStream.getAudioTracks();
+
+        var rawLabel = '';
+        if (audioTracks.length > 0) rawLabel = audioTracks[0].label || '';
+        if ((!rawLabel || rawLabel.indexOf('://') !== -1) && videoTracks.length > 0) {
+            rawLabel = videoTracks[0].label || '';
+        }
+        var tabName = rawLabel;
+        if (!tabName || tabName.indexOf('://') !== -1) {
+            tabName = 'another tab';
+        }
+        videoTracks.forEach(function(t) { t.stop(); });
+
+        if (audioTracks.length === 0) {
+            alert('No audio track captured. Make sure to check "Share tab audio" in the dialog.');
+            stopTabCapture();
+            return false;
+        }
+
+        // Route tab audio through the same stereo chain as user audio
+        state.tabSourceNode = state.audioContext.createMediaStreamSource(state.tabStream);
+        state.tabSplitter = state.audioContext.createChannelSplitter(2);
+        state.tabSourceNode.connect(state.tabSplitter);
+        state.tabSplitter.connect(state.leftGain, 0);
+        state.tabSplitter.connect(state.rightGain, 1);
+
+        // Show overlay
+        var overlay = document.getElementById('tab-capture-overlay');
+        var nameSpan = document.getElementById('tab-capture-name');
+        if (overlay && nameSpan) {
+            nameSpan.textContent = tabName;
+            overlay.classList.remove('hidden');
+        }
+
+        // Start correlation meter
+        state.isPlaying = true;
+        startCorrelationMeter();
+
+        // If user stops sharing from browser UI, switch back to mute
+        audioTracks[0].addEventListener('ended', function() {
+            stopTabCapture();
+            state.isPlaying = false;
+            state.currentSource = 0;
+            updateSourceButtons();
+            updateGainForSource(0);
+            stopCorrelationMeter();
+            updatePlayButton();
+            var overlay = document.getElementById('tab-capture-overlay');
+            if (overlay) overlay.classList.add('hidden');
+            console.log('Tab audio capture ended');
+        });
+
+        console.log('Tab audio capture started:', tabName);
+        return true;
+    } catch (err) {
+        if (err.name !== 'NotAllowedError') {
+            console.error('Tab capture failed:', err);
+        }
+        stopTabCapture();
+        return false;
+    }
 }
 
 // ============================================
@@ -1087,12 +1190,20 @@ function setSource(source) {
         stopAudio();
     }
 
+    // Stop tab capture when switching away
+    if (source !== 3) {
+        stopTabCapture();
+        var tabOverlay = document.getElementById('tab-capture-overlay');
+        if (tabOverlay) tabOverlay.classList.add('hidden');
+    }
+
     state.currentSource = source;
 
-    // Toggle uncorrelated buttons and user audio section
+    // Toggle uncorrelated buttons, user audio section, and tab overlay
     const uncorrelatedSame = document.getElementById('uncorrelated-same');
     const uncorrelatedInverted = document.getElementById('uncorrelated-inverted');
     const userAudioSection = document.getElementById('user-audio-section');
+    const tabCaptureOverlay = document.getElementById('tab-capture-overlay');
     const correlationLabels = document.querySelectorAll('.scenario-correlation');
 
     if (source === 2) {
@@ -1100,6 +1211,7 @@ function setSource(source) {
         if (uncorrelatedSame) uncorrelatedSame.classList.add('hidden');
         if (uncorrelatedInverted) uncorrelatedInverted.classList.add('hidden');
         if (userAudioSection) userAudioSection.classList.remove('hidden');
+        if (tabCaptureOverlay) tabCaptureOverlay.classList.add('hidden');
 
         // Hide "Correlated Audio" labels on the remaining buttons
         correlationLabels.forEach(label => label.classList.add('hidden'));
@@ -1108,18 +1220,33 @@ function setSource(source) {
         if (!state.isCorrelated) {
             setScenario(true, false);
         }
+    } else if (source === 3) {
+        // Browser Tab: hide uncorrelated buttons and user audio, show overlay after capture
+        if (uncorrelatedSame) uncorrelatedSame.classList.add('hidden');
+        if (uncorrelatedInverted) uncorrelatedInverted.classList.add('hidden');
+        if (userAudioSection) userAudioSection.classList.add('hidden');
+
+        // Hide "Correlated Audio" labels
+        correlationLabels.forEach(label => label.classList.add('hidden'));
+
+        // If currently on an uncorrelated scenario, switch to correlated same polarity
+        if (!state.isCorrelated) {
+            setScenario(true, false);
+        }
     } else {
-        // Mute or Pink Noise: show all 4 scenario buttons, hide user audio section
+        // Mute or Pink Noise: show all 4 scenario buttons, hide user audio section and tab overlay
         if (uncorrelatedSame) uncorrelatedSame.classList.remove('hidden');
         if (uncorrelatedInverted) uncorrelatedInverted.classList.remove('hidden');
         if (userAudioSection) userAudioSection.classList.add('hidden');
+        if (tabCaptureOverlay) tabCaptureOverlay.classList.add('hidden');
 
         // Show "Correlated Audio" labels
         correlationLabels.forEach(label => label.classList.remove('hidden'));
     }
 
     // Update gain slider and master gain based on source
-    updateGainForSource(source);
+    // Browser Tab uses same gain as user audio
+    updateGainForSource(source === 3 ? 2 : source);
 
     // Auto-play pink noise when selected
     if (source === 1) {
@@ -1137,6 +1264,27 @@ function setSource(source) {
             startPinkNoise();
             state.isPlaying = true;
             startCorrelationMeter();
+        })();
+    }
+
+    // Browser Tab: start capture
+    if (source === 3) {
+        (async () => {
+            if (state.audioContext.state === 'suspended') {
+                try {
+                    await state.audioContext.resume();
+                } catch (err) {
+                    console.error('Failed to resume audio context:', err);
+                    return;
+                }
+            }
+            var success = await startTabCapture();
+            if (!success) {
+                // User cancelled — revert to mute
+                state.currentSource = 0;
+                updateSourceButtons();
+                setSource(0);
+            }
         })();
     }
 
