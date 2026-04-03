@@ -434,6 +434,16 @@
     flex-shrink: 0;
 }
 
+.tab-audio-hint {
+    margin-top: var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    background: var(--color-bg);
+    border-radius: 0.375rem;
+    border-left: 3px solid var(--color-warning);
+}
+
 /* Audio source selector */
 .eq-select {
     width: auto;

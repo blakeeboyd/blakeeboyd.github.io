@@ -1238,6 +1238,85 @@ function loadRNBOScript(version) {
     const sourceButtons = document.querySelectorAll(".source-button");
     const selectorParams = devices.map(d => getParameter(d, 'audioFile_selector'));
 
+    // Tab audio capture state
+    let tabStream = null;
+    let tabSourceNode = null;
+
+    function stopTabCapture() {
+      if (tabStream) {
+        tabStream.getTracks().forEach(t => t.stop());
+        tabStream = null;
+      }
+      if (tabSourceNode) {
+        tabSourceNode.disconnect();
+        tabSourceNode = null;
+      }
+    }
+
+    async function startTabCapture() {
+      stopTabCapture();
+      try {
+        tabStream = await navigator.mediaDevices.getDisplayMedia({
+          video: true,
+          audio: {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false,
+            suppressLocalAudioPlayback: true
+          },
+          preferCurrentTab: false
+        });
+
+        // Stop the video track — we only need audio
+        tabStream.getVideoTracks().forEach(t => t.stop());
+
+        var audioTracks = tabStream.getAudioTracks();
+        if (audioTracks.length === 0) {
+          alert('No audio track captured. Make sure to check "Share tab audio" in the dialog.');
+          stopTabCapture();
+          return false;
+        }
+
+        tabSourceNode = context.createMediaStreamSource(tabStream);
+        tabSourceNode.connect(userAudioGain);
+
+        // Set RNBO devices to process external input
+        selectorParams.forEach(function(p) { if (p) p.value = 2; });
+        window._monoFill.gain.value = 0;
+
+        // If the user stops sharing from the browser UI, switch back to mute
+        audioTracks[0].addEventListener('ended', function() {
+          stopTabCapture();
+          updateSourceButtons(0);
+          selectorParams.forEach(function(p) { if (p) p.value = 0; });
+          if (window.updateGainSliderForSource) window.updateGainSliderForSource(0);
+          console.log("Tab audio capture ended");
+        });
+
+        console.log("Tab audio capture started");
+
+        // Hint: suggest muting the source tab to avoid double audio
+        var tabHint = document.getElementById('tab-audio-hint');
+        if (!tabHint) {
+          tabHint = document.createElement('div');
+          tabHint.id = 'tab-audio-hint';
+          tabHint.className = 'tab-audio-hint';
+          tabHint.textContent = 'Tip: Right-click the source tab and select "Mute tab" to avoid hearing double audio.';
+          var sourceControls = document.querySelector('.source-controls');
+          if (sourceControls) sourceControls.appendChild(tabHint);
+        }
+        tabHint.classList.remove('hidden');
+
+        return true;
+      } catch (err) {
+        if (err.name !== 'NotAllowedError') {
+          console.error("Tab capture failed:", err);
+        }
+        stopTabCapture();
+        return false;
+      }
+    }
+
     let activePlayer = null;
 
     // Create players with mutual exclusion callbacks
@@ -1288,9 +1367,33 @@ function loadRNBOScript(version) {
         }
 
         // Stop both players when switching away from user audio
-        if (value !== 2) {
+        if (value !== 2 && value !== 3) {
           player1.stop();
           player2.stop();
+        }
+
+        // Stop tab capture when switching away from tab audio
+        if (value !== 3) {
+          stopTabCapture();
+          var tabHint = document.getElementById('tab-audio-hint');
+          if (tabHint) tabHint.classList.add('hidden');
+        }
+
+        // Handle tab audio capture
+        if (value === 3) {
+          player1.stop();
+          player2.stop();
+          var success = await startTabCapture();
+          if (!success) {
+            // User cancelled or no audio — revert to mute
+            updateSourceButtons(0);
+            selectorParams.forEach(p => { if (p) p.value = 0; });
+            if (window.updateGainSliderForSource) window.updateGainSliderForSource(0);
+            return;
+          }
+          updateSourceButtons(3);
+          if (window.updateGainSliderForSource) window.updateGainSliderForSource(2);
+          return;
         }
 
         updateSourceButtons(value);
@@ -1312,7 +1415,7 @@ function loadRNBOScript(version) {
           window._monoFill.gain.value = 0;
         }
 
-        console.log("Audio source changed to:", ["Mute", "Pink Noise", "User Audio"][value]);
+        console.log("Audio source changed to:", ["Mute", "Pink Noise", "User Audio", "Browser Tab"][value]);
       });
     });
 
