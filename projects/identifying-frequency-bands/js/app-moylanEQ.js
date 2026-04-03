@@ -1267,10 +1267,22 @@ function loadRNBOScript(version) {
           preferCurrentTab: false
         });
 
-        // Stop the video track — we only need audio
-        tabStream.getVideoTracks().forEach(t => t.stop());
-
+        // Get the tab name from track labels before stopping video
+        var videoTracks = tabStream.getVideoTracks();
         var audioTracks = tabStream.getAudioTracks();
+
+        // Try audio track label first, then video
+        var rawLabel = '';
+        if (audioTracks.length > 0) rawLabel = audioTracks[0].label || '';
+        if ((!rawLabel || rawLabel.indexOf('://') !== -1) && videoTracks.length > 0) {
+          rawLabel = videoTracks[0].label || '';
+        }
+        // If the label is a stream URI or empty, fall back
+        var tabName = rawLabel;
+        if (!tabName || tabName.indexOf('://') !== -1) {
+          tabName = 'another tab';
+        }
+        videoTracks.forEach(function(t) { t.stop(); });
         if (audioTracks.length === 0) {
           alert('No audio track captured. Make sure to check "Share tab audio" in the dialog.');
           stopTabCapture();
@@ -1284,28 +1296,30 @@ function loadRNBOScript(version) {
         selectorParams.forEach(function(p) { if (p) p.value = 2; });
         window._monoFill.gain.value = 0;
 
+        // Show overlay on player 1
+        var overlay = container1.querySelector('.tab-capture-overlay');
+        var nameSpan = container1.querySelector('.tab-capture-name');
+        if (overlay && nameSpan) {
+          nameSpan.textContent = tabName;
+          overlay.classList.remove('hidden');
+        }
+        // Hide the upload section
+        var uploadSection = container1.querySelector('.audio-upload-section');
+        if (uploadSection) uploadSection.classList.add('hidden');
+
         // If the user stops sharing from the browser UI, switch back to mute
         audioTracks[0].addEventListener('ended', function() {
           stopTabCapture();
           updateSourceButtons(0);
           selectorParams.forEach(function(p) { if (p) p.value = 0; });
           if (window.updateGainSliderForSource) window.updateGainSliderForSource(0);
+          // Hide overlay, show upload section
+          if (overlay) overlay.classList.add('hidden');
+          if (uploadSection) uploadSection.classList.remove('hidden');
           console.log("Tab audio capture ended");
         });
 
-        console.log("Tab audio capture started");
-
-        // Hint: suggest muting the source tab to avoid double audio
-        var tabHint = document.getElementById('tab-audio-hint');
-        if (!tabHint) {
-          tabHint = document.createElement('div');
-          tabHint.id = 'tab-audio-hint';
-          tabHint.className = 'tab-audio-hint';
-          tabHint.textContent = 'Tip: Right-click the source tab and select "Mute tab" to avoid hearing double audio.';
-          var sourceControls = document.querySelector('.source-controls');
-          if (sourceControls) sourceControls.appendChild(tabHint);
-        }
-        tabHint.classList.remove('hidden');
+        console.log("Tab audio capture started:", tabName);
 
         return true;
       } catch (err) {
@@ -1375,8 +1389,11 @@ function loadRNBOScript(version) {
         // Stop tab capture when switching away from tab audio
         if (value !== 3) {
           stopTabCapture();
-          var tabHint = document.getElementById('tab-audio-hint');
-          if (tabHint) tabHint.classList.add('hidden');
+          // Hide overlay, show upload section
+          var overlay = container1.querySelector('.tab-capture-overlay');
+          if (overlay) overlay.classList.add('hidden');
+          var uploadSection = container1.querySelector('.audio-upload-section');
+          if (uploadSection) uploadSection.classList.remove('hidden');
         }
 
         // Handle tab audio capture
