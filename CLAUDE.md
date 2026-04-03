@@ -409,30 +409,38 @@ Educational audio application for learning critical listening skills and frequen
 **Location:** `projects/identifying-frequency-bands/`
 
 **Key Features:**
-- Three audio source modes: Mute, Pink Noise (internal), User Audio (upload)
+- Four audio source modes: Mute, Pink Noise (internal, mono), User Audio (upload), Browser Tab (capture via getDisplayMedia)
 - User audio file upload with Web Audio API decoding (supports WAV, MP3, OGG, FLAC)
 - Full playback controls for uploaded audio:
   - Play/pause with proper resume from position
   - Loop toggle
   - Progress bar with click-to-seek
   - Current time / total time display
+  - Per-player gain slider (-30 to +6 dB)
+- Browser Tab capture: routes audio from another browser tab through the filter chain (Chrome/Edge only, uses getDisplayMedia with echo cancellation/noise suppression/AGC disabled)
 - Six frequency band filters based on Moylan's EQ bands (Low, Low Mid, Mid, Mid-High, High, Very High)
 - Master filter toggle for all bands
 - Gain control (-70 to +6 dB)
 - Exercise prompts for critical listening practice
 - Auto Demo mode that cycles through each band with solo/mute
 - Demo supports user audio (uses uploaded file) or pink noise (default)
+- Stereo output for user audio and browser tab sources
 
 **Technical Stack:**
 - RNBO for Web Audio processing (signal processing, filters, pink noise generation)
-- Web Audio API for user audio decoding and playback
+- Two RNBO device instances (one per stereo channel) for stereo output
+- Web Audio API for user audio decoding, playback, and browser tab capture
 - Project-specific styles in `/css/projects/moylanEQ.css`
 
 **Audio Architecture:**
-- `audioFile_selector` parameter controls source: 0=Mute, 1=Pink Noise, 2=User Audio
-- User audio routes through `GainNode` → `device.node` (RNBO signal input)
+- `audioFile_selector` parameter controls source: 0=Mute, 1=Pink Noise, 2=User Audio/Browser Tab
+- Two RNBO devices (deviceL, deviceR) process L/R channels independently
+- User audio routes through `userAudioGain` → `ChannelSplitter` → upmix GainNodes → deviceL/deviceR
+- Device outputs merge via `ChannelMerger` → +6 dB output boost → destination
+- Pink noise is mono: only deviceL generates noise, `monoFill` GainNode routes it to both channels
+- Browser Tab audio routes through `MediaStreamSource` → `userAudioGain` (same path as user audio)
+- Per-player gain nodes sit between audio source and `userAudioGain`
 - Gain slider controls both RNBO gain parameter (pink noise) and Web Audio GainNode (user audio)
-- RNBO patch accepts stereo input and sums to mono internally
 - Playback state managed with `startTime`, `pausedAt` for accurate seek/resume
 - Progress updates via `requestAnimationFrame` for smooth UI
 - RNBO handles all frequency band filtering and output
