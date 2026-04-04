@@ -1410,6 +1410,8 @@ function loadRNBOScript(version) {
           }
           updateSourceButtons(3);
           if (window.updateGainSliderForSource) window.updateGainSliderForSource(2);
+          // Keep player 2 grayed out during tab capture
+          container2.classList.add('source-disabled');
           return;
         }
 
