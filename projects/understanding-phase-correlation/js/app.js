@@ -1200,18 +1200,21 @@ function setSource(source) {
     state.currentSource = source;
 
     // Toggle uncorrelated buttons, user audio section, and tab overlay
-    const uncorrelatedSame = document.getElementById('uncorrelated-same');
-    const uncorrelatedInverted = document.getElementById('uncorrelated-inverted');
+    const scenarioGrid = document.querySelector('.scenario-grid');
     const userAudioSection = document.getElementById('user-audio-section');
     const tabCaptureOverlay = document.getElementById('tab-capture-overlay');
     const correlationLabels = document.querySelectorAll('.scenario-correlation');
 
-    if (source === 2) {
-        // User Audio: hide uncorrelated buttons, show user audio section in their place
-        if (uncorrelatedSame) uncorrelatedSame.classList.add('hidden');
-        if (uncorrelatedInverted) uncorrelatedInverted.classList.add('hidden');
-        if (userAudioSection) userAudioSection.classList.remove('hidden');
-        if (tabCaptureOverlay) tabCaptureOverlay.classList.add('hidden');
+    if (source === 2 || source === 3) {
+        // User Audio or Browser Tab: hide uncorrelated buttons (preserve space), show relevant section
+        if (scenarioGrid) scenarioGrid.classList.add('correlated-only');
+        if (source === 2) {
+            if (userAudioSection) userAudioSection.classList.remove('hidden');
+            if (tabCaptureOverlay) tabCaptureOverlay.classList.add('hidden');
+        } else {
+            if (userAudioSection) userAudioSection.classList.add('hidden');
+            // Tab overlay shown after capture succeeds (in startTabCapture)
+        }
 
         // Hide "Correlated Audio" labels on the remaining buttons
         correlationLabels.forEach(label => label.classList.add('hidden'));
@@ -1220,23 +1223,9 @@ function setSource(source) {
         if (!state.isCorrelated) {
             setScenario(true, false);
         }
-    } else if (source === 3) {
-        // Browser Tab: hide uncorrelated buttons and user audio, show overlay after capture
-        if (uncorrelatedSame) uncorrelatedSame.classList.add('hidden');
-        if (uncorrelatedInverted) uncorrelatedInverted.classList.add('hidden');
-        if (userAudioSection) userAudioSection.classList.add('hidden');
-
-        // Hide "Correlated Audio" labels
-        correlationLabels.forEach(label => label.classList.add('hidden'));
-
-        // If currently on an uncorrelated scenario, switch to correlated same polarity
-        if (!state.isCorrelated) {
-            setScenario(true, false);
-        }
     } else {
         // Mute or Pink Noise: show all 4 scenario buttons, hide user audio section and tab overlay
-        if (uncorrelatedSame) uncorrelatedSame.classList.remove('hidden');
-        if (uncorrelatedInverted) uncorrelatedInverted.classList.remove('hidden');
+        if (scenarioGrid) scenarioGrid.classList.remove('correlated-only');
         if (userAudioSection) userAudioSection.classList.add('hidden');
         if (tabCaptureOverlay) tabCaptureOverlay.classList.add('hidden');
 
