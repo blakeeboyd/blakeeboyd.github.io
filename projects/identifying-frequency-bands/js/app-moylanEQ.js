@@ -1320,7 +1320,6 @@ function loadRNBOScript(version) {
         });
 
         console.log("Tab audio capture started:", tabName);
-        window.focus();
 
         return true;
       } catch (err) {

@@ -487,7 +487,6 @@ async function startTabCapture() {
         });
 
         console.log('Tab audio capture started:', tabName);
-        window.focus();
         return true;
     } catch (err) {
         if (err.name !== 'NotAllowedError') {
