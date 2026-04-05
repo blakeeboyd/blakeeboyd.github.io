@@ -103,6 +103,7 @@
                                 </button>
                             </div>
                         </div>
+                        <div class="scenario-wrapper">
                         <div class="scenario-grid">
                             <!-- Top row: Correlated scenarios (always visible) -->
                             <button type="button" class="scenario-button active" data-correlated="true" data-inverted="false" id="correlated-same">
@@ -115,7 +116,7 @@
                                 <span class="scenario-title">Polarity Inverted</span>
                                 <span class="scenario-subtitle">Phantom L/R</span>
                             </button>
-                            <!-- Bottom row: Uncorrelated scenarios (hidden when User Audio selected) -->
+                            <!-- Bottom row: Uncorrelated scenarios -->
                             <button type="button" class="scenario-button" data-correlated="false" data-inverted="false" id="uncorrelated-same">
                                 <span class="scenario-title">Uncorrelated Audio</span>
                                 <span class="scenario-title">Polarity Matched</span>
@@ -126,14 +127,14 @@
                                 <span class="scenario-title">Polarity Inverted</span>
                                 <span class="scenario-subtitle">Diffuse Sound</span>
                             </button>
-                            <!-- Tab capture overlay (shown when Browser Tab selected) -->
+                        </div>
+                        <!-- Overlays positioned absolutely over the bottom row -->
                         <div id="tab-capture-overlay" class="tab-capture-overlay hidden">
                             <p class="tab-capture-title">Sharing <span id="tab-capture-name">another tab</span> to this tab</p>
                             <div class="tab-capture-tip">
                                 Hearing double? Right-click the source tab and select "Mute tab."
                             </div>
                         </div>
-                            <!-- User audio section (shown when User Audio selected, replaces bottom row) -->
                         <div id="user-audio-section" class="user-audio-section hidden">
                             <div class="upload-area" id="upload-area">
                                 <input type="file" id="audio-file-input" accept="audio/*" hidden>
