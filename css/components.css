@@ -18,8 +18,12 @@
 }
 
 .card-title {
+    font-family: var(--font-serif);
+    font-variation-settings: "opsz" 24;
     font-size: 1.5rem;
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--lh-snug);
     margin-bottom: var(--spacing-xs);
     color: var(--color-text);
 }
@@ -200,10 +204,15 @@
 }
 
 .projects-section-title {
-    font-size: 1.75rem;
-    font-weight: 600;
+    font-family: var(--font-serif);
+    font-variation-settings: "opsz" 32;
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--lh-snug);
     color: var(--color-text);
     margin-bottom: var(--spacing-xs);
+    text-wrap: balance;
 }
 
 .section-description {
@@ -257,8 +266,12 @@
 }
 
 .project-title {
+    font-family: var(--font-serif);
+    font-variation-settings: "opsz" 20;
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--lh-snug);
     margin-bottom: var(--spacing-xs);
     color: var(--color-text);
 }
@@ -546,7 +559,8 @@
 .debug-message {
     background-color: rgba(37, 99, 235, 0.1);
     color: var(--color-accent);
-    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    font-family: var(--font-mono);
+    font-feature-settings: var(--feat-mono);
     font-size: 0.75rem;
     border: 1px solid rgba(37, 99, 235, 0.2);
 }
@@ -654,11 +668,15 @@
 }
 
 .about-headline {
-    font-size: 2.5rem;
-    font-weight: 600;
-    line-height: 1.2;
+    font-family: var(--font-serif);
+    font-variation-settings: "opsz" 48;
+    font-size: var(--text-4xl);
+    font-weight: var(--weight-regular);
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--lh-tight);
     color: var(--color-text);
     margin: 0;
+    text-wrap: balance;
 }
 
 .about-text {
@@ -780,10 +798,15 @@
 }
 
 .works-section-title {
-    font-size: 1.75rem;
-    font-weight: 600;
+    font-family: var(--font-serif);
+    font-variation-settings: "opsz" 32;
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--lh-snug);
     color: var(--color-text);
     margin-bottom: var(--spacing-md);
+    text-wrap: balance;
 }
 
 .work-item {
@@ -791,8 +814,12 @@
 }
 
 .work-item h3 {
+    font-family: var(--font-serif);
+    font-variation-settings: "opsz" 20;
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--lh-snug);
     color: var(--color-text);
     margin-bottom: var(--spacing-xs);
 }
@@ -899,8 +926,14 @@
 }
 
 .home-hero h1 {
-    font-size: 3rem;
+    font-family: var(--font-serif);
+    font-variation-settings: "opsz" 60;
+    font-size: var(--text-5xl);
+    font-weight: var(--weight-regular);
+    letter-spacing: var(--tracking-tighter);
+    line-height: var(--lh-tight);
     margin-bottom: var(--spacing-sm);
+    text-wrap: balance;
 }
 
 .home-hero .subtitle {
@@ -932,8 +965,12 @@
 }
 
 .home-link-card h2 {
+    font-family: var(--font-serif);
+    font-variation-settings: "opsz" 20;
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--lh-snug);
     color: var(--color-text);
     margin-bottom: var(--spacing-xs);
 }
