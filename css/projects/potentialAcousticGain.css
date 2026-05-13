@@ -1,0 +1,1581 @@
+/* ===========================================
+   Potential Acoustic Gain (Explorable Explanation)
+   Project-scoped styles. Inherits design tokens from base.css.
+   =========================================== */
+
+.pag-app {
+    --pag-radius: var(--radius-lg);
+    font-feature-settings: var(--feat-sans);
+}
+
+/* ---------- Masthead (slide 0) ---------- */
+.pag-app .masthead {
+    margin-bottom: 3rem;
+}
+
+.pag-app .eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    margin-bottom: 1rem;
+    font-weight: var(--weight-medium);
+}
+
+.pag-app .eyebrow .sep {
+    color: var(--color-border);
+    margin: 0 0.6em;
+}
+
+.pag-app .deck {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    line-height: 1.5;
+    color: var(--color-text-muted);
+    max-width: 640px;
+    font-variation-settings: "opsz" 22;
+}
+
+/* ---------- Prose ---------- */
+.pag-app .content-wrapper {
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.pag-app .prose p {
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--color-text);
+    margin: 0 0 1em;
+}
+
+.pag-app .prose .pull {
+    font-family: var(--font-serif);
+    font-size: 1.18rem;
+    line-height: 1.5;
+    color: var(--color-text);
+    border-left: 3px solid var(--color-accent);
+    padding-left: 1.25rem;
+    margin: 1.75rem 0;
+    font-variation-settings: "opsz" 21;
+}
+
+.pag-app .prose strong { font-weight: var(--weight-semibold); }
+
+/* ---------- Stage panel (slide 0) ---------- */
+.pag-app .stage-wrap {
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--pag-radius);
+    box-shadow: var(--shadow-sm);
+    padding: 1.5rem;
+    margin: 2.5rem 0;
+    position: relative;
+}
+
+.pag-app .stage-wrap::before {
+    content: 'Fig. 01';
+    position: absolute;
+    top: 1rem;
+    right: 1.25rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+}
+
+/* ---------- PAG readout block ---------- */
+.pag-app .pag-block {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.25rem;
+    align-items: end;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.pag-app .pag-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    margin-bottom: 0.4rem;
+    font-weight: var(--weight-medium);
+}
+
+.pag-app .pag-value {
+    font-family: var(--font-serif);
+    font-size: clamp(48px, 8vw, 88px);
+    font-weight: var(--weight-semibold);
+    line-height: 0.95;
+    color: var(--color-text);
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    font-variation-settings: "opsz" 60;
+    transition: color 0.2s ease;
+}
+
+.pag-app .pag-value .unit {
+    font-family: var(--font-sans);
+    font-weight: var(--weight-medium);
+    font-size: 0.34em;
+    color: var(--color-text-muted);
+    margin-left: 0.4rem;
+    vertical-align: 0.7em;
+    letter-spacing: 0;
+}
+
+.pag-app .pag-value.good { color: var(--color-success); }
+.pag-app .pag-value.bad { color: var(--color-text-muted); }
+
+.pag-app .pag-meaning {
+    text-align: right;
+    padding-bottom: 0.5rem;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.45;
+    max-width: 320px;
+    justify-self: end;
+}
+
+.pag-app .pag-meaning strong {
+    display: block;
+    font-family: var(--font-mono);
+    font-weight: var(--weight-medium);
+    font-size: var(--text-xs);
+    color: var(--color-text);
+    margin-bottom: 0.2rem;
+}
+
+/* ---------- SVG stage ---------- */
+.pag-app .stage {
+    width: 100%;
+    height: auto;
+    display: block;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    overflow: visible;
+}
+
+.pag-app .stage .grid-tick {
+    stroke: var(--color-border);
+    stroke-width: 1;
+}
+
+.pag-app .stage .grid-label {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    fill: var(--color-text-muted);
+}
+
+.pag-app .dline {
+    stroke: var(--color-accent);
+    stroke-width: 1.4;
+    fill: none;
+    stroke-linecap: round;
+}
+
+.pag-app .dline.d0 {
+    stroke: var(--color-text-muted);
+    stroke-dasharray: 4 4;
+    stroke-width: 1.1;
+    opacity: 0.6;
+}
+
+.pag-app .dlabel-bg {
+    fill: var(--color-card-bg);
+    stroke: var(--color-border);
+    stroke-width: 1;
+}
+
+.pag-app .dlabel-key {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 15px;
+    fill: var(--color-accent);
+    font-weight: var(--weight-semibold);
+}
+
+.pag-app .dlabel-val {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    fill: var(--color-text);
+    font-weight: var(--weight-medium);
+}
+
+.pag-app .dlabel-sep {
+    stroke: var(--color-border);
+    stroke-width: 1;
+}
+
+/* Dark mode: accent is light blue, weak on light card. Use medium blue. */
+[data-theme="dark"] .pag-app .dline,
+[data-theme="dark"] .pag-app .dlabel-key,
+[data-theme="dark"] .pag-app .relationship-caption {
+    stroke: var(--color-accent-medium);
+}
+[data-theme="dark"] .pag-app .dlabel-key,
+[data-theme="dark"] .pag-app .relationship-caption {
+    fill: var(--color-accent-medium);
+}
+
+/* Draggable figures */
+.pag-app .figure { cursor: grab; }
+.pag-app .figure.dragging { cursor: grabbing; }
+
+.pag-app .silhouette {
+    fill: var(--color-text);
+    transition: fill 0.15s ease;
+}
+
+.pag-app .figure.dragging .silhouette,
+.pag-app .figure.active .silhouette {
+    fill: var(--color-accent);
+}
+
+[data-theme="dark"] .pag-app .figure.dragging .silhouette,
+[data-theme="dark"] .pag-app .figure.active .silhouette {
+    fill: var(--color-accent-medium);
+}
+
+.pag-app .figure .hit { fill: transparent; }
+
+.pag-app .figure .handle-ring {
+    fill: none;
+    stroke: var(--color-accent);
+    stroke-width: 1.4;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+    pointer-events: none;
+}
+
+.pag-app .figure:hover .handle-ring,
+.pag-app .figure.dragging .handle-ring,
+.pag-app .figure.active .handle-ring {
+    opacity: 0.75;
+}
+
+[data-theme="dark"] .pag-app .figure .handle-ring {
+    stroke: var(--color-accent-medium);
+}
+
+.pag-app .figure .anchor-dot {
+    fill: var(--color-accent);
+    opacity: 0;
+    transition: opacity 0.18s ease;
+    pointer-events: none;
+}
+
+.pag-app .figure:hover .anchor-dot,
+.pag-app .figure.dragging .anchor-dot,
+.pag-app .figure.active .anchor-dot {
+    opacity: 1;
+}
+
+[data-theme="dark"] .pag-app .figure .anchor-dot {
+    fill: var(--color-accent-medium);
+}
+
+/* Speaker driver cutouts adapt to card bg so dark mode works */
+.pag-app .driver {
+    stroke: var(--color-card-bg);
+    stroke-width: 1.2;
+    fill: none;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+/* ---------- Formula + readouts ---------- */
+.pag-app .formula-row {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.pag-app .formula {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    line-height: 1.2;
+    color: var(--color-text);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.1rem;
+    font-variation-settings: "opsz" 22;
+}
+
+.pag-app .formula .label {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    font-weight: var(--weight-medium);
+}
+
+.pag-app .formula-eq {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 0.35rem;
+    white-space: nowrap;
+}
+
+.pag-app .formula .frac {
+    display: inline-flex;
+    flex-direction: column;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 1;
+    font-style: italic;
+}
+
+.pag-app .formula .frac .num,
+.pag-app .formula .frac .den {
+    padding: 0 0.35rem;
+}
+
+.pag-app .formula .frac .num {
+    border-bottom: 1.5px solid var(--color-text);
+    padding-bottom: 0.18rem;
+}
+
+.pag-app .formula .frac .den { padding-top: 0.18rem; }
+.pag-app .formula .log { font-style: normal; }
+.pag-app .formula sub {
+    font-size: 0.6em;
+    vertical-align: baseline;
+    position: relative;
+    bottom: -0.4em;
+}
+.pag-app .formula em { font-style: italic; }
+.pag-app .formula .brack {
+    font-size: 1.35em;
+    line-height: 0.5;
+    padding: 0 0.15rem;
+}
+
+.pag-app .dist-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.625rem;
+}
+
+.pag-app .dist-cell {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.65rem 0.75rem 0.7rem;
+    min-width: 0;
+}
+
+.pag-app .dist-cell .k {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--color-accent);
+    display: block;
+    margin-bottom: 0.15rem;
+    line-height: 1;
+    font-weight: var(--weight-semibold);
+}
+
+[data-theme="dark"] .pag-app .dist-cell .k {
+    color: var(--color-accent-medium);
+}
+
+.pag-app .dist-cell .v {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-text);
+    font-weight: var(--weight-medium);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.pag-app .dist-cell .v .decimal {
+    color: var(--color-text-muted);
+    font-size: 0.7rem;
+    margin-left: 0.25rem;
+}
+
+/* ---------- Experiments ---------- */
+.pag-app .experiments { margin: 3rem 0 2rem; }
+
+.pag-app .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.pag-app .section-head h2 {
+    font-size: 1.95rem;
+    margin: 0;
+    font-variation-settings: "opsz" 35;
+    font-family: var(--font-serif);
+    font-weight: var(--weight-semibold);
+}
+
+.pag-app .section-head .num {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-accent);
+    font-weight: var(--weight-medium);
+}
+
+[data-theme="dark"] .pag-app .section-head .num {
+    color: var(--color-accent-medium);
+}
+
+.pag-app .section-head .rule {
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+    margin-bottom: 0.6rem;
+}
+
+.pag-app .exp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+}
+
+.pag-app .exp-card {
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--pag-radius);
+    box-shadow: var(--shadow-sm);
+    padding: 1.25rem;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pag-app .exp-card:hover {
+    border-color: var(--color-accent);
+    box-shadow: var(--shadow-accent);
+}
+
+.pag-app .exp-card:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.pag-app .exp-card .tag {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-accent);
+    font-weight: var(--weight-medium);
+}
+
+[data-theme="dark"] .pag-app .exp-card .tag,
+[data-theme="dark"] .pag-app .exp-card .cta {
+    color: var(--color-accent-medium);
+}
+
+.pag-app .exp-card h3 {
+    font-size: 1.18rem;
+    margin: 0;
+    line-height: 1.2;
+    font-variation-settings: "opsz" 22;
+    font-family: var(--font-serif);
+    font-weight: var(--weight-semibold);
+}
+
+.pag-app .exp-card p {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: var(--color-text-muted);
+}
+
+.pag-app .exp-card .cta {
+    margin-top: 0.3rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-accent);
+    font-weight: var(--weight-medium);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.pag-app .exp-card .cta::after {
+    content: '→';
+    transition: transform 0.15s ease;
+}
+
+.pag-app .exp-card:hover .cta::after {
+    transform: translateX(3px);
+}
+
+/* ---------- Takeaway ---------- */
+.pag-app .takeaway {
+    background: var(--color-accent);
+    color: white;
+    border-radius: var(--pag-radius);
+    padding: 2.5rem 2rem;
+    margin: 3rem 0 0;
+    position: relative;
+    overflow: hidden;
+}
+
+[data-theme="dark"] .pag-app .takeaway {
+    background: var(--color-accent-medium);
+}
+
+.pag-app .takeaway::before {
+    content: '';
+    position: absolute;
+    top: -2.5rem;
+    right: -2.5rem;
+    width: 15rem;
+    height: 15rem;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 50%;
+}
+
+.pag-app .takeaway::after {
+    content: '';
+    position: absolute;
+    top: -1.25rem;
+    right: -1.25rem;
+    width: 12rem;
+    height: 12rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 50%;
+}
+
+.pag-app .takeaway .eyebrow {
+    color: rgba(255, 255, 255, 0.75);
+    margin-bottom: 1rem;
+}
+
+.pag-app .takeaway h2 {
+    color: white;
+    font-size: 1.95rem;
+    margin: 0 0 1rem;
+    font-variation-settings: "opsz" 35;
+    max-width: 700px;
+    position: relative;
+    font-family: var(--font-serif);
+    font-weight: var(--weight-semibold);
+}
+
+.pag-app .takeaway p {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.95rem;
+    line-height: 1.65;
+    max-width: 620px;
+    margin: 0 0 1em;
+}
+
+.pag-app .takeaway .principles {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0 0;
+    counter-reset: p;
+    display: grid;
+    gap: 0.7rem;
+}
+
+.pag-app .takeaway .principles li {
+    display: grid;
+    grid-template-columns: 2.25rem 1fr;
+    gap: 0.5rem;
+    align-items: baseline;
+    font-size: 0.92rem;
+    color: white;
+    line-height: 1.55;
+    counter-increment: p;
+}
+
+.pag-app .takeaway .principles li::before {
+    content: counter(p, decimal-leading-zero);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* ---------- Colophon ---------- */
+.pag-app .colophon {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    line-height: 1.65;
+    max-width: 740px;
+}
+
+.pag-app .colophon a {
+    color: var(--color-text);
+    text-decoration: underline;
+    text-decoration-color: var(--color-border);
+    text-underline-offset: 3px;
+}
+
+.pag-app .colophon a:hover {
+    text-decoration-color: var(--color-accent);
+}
+
+/* ---------- Static diagrams (slides 2, 3, 4, 5, 6) ---------- */
+.pag-app .diagram-figure {
+    margin: 2.5rem auto 0;
+    max-width: 1100px;
+    position: relative;
+}
+
+.pag-app .formula.below-diagram {
+    display: inline-flex;
+    margin: 1.5rem auto 0;
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.8rem 1.5rem;
+    font-size: 1.55rem;
+    box-shadow: var(--shadow-sm);
+    font-variation-settings: "opsz" 28;
+}
+
+.pag-app .formula.below-diagram + .content-wrapper {
+    margin-top: 1.75rem;
+}
+
+.pag-app .formula.in-canvas {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.85rem;
+    font-size: 24px;
+    line-height: 1.2;
+    font-variation-settings: "opsz" 28;
+}
+
+.pag-app .formula.in-canvas .formula-eq {
+    gap: 0.4rem;
+}
+
+.pag-app .formula.in-canvas .formula-eq.numeric {
+    font-size: 21px;
+    color: var(--color-text-muted);
+}
+
+.pag-app .formula.in-canvas .formula-eq.numeric .frac .num,
+.pag-app .formula.in-canvas .formula-eq.numeric .frac .den {
+    font-style: normal;
+    font-family: var(--font-mono);
+    font-size: 0.82em;
+    font-variant-numeric: tabular-nums;
+}
+
+.pag-app .formula.in-canvas .formula-eq.numeric .frac .num {
+    border-bottom-color: var(--color-text-muted);
+}
+
+.pag-app .formula.in-canvas.side-by-side {
+    flex-direction: row;
+    gap: 1.8rem;
+    flex-wrap: wrap;
+}
+
+.pag-app .formula.in-canvas.side-by-side .formula-eq { font-size: 22px; }
+.pag-app .formula.in-canvas.side-by-side .formula-eq.numeric { font-size: 20px; }
+
+/* Interactive figure cursor for slide 5+ */
+.pag-app .static-stage.interactive .figure {
+    cursor: grab;
+    touch-action: none;
+}
+
+.pag-app .static-stage.interactive .figure.dragging { cursor: grabbing; }
+.pag-app .static-stage.interactive .figure:focus { outline: none; }
+.pag-app .static-stage.interactive .figure:focus-visible use {
+    filter: drop-shadow(0 0 0 2px var(--color-accent));
+}
+
+/* Reveal button (slide 6+) */
+.pag-app .diagram-figure.relationships {
+    position: relative;
+}
+
+.pag-app .reveal-btn {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 0.95rem 0.55rem 0.75rem;
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    font-weight: var(--weight-medium);
+    color: var(--color-text);
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.18s ease, background 0.18s ease, transform 0.12s ease;
+}
+
+.pag-app .reveal-btn:hover {
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 6%, var(--color-card-bg));
+}
+
+.pag-app .reveal-btn:active {
+    transform: translateY(1px);
+}
+
+.pag-app .reveal-btn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.pag-app .reveal-btn .eye-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--color-accent);
+    flex-shrink: 0;
+}
+
+[data-theme="dark"] .pag-app .reveal-btn .eye-icon {
+    color: var(--color-accent-medium);
+}
+
+/* Microphone directivity (slide 7) */
+.pag-app .pattern-toggle {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    z-index: 2;
+    display: inline-flex;
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.2rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.pag-app .pattern-btn {
+    background: transparent;
+    border: none;
+    padding: 0.4rem 0.75rem;
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    font-weight: var(--weight-medium);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.pag-app .pattern-btn:hover {
+    color: var(--color-text);
+}
+
+.pag-app .pattern-btn.is-active {
+    background: var(--color-accent);
+    color: #ffffff;
+}
+
+[data-theme="dark"] .pag-app .pattern-btn.is-active {
+    background: var(--color-accent-medium);
+}
+
+.pag-app .pattern-btn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+/* Slide 8 — second toggle (loudspeaker) sits below the mic toggle. */
+.pag-app .pattern-toggle.pattern-toggle-speaker {
+    top: 4.25rem;
+}
+
+.pag-app .speaker-btn {
+    background: transparent;
+    border: none;
+    padding: 0.4rem 0.75rem;
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    font-weight: var(--weight-medium);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.pag-app .speaker-btn:hover {
+    color: var(--color-text);
+}
+
+.pag-app .speaker-btn.is-active {
+    background: var(--color-warning);
+    color: #ffffff;
+    transition: background 0.2s ease;
+}
+.pag-app .speaker-btn.is-active[data-speaker="90"] { background: #f59e0b; }
+.pag-app .speaker-btn.is-active[data-speaker="60"] { background: #f97316; }
+.pag-app .speaker-btn.is-active[data-speaker="40"] { background: #ef4444; }
+
+.pag-app .speaker-btn:focus-visible {
+    outline: 2px solid var(--color-warning);
+    outline-offset: 2px;
+}
+
+/* Speaker coverage cone — color shifts hotter as the beam narrows.
+   --cone-color is set per-pattern via [data-bw] on the lobe group. */
+.pag-app .speaker-lobe {
+    --cone-color: #f59e0b;  /* default: amber (90°) */
+}
+.pag-app .speaker-lobe[data-bw="90"] { --cone-color: #f59e0b; }  /* amber */
+.pag-app .speaker-lobe[data-bw="60"] { --cone-color: #f97316; }  /* orange */
+.pag-app .speaker-lobe[data-bw="40"] { --cone-color: #ef4444; }  /* red */
+
+.pag-app .speaker-lobe path {
+    fill: var(--cone-color);
+    stroke: var(--cone-color);
+    stroke-width: 1;
+    stroke-opacity: 0.45;
+    pointer-events: none;
+    transition: fill 0.2s ease, stroke 0.2s ease;
+}
+.pag-app .speaker-cone-6 { fill-opacity: 0.12; }
+.pag-app .speaker-cone-0 { fill-opacity: 0.22; }
+
+.pag-app .speaker-cone-label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: var(--weight-medium);
+    fill: var(--cone-color, var(--color-warning));
+    fill-opacity: 0.85;
+    pointer-events: none;
+    paint-order: stroke fill;
+    stroke: var(--color-card-bg);
+    stroke-width: 3;
+    stroke-linejoin: round;
+    transition: fill 0.2s ease;
+}
+
+.pag-app .speaker-cone-label-axis {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+}
+
+.pag-app .mic-onaxis {
+    stroke: var(--color-accent);
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+    fill: none;
+    opacity: 0.55;
+}
+
+[data-theme="dark"] .pag-app .mic-onaxis {
+    stroke: var(--color-accent-medium);
+}
+
+.pag-app .polar-lobe path {
+    fill: var(--color-accent);
+    fill-opacity: 0.18;
+    stroke: var(--color-accent);
+    stroke-width: 1.2;
+    stroke-opacity: 0.85;
+    pointer-events: none;
+}
+
+[data-theme="dark"] .pag-app .polar-lobe path {
+    fill: var(--color-accent-medium);
+    stroke: var(--color-accent-medium);
+}
+
+.pag-app .angle-arc {
+    fill: none;
+    stroke: var(--color-text-muted);
+    stroke-width: 1;
+    stroke-dasharray: 2 2;
+    opacity: 0.7;
+}
+
+.pag-app .angle-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: var(--weight-medium);
+    fill: var(--color-text);
+}
+
+.pag-app .formula-correction {
+    color: var(--color-text-muted);
+    font-style: italic;
+    font-size: 0.85em;
+}
+
+.pag-app .relationship-caption {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    fill: var(--color-accent);
+    font-weight: var(--weight-semibold);
+    transition: opacity 0.35s ease;
+}
+
+/* Slide 9 — gradient marker line spanning the two speaker positions */
+.pag-app .gain-marker-gradient {
+    stroke: url(#s9-gainGradient);
+    stroke-width: 3;
+    stroke-linecap: round;
+}
+.pag-app .gain-marker-label {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.02em;
+}
+.pag-app .gain-marker-good-label { fill: var(--color-success); }
+.pag-app .gain-marker-bad-label  { fill: var(--color-error); }
+
+.pag-app .pag-bar.is-bad {
+    background: var(--color-error);
+}
+[data-theme="dark"] .pag-app .pag-bar.is-bad {
+    background: var(--color-error);
+}
+.pag-app .pag-bar.is-bad .value {
+    font-family: var(--font-sans);
+    font-size: 17px;
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* PAG result bar */
+.pag-app .pag-bar {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    background: var(--color-accent);
+    border-radius: var(--radius-md);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    padding: 0 1.25rem;
+    font-family: var(--font-sans);
+    font-size: 17px;
+    font-weight: var(--weight-medium);
+}
+
+[data-theme="dark"] .pag-app .pag-bar {
+    background: var(--color-accent-medium);
+}
+
+.pag-app .pag-bar .label { letter-spacing: 0.01em; }
+
+.pag-app .pag-bar .value {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+}
+
+.pag-app .formula-host {
+    display: flex;
+    justify-content: center;
+    margin: 0 auto;
+    max-width: 1100px;
+}
+
+.pag-app .diagram-figure + .content-wrapper {
+    margin-top: 2rem;
+}
+
+.pag-app .static-stage {
+    width: 100%;
+    height: auto;
+    display: block;
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--pag-radius);
+    box-shadow: var(--shadow-sm);
+    padding: 1rem;
+}
+
+.pag-app .static-stage .component-label {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    fill: var(--color-accent);
+    font-weight: var(--weight-medium);
+}
+
+[data-theme="dark"] .pag-app .static-stage .component-label {
+    fill: var(--color-accent-medium);
+}
+
+.pag-app .floor {
+    stroke: var(--color-border);
+    stroke-width: 1.5;
+}
+
+.pag-app .static-stage {
+    --console-fill: var(--color-text-muted);
+    --fader-fill:   var(--color-card-bg);
+    --led-fill:     var(--color-success);
+}
+
+/* ---------- Slide 1 specifics ---------- */
+.pag-app .slide-eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-accent);
+    margin-bottom: 1.25rem;
+    font-weight: var(--weight-medium);
+}
+
+[data-theme="dark"] .pag-app .slide-eyebrow {
+    color: var(--color-accent-medium);
+}
+
+.pag-app .slide-eyebrow .sep {
+    color: var(--color-border);
+    margin: 0 0.5em;
+}
+
+.pag-app .slide-lede {
+    font-family: var(--font-serif);
+    font-size: 1.18rem;
+    line-height: 1.5;
+    color: var(--color-text);
+    max-width: 640px;
+    margin: 0 0 2rem;
+    font-variation-settings: "opsz" 21;
+}
+
+.pag-app .slide-title {
+    font-family: var(--font-serif);
+    font-size: 2.44rem;
+    font-weight: var(--weight-semibold);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.6em;
+    font-variation-settings: "opsz" 44;
+}
+
+.pag-app .review-panel {
+    background: var(--color-accent-light);
+    border: 1px solid var(--color-border);
+    border-left: 3px solid var(--color-accent);
+    border-radius: var(--pag-radius);
+    padding: 2.25rem 2.5rem 2rem;
+    margin: 2rem 0;
+    max-width: 740px;
+    position: relative;
+    box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .pag-app .review-panel {
+    background: var(--color-card-bg);
+    border-left-color: var(--color-accent-medium);
+}
+
+.pag-app .review-panel .panel-label {
+    position: absolute;
+    top: -0.6rem;
+    left: 1.5rem;
+    background: var(--color-bg);
+    padding: 0 0.7rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-accent);
+    font-weight: var(--weight-medium);
+}
+
+[data-theme="dark"] .pag-app .review-panel .panel-label {
+    color: var(--color-accent-medium);
+}
+
+.pag-app .review-panel p {
+    margin: 0 0 1.1em;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--color-text);
+}
+
+.pag-app .review-panel p:last-child {
+    margin-bottom: 0;
+}
+
+.pag-app .review-panel strong {
+    font-weight: var(--weight-semibold);
+}
+
+.pag-app .slide-transition {
+    font-family: var(--font-serif);
+    color: var(--color-text-muted);
+    font-size: 1rem;
+    margin: 0;
+    max-width: 640px;
+    font-variation-settings: "opsz" 18;
+}
+
+.pag-app .slide-transition .arrow {
+    color: var(--color-accent);
+    font-weight: var(--weight-semibold);
+}
+
+[data-theme="dark"] .pag-app .slide-transition .arrow {
+    color: var(--color-accent-medium);
+}
+
+/* ---------- Slide system ---------- */
+.pag-app .slide-host {
+    padding-bottom: 6rem;
+}
+
+.pag-app .slide {
+    display: none;
+}
+
+.pag-app .slide.is-active {
+    display: block;
+    animation: pag-slide-in 0.35s ease;
+}
+
+@keyframes pag-slide-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+}
+
+/* ---------- Slide navigation ---------- */
+.pag-app .slide-nav {
+    position: fixed;
+    bottom: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--pag-radius);
+    box-shadow: var(--shadow-md);
+    padding: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+    z-index: 100;
+}
+
+.pag-app .slide-nav button {
+    background: transparent;
+    border: none;
+    color: var(--color-text);
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.pag-app .slide-nav button:hover:not(:disabled) {
+    background: var(--color-accent);
+    color: #ffffff;
+}
+
+[data-theme="dark"] .pag-app .slide-nav button:hover:not(:disabled) {
+    background: var(--color-accent-medium);
+    color: #ffffff;
+}
+
+.pag-app .slide-nav button:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.pag-app .slide-nav button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.pag-app .slide-nav button svg {
+    width: 22px;
+    height: 22px;
+}
+
+.pag-app .slide-nav .indicator {
+    width: auto;
+    height: 40px;
+    padding: 0 0.85rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-text);
+    font-weight: var(--weight-medium);
+    font-variant-numeric: tabular-nums;
+    min-width: 64px;
+    text-align: center;
+}
+
+.pag-app .slide-nav .indicator .sep,
+.pag-app .slide-nav .indicator .total {
+    color: var(--color-text-muted);
+}
+
+/* Slide-jump popup */
+.pag-app .slide-nav .slide-jump {
+    position: absolute;
+    bottom: calc(100% + 0.5rem);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: 0.4rem;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.2rem;
+    min-width: 240px;
+}
+
+.pag-app .slide-nav .slide-jump[hidden] {
+    display: none;
+}
+
+.pag-app .slide-jump-item {
+    background: transparent;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: var(--weight-medium);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.pag-app .slide-jump-item:hover {
+    background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+    color: var(--color-accent);
+}
+
+[data-theme="dark"] .pag-app .slide-jump-item:hover {
+    background: color-mix(in srgb, var(--color-accent-medium) 22%, transparent);
+    color: var(--color-accent-medium);
+}
+
+.pag-app .slide-jump-item.is-current:hover {
+    /* Current is already accent-bg; keep it on hover (white text wins). */
+    color: #ffffff;
+}
+
+.pag-app .slide-jump-item.is-current {
+    background: var(--color-accent);
+    color: #ffffff;
+}
+
+[data-theme="dark"] .pag-app .slide-jump-item.is-current {
+    background: var(--color-accent-medium);
+}
+
+.pag-app .slide-jump-item:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.pag-app .stage text {
+    pointer-events: none;
+}
+
+/* Slide 10 — Faders in action */
+.pag-app .operator-hit {
+    cursor: pointer;
+    transition: filter 0.15s ease;
+}
+
+.pag-app .operator-hit:hover {
+    filter: brightness(1.08) drop-shadow(0 0 6px color-mix(in srgb, var(--color-accent) 50%, transparent));
+}
+
+.pag-app .operator-hit:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 4px;
+    border-radius: var(--radius-sm);
+}
+
+.pag-app .speech-bubble {
+    pointer-events: none;
+    animation: pag-speech-pulse 1.8s ease-in-out infinite;
+}
+
+.pag-app .speech-bubble-shape {
+    fill: var(--color-card-bg);
+    stroke: var(--color-accent);
+    stroke-width: 1.5;
+}
+
+.pag-app .speech-bubble-text {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: var(--weight-semibold);
+    fill: var(--color-accent);
+    letter-spacing: 0.04em;
+}
+
+[data-theme="dark"] .pag-app .speech-bubble-shape {
+    stroke: var(--color-accent-medium);
+}
+[data-theme="dark"] .pag-app .speech-bubble-text {
+    fill: var(--color-accent-medium);
+}
+
+@keyframes pag-speech-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.85; transform: scale(1.05); }
+}
+
+/* Fader overlay (modal-ish, sits on top of the slide stage) */
+.pag-app .fader-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 1rem;
+    animation: pag-fade-in 0.18s ease;
+}
+
+.pag-app .fader-overlay[hidden] { display: none; }
+
+@keyframes pag-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.pag-app .fader-panel {
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--pag-radius);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.25);
+    padding: 1.75rem 2rem 2rem;
+    width: min(560px, 100%);
+    position: relative;
+}
+
+.pag-app .fader-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.pag-app .fader-close:hover {
+    background: var(--color-control-bg);
+    color: var(--color-text);
+}
+
+.pag-app .fader-title {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    font-weight: var(--weight-semibold);
+    margin: 0 0 0.5rem;
+}
+
+.pag-app .fader-help {
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    margin: 0 0 1.5rem;
+}
+
+.pag-app .fader-stage {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1.5rem;
+    align-items: stretch;
+}
+
+.pag-app .fader-zones {
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+}
+
+.pag-app .fader-zone {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.2rem;
+    min-height: 70px;
+}
+
+.pag-app .fader-zone-feedback {
+    background: color-mix(in srgb, var(--color-error) 18%, var(--color-card-bg));
+    flex: 2;
+}
+
+.pag-app .fader-zone-edge {
+    background: color-mix(in srgb, var(--color-warning) 14%, var(--color-card-bg));
+    flex: 0 0 auto;
+    min-height: 36px;
+    border-top: 1px dashed color-mix(in srgb, var(--color-warning) 60%, transparent);
+    border-bottom: 1px dashed color-mix(in srgb, var(--color-warning) 60%, transparent);
+}
+
+.pag-app .fader-zone-inaudible {
+    background: color-mix(in srgb, var(--color-accent) 10%, var(--color-card-bg));
+    flex: 2;
+}
+
+.pag-app .fader-zone-label {
+    font-family: var(--font-sans);
+    font-size: 1.05rem;
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.06em;
+}
+
+.pag-app .fader-zone-feedback .fader-zone-label { color: var(--color-error); }
+.pag-app .fader-zone-inaudible .fader-zone-label { color: var(--color-accent); }
+[data-theme="dark"] .pag-app .fader-zone-inaudible .fader-zone-label { color: var(--color-accent-medium); }
+
+.pag-app .fader-zone-sub {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    line-height: 1.35;
+}
+
+.pag-app .fader-zone-sub-edge {
+    color: var(--color-warning);
+    font-weight: var(--weight-medium);
+}
+
+/* Vertical fader */
+.pag-app .fader-track-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+.pag-app .fader-track {
+    position: relative;
+    width: 56px;
+    flex: 1;
+    min-height: 230px;
+    background: var(--color-control-bg);
+    border-radius: 12px;
+    border: 1px solid var(--color-border);
+}
+
+.pag-app .fader-track-line {
+    position: absolute;
+    left: 50%;
+    top: 12px;
+    bottom: 12px;
+    width: 2px;
+    transform: translateX(-50%);
+    background: color-mix(in srgb, var(--color-text-muted) 35%, transparent);
+}
+
+.pag-app .fader-knob {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 50%);
+    width: 48px;
+    height: 28px;
+    background: var(--color-text);
+    border: 2px solid var(--color-card-bg);
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    cursor: grab;
+    touch-action: none;
+    padding: 0;
+}
+
+.pag-app .fader-knob::before {
+    content: '';
+    position: absolute;
+    left: 25%;
+    right: 25%;
+    top: 50%;
+    height: 2px;
+    background: var(--color-card-bg);
+    transform: translateY(-50%);
+}
+
+.pag-app .fader-knob:active,
+.pag-app .fader-knob.is-dragging {
+    cursor: grabbing;
+}
+
+.pag-app .fader-knob:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+}
+
+.pag-app .fader-track-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-align: center;
+}
+
+@media (max-width: 600px) {
+    .pag-app .fader-stage {
+        grid-template-columns: 1fr;
+    }
+    .pag-app .fader-track {
+        min-height: 180px;
+    }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 720px) {
+    .pag-app .stage-wrap { padding: 1.25rem 1rem 1rem; }
+    .pag-app .pag-block {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    .pag-app .pag-meaning {
+        text-align: left;
+        padding-bottom: 0;
+        justify-self: start;
+        max-width: none;
+    }
+    .pag-app .formula-row { flex-direction: column; }
+    .pag-app .formula { font-size: 1.08rem; }
+    .pag-app .dist-grid { grid-template-columns: repeat(2, 1fr); }
+    .pag-app .takeaway { padding: 2rem 1.5rem; }
+    .pag-app .section-head h2 { font-size: 1.56rem; }
+    .pag-app .review-panel { padding: 1.75rem 1.25rem 1.5rem; }
+    .pag-app .formula.below-diagram { font-size: 1.05rem; padding: 0.55rem 0.9rem; }
+    .pag-app .slide-title { font-size: 1.95rem; }
+}
