@@ -2434,8 +2434,11 @@ const PAG = (() => {
     mic:      { x: 80 + 7.08 * PX_PER_FT,    y: M_Y,  fixedY: true  },
     speaker:  { x: 390,                      y: 126,  fixedY: false },
     listener: { x: 80 + 49.42 * PX_PER_FT,   y: L_Y,  fixedY: true  },
-    micMode:     'off',          // 'off' | 'omni' | 'cardioid' | 'hypercardioid'
-    speakerMode: 'off',          // 'off' | '90' | '60' | '40'
+    // 'omni' is the "no directivity benefit" baseline for both the mic and
+    // the loudspeaker — it adds no correction term, since an omni element
+    // contributes 0 dB of off-axis rejection.
+    micMode:     'omni',         // 'omni' | 'cardioid' | 'supercardioid' | 'hypercardioid'
+    speakerMode: 'omni',         // 'omni' | '90' | '60' | '40'
   };
 
   const constraints = {
@@ -2480,12 +2483,15 @@ const PAG = (() => {
   // --- Directivity math (lifted from slide 7/8 of the guide) ---
   const MIC_NULL_CAP_LINEAR = Math.pow(10, -25 / 20);
   function micCorrectionDb(pattern, theta) {
-    if (pattern === 'off') return 0;
+    // 'omni' returns D=1 at every angle, so the correction is 0 dB —
+    // no special-casing needed.
     const D = Math.abs(polarResponse(pattern, theta));
     return -20 * Math.log10(Math.max(D, MIC_NULL_CAP_LINEAR));
   }
   function speakerCorrectionDb(mode, theta) {
-    if (mode === 'off') return 0;
+    // 'omni' = omnidirectional loudspeaker: no off-axis attenuation, so
+    // no PAG contribution. Directional modes carry a numeric beamwidth.
+    if (mode === 'omni') return 0;
     const bwDeg = parseFloat(mode);
     const thetaDeg = Math.abs(theta * 180 / Math.PI);
     const halfBw = bwDeg / 2;
@@ -2555,11 +2561,12 @@ const PAG = (() => {
     tiltMicCapsule(figs.mic, state.talker, state.mic);
 
     // --- Speaker coverage cone ---
-    // Use the .is-hidden class (display: none) rather than the hidden
-    // attribute — SVG support for the attribute is inconsistent and some
-    // browsers leave the previously-rendered geometry behind.
-    speakerLobe.classList.toggle('is-hidden', state.speakerMode === 'off');
-    if (state.speakerMode !== 'off') {
+    // Omni = no coverage cone (radiates equally everywhere). Use the
+    // .is-hidden class (display: none) rather than the hidden attribute —
+    // SVG support for the attribute is inconsistent and some browsers
+    // leave the previously-rendered geometry behind.
+    speakerLobe.classList.toggle('is-hidden', state.speakerMode === 'omni');
+    if (state.speakerMode !== 'omni') {
       speakerLobe.setAttribute('data-bw', state.speakerMode);
       speakerLobe.setAttribute('transform',
         'translate(' + state.speaker.x.toFixed(1) + ', ' + state.speaker.y.toFixed(1) + ') rotate(' + speakerAngle.toFixed(1) + ')');
@@ -2573,26 +2580,34 @@ const PAG = (() => {
     const { Ds, D1, D2, D0, pagGeom, micTheta, micCorr, spkTheta, spkCorr } = compute();
 
     // --- Mic polar overlay ---
-    const micOff = state.micMode === 'off';
-    onAxisLine.classList.toggle('is-hidden', micOff);
-    polarLobe.classList.toggle('is-hidden', micOff);
-    angleArc.classList.toggle('is-hidden', micOff);
-    angleLabel.classList.toggle('is-hidden', micOff);
-    if (!micOff) {
-      const m = state.mic, t = state.talker, s = state.speaker;
-      const dx = t.x - m.x, dy = t.y - m.y;
-      const len = Math.hypot(dx, dy) || 1;
+    // The polar lobe is always drawn (the omni circle still shows, so the
+    // mic visibly has a pattern). But omni contributes no off-axis
+    // rejection, so its on-axis line, angle arc/label, and PAG correction
+    // term are suppressed — those only appear for directional patterns.
+    const micDirectional = state.micMode !== 'omni';
+    const m = state.mic, t = state.talker, s = state.speaker;
+    const dx = t.x - m.x, dy = t.y - m.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const onAxisDeg = Math.atan2(dy, dx) * 180 / Math.PI;
+
+    // Polar lobe — shown for every pattern including omni.
+    polarLobe.classList.remove('is-hidden');
+    polarLobe.setAttribute('transform',
+      'translate(' + m.x.toFixed(1) + ', ' + m.y.toFixed(1) + ') rotate(' + onAxisDeg.toFixed(1) + ')');
+    polarLobePath.setAttribute('d', getLobePath(state.micMode));
+    polarLobe.setAttribute('opacity', state.micMode === 'omni' ? '0.35' : '1');
+
+    // On-axis line + angle arc/label — directional patterns only.
+    onAxisLine.classList.toggle('is-hidden', !micDirectional);
+    angleArc.classList.toggle('is-hidden', !micDirectional);
+    angleLabel.classList.toggle('is-hidden', !micDirectional);
+    if (micDirectional) {
       const ux = dx / len, uy = dy / len;
       const endP = { x: m.x + ux * 70, y: m.y + uy * 70 };
       onAxisLine.setAttribute('x1', m.x.toFixed(1));
       onAxisLine.setAttribute('y1', m.y.toFixed(1));
       onAxisLine.setAttribute('x2', endP.x.toFixed(1));
       onAxisLine.setAttribute('y2', endP.y.toFixed(1));
-      const onAxisDeg = Math.atan2(dy, dx) * 180 / Math.PI;
-      polarLobe.setAttribute('transform',
-        'translate(' + m.x.toFixed(1) + ', ' + m.y.toFixed(1) + ') rotate(' + onAxisDeg.toFixed(1) + ')');
-      polarLobePath.setAttribute('d', getLobePath(state.micMode));
-      polarLobe.setAttribute('opacity', state.micMode === 'omni' ? '0.35' : '1');
 
       // Angle arc between mic→talker and mic→speaker.
       const aT = Math.atan2(t.y - m.y, t.x - m.x);
@@ -2635,8 +2650,8 @@ const PAG = (() => {
     } else {
       // Show breakdown only when at least one correction is active.
       const corrPieces = [];
-      if (state.micMode !== 'off') corrPieces.push(micCorr.toFixed(1) + ' dB');
-      if (state.speakerMode !== 'off') corrPieces.push(spkCorr.toFixed(1) + ' dB');
+      if (state.micMode !== 'omni') corrPieces.push(micCorr.toFixed(1) + ' dB');
+      if (state.speakerMode !== 'omni') corrPieces.push(spkCorr.toFixed(1) + ' dB');
       if (corrPieces.length === 0) {
         pagValueEl.textContent = pagGeom.toFixed(1) + ' dB';
       } else {
@@ -2645,8 +2660,8 @@ const PAG = (() => {
     }
     // Equation tail: add "+ mic correction" / "+ loudspeaker correction" as appropriate.
     const tail = [];
-    if (state.micMode !== 'off')     tail.push('mic correction');
-    if (state.speakerMode !== 'off') tail.push('loudspeaker correction');
+    if (state.micMode !== 'omni')     tail.push('mic correction');
+    if (state.speakerMode !== 'omni') tail.push('loudspeaker correction');
     corrTermsEl.textContent = tail.length ? ' + ' + tail.join(' + ') : '';
 
     // Numeric substitution row — matches the slide 5 "side-by-side" layout.
