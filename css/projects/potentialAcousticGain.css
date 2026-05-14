@@ -1363,7 +1363,9 @@
 
 /* Slide-jump popup — vertical list of "NN — Title" entries. The popup
    width is determined by the longest item (each item is nowrap), so the
-   popup auto-sizes to whatever the longest title needs. */
+   popup auto-sizes to whatever the longest title needs. width:max-content
+   forces the absolutely-positioned popup to size to its content rather
+   than to a shrink-to-fit minimum, which previously clipped items. */
 .pag-app .slide-nav .slide-jump {
     position: absolute;
     bottom: calc(100% + 0.5rem);
@@ -1378,11 +1380,12 @@
     flex-direction: column;
     align-items: stretch;
     gap: 0.15rem;
+    width: max-content;
+    min-width: 240px;
     max-width: 90vw;
     max-height: 70vh;
     overflow-y: auto;
-    /* min-width so very short titles still produce a roomy popup. */
-    min-width: 240px;
+    overflow-x: hidden;
 }
 
 .pag-app .slide-nav .slide-jump[hidden] {
