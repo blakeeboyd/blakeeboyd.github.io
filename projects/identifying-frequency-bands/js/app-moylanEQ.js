@@ -78,13 +78,19 @@ async function setup() {
     outputBoost.gain.value = 2.0; // +6 dB
     merger.connect(outputBoost);
     outputBoost.connect(outputNode);
-    deviceL.node.connect(merger, 0, 0); // deviceL mono output → left channel
+    // deviceL output passes through pinkNoiseGain on its way to the merger.
+    // The patch's "gain" control only affects the audio-file branch, not the
+    // pink-noise branch, so the gain slider drives this node when pink noise
+    // is selected. Kept at unity for user audio (which has its own gain).
+    const pinkNoiseGain = context.createGain();
+    deviceL.node.connect(pinkNoiseGain);
+    pinkNoiseGain.connect(merger, 0, 0); // deviceL mono output → left channel
     deviceR.node.connect(merger, 0, 1); // deviceR mono output → right channel
     // Mono fill: routes deviceL to right channel for mono pink noise.
     // Gain is 1.0 during pink noise, 0.0 during user audio.
     const monoFill = context.createGain();
     monoFill.gain.value = 0; // starts muted (source starts as Mute)
-    deviceL.node.connect(monoFill);
+    pinkNoiseGain.connect(monoFill);
     monoFill.connect(merger, 0, 1);
 
     // Splitter for user audio: splits stereo into L/R for each device
@@ -140,7 +146,7 @@ async function setup() {
     splitter.connect(upmixToR, 1);
     upmixToR.connect(deviceR.node);
 
-    setupGain(devices, userAudioGain);
+    setupGain(devices, userAudioGain, pinkNoiseGain);
     setupAudioSource(devices, context, userAudioGain);
     setupDemo(devices, context);
     initTooltips();
@@ -524,11 +530,11 @@ function loadRNBOScript(version) {
   }
 
   // Separate gain values for different sources
-  let pinkNoiseGain = -24;
+  let pinkNoiseGain = 0;
   let userAudioGainValue = 0;
   let currentSource = 0; // 0=Mute, 1=Pink Noise, 2=User Audio
 
-  function setupGain(devices, userAudioGain) {
+  function setupGain(devices, userAudioGain, pinkNoiseGainNode) {
     const gainSlider = document.getElementById("gain-slider");
     const gainValue = document.getElementsByClassName("gain-text")[0];
 
@@ -554,21 +560,9 @@ function loadRNBOScript(version) {
     gainValue.innerHTML = pinkNoiseGain + ' dB';
     updateSliderFill(gainSlider);
 
-    // Send a gain value to both RNBO devices via the "gain" parameter and the
-    // "gain" inport. The patch's pink noise level is driven by the inport
-    // (matching how filter/band controls are wired); the signal parameter is
-    // set too for completeness.
-    function applyRnboGain(db) {
-      devices.forEach(d => {
-        const gp = getParameter(d, "gain");
-        if (gp) gp.value = db;
-        d.scheduleEvent(new RNBO.MessageEvent(RNBO.TimeNow, "gain", [db]));
-      });
-    }
-
     // Set initial gains
     userAudioGain.gain.value = dbToLinear(userAudioGainValue);
-    applyRnboGain(pinkNoiseGain);
+    pinkNoiseGainNode.gain.value = dbToLinear(pinkNoiseGain);
 
     // Update gain control visual state based on source
     const gainControl = document.getElementById("gain-control");
@@ -593,13 +587,15 @@ function loadRNBOScript(version) {
       lastActiveSource = source;
 
       if (source === 1) {
-        // Pink Noise
+        // Pink Noise - restore the stored pink noise gain on the node
         gainSlider.value = pinkNoiseGain;
         gainValue.innerHTML = Math.round(pinkNoiseGain) + ' dB';
+        pinkNoiseGainNode.gain.value = dbToLinear(pinkNoiseGain);
       } else {
-        // User Audio
+        // User Audio - pink noise node back to unity (user audio has its own gain)
         gainSlider.value = userAudioGainValue;
         gainValue.innerHTML = Math.round(userAudioGainValue) + ' dB';
+        pinkNoiseGainNode.gain.value = 1;
       }
       updateSliderFill(gainSlider);
     };
@@ -613,9 +609,9 @@ function loadRNBOScript(version) {
       updateSliderFill(this);
 
       if (currentSource === 1) {
-        // Pink Noise - update RNBO gain on both devices and store
+        // Pink Noise - drive the pink noise gain node and store
         pinkNoiseGain = value;
-        applyRnboGain(value);
+        pinkNoiseGainNode.gain.value = dbToLinear(value);
       } else {
         // User Audio (or Mute) - update user audio gain node and store
         userAudioGainValue = value;
