@@ -353,6 +353,53 @@
       "depth": "reflective"
     },
     {
+      "citekey": "audiouniversitySIMPLERuleChoosing2020",
+      "title": "A SIMPLE Rule For Choosing An Amplifier | Ohms, Watts, & More",
+      "channel": "Audio University",
+      "duration": "04:20",
+      "ytId": "6B0OlQaD_i4",
+      "domains": [
+        "Audio Theory",
+        "Live Sound"
+      ],
+      "subdomains": [
+        "Electroacoustics",
+        "Sound Reinforcement"
+      ],
+      "tags": [
+        "loudspeakers",
+        "gain-structure"
+      ],
+      "concepts": [
+        "amplifier selection",
+        "impedance",
+        "ohms",
+        "nominal impedance",
+        "power rating",
+        "peak power",
+        "continuous power rating",
+        "watts",
+        "amplifier headroom",
+        "two-channel amplifier",
+        "speaker damage",
+        "amplifier damage",
+        "overpowered amplifier",
+        "underpowered amplifier",
+        "clipping",
+        "waveform distortion",
+        "speaker overheating",
+        "gain structure",
+        "twice continuous power rule",
+        "doubling power is 3 dB",
+        "technical specifications",
+        "QSC E115",
+        "8 ohm load",
+        "4 ohm load",
+        "sound pressure level"
+      ],
+      "depth": "foundational"
+    },
+    {
       "citekey": "nathanlivelyBobMcCarthySound2025",
       "title": "Bob McCarthy on Sound System Tuning: Why \"It Measures Good But Sounds Bad\" is BS",
       "channel": "Nathan Lively",
@@ -764,6 +811,54 @@
       "depth": "applied"
     },
     {
+      "citekey": "audiouniversityGainStagingSecrets2021",
+      "title": "Gain Staging Secrets Every Great Audio Engineer Understands!",
+      "channel": "Audio University",
+      "duration": "09:12",
+      "ytId": "TCBHysRV4vs",
+      "domains": [
+        "Studio Production",
+        "Audio Theory"
+      ],
+      "subdomains": [
+        "Mixing",
+        "Fundamentals"
+      ],
+      "tags": [
+        "gain-structure",
+        "signal-flow"
+      ],
+      "concepts": [
+        "gain structure",
+        "gain staging",
+        "gain",
+        "signal chain",
+        "headroom",
+        "clipping",
+        "distortion",
+        "noise floor",
+        "signal-to-noise ratio",
+        "dynamic range",
+        "analog tape noise",
+        "digital clipping",
+        "VU meter",
+        "full scale meter",
+        "0 dBFS",
+        "+4 dBu line level",
+        "-12 dBFS target",
+        "-18 dBFS average",
+        "mic preamp gain",
+        "region gain",
+        "trim plugin",
+        "makeup gain",
+        "unity gain",
+        "master bus headroom",
+        "master fader",
+        "monitor knob"
+      ],
+      "depth": "applied"
+    },
+    {
       "citekey": "dallastaylorHeMixedSNL2025",
       "title": "He mixed SNL for 40 years. This was his final night",
       "channel": "Dallas Taylor",
@@ -1125,6 +1220,44 @@
       "depth": "applied"
     },
     {
+      "citekey": "audiouniversityINVERSESQUARELAW2020",
+      "title": "INVERSE SQUARE LAW of Sound",
+      "channel": "Audio University",
+      "duration": "04:15",
+      "ytId": "umTSWJ3POOk",
+      "domains": [
+        "Audio Theory"
+      ],
+      "subdomains": [
+        "Acoustics",
+        "Fundamentals"
+      ],
+      "tags": [
+        "decibels",
+        "room-acoustics"
+      ],
+      "concepts": [
+        "inverse square law",
+        "inverse distance law",
+        "sound intensity",
+        "sound pressure level",
+        "intensity vs pressure",
+        "distance attenuation",
+        "spherical spreading",
+        "surface area of a sphere",
+        "4 pi r squared",
+        "wavefront",
+        "point source",
+        "omnidirectional source",
+        "free-field condition",
+        "6 dB per doubling of distance",
+        "boundary reflection",
+        "theoretical assumptions",
+        "sound source power"
+      ],
+      "depth": "foundational"
+    },
+    {
       "citekey": "alphasoundDoublingSpeakers+3dB2023",
       "title": "Is doubling speakers +3dB or +6dB? What's parallel and series wiring?",
       "channel": "Alpha Sound",
@@ -1357,6 +1490,42 @@
       "depth": "applied"
     },
     {
+      "citekey": "audiouniversityMICLEVELVs2020",
+      "title": "MIC LEVEL vs LINE LEVEL: Audio Levels Explained",
+      "channel": "Audio University",
+      "duration": "02:13",
+      "ytId": "gzbiOeqbERE",
+      "domains": [
+        "Audio Theory"
+      ],
+      "subdomains": [
+        "Signal Processing",
+        "Fundamentals"
+      ],
+      "tags": [
+        "signal-flow",
+        "gain-structure"
+      ],
+      "concepts": [
+        "mic level",
+        "instrument level",
+        "line level",
+        "speaker level",
+        "four signal levels",
+        "microphone preamp",
+        "instrument preamp",
+        "power amplifier",
+        "transduction of pressure to current",
+        "guitar pickup signal",
+        "weak signal amplification",
+        "line level as interconnect standard",
+        "mixing console signal level",
+        "outboard effects signal level",
+        "signal chain through a complete system"
+      ],
+      "depth": "foundational"
+    },
+    {
       "citekey": "nathanlivelyNobodyCaresShit2022",
       "title": "Nobody Cares until the Shit Hits the Fan (Sean Sullivan)",
       "channel": "Nathan Lively",
@@ -1416,6 +1585,41 @@
         "perspective on hard days"
       ],
       "depth": "reflective"
+    },
+    {
+      "citekey": "audiouniversityPARAMETRICEQVs2020",
+      "title": "PARAMETRIC EQ vs GRAPHIC EQ: Differences + How & When to Use Them",
+      "channel": "Audio University",
+      "duration": "02:44",
+      "ytId": "4V3NMcbBvr4",
+      "domains": [
+        "Audio Theory"
+      ],
+      "subdomains": [
+        "Signal Processing",
+        "Fundamentals"
+      ],
+      "tags": [
+        "eq"
+      ],
+      "concepts": [
+        "equalizer",
+        "graphic EQ",
+        "parametric EQ",
+        "frequency band",
+        "center frequency",
+        "gain",
+        "bandwidth",
+        "31-band graphic EQ",
+        "three-band EQ",
+        "fixed bandwidth",
+        "swept center frequency",
+        "third-octave ISO frequencies",
+        "boost and cut",
+        "frequency balance",
+        "stage monitor EQ"
+      ],
+      "depth": "foundational"
     },
     {
       "citekey": "michaelcurtisPatBrownPaintbrushes2023",
@@ -1715,6 +1919,103 @@
         "unnatural sound radiation"
       ],
       "depth": "foundational"
+    },
+    {
+      "citekey": "audiouniversitySpeakerCoverageCalculator2022",
+      "title": "Speaker Coverage Calculator | How To Choose The Right Speakers & Placement",
+      "channel": "Audio University",
+      "duration": "20:58",
+      "ytId": "pNkhxnFNUNU",
+      "domains": [
+        "Live Sound"
+      ],
+      "subdomains": [
+        "System Design",
+        "Sound Reinforcement"
+      ],
+      "tags": [
+        "loudspeakers",
+        "room-acoustics"
+      ],
+      "concepts": [
+        "speaker coverage",
+        "nominal coverage angle",
+        "axisymmetric coverage",
+        "horizontal vs vertical coverage",
+        "forward aspect ratio",
+        "FAR",
+        "audience aspect ratio",
+        "speaker aspect ratio",
+        "subdivide and conquer",
+        "speaker-to-audience matchmaking",
+        "flashlight analogy",
+        "lighting designer analogy",
+        "even SPL and tonal balance",
+        "MAPP 3D prediction software",
+        "coverage prediction weather map",
+        "QSC K12",
+        "RCF HDL 6-A line array",
+        "speaker on a stick",
+        "shoot through the middle of the middle",
+        "speaker aim",
+        "trim height",
+        "under coverage",
+        "wider pattern trade-offs",
+        "Bob McCarthy Sound Systems book",
+        "Audio Math Survival Spreadsheet"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "audiouniversityStepbyStepGuideSetting2025",
+      "title": "Step-by-Step Guide to Setting Up a Sound System for a Live Event",
+      "channel": "Audio University",
+      "duration": "14:28",
+      "ytId": "4t6Z2w1tL30",
+      "domains": [
+        "Live Sound"
+      ],
+      "subdomains": [
+        "Sound Reinforcement",
+        "System Design",
+        "FOH Mixing"
+      ],
+      "tags": [
+        "signal-flow",
+        "gain-structure",
+        "troubleshooting"
+      ],
+      "concepts": [
+        "room layout planning",
+        "speaker placement",
+        "mixer location",
+        "cable pathways",
+        "tripping hazards",
+        "microphone feedback prevention",
+        "subwoofer placement",
+        "power verification",
+        "power-on order",
+        "normaling the mixer",
+        "main outs to mains",
+        "subwoofer high pass out",
+        "subs on an aux",
+        "monitor wedge routing",
+        "aux sends for monitors",
+        "line level devices",
+        "direct box",
+        "high impedance source",
+        "balanced connection",
+        "phantom power",
+        "dynamic microphone",
+        "condenser microphone",
+        "PFL solo",
+        "setting gain to 0 dB",
+        "main fader at Unity",
+        "mixing near Unity",
+        "high pass filter for feedback",
+        "subtractive EQ feedback notch"
+      ],
+      "depth": "applied"
     },
     {
       "citekey": "nathanlivelySubwooferSaturdayLearn2022",
@@ -2222,6 +2523,53 @@
         "center cluster ideal placement",
         "outdoor venue subwoofer placement",
         "98% coverage rationale"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "audiouniversityWhyYouCant2025",
+      "title": "Why You Can't Hear the Vocals at Live Shows (It's Not the Sound Guy)",
+      "channel": "Audio University",
+      "duration": "10:52",
+      "ytId": "U62C2fc7YaI",
+      "domains": [
+        "Live Sound"
+      ],
+      "subdomains": [
+        "FOH Mixing",
+        "Soundcheck",
+        "Monitor Engineering",
+        "Sound Reinforcement"
+      ],
+      "tags": [
+        "microphones",
+        "feedback",
+        "troubleshooting"
+      ],
+      "concepts": [
+        "stage volume",
+        "sound reinforcement vs studio capture",
+        "small venue mixing",
+        "drum miking strategy",
+        "overhead mics omitted",
+        "kick drum reinforcement",
+        "snare mic for tone",
+        "vocal as quietest instrument",
+        "gain before feedback",
+        "soundcheck order",
+        "starting soundcheck with vocals",
+        "cymbal bleed into vocal mics",
+        "stage layout and polar pattern",
+        "noise gate false triggering",
+        "fader riding",
+        "fewer mics on stage",
+        "drum shield phase problems",
+        "guitar amp volume",
+        "smaller amp breakup",
+        "floor wedges vs in-ear monitors",
+        "monitor level competition",
+        "stage communication mic",
+        "controlled drum dynamics"
       ],
       "depth": "applied"
     },
