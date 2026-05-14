@@ -1807,7 +1807,7 @@
 }
 
 .pag-page-header .page-subtitle {
-    max-width: 760px;
+    max-width: none;
     margin: 0;
 }
 
