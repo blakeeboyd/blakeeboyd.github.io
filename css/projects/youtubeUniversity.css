@@ -675,10 +675,21 @@ button.yt-card-tag.is-active {
 }
 
 .yt-video-hero {
-    /* Match the section-to-section gap below: a yt-section's bottom margin
-       (--spacing-lg) provides the same breathing room above the next section's
-       divider. */
+    /* This gap should match the section-to-section gap below (a yt-section's
+       margin-bottom). Both are --spacing-lg; the apparent inequality came
+       from the <header> below carrying a browser-default margin that stacked
+       on top of this one — see .yt-video-header reset. */
     margin-bottom: var(--spacing-lg);
+}
+
+.yt-video-header {
+    /* The site's layout.css applies `header { padding: var(--spacing-md) 0 }`
+       to every <header>. That padding-bottom stacked inside .yt-video-hero on
+       top of the hero's own margin-bottom, inflating the gap above the first
+       section's divider. Zero both so the hero's margin-bottom is the only
+       contributor — matching the section-to-section gap below it. */
+    margin: 0;
+    padding: 0;
 }
 
 .yt-embed {
