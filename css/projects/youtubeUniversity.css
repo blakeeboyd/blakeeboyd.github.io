@@ -718,6 +718,22 @@ button.yt-card-tag.is-active {
     font-weight: 500;
 }
 
+a.yt-channel-link {
+    text-decoration: none;
+    transition: color 0.12s;
+}
+
+a.yt-channel-link:hover {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+}
+
+[data-theme="dark"] a.yt-channel-link:hover {
+    color: var(--color-accent-medium, #3b82f6);
+}
+
 .yt-sep {
     color: var(--color-border);
 }

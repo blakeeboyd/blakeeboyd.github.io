@@ -432,6 +432,7 @@ function renderVideoPage(video, related, citekeyMap) {
   return tpl
     .replace(/\{\{TITLE\}\}/g, escapeHtml(video.title))
     .replace(/\{\{CHANNEL\}\}/g, escapeHtml(video.channel))
+    .replace(/\{\{CHANNEL_HREF\}\}/g, encodeURIComponent(video.channel))
     .replace(/\{\{DURATION\}\}/g, escapeHtml(video.duration))
     .replace(/\{\{DEPTH\}\}/g, escapeHtml(DEPTH_LABELS[video.depth] || video.depth))
     .replace(/\{\{DEPTH_SLUG\}\}/g, escapeHtml(video.depth))
