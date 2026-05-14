@@ -24,7 +24,7 @@ const state = {
     activeDomains: new Set(),
     activeSubdomains: new Set(),
     activeChannels: new Set(),
-    sort: 'title',
+    sort: 'depth',
     suggestionsOpen: false,
     suggestionFocus: -1,
     suggestions: [],
@@ -144,7 +144,7 @@ function applyHashToState() {
     state.activeChannels = new Set();
     state.search = '';
     state.view = 'list';
-    state.sort = 'title';
+    state.sort = 'depth';
     if (!hash) return;
     const params = new URLSearchParams(hash);
     // Keep click order: URL preserves the order, params.getAll() honors it
@@ -169,7 +169,7 @@ function writeStateToHash() {
     for (const c of state.activeChannels) params.append('channel', c);
     if (state.search) params.set('q', state.search);
     if (state.view !== 'list') params.set('view', state.view);
-    if (state.sort && state.sort !== 'title') params.set('sort', state.sort);
+    if (state.sort && state.sort !== 'depth') params.set('sort', state.sort);
     const hash = params.toString();
     const next = hash ? `#${hash}` : '';
     if (next !== window.location.hash) {
