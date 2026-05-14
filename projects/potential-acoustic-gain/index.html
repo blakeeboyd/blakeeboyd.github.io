@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Why feedback isn't a problem you fix with EQ. It's a problem of geometry. Drag the room around to see for yourself.">
+    <meta name="description" content="Sandbox for potential acoustic gain. Drag the room, toggle mic and loudspeaker directivity, watch the PAG number update live.">
     <meta name="theme-color" content="#2563eb">
     <meta name="author" content="Blake E. Boyd">
     <title>Potential Acoustic Gain - Blake Boyd</title>
@@ -11,7 +11,7 @@
     <link rel="canonical" href="https://blakeeboyd.github.io/projects/potential-acoustic-gain/">
     <!-- Open Graph -->
     <meta property="og:title" content="Potential Acoustic Gain - Blake Boyd">
-    <meta property="og:description" content="Why feedback isn't a problem you fix with EQ. It's a problem of geometry.">
+    <meta property="og:description" content="Sandbox for potential acoustic gain: drag the room, toggle directivity, watch PAG update live.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://blakeeboyd.github.io/projects/potential-acoustic-gain/">
     <meta property="og:site_name" content="Blake Boyd">
@@ -19,7 +19,7 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Potential Acoustic Gain - Blake Boyd">
-    <meta name="twitter:description" content="Why feedback isn't a problem you fix with EQ. It's a problem of geometry.">
+    <meta name="twitter:description" content="Sandbox for potential acoustic gain: drag the room, toggle directivity, watch PAG update live.">
     <meta name="twitter:image" content="https://blakeeboyd.github.io/images/social-card.jpg">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
@@ -38,1137 +38,201 @@
     <script src="../../js/nav-component.js" defer></script>
     <script src="js/app.js" defer></script>
 </head>
-<body>
+<body class="pag-sandbox-body">
 <noscript>You need to enable JavaScript to run this app.</noscript>
 <div class="container wide">
     <site-nav base="../../"></site-nav>
 
     <main id="main-content">
-        <div class="pag-app">
-
-            <div class="slide-host">
-
-                <article class="slide is-active" data-slide="0">
-
-                    <header class="masthead">
-                        <div class="eyebrow">Sound system design<span class="sep">·</span>Explorable</div>
-                        <h1 class="page-title">Potential acoustic gain</h1>
-                        <p class="deck">Why feedback isn't a problem you fix with EQ. It's a problem of geometry. Drag the room around to see for yourself.</p>
-                    </header>
-
-                    <div class="content-wrapper">
-                        <section class="prose">
-                            <p>When a microphone feeds back, the first instinct is to reach for the equalizer and notch out the offending frequency. It usually works. It also undoes most of the careful tuning that got the sound system sounding good in the first place. After a couple more notches the whole system starts to sound like trash.</p>
-
-                            <p>There is a better way. The maximum gain you can get out of a sound system before it feeds back, what engineers call its <em>potential acoustic gain</em> (PAG), is determined almost entirely by four distances. Not by frequency response. Not by how loud the talker is. By where things sit in the room.</p>
-
-                            <p class="pull">Feedback happens at the instant the sound arriving at the microphone from the loudspeaker matches the sound arriving at the microphone from the talker. Whether that happens before you have made the show loud enough is a geometry question.</p>
-
-                            <p>Below is the room. There is a talker (standing, on the left), a microphone on a stand, a flown loudspeaker, and a listener seated in the audience. Grab any of them and drag. The four distances and the PAG number will update live.</p>
-                        </section>
-                    </div>
-
-                    <div class="stage-wrap">
-
-                        <div class="pag-block">
-                            <div>
-                                <div class="pag-label">Potential acoustic gain</div>
-                                <div class="pag-value" id="pagValue">14.4<span class="unit">dB</span></div>
-                            </div>
-                            <div class="pag-meaning" id="pagMeaning">
-                                <strong>Modest headroom</strong>
-                                About 14 dB above the acoustic level before feedback bites.
-                            </div>
-                        </div>
-
-                        <svg class="stage" id="stage" viewBox="0 0 900 470" xmlns="http://www.w3.org/2000/svg" aria-label="Interactive room diagram. Drag the talker, microphone, loudspeaker, or listener to see how potential acoustic gain changes.">
-
-                            <defs>
-                                <symbol id="sym-talker" viewBox="-18 -22 36 92">
-                                    <!-- Person silhouette from The Noun Project. Scaled & translated
-                                         so the mouth sits at (0, 0) and feet land at (0, 68),
-                                         preserving the original anchor scheme. -->
-                                    <g class="silhouette" transform="scale(0.069936) translate(-600 -227.68)">
-                                        <path d="m390.37 740.34c0.78906 0 1.5898-0.019532 2.3945-0.070313 22.316-1.3086 39.348-20.461 38.043-42.777-1.9727-33.645-2.8672-64.289-2.8672-92.188-0.16797-122.51 17.688-191.34 35.238-227.26v759.4c0 34.555 28.016 62.551 62.551 62.551 34.547 0 62.559-27.992 62.559-62.551v-456.71h23.449v456.71c0 34.555 28.016 62.551 62.551 62.551 34.547 0 62.559-27.992 62.559-62.551l-0.003906-759.2c3 6.1562 6.0273 13.215 9.0117 21.453 14.258 39.523 26.25 104.37 26.207 205.6 0 27.906-0.89062 58.551-2.8594 92.207-1.3164 22.316 15.719 41.457 38.051 42.766 0.80469 0.046874 1.5977 0.070312 2.3984 0.070312 21.273 0 39.105-16.605 40.367-38.117 2.0391-35.082 2.9883-67.301 2.9883-96.926-0.20312-152.7-24.594-237.22-57.848-288.03-16.621-25.223-36.066-41.406-54.027-50.367-17.949-9.0508-33.707-10.852-42.688-10.82-3.2188 0-5.6367 0.21875-7.1641 0.41016-0.03125 0.003906-0.054688 0.011718-0.085938 0.015624h-182.44c-0.019531-0.003906-0.035156-0.011718-0.054687-0.011718l-0.011719-0.011719c-1.5195-0.18359-3.9375-0.39844-7.1484-0.39844-8.9805-0.03125-24.734 1.7617-42.688 10.812-27.215 13.492-56.543 43.02-77.074 95.328-20.773 52.512-34.723 128.43-34.789 243.08 0 29.629 0.94141 61.848 3.0117 96.926 1.2539 21.508 19.098 38.105 40.371 38.105z"/>
-                                        <path d="M713.84 113.84c0 62.871-50.965 113.84-113.84 113.84-62.871 0-113.84-50.965-113.84-113.84 0-62.871 50.965-113.84 113.84-113.84 62.871 0 113.84 50.965 113.84 113.84z"/>
-                                    </g>
-                                </symbol>
-
-                                <symbol id="sym-mic-stand" viewBox="-12 -12 24 80">
-                                    <!-- Stand and base only — vertical, always upright. Anchor (0, 0)
-                                         is at the top of the stand, where the capsule attaches. -->
-                                    <g class="silhouette" transform="scale(-0.0771 0.0771) translate(-600 -244)">
-                                        <path d="m465 1112h270v28.008h-270z"/>
-                                        <path d="m591.6 244.38v856.63h16.797v-873.43z"/>
-                                    </g>
-                                </symbol>
-
-                                <symbol id="sym-mic-capsule" viewBox="-12 -12 24 18">
-                                    <!-- Capsule (head + neck) only. Drawn pointing LEFT by default so
-                                         rotation = 0 means on-axis points left (toward the default
-                                         talker position). Anchor (0, 0) is at the bottom of the neck
-                                         where it joins the stand. The capsule can be freely rotated
-                                         around this anchor by the rendering code. -->
-                                    <g class="silhouette" transform="scale(-0.0771 0.0771) translate(-600 -244)">
-                                        <path d="m610.74 137.94c-9.6133 17.305-9.5742 36.527 1.7539 47.914 11.398 11.34 30.648 11.41 47.953 1.8242-12.203-3.9609-22.754-10.055-31.199-18.504-8.4727-8.4727-14.57-19.031-18.508-31.234z"/>
-                                        <path d="m678.84 119.52c-14.746-14.723-37.367-15.973-57.203 3.8047-2.8438 2.8555-5.2422 5.8906-7.4648 9.0352 3.5898 13.234 9.7578 24.434 18.59 33.277 8.7852 8.7852 19.992 14.977 33.227 18.516 3.168-2.1719 6.2148-4.6094 9.0586-7.4766 19.777-19.75 18.492-42.406 3.793-57.156z"/>
-                                        <path d="m601.13 173.83c-24.18 24.168-89.879 89.914-96.383 96.395 4.5117 18.168 23.375 23.398 23.375 23.398l96.434-96.406c-5.7461-1.4297-10.957-4.0938-15.156-8.2695-4.1289-4.1719-6.832-9.4062-8.2695-15.117zm-55.285 68.711c-2.1016 2.0625-4.5859 2.9648-5.6055 1.9453-1.0195-0.99609-0.14453-3.5273 1.957-5.5938 2.0625-2.1016 4.5859-2.9766 5.5938-1.957 1.0195 1.0234 0.14453 3.5078-1.9453 5.6055z"/>
-                                    </g>
-                                </symbol>
-
-                                <!-- Composite mic symbol for slides that don't tilt the capsule.
-                                     Uses both stand and capsule with capsule in its default orientation.
-                                     Inner <use> elements need explicit x/y/width/height so the inner
-                                     viewBoxes map correctly to symbol-local coordinates. -->
-                                <symbol id="sym-mic" viewBox="-12 -12 24 80">
-                                    <use href="#sym-mic-stand"   x="-12" y="-12" width="24" height="80"/>
-                                    <use href="#sym-mic-capsule" x="-12" y="-12" width="24" height="18"/>
-                                </symbol>
-
-                                <symbol id="sym-speaker" viewBox="-36 -22 40 44">
-                                    <!-- Loudspeaker from The Noun Project. Scaled & translated so the
-                                         right edge of the cabinet (the radiating face) is at x=0,
-                                         vertically centered around y=0. The rotation in JS points
-                                         the right edge toward the listener. -->
-                                    <g class="silhouette" transform="scale(0.0582) translate(-884 -600)">
-                                        <path d="m647.23 411.07c0 12.523-4.9766 24.539-13.832 33.395-8.8594 8.8555-20.871 13.832-33.398 13.832-12.523 0-24.535-4.9766-33.395-13.832-8.8555-8.8555-13.832-20.871-13.832-33.395 0-12.527 4.9766-24.539 13.832-33.395 8.8594-8.8594 20.871-13.832 33.395-13.832 12.527 0 24.539 4.9727 33.398 13.832 8.8555 8.8555 13.832 20.867 13.832 33.395zm-118.08 307.02c0-18.793 7.4648-36.812 20.75-50.098 13.289-13.289 31.309-20.75 50.098-20.75 18.793 0 36.812 7.4609 50.098 20.75 13.289 13.285 20.754 31.305 20.754 50.098 0 18.789-7.4648 36.809-20.754 50.098-13.285 13.285-31.305 20.75-50.098 20.75-18.789 0-36.809-7.4648-50.098-20.75-13.285-13.289-20.75-31.309-20.75-50.098z"/>
-                                        <path d="m411.08 222.14c-25.055 0-49.086 9.9531-66.801 27.668-17.719 17.719-27.672 41.746-27.672 66.801v566.79c0 25.055 9.9531 49.086 27.672 66.801 17.715 17.719 41.746 27.668 66.801 27.668h377.85c25.055 0 49.086-9.9492 66.801-27.668 17.715-17.715 27.668-41.746 27.668-66.801v-566.79c0-25.055-9.9531-49.082-27.668-66.801-17.715-17.715-41.746-27.668-66.801-27.668zm283.39 188.93c0.003906 25.055-9.9492 49.086-27.664 66.805s-41.742 27.676-66.797 27.68c-25.055 0-49.086-9.9492-66.805-27.664-17.719-17.719-27.672-41.746-27.676-66.801 0-25.059 9.9531-49.086 27.668-66.805 17.719-17.719 41.746-27.672 66.801-27.672s49.082 9.9531 66.797 27.664c17.715 17.715 27.672 41.738 27.676 66.793zm-94.473 141.7c-43.844 0-85.895 17.418-116.89 48.422-31.004 31.004-48.422 73.051-48.422 116.9 0 43.844 17.418 85.895 48.422 116.9 31 31 73.051 48.418 116.89 48.418 43.848 0 85.895-17.418 116.9-48.418 31.004-31.004 48.422-73.055 48.422-116.9 0-29.02-7.6406-57.527-22.148-82.66-14.512-25.133-35.379-46-60.512-60.512-25.133-14.508-53.641-22.148-82.66-22.148z" fill-rule="evenodd"/>
-                                    </g>
-                                </symbol>
-
-                                <symbol id="sym-listener" viewBox="-28 -10 44 64">
-                                    <!-- Sitting person from The Noun Project. Scaled & translated
-                                         so the ear (head center) sits at (0, 0) and figure rests on the floor. -->
-                                    <g class="silhouette" transform="scale(0.0874) translate(-667.77 -323)">
-                                        <path d="m667.77 372.2c-27.051 0-48.98-21.93-48.98-48.98v-10.422c0-27.051 21.93-48.98 48.98-48.98s48.98 21.93 48.98 48.98v10.422c0 27.055-21.93 48.98-48.98 48.98z"/>
-                                        <path d="m463.75 698.96c4.8477-14.641 17.137-25.59 32.238-28.723l120.72-29.57 10.902-202.15c1.1016-20.441 16.211-38.383 36.57-40.516 1.4805-0.15625 2.9766-0.23438 4.4883-0.23438h28.258c26.965 0 48.824 21.859 48.824 48.824v262.54l22.914-175.65c0.82422-6.3047 6.6016-10.75 12.906-9.9258l14.859 1.9375c6.3047 0.82422 10.746 6.5977 9.9258 12.898l-28.406 218.43c-0.0625 0.49219-0.097657 0.98828-0.097657 1.4844v166.36c0 6.3594-5.1523 11.512-11.512 11.512h-9.625c-6.3594 0-11.512-5.1562-11.512-11.512v-155.59c0-6.3594-5.1523-11.512-11.512-11.512h-143.42c-6.3594 0-11.512 5.1523-11.512 11.512v155.59c0 6.3594-5.1523 11.512-11.512 11.512h-9.625c-6.3594 0-11.512-5.1562-11.512-11.512v-193.6c0-4.6328 2.7539-8.6016 6.6992-10.426h-9.7812c-12.531 0-23.914 7.2852-29.16 18.664l-84.957 184.21c-2.6641 5.7734-9.5 8.2969-15.277 5.6328l-13.398-6.1797c-5.7734-2.6641-8.2969-9.5039-5.6328-15.277z"/>
-                                    </g>
-                                </symbol>
-
-                                <symbol id="sym-op-cluster" viewBox="-38 -56 76 72">
-                                    <g class="silhouette">
-                                        <circle cx="-2" cy="-44" r="7.5"/>
-                                        <path d="M -10,-36
-                                                 L 5,-36
-                                                 C 6,-30 7,-22 7,-14
-                                                 L -10,-14
-                                                 C -10,-22 -10,-30 -10,-36 Z"/>
-                                        <path d="M 5,-36
-                                                 L 13,-52
-                                                 L 17,-52
-                                                 L 17,-48
-                                                 L 9,-32 Z"/>
-                                    </g>
-                                    <rect style="fill: var(--console-fill, #6b7280)" x="-32" y="-14" width="64" height="14" rx="2"/>
-                                    <g style="fill: var(--fader-fill, #ffffff)">
-                                        <rect x="-26" y="-11" width="1.5" height="6"/>
-                                        <rect x="-22" y="-11" width="1.5" height="6"/>
-                                        <rect x="-18" y="-11" width="1.5" height="6"/>
-                                        <rect x="-14" y="-11" width="1.5" height="6"/>
-                                        <rect x="-10" y="-11" width="1.5" height="6"/>
-                                        <rect x="-6"  y="-11" width="1.5" height="6"/>
-                                        <rect x="-2"  y="-11" width="1.5" height="6"/>
-                                        <rect x="2"   y="-11" width="1.5" height="6"/>
-                                        <rect x="6"   y="-11" width="1.5" height="6"/>
-                                        <rect x="10"  y="-11" width="1.5" height="6"/>
-                                        <rect x="14"  y="-11" width="1.5" height="6"/>
-                                        <rect x="18"  y="-11" width="1.5" height="6"/>
-                                        <rect x="22"  y="-11" width="1.5" height="6"/>
-                                        <rect x="26"  y="-11" width="1.5" height="6"/>
-                                    </g>
-                                    <circle style="fill: var(--led-fill, #10b981)" cx="-28" cy="-7" r="1.6"/>
-                                </symbol>
-
-                                <symbol id="ring" viewBox="-20 -20 40 40">
-                                    <circle r="17" cx="0" cy="0"/>
-                                </symbol>
-                            </defs>
-
-                            <g id="gridTicks"></g>
-                            <line class="floor" x1="20" y1="386" x2="880" y2="386"/>
-
-                            <line id="lineD0" class="dline d0" x1="0" y1="0" x2="0" y2="0"/>
-                            <line id="lineD1" class="dline" x1="0" y1="0" x2="0" y2="0"/>
-                            <line id="lineD2" class="dline" x1="0" y1="0" x2="0" y2="0"/>
-                            <line id="lineDS" class="dline" x1="0" y1="0" x2="0" y2="0"/>
-
-                            <g id="labelDS" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">S</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" x="36" y="18.5"></text>
-                            </g>
-                            <g id="labelD1" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">1</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" x="36" y="18.5"></text>
-                            </g>
-                            <g id="labelD2" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">2</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" x="36" y="18.5"></text>
-                            </g>
-                            <g id="labelD0" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">0</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" x="36" y="18.5"></text>
-                            </g>
-
-                            <g class="figure" id="fig-talker" data-id="talker">
-                                <use href="#sym-talker" x="-18" y="-22" width="36" height="92"/>
-                                <use class="handle-ring" href="#ring" x="-20" y="-20" width="40" height="40"/>
-                                <circle class="anchor-dot" cx="0" cy="0" r="2.6"/>
-                                <rect class="hit" x="-18" y="-23" width="36" height="93"/>
-                            </g>
-
-                            <g class="figure" id="fig-mic" data-id="mic">
-                                <use href="#sym-mic-stand" x="-12" y="-12" width="24" height="80"/>
-                                <use class="mic-capsule" id="fig-mic-capsule" href="#sym-mic-capsule" x="-12" y="-12" width="24" height="18"/>
-                                <use class="handle-ring" href="#ring" x="-20" y="-20" width="40" height="40"/>
-                                <circle class="anchor-dot" cx="0" cy="0" r="2.6"/>
-                                <rect class="hit" x="-14" y="-13" width="28" height="82"/>
-                            </g>
-
-                            <g class="figure" id="fig-speaker" data-id="speaker">
-                                <use href="#sym-speaker" x="-36" y="-22" width="40" height="44"/>
-                                <use class="handle-ring" href="#ring" x="-20" y="-20" width="40" height="40"/>
-                                <circle class="anchor-dot" cx="0" cy="0" r="2.6"/>
-                                <rect class="hit" x="-36" y="-22" width="40" height="46"/>
-                            </g>
-
-                            <g class="figure" id="fig-listener" data-id="listener">
-                                <use href="#sym-listener" x="-28" y="-10" width="44" height="64"/>
-                                <use class="handle-ring" href="#ring" x="-20" y="-20" width="40" height="40"/>
-                                <circle class="anchor-dot" cx="0" cy="0" r="2.6"/>
-                                <rect class="hit" x="-28" y="-11" width="44" height="66"/>
-                            </g>
-
-                        </svg>
-
-                        <div class="formula-row">
-                            <div class="formula">
-                                <span class="label">PAG formula</span>
-                                <span class="formula-eq">
-                                    PAG = 20<span class="log">log</span><sub>10</sub>
-                                    <span class="brack">[</span>
-                                    <span class="frac"><span class="num"><em>D</em><sub>1</sub></span><span class="den"><em>D</em><sub>S</sub></span></span>
-                                    ×
-                                    <span class="frac"><span class="num"><em>D</em><sub>0</sub></span><span class="den"><em>D</em><sub>2</sub></span></span>
-                                    <span class="brack">]</span>
-                                </span>
-                            </div>
-
-                            <div class="dist-grid">
-                                <div class="dist-cell"><span class="k">D<sub>S</sub></span><span class="v" id="readDS"></span></div>
-                                <div class="dist-cell"><span class="k">D<sub>1</sub></span><span class="v" id="readD1"></span></div>
-                                <div class="dist-cell"><span class="k">D<sub>2</sub></span><span class="v" id="readD2"></span></div>
-                                <div class="dist-cell"><span class="k">D<sub>0</sub></span><span class="v" id="readD0"></span></div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <section class="experiments">
-                        <div class="section-head">
-                            <span class="num">02</span>
-                            <h2>Try this</h2>
-                            <span class="rule"></span>
-                        </div>
-
-                        <div class="exp-grid">
-                            <button class="exp-card" data-preset="default">
-                                <span class="tag">Reset</span>
-                                <h3>The original demo</h3>
-                                <p>The classic textbook configuration. About 14 dB of headroom. Quieter than a casual conversation.</p>
-                                <span class="cta">Show me</span>
-                            </button>
-                            <button class="exp-card" data-preset="leanIn">
-                                <span class="tag">Distance D<sub>S</sub></span>
-                                <h3>Lean the talker in</h3>
-                                <p>Bring the mouth right up against the microphone. Watch what happens to the gain, without touching an EQ.</p>
-                                <span class="cta">Show me</span>
-                            </button>
-                            <button class="exp-card" data-preset="speakerClose">
-                                <span class="tag">Distance D<sub>1</sub></span>
-                                <h3>Speaker close to the mic</h3>
-                                <p>The wedge that is right next to the singer. The geometry of a rough monitor situation.</p>
-                                <span class="cta">Show me</span>
-                            </button>
-                            <button class="exp-card" data-preset="speakerOverhead">
-                                <span class="tag">Distance D<sub>2</sub></span>
-                                <h3>Speaker over the audience</h3>
-                                <p>Same room and same mic, but the loudspeaker now hangs right above the listener. PAG goes way up.</p>
-                                <span class="cta">Show me</span>
-                            </button>
-                            <button class="exp-card" data-preset="micDownstage">
-                                <span class="tag">Bad placement</span>
-                                <h3>Mic out at the edge of the stage</h3>
-                                <p>The microphone has drifted away from the talker and toward the loudspeaker. Two bad things at once.</p>
-                                <span class="cta">Show me</span>
-                            </button>
-                            <button class="exp-card" data-preset="zero">
-                                <span class="tag">No gain</span>
-                                <h3>A truly hopeless night</h3>
-                                <p>PAG near zero. The fader works until exactly the moment of feedback. Anyone who has mixed live has been here.</p>
-                                <span class="cta">Show me</span>
-                            </button>
-                        </div>
-                    </section>
-
-                    <section class="takeaway">
-                        <div class="eyebrow">What we just saw</div>
-                        <h2>Two ratios, one rule. Move the room before you touch the EQ.</h2>
-                        <p>The PAG formula is a product of two ratios. The first, <em>D</em><sub>1</sub> / <em>D</em><sub>S</sub>, is the system side of the bargain: the loudspeaker should be far from the microphone, and the microphone should be close to whatever is making sound. The second, <em>D</em><sub>0</sub> / <em>D</em><sub>2</sub>, is the audience side: the listener has to be far enough from the source that they need a sound system at all, and the loudspeaker should be close enough to them that it does not have to work hard.</p>
-                        <ol class="principles">
-                            <li><span>Get the microphone close to the source. This is almost always the biggest move you have.</span></li>
-                            <li><span>Get the loudspeaker far from the microphone, and aim its dead zone (or the microphone's) at the other one.</span></li>
-                            <li><span>Get the loudspeaker as close to the listeners as the production will allow.</span></li>
-                            <li><span>If you still need gain after all of that, then reach for the EQ. You will need a lot less of it.</span></li>
-                        </ol>
-                    </section>
-
-                    <aside class="colophon">
-                        Adapted from Jason Romney's "Why EQ Is Not the Answer to Microphone Feedback" (Live Sound Summit, with Nathan Lively) and the original Flash demo from <a href="https://digitalsoundandmusic.com/4-2-2-acoustic-considerations-for-live-performances/" target="_blank" rel="noopener">Digital Sound &amp; Music</a> by Romney et&nbsp;al. The original presentation traces this material to the JBL <em>Sound System Design Reference Manual</em> (Augspurger, Eargle).
-                    </aside>
-
-                </article>
-
-                <article class="slide" data-slide="1">
-
-                    <div class="content-wrapper">
-
-                        <div class="slide-eyebrow">01<span class="sep">·</span>Setting the stage</div>
-
-                        <p class="slide-lede">Before we dive into the geometry, let's take a brief moment to review the concept of gain before feedback, or potential acoustic gain (PAG).</p>
-
-                        <div class="review-panel">
-                            <div class="panel-label">Let's review</div>
-                            <p><strong>Feedback</strong> is the piercing tone that comes from a sound system when an amplified sound coming back from the loudspeaker to a microphone becomes as loud as the sound coming from the original source, or louder.</p>
-
-                            <p>Feedback is frequency-dependent: some frequencies will feed back before others. That is what gives the squeal its particular pitch and tonal quality.</p>
-
-                            <p>The amount of amplification you can apply before that happens is the system's "gain before feedback" or its <strong>Potential Acoustic Gain</strong> (PAG). It is determined by geometric relationships and the physics of how sound propagates. As a result, we can determine it based on the positioning of the source, microphone, speaker, and listener using a version of the Inverse Square Law equation.</p>
-                        </div>
-
-                        <p class="slide-transition">Now let's take a look at the way positioning and distances contribute to gain before feedback, and how we can improve and maximize our PAG. <span class="arrow">→</span></p>
-
-                    </div>
-
-                </article>
-
-                <article class="slide" data-slide="2">
-
-                    <div class="content-wrapper">
-
-                        <div class="slide-eyebrow">02<span class="sep">·</span>The system</div>
-
-                        <h2 class="slide-title">Basic sound reinforcement system</h2>
-
-                    </div>
-
-                    <figure class="diagram-figure">
-                        <svg class="static-stage" viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg" aria-label="Diagram showing the four basic components of a sound reinforcement system">
-                            <line class="floor" x1="20" y1="320" x2="880" y2="320"/>
-
-                            <g transform="translate(120, 252)">
-                                <use href="#sym-talker" x="-18" y="-22" width="36" height="92"/>
-                            </g>
-                            <text class="component-label" x="120" y="205" text-anchor="middle">Sound source</text>
-
-                            <g transform="translate(260, 256)">
-                                <use href="#sym-mic" x="-12" y="-12" width="24" height="80"/>
-                            </g>
-                            <text class="component-label" x="295" y="260" text-anchor="start">Microphone</text>
-
-                            <g transform="translate(450, 100) rotate(27.7)">
-                                <use href="#sym-speaker" x="-36" y="-22" width="40" height="44"/>
-                            </g>
-                            <text class="component-label" x="450" y="60" text-anchor="middle">Loudspeaker</text>
-
-                            <g transform="translate(770, 268)">
-                                <use href="#sym-listener" x="-28" y="-10" width="44" height="64"/>
-                            </g>
-                            <text class="component-label" x="770" y="237" text-anchor="middle">Listener</text>
-                        </svg>
-                    </figure>
-
-                    <div class="content-wrapper">
-
-                        <p class="slide-lede">Below is a diagram of a basic sound reinforcement scenario. There are four main components: a sound source (in this case a person speaking), a microphone input, a loudspeaker output, and a listener (a member of the audience).</p>
-
-                    </div>
-
-                </article>
-
-                <article class="slide" data-slide="3">
-
-                    <div class="content-wrapper">
-
-                        <div class="slide-eyebrow">03<span class="sep">·</span>The operator</div>
-
-                        <h2 class="slide-title">Basic sound reinforcement system</h2>
-
-                    </div>
-
-                    <figure class="diagram-figure">
-                        <svg class="static-stage" viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg" aria-label="Diagram showing the basic system with the mixing console and operator added">
-                            <line class="floor" x1="20" y1="320" x2="880" y2="320"/>
-
-                            <g transform="translate(120, 252)">
-                                <use href="#sym-talker" x="-18" y="-22" width="36" height="92"/>
-                            </g>
-                            <text class="component-label" x="120" y="205" text-anchor="middle">Sound source</text>
-
-                            <g transform="translate(260, 256)">
-                                <use href="#sym-mic" x="-12" y="-12" width="24" height="80"/>
-                            </g>
-                            <text class="component-label" x="295" y="260" text-anchor="start">Microphone</text>
-
-                            <g transform="translate(450, 100) rotate(27.7)">
-                                <use href="#sym-speaker" x="-36" y="-22" width="40" height="44"/>
-                            </g>
-                            <text class="component-label" x="450" y="60" text-anchor="middle">Loudspeaker</text>
-
-                            <g transform="translate(770, 268)">
-                                <use href="#sym-listener" x="-28" y="-10" width="44" height="64"/>
-                            </g>
-                            <text class="component-label" x="770" y="237" text-anchor="middle">Listener</text>
-
-                            <g transform="translate(190, 130)">
-                                <use href="#sym-op-cluster" x="-38" y="-56" width="76" height="72"/>
-                            </g>
-                            <text class="component-label" x="190" y="160" text-anchor="middle">Operator</text>
-                        </svg>
-                    </figure>
-
-                    <div class="content-wrapper">
-
-                        <p class="slide-lede">The mixing console and its operator are equally important to a sound reinforcement system. But the operator and the physical location of the equipment are not key to determining the potential acoustic gain. The operator is just waiting for us to tell them how loud they can go before feedback occurs.</p>
-
-                    </div>
-
-                </article>
-
-                <article class="slide" data-slide="4">
-
-                    <div class="content-wrapper">
-
-                        <div class="slide-eyebrow">04<span class="sep">·</span>The four distances</div>
-
-                        <h2 class="slide-title">A function of distance</h2>
-
-                    </div>
-
-                    <figure class="diagram-figure">
-                        <svg class="static-stage" viewBox="0 0 900 410" xmlns="http://www.w3.org/2000/svg" aria-label="Diagram showing the four key distances between the talker, microphone, loudspeaker, and listener">
-                            <line class="floor" x1="20" y1="386" x2="880" y2="386"/>
-
-                            <line class="dline d0" x1="80" y1="318" x2="722" y2="334"/>
-
-                            <line class="dline" x1="80"  y1="318" x2="172" y2="322"/>
-                            <line class="dline" x1="172" y1="322" x2="390" y2="126"/>
-                            <line class="dline" x1="390" y1="126" x2="722" y2="334"/>
-
-                            <g transform="translate(80, 318)">
-                                <use href="#sym-talker" x="-18" y="-22" width="36" height="92"/>
-                            </g>
-                            <g transform="translate(172, 322)">
-                                <use href="#sym-mic" x="-12" y="-12" width="24" height="80"/>
-                            </g>
-                            <g transform="translate(390, 126) rotate(32.0)">
-                                <use href="#sym-speaker" x="-36" y="-22" width="40" height="44"/>
-                            </g>
-                            <g transform="translate(722, 334)">
-                                <use href="#sym-listener" x="-28" y="-10" width="44" height="64"/>
-                            </g>
-
-                            <g class="dlabel" transform="translate(110, 282)">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">S</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" x="36" y="18.5">7' 1"</text>
-                            </g>
-
-                            <g class="dlabel" transform="translate(232, 170)">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">1</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" x="36" y="18.5">22' 7"</text>
-                            </g>
-
-                            <g class="dlabel" transform="translate(540, 170)">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">2</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" x="36" y="18.5">30' 2"</text>
-                            </g>
-
-                            <g class="dlabel" transform="translate(358, 350)">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">0</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" x="36" y="18.5">49' 5"</text>
-                            </g>
-                        </svg>
-                    </figure>
-
-                    <div class="content-wrapper">
-
-                        <p class="slide-lede">Let's look at some key physical relationships between these objects in the space. There are four key distances we are interested in that will allow us to calculate the PAG. They are labeled <em>D</em><sub>0</sub>, <em>D</em><sub>1</sub>, <em>D</em><sub>2</sub>, and <em>D</em><sub>S</sub> (the "S" is for source).</p>
-
-                    </div>
-
-                </article>
-
-                <article class="slide" data-slide="5">
-
-                    <div class="content-wrapper">
-
-                        <div class="slide-eyebrow">05<span class="sep">·</span>The formula</div>
-
-                        <h2 class="slide-title">A function of distance</h2>
-
-                    </div>
-
-                    <figure class="diagram-figure">
-                        <svg class="static-stage interactive" id="stage5" viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" aria-label="Interactive diagram showing the four distances together with the PAG value and formula. Drag any figure to see how each distance affects the result.">
-                            <line class="floor" x1="20" y1="386" x2="880" y2="386"/>
-
-                            <line id="s5-lineD0" class="dline d0" x1="0" y1="0" x2="0" y2="0"/>
-                            <line id="s5-lineDS" class="dline"    x1="0" y1="0" x2="0" y2="0"/>
-                            <line id="s5-lineD1" class="dline"    x1="0" y1="0" x2="0" y2="0"/>
-                            <line id="s5-lineD2" class="dline"    x1="0" y1="0" x2="0" y2="0"/>
-
-                            <g id="s5-labelDS" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">S</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s5-readDS" x="36" y="18.5"></text>
-                            </g>
-                            <g id="s5-labelD1" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">1</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s5-readD1" x="36" y="18.5"></text>
-                            </g>
-                            <g id="s5-labelD2" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">2</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s5-readD2" x="36" y="18.5"></text>
-                            </g>
-                            <g id="s5-labelD0" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">0</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s5-readD0" x="36" y="18.5"></text>
-                            </g>
-
-                            <g class="figure" id="s5-fig-talker" data-id="talker">
-                                <use href="#sym-talker" x="-18" y="-22" width="36" height="92"/>
-                                <use class="handle-ring" href="#ring" x="-22" y="-22" width="44" height="44"/>
-                                <rect class="hit" x="-18" y="-22" width="36" height="92"/>
-                            </g>
-                            <g class="figure" id="s5-fig-mic" data-id="mic">
-                                <use href="#sym-mic-stand" x="-12" y="-12" width="24" height="80"/>
-                                <use class="mic-capsule" id="s5-fig-mic-capsule" href="#sym-mic-capsule" x="-12" y="-12" width="24" height="18"/>
-                                <use class="handle-ring" href="#ring" x="-22" y="-22" width="44" height="44"/>
-                                <rect class="hit" x="-12" y="-12" width="24" height="80"/>
-                            </g>
-                            <g class="figure" id="s5-fig-speaker" data-id="speaker">
-                                <use href="#sym-speaker" x="-36" y="-22" width="40" height="44"/>
-                                <use class="handle-ring" href="#ring" x="-22" y="-22" width="44" height="44"/>
-                                <rect class="hit" x="-36" y="-22" width="40" height="44"/>
-                            </g>
-                            <g class="figure" id="s5-fig-listener" data-id="listener">
-                                <use href="#sym-listener" x="-28" y="-10" width="44" height="64"/>
-                                <use class="handle-ring" href="#ring" x="-22" y="-22" width="44" height="44"/>
-                                <rect class="hit" x="-28" y="-10" width="44" height="64"/>
-                            </g>
-
-                            <foreignObject x="20" y="400" width="860" height="46">
-                                <div xmlns="http://www.w3.org/1999/xhtml" class="pag-bar">
-                                    <span class="label">Potential acoustic gain</span>
-                                    <span class="value" id="s5-pagValue">14.3 dB</span>
-                                </div>
-                            </foreignObject>
-
-                            <foreignObject x="20" y="460" width="860" height="90">
-                                <div xmlns="http://www.w3.org/1999/xhtml" class="formula in-canvas side-by-side">
-                                    <span class="formula-eq">
-                                        PAG = 20<span class="log">log</span><sub>10</sub>
-                                        <span class="brack">[</span>
-                                        <span class="frac"><span class="num"><em>D</em><sub>1</sub></span><span class="den"><em>D</em><sub>S</sub></span></span>
-                                        ×
-                                        <span class="frac"><span class="num"><em>D</em><sub>0</sub></span><span class="den"><em>D</em><sub>2</sub></span></span>
-                                        <span class="brack">]</span>
-                                    </span>
-                                    <span class="formula-eq numeric">
-                                        = 20<span class="log">log</span><sub>10</sub>
-                                        <span class="brack">[</span>
-                                        <span class="frac"><span class="num" id="s5-numD1">22.58</span><span class="den" id="s5-numDS">7.08</span></span>
-                                        ×
-                                        <span class="frac"><span class="num" id="s5-numD0">49.42</span><span class="den" id="s5-numD2">30.17</span></span>
-                                        <span class="brack">]</span>
-                                    </span>
-                                </div>
-                            </foreignObject>
-                        </svg>
-                    </figure>
-
-                    <div class="content-wrapper">
-
-                        <p class="slide-lede">We know that feedback occurs when, at the location of the microphone, the amplified sound from the loudspeaker equals the sound from the original source. Using these four distance relationships along with the inverse square law, we have the equation for the PAG. Drag any figure to see how each distance changes the result.</p>
-
-                    </div>
-
-                </article>
-
-                <article class="slide" data-slide="6">
-
-                    <div class="content-wrapper">
-
-                        <div class="slide-eyebrow">06<span class="sep">·</span>Relationships</div>
-
-                        <h2 class="slide-title">Maximizing gain before feedback</h2>
-
-                    </div>
-
-                    <figure class="diagram-figure relationships">
-
-                        <button class="reveal-btn" id="s6-reveal" type="button" aria-label="Show the first relationship">
-                            <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-                                <circle cx="12" cy="12" r="3"/>
-                            </svg>
-                            <span class="reveal-label" id="s6-revealLabel">Show the first relationship</span>
-                        </button>
-
-                        <svg class="static-stage interactive" id="stage6" viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" aria-label="Interactive diagram demonstrating key relationships that improve PAG. Drag any figure, or use the button to step through each relationship.">
-                            <line class="floor" x1="20" y1="386" x2="880" y2="386"/>
-
-                            <text id="s6-caption" class="relationship-caption" x="450" y="56" text-anchor="middle" opacity="0"></text>
-
-                            <line id="s6-lineD0" class="dline d0" x1="0" y1="0" x2="0" y2="0"/>
-                            <line id="s6-lineDS" class="dline"    x1="0" y1="0" x2="0" y2="0"/>
-                            <line id="s6-lineD1" class="dline"    x1="0" y1="0" x2="0" y2="0"/>
-                            <line id="s6-lineD2" class="dline"    x1="0" y1="0" x2="0" y2="0"/>
-
-                            <g id="s6-labelDS" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">S</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s6-readDS" x="36" y="18.5"></text>
-                            </g>
-                            <g id="s6-labelD1" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">1</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s6-readD1" x="36" y="18.5"></text>
-                            </g>
-                            <g id="s6-labelD2" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">2</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s6-readD2" x="36" y="18.5"></text>
-                            </g>
-                            <g id="s6-labelD0" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">0</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s6-readD0" x="36" y="18.5"></text>
-                            </g>
-
-                            <g class="figure" id="s6-fig-talker" data-id="talker"><use href="#sym-talker" x="-18" y="-22" width="36" height="92"/><use class="handle-ring" href="#ring" x="-22" y="-22" width="44" height="44"/><rect class="hit" x="-18" y="-22" width="36" height="92"/></g>
-                            <g class="figure" id="s6-fig-mic" data-id="mic"><use href="#sym-mic-stand" x="-12" y="-12" width="24" height="80"/><use class="mic-capsule" href="#sym-mic-capsule" x="-12" y="-12" width="24" height="18"/><use class="handle-ring" href="#ring" x="-22" y="-22" width="44" height="44"/><rect class="hit" x="-12" y="-12" width="24" height="80"/></g>
-                            <g class="figure" id="s6-fig-speaker" data-id="speaker"><use href="#sym-speaker" x="-36" y="-22" width="40" height="44"/><use class="handle-ring" href="#ring" x="-22" y="-22" width="44" height="44"/><rect class="hit" x="-36" y="-22" width="40" height="44"/></g>
-                            <g class="figure" id="s6-fig-listener" data-id="listener"><use href="#sym-listener" x="-28" y="-10" width="44" height="64"/><use class="handle-ring" href="#ring" x="-22" y="-22" width="44" height="44"/><rect class="hit" x="-28" y="-10" width="44" height="64"/></g>
-
-                            <foreignObject x="20" y="400" width="860" height="46">
-                                <div xmlns="http://www.w3.org/1999/xhtml" class="pag-bar">
-                                    <span class="label">Potential acoustic gain</span>
-                                    <span class="value" id="s6-pagValue">14.4 dB</span>
-                                </div>
-                            </foreignObject>
-
-                            <foreignObject x="20" y="460" width="860" height="90">
-                                <div xmlns="http://www.w3.org/1999/xhtml" class="formula in-canvas">
-                                    <span class="formula-eq">
-                                        PAG = 20<span class="log">log</span><sub>10</sub>
-                                        <span class="brack">[</span>
-                                        <span class="frac"><span class="num"><em>D</em><sub>1</sub></span><span class="den"><em>D</em><sub>S</sub></span></span>
-                                        ×
-                                        <span class="frac"><span class="num"><em>D</em><sub>0</sub></span><span class="den"><em>D</em><sub>2</sub></span></span>
-                                        <span class="brack">]</span>
-                                    </span>
-                                </div>
-                            </foreignObject>
-                        </svg>
-
-                    </figure>
-
-                    <div class="content-wrapper">
-
-                        <p class="slide-lede">You may have noticed several key relationships that result in an improved PAG. Click the eye to step through them, or drag any figure to experiment on your own.</p>
-
-                    </div>
-
-                </article>
-
-                <article class="slide" data-slide="7">
-
-                    <div class="content-wrapper">
-
-                        <div class="slide-eyebrow">07<span class="sep">·</span>Microphone directivity</div>
-
-                        <h2 class="slide-title">Using a directional microphone</h2>
-
-                    </div>
-
-                    <figure class="diagram-figure relationships">
-
-                        <div class="pattern-toggle" role="group" aria-label="Microphone polar pattern">
-                            <button class="pattern-btn is-active" data-pattern="omni" type="button">Omni</button>
-                            <button class="pattern-btn" data-pattern="cardioid" type="button">Cardioid</button>
-                            <button class="pattern-btn" data-pattern="hypercardioid" type="button">Hypercardioid</button>
-                        </div>
-
-                        <svg class="static-stage interactive" id="stage7" viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" aria-label="Interactive diagram with a directional microphone. Toggle the polar pattern and drag the loudspeaker to align it with the mic's null.">
-                            <line class="floor" x1="20" y1="386" x2="880" y2="386"/>
-
-                            <line id="s7-lineD0" class="dline d0" x1="0" y1="0" x2="0" y2="0"/>
-                            <line id="s7-lineDS" class="dline"    x1="0" y1="0" x2="0" y2="0"/>
-                            <line id="s7-lineD1" class="dline"    x1="0" y1="0" x2="0" y2="0"/>
-                            <line id="s7-lineD2" class="dline"    x1="0" y1="0" x2="0" y2="0"/>
-
-                            <!-- Mic on-axis indicator (dashed line from mic toward talker) -->
-                            <line id="s7-onaxis" class="mic-onaxis" x1="0" y1="0" x2="0" y2="0"/>
-
-                            <!-- Angle arc annotation at the mic -->
-                            <path id="s7-angleArc" class="angle-arc" d=""/>
-                            <text id="s7-angleLabel" class="angle-label" x="0" y="0" text-anchor="start"></text>
-
-                            <!-- Polar pattern lobe — drawn around the mic, rotated to its on-axis direction -->
-                            <g id="s7-polarLobe" class="polar-lobe">
-                                <path id="s7-polarLobePath" d=""/>
-                            </g>
-
-                            <g id="s7-labelDS" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">S</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s7-readDS" x="36" y="18.5"></text>
-                            </g>
-                            <g id="s7-labelD1" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">1</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s7-readD1" x="36" y="18.5"></text>
-                            </g>
-                            <g id="s7-labelD2" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">2</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s7-readD2" x="36" y="18.5"></text>
-                            </g>
-                            <g id="s7-labelD0" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">0</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s7-readD0" x="36" y="18.5"></text>
-                            </g>
-
-                            <g class="figure" id="s7-fig-talker" data-id="talker"><use href="#sym-talker" x="-18" y="-22" width="36" height="92"/><use class="handle-ring" href="#ring" x="-22" y="-22" width="44" height="44"/><rect class="hit" x="-18" y="-22" width="36" height="92"/></g>
-                            <g class="figure" id="s7-fig-mic" data-id="mic"><use href="#sym-mic-stand" x="-12" y="-12" width="24" height="80"/><use class="mic-capsule" href="#sym-mic-capsule" x="-12" y="-12" width="24" height="18"/><use class="handle-ring" href="#ring" x="-22" y="-22" width="44" height="44"/><rect class="hit" x="-12" y="-12" width="24" height="80"/></g>
-                            <g class="figure" id="s7-fig-speaker" data-id="speaker"><use href="#sym-speaker" x="-36" y="-22" width="40" height="44"/><use class="handle-ring" href="#ring" x="-22" y="-22" width="44" height="44"/><rect class="hit" x="-36" y="-22" width="40" height="44"/></g>
-                            <g class="figure" id="s7-fig-listener" data-id="listener"><use href="#sym-listener" x="-28" y="-10" width="44" height="64"/><use class="handle-ring" href="#ring" x="-22" y="-22" width="44" height="44"/><rect class="hit" x="-28" y="-10" width="44" height="64"/></g>
-
-                            <foreignObject x="20" y="400" width="860" height="46">
-                                <div xmlns="http://www.w3.org/1999/xhtml" class="pag-bar">
-                                    <span class="label">Potential acoustic gain</span>
-                                    <span class="value" id="s7-pagValue">4.5 dB + 0 dB = 4.5 dB</span>
-                                </div>
-                            </foreignObject>
-
-                            <foreignObject x="20" y="460" width="860" height="90">
-                                <div xmlns="http://www.w3.org/1999/xhtml" class="formula in-canvas">
-                                    <span class="formula-eq">
-                                        PAG = 20<span class="log">log</span><sub>10</sub>
-                                        <span class="brack">[</span>
-                                        <span class="frac"><span class="num"><em>D</em><sub>1</sub></span><span class="den"><em>D</em><sub>S</sub></span></span>
-                                        ×
-                                        <span class="frac"><span class="num"><em>D</em><sub>0</sub></span><span class="den"><em>D</em><sub>2</sub></span></span>
-                                        <span class="brack">]</span>
-                                        <span class="formula-correction"> + microphone directivity correction</span>
-                                    </span>
-                                </div>
-                            </foreignObject>
-                        </svg>
-
-                    </figure>
-
-                    <div class="content-wrapper">
-
-                        <p class="slide-lede">In addition to manipulating distance relationships, a more directional microphone can provide a significant boost in gain before feedback. The amount of off-axis rejection depends on the angular relationship between the microphone and the loudspeaker. Toggle the polar pattern above and drag the loudspeaker to find the mic's null.</p>
-
-                    </div>
-
-                </article>
-
-                <article class="slide" data-slide="8">
-
-                    <div class="content-wrapper">
-
-                        <div class="slide-eyebrow">08<span class="sep">·</span>Loudspeaker directivity</div>
-
-                        <h2 class="slide-title">Using a directional loudspeaker</h2>
-
-                    </div>
-
-                    <figure class="diagram-figure relationships">
-
-                        <div class="pattern-toggle pattern-toggle-mic" role="group" aria-label="Microphone polar pattern">
-                            <button class="pattern-btn is-active" data-pattern="omni" type="button">Omni</button>
-                            <button class="pattern-btn" data-pattern="cardioid" type="button">Cardioid</button>
-                            <button class="pattern-btn" data-pattern="hypercardioid" type="button">Hypercard.</button>
-                        </div>
-
-                        <div class="pattern-toggle pattern-toggle-speaker" role="group" aria-label="Loudspeaker coverage angle">
-                            <button class="speaker-btn is-active" data-speaker="90" type="button">90°</button>
-                            <button class="speaker-btn" data-speaker="60" type="button">60°</button>
-                            <button class="speaker-btn" data-speaker="40" type="button">40°</button>
-                        </div>
-
-                        <svg class="static-stage interactive" id="stage8" viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" aria-label="Interactive diagram with directional microphone and loudspeaker. Toggle patterns and drag elements to explore PAG.">
-                            <line class="floor" x1="20" y1="386" x2="880" y2="386"/>
-
-                            <!-- Loudspeaker coverage cone: main beam + -6 dB outer ring -->
-                            <g id="s8-speakerLobe" class="speaker-lobe">
-                                <path id="s8-speakerCone6" class="speaker-cone-6" d=""/>
-                                <path id="s8-speakerCone0" class="speaker-cone-0" d=""/>
-                                <!-- Labels along the cone edges. Positioned in JS so they
-                                     track the selected beamwidth. -->
-                                <text id="s8-speakerEdgeLabel" class="speaker-cone-label" text-anchor="middle">-6 dB</text>
-                                <text id="s8-speakerAxisLabel" class="speaker-cone-label speaker-cone-label-axis" text-anchor="middle">90 DEGREES</text>
-                            </g>
-
-                            <line id="s8-lineD0" class="dline d0" x1="0" y1="0" x2="0" y2="0"/>
-                            <line id="s8-lineDS" class="dline"    x1="0" y1="0" x2="0" y2="0"/>
-                            <line id="s8-lineD1" class="dline"    x1="0" y1="0" x2="0" y2="0"/>
-                            <line id="s8-lineD2" class="dline"    x1="0" y1="0" x2="0" y2="0"/>
-
-                            <line id="s8-onaxis" class="mic-onaxis" x1="0" y1="0" x2="0" y2="0"/>
-
-                            <path id="s8-angleArc" class="angle-arc" d=""/>
-                            <text id="s8-angleLabel" class="angle-label" x="0" y="0" text-anchor="start"></text>
-
-                            <g id="s8-polarLobe" class="polar-lobe">
-                                <path id="s8-polarLobePath" d=""/>
-                            </g>
-
-                            <g id="s8-labelDS" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">S</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s8-readDS" x="36" y="18.5"></text>
-                            </g>
-                            <g id="s8-labelD1" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">1</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s8-readD1" x="36" y="18.5"></text>
-                            </g>
-                            <g id="s8-labelD2" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">2</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s8-readD2" x="36" y="18.5"></text>
-                            </g>
-                            <g id="s8-labelD0" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">0</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s8-readD0" x="36" y="18.5"></text>
-                            </g>
-
-                            <g class="figure" id="s8-fig-talker" data-id="talker"><use href="#sym-talker" x="-18" y="-22" width="36" height="92"/><use class="handle-ring" href="#ring" x="-22" y="-22" width="44" height="44"/><rect class="hit" x="-18" y="-22" width="36" height="92"/></g>
-                            <g class="figure" id="s8-fig-mic" data-id="mic"><use href="#sym-mic-stand" x="-12" y="-12" width="24" height="80"/><use class="mic-capsule" href="#sym-mic-capsule" x="-12" y="-12" width="24" height="18"/><use class="handle-ring" href="#ring" x="-22" y="-22" width="44" height="44"/><rect class="hit" x="-12" y="-12" width="24" height="80"/></g>
-                            <g class="figure" id="s8-fig-speaker" data-id="speaker"><use href="#sym-speaker" x="-36" y="-22" width="40" height="44"/><use class="handle-ring" href="#ring" x="-22" y="-22" width="44" height="44"/><rect class="hit" x="-36" y="-22" width="40" height="44"/></g>
-                            <g class="figure" id="s8-fig-listener" data-id="listener"><use href="#sym-listener" x="-28" y="-10" width="44" height="64"/><use class="handle-ring" href="#ring" x="-22" y="-22" width="44" height="44"/><rect class="hit" x="-28" y="-10" width="44" height="64"/></g>
-
-                            <foreignObject x="20" y="400" width="860" height="46">
-                                <div xmlns="http://www.w3.org/1999/xhtml" class="pag-bar">
-                                    <span class="label">Potential acoustic gain</span>
-                                    <span class="value" id="s8-pagValue">7.1 dB + 0 dB + 0 dB = 7.1 dB</span>
-                                </div>
-                            </foreignObject>
-
-                            <foreignObject x="20" y="460" width="860" height="90">
-                                <div xmlns="http://www.w3.org/1999/xhtml" class="formula in-canvas">
-                                    <span class="formula-eq">
-                                        PAG = 20<span class="log">log</span><sub>10</sub>
-                                        <span class="brack">[</span>
-                                        <span class="frac"><span class="num"><em>D</em><sub>1</sub></span><span class="den"><em>D</em><sub>S</sub></span></span>
-                                        ×
-                                        <span class="frac"><span class="num"><em>D</em><sub>0</sub></span><span class="den"><em>D</em><sub>2</sub></span></span>
-                                        <span class="brack">]</span>
-                                        <span class="formula-correction"> + mic correction + loudspeaker correction</span>
-                                    </span>
-                                </div>
-                            </foreignObject>
-                        </svg>
-
-                    </figure>
-
-                    <div class="content-wrapper">
-
-                        <p class="slide-lede">Loudspeakers have directivity too. A more directional loudspeaker focuses sound toward the listener and away from the microphone, improving gain before feedback. Real-world loudspeaker directivity depends heavily on frequency, so the correction value here is estimated for demonstrative purposes. Toggle the coverage angle above and reposition the speaker to see how the off-axis attenuation toward the microphone changes the PAG.</p>
-
-                    </div>
-
-                </article>
-
-                <article class="slide" data-slide="9">
-
-                    <div class="content-wrapper">
-
-                        <div class="slide-eyebrow">09<span class="sep">·</span>How much gain?</div>
-
-                        <h2 class="slide-title">How much gain?</h2>
-
-                    </div>
-
-                    <figure class="diagram-figure">
-
-                        <svg class="static-stage" id="stage9" viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" aria-label="Diagram showing the speaker moving from a 10 dB PAG position to a no-gain position.">
-                            <defs>
-                                <!-- Gradient runs from the 'No Gain' end (red) to the '10 dB PAG' end (green).
-                                     Direction: x=0 corresponds to the SPEAKER_B (left) end where the gradient
-                                     starts red, x=1 to SPEAKER_A (right) end where it ends green.
-                                     userSpaceOnUse so the JS can set absolute x1/x2 to span the line. -->
-                                <linearGradient id="s9-gainGradient" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="0">
-                                    <stop offset="0%"  stop-color="var(--color-error)"/>
-                                    <stop offset="100%" stop-color="var(--color-success)"/>
-                                </linearGradient>
-                            </defs>
-                            <line class="floor" x1="20" y1="386" x2="880" y2="386"/>
-
-                            <!-- Gradient marker line spanning between the two speaker positions. -->
-                            <line id="s9-markerLine" class="gain-marker-gradient" x1="0" y1="0" x2="0" y2="0"/>
-                            <text id="s9-labelGood" class="gain-marker-label gain-marker-good-label" text-anchor="middle" x="0" y="0">10 dB PAG</text>
-                            <text id="s9-labelBad"  class="gain-marker-label gain-marker-bad-label"  text-anchor="middle" x="0" y="0">NO GAIN</text>
-
-                            <line id="s9-lineD0" class="dline d0" x1="0" y1="0" x2="0" y2="0"/>
-                            <line id="s9-lineDS" class="dline"    x1="0" y1="0" x2="0" y2="0"/>
-                            <line id="s9-lineD1" class="dline"    x1="0" y1="0" x2="0" y2="0"/>
-                            <line id="s9-lineD2" class="dline"    x1="0" y1="0" x2="0" y2="0"/>
-
-                            <g id="s9-labelDS" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">S</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s9-readDS" x="36" y="18.5"></text>
-                            </g>
-                            <g id="s9-labelD1" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">1</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s9-readD1" x="36" y="18.5"></text>
-                            </g>
-                            <g id="s9-labelD2" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">2</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s9-readD2" x="36" y="18.5"></text>
-                            </g>
-                            <g id="s9-labelD0" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">0</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s9-readD0" x="36" y="18.5"></text>
-                            </g>
-
-                            <g id="s9-fig-talker"><use href="#sym-talker" x="-18" y="-22" width="36" height="92"/></g>
-                            <g id="s9-fig-mic"><use href="#sym-mic-stand" x="-12" y="-12" width="24" height="80"/><use class="mic-capsule" href="#sym-mic-capsule" x="-12" y="-12" width="24" height="18"/></g>
-                            <g id="s9-fig-speaker"><use href="#sym-speaker" x="-36" y="-22" width="40" height="44"/></g>
-                            <g id="s9-fig-listener"><use href="#sym-listener" x="-28" y="-10" width="44" height="64"/></g>
-
-                            <foreignObject x="20" y="400" width="860" height="46">
-                                <div xmlns="http://www.w3.org/1999/xhtml" class="pag-bar">
-                                    <span class="label">Potential acoustic gain</span>
-                                    <span class="value" id="s9-pagValue">10.0 dB</span>
-                                </div>
-                            </foreignObject>
-
-                            <foreignObject x="20" y="460" width="860" height="90">
-                                <div xmlns="http://www.w3.org/1999/xhtml" class="formula in-canvas">
-                                    <span class="formula-eq">
-                                        PAG = 20<span class="log">log</span><sub>10</sub>
-                                        <span class="brack">[</span>
-                                        <span class="frac"><span class="num"><em>D</em><sub>1</sub></span><span class="den"><em>D</em><sub>S</sub></span></span>
-                                        ×
-                                        <span class="frac"><span class="num"><em>D</em><sub>0</sub></span><span class="den"><em>D</em><sub>2</sub></span></span>
-                                        <span class="brack">]</span>
-                                    </span>
-                                </div>
-                            </foreignObject>
-                        </svg>
-
-                    </figure>
-
-                    <div class="content-wrapper">
-
-                        <p class="slide-lede">Setting aside microphone and loudspeaker directivity, certain geometries result in <em>no gain before feedback</em> — the system feeds back the instant you turn it on. Beyond physical or aesthetic constraints on where you can place loudspeakers and microphones, the goal is always to maximize the PAG. Watch the speaker move from a useful position to a useless one.</p>
-
-                    </div>
-
-                </article>
-
-                <article class="slide" data-slide="10">
-
-                    <div class="content-wrapper">
-
-                        <div class="slide-eyebrow">10<span class="sep">·</span>Faders in action</div>
-
-                        <h2 class="slide-title">Faders in action</h2>
-
-                        <p class="slide-lede">Let's bring the operator back into the mix. With the geometry below we've calculated 1 dB of PAG: the listener can hear the reinforced sound at most 1 dB louder than the unaided sound from the source. A 1 dB increase in loudness is essentially imperceptible — installing a sound system in this case is wasted effort. <strong>Click the operator</strong> to try the fader.</p>
-
-                    </div>
-
-                    <figure class="diagram-figure">
-
-                        <svg class="static-stage" id="stage10" viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" aria-label="Faders in action: a sound system with only 1 dB of potential acoustic gain. Click the operator to try a fader.">
-                            <line class="floor" x1="20" y1="386" x2="880" y2="386"/>
-
-                            <!-- Static distance lines for the 1 dB PAG geometry -->
-                            <line id="s10-lineD0" class="dline d0" x1="0" y1="0" x2="0" y2="0"/>
-                            <line id="s10-lineDS" class="dline"    x1="0" y1="0" x2="0" y2="0"/>
-                            <line id="s10-lineD1" class="dline"    x1="0" y1="0" x2="0" y2="0"/>
-                            <line id="s10-lineD2" class="dline"    x1="0" y1="0" x2="0" y2="0"/>
-
-                            <g id="s10-labelDS" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">S</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s10-readDS" x="36" y="18.5"></text>
-                            </g>
-                            <g id="s10-labelD1" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">1</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s10-readD1" x="36" y="18.5"></text>
-                            </g>
-                            <g id="s10-labelD2" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">2</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s10-readD2" x="36" y="18.5"></text>
-                            </g>
-                            <g id="s10-labelD0" class="dlabel">
-                                <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
-                                <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">0</tspan></text>
-                                <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
-                                <text class="dlabel-val" id="s10-readD0" x="36" y="18.5"></text>
-                            </g>
-
-                            <g id="s10-fig-talker"><use href="#sym-talker" x="-18" y="-22" width="36" height="92"/></g>
-                            <g id="s10-fig-mic"><use href="#sym-mic-stand" x="-12" y="-12" width="24" height="80"/><use class="mic-capsule" href="#sym-mic-capsule" x="-12" y="-12" width="24" height="18"/></g>
-                            <g id="s10-fig-speaker"><use href="#sym-speaker" x="-36" y="-22" width="40" height="44"/></g>
-                            <g id="s10-fig-listener"><use href="#sym-listener" x="-28" y="-10" width="44" height="64"/></g>
-
-                            <!-- Operator: console + figure, clickable, positioned upstage. -->
-                            <g id="s10-fig-operator" class="operator-hit" role="button" tabindex="0" aria-label="Try the fader">
-                                <use href="#sym-op-cluster" x="-38" y="-56" width="76" height="72"/>
-                            </g>
-                            <text id="s10-operator-label" class="component-label" x="0" y="0" text-anchor="middle">Operator</text>
-
-                            <!-- "Click me!" speech bubble. -->
-                            <g id="s10-speech-bubble" class="speech-bubble">
-                                <path class="speech-bubble-shape" d=""/>
-                                <text class="speech-bubble-text" text-anchor="middle">CLICK<tspan x="0" dy="14">ME!</tspan></text>
-                            </g>
-
-                            <foreignObject x="20" y="400" width="860" height="46">
-                                <div xmlns="http://www.w3.org/1999/xhtml" class="pag-bar">
-                                    <span class="label">Potential acoustic gain</span>
-                                    <span class="value">1.0 dB</span>
-                                </div>
-                            </foreignObject>
-
-                            <foreignObject x="20" y="460" width="860" height="90">
-                                <div xmlns="http://www.w3.org/1999/xhtml" class="formula in-canvas">
-                                    <span class="formula-eq">
-                                        PAG = 20<span class="log">log</span><sub>10</sub>
-                                        <span class="brack">[</span>
-                                        <span class="frac"><span class="num"><em>D</em><sub>1</sub></span><span class="den"><em>D</em><sub>S</sub></span></span>
-                                        ×
-                                        <span class="frac"><span class="num"><em>D</em><sub>0</sub></span><span class="den"><em>D</em><sub>2</sub></span></span>
-                                        <span class="brack">]</span>
-                                    </span>
-                                </div>
-                            </foreignObject>
-                        </svg>
-
-                    </figure>
-
-                    <!-- Fader overlay panel. Hidden by default; appears on operator click. -->
-                    <div id="s10-fader-overlay" class="fader-overlay" hidden>
-                        <div class="fader-panel" role="dialog" aria-modal="true" aria-labelledby="s10-fader-title">
-                            <button class="fader-close" id="s10-fader-close" aria-label="Close fader">×</button>
-                            <h3 class="fader-title" id="s10-fader-title">Try the fader</h3>
-                            <p class="fader-help">Push the fader up to increase the system's gain. With only 1 dB of headroom, you'll find the feedback zone very quickly.</p>
-                            <div class="fader-stage">
-                                <div class="fader-zones">
-                                    <div class="fader-zone fader-zone-feedback">
-                                        <div class="fader-zone-label">FEEDBACK</div>
-                                        <div class="fader-zone-sub">Reinforced sound at listener<br/>is +1 dB or more above direct</div>
-                                    </div>
-                                    <div class="fader-zone fader-zone-edge">
-                                        <div class="fader-zone-sub fader-zone-sub-edge">Equal to direct sound level</div>
-                                    </div>
-                                    <div class="fader-zone fader-zone-inaudible">
-                                        <div class="fader-zone-label">INAUDIBLE</div>
-                                        <div class="fader-zone-sub">Reinforced sound is below<br/>the direct sound from source</div>
-                                    </div>
-                                </div>
-                                <div class="fader-track-wrap">
-                                    <div class="fader-track">
-                                        <div class="fader-track-line"></div>
-                                        <button class="fader-knob" id="s10-fader-knob" aria-label="Fader" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></button>
-                                    </div>
-                                    <div class="fader-track-label">Try the fader</div>
-                                </div>
-                            </div>
+        <div class="page-header pag-page-header">
+            <div class="pag-page-header-text">
+                <h1 class="page-title">Potential acoustic gain</h1>
+                <p class="page-subtitle">Move any of the four elements of the system to calculate the potential acoustic gain (PAG) in real-time.</p>
+            </div>
+            <a href="guide.html" class="sandbox-guide-link">
+                View guide
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </a>
+        </div>
+
+        <div class="pag-app pag-sandbox">
+            <div class="card sandbox-card">
+
+                <div class="sandbox-controls">
+                    <div class="control-group" role="group" aria-label="Microphone polar pattern">
+                        <span class="control-label">Microphone</span>
+                        <div class="pill-row">
+                            <button class="pill is-active" data-mic="off" type="button">Off</button>
+                            <button class="pill" data-mic="omni" type="button">Omni</button>
+                            <button class="pill" data-mic="cardioid" type="button">Cardioid</button>
+                            <button class="pill" data-mic="hypercardioid" type="button">Hypercard.</button>
                         </div>
                     </div>
+                    <div class="control-group" role="group" aria-label="Loudspeaker coverage">
+                        <span class="control-label">Loudspeaker</span>
+                        <div class="pill-row">
+                            <button class="pill is-active" data-speaker="off" type="button">Off</button>
+                            <button class="pill" data-speaker="90" type="button">90°</button>
+                            <button class="pill" data-speaker="60" type="button">60°</button>
+                            <button class="pill" data-speaker="40" type="button">40°</button>
+                        </div>
+                    </div>
+                </div>
 
-                </article>
+                <figure class="sandbox-stage-wrap">
+                <svg class="static-stage interactive sandbox-stage" id="sandbox-stage" viewBox="0 0 900 440" xmlns="http://www.w3.org/2000/svg" aria-label="Interactive sandbox. Drag any of the four figures and toggle mic or speaker directivity to see how PAG changes.">
+
+                    <defs>
+                        <symbol id="sym-talker" viewBox="-18 -22 36 92">
+                            <g class="silhouette" transform="scale(0.069936) translate(-600 -227.68)">
+                                <path d="m390.37 740.34c0.78906 0 1.5898-0.019532 2.3945-0.070313 22.316-1.3086 39.348-20.461 38.043-42.777-1.9727-33.645-2.8672-64.289-2.8672-92.188-0.16797-122.51 17.688-191.34 35.238-227.26v759.4c0 34.555 28.016 62.551 62.551 62.551 34.547 0 62.559-27.992 62.559-62.551v-456.71h23.449v456.71c0 34.555 28.016 62.551 62.551 62.551 34.547 0 62.559-27.992 62.559-62.551l-0.003906-759.2c3 6.1562 6.0273 13.215 9.0117 21.453 14.258 39.523 26.25 104.37 26.207 205.6 0 27.906-0.89062 58.551-2.8594 92.207-1.3164 22.316 15.719 41.457 38.051 42.766 0.80469 0.046874 1.5977 0.070312 2.3984 0.070312 21.273 0 39.105-16.605 40.367-38.117 2.0391-35.082 2.9883-67.301 2.9883-96.926-0.20312-152.7-24.594-237.22-57.848-288.03-16.621-25.223-36.066-41.406-54.027-50.367-17.949-9.0508-33.707-10.852-42.688-10.82-3.2188 0-5.6367 0.21875-7.1641 0.41016-0.03125 0.003906-0.054688 0.011718-0.085938 0.015624h-182.44c-0.019531-0.003906-0.035156-0.011718-0.054687-0.011718l-0.011719-0.011719c-1.5195-0.18359-3.9375-0.39844-7.1484-0.39844-8.9805-0.03125-24.734 1.7617-42.688 10.812-27.215 13.492-56.543 43.02-77.074 95.328-20.773 52.512-34.723 128.43-34.789 243.08 0 29.629 0.94141 61.848 3.0117 96.926 1.2539 21.508 19.098 38.105 40.371 38.105z"/>
+                                <path d="M713.84 113.84c0 62.871-50.965 113.84-113.84 113.84-62.871 0-113.84-50.965-113.84-113.84 0-62.871 50.965-113.84 113.84-113.84 62.871 0 113.84 50.965 113.84 113.84z"/>
+                            </g>
+                        </symbol>
+
+                        <symbol id="sym-mic-stand" viewBox="-12 -12 24 80">
+                            <g class="silhouette" transform="scale(-0.0771 0.0771) translate(-600 -244)">
+                                <path d="m465 1112h270v28.008h-270z"/>
+                                <path d="m591.6 244.38v856.63h16.797v-873.43z"/>
+                            </g>
+                        </symbol>
+
+                        <symbol id="sym-mic-capsule" viewBox="-12 -12 24 18">
+                            <g class="silhouette" transform="scale(-0.0771 0.0771) translate(-600 -244)">
+                                <path d="m610.74 137.94c-9.6133 17.305-9.5742 36.527 1.7539 47.914 11.398 11.34 30.648 11.41 47.953 1.8242-12.203-3.9609-22.754-10.055-31.199-18.504-8.4727-8.4727-14.57-19.031-18.508-31.234z"/>
+                                <path d="m678.84 119.52c-14.746-14.723-37.367-15.973-57.203 3.8047-2.8438 2.8555-5.2422 5.8906-7.4648 9.0352 3.5898 13.234 9.7578 24.434 18.59 33.277 8.7852 8.7852 19.992 14.977 33.227 18.516 3.168-2.1719 6.2148-4.6094 9.0586-7.4766 19.777-19.75 18.492-42.406 3.793-57.156z"/>
+                                <path d="m601.13 173.83c-24.18 24.168-89.879 89.914-96.383 96.395 4.5117 18.168 23.375 23.398 23.375 23.398l96.434-96.406c-5.7461-1.4297-10.957-4.0938-15.156-8.2695-4.1289-4.1719-6.832-9.4062-8.2695-15.117zm-55.285 68.711c-2.1016 2.0625-4.5859 2.9648-5.6055 1.9453-1.0195-0.99609-0.14453-3.5273 1.957-5.5938 2.0625-2.1016 4.5859-2.9766 5.5938-1.957 1.0195 1.0234 0.14453 3.5078-1.9453 5.6055z"/>
+                            </g>
+                        </symbol>
+
+                        <symbol id="sym-speaker" viewBox="-36 -22 40 44">
+                            <rect class="speaker-backing" x="-31" y="-22" width="31" height="44" rx="2" ry="2" fill="white"/>
+                            <g class="silhouette" transform="scale(0.0582) translate(-884 -600)">
+                                <path d="m647.23 411.07c0 12.523-4.9766 24.539-13.832 33.395-8.8594 8.8555-20.871 13.832-33.398 13.832-12.523 0-24.535-4.9766-33.395-13.832-8.8555-8.8555-13.832-20.871-13.832-33.395 0-12.527 4.9766-24.539 13.832-33.395 8.8594-8.8594 20.871-13.832 33.395-13.832 12.527 0 24.539 4.9727 33.398 13.832 8.8555 8.8555 13.832 20.867 13.832 33.395zm-118.08 307.02c0-18.793 7.4648-36.812 20.75-50.098 13.289-13.289 31.309-20.75 50.098-20.75 18.793 0 36.812 7.4609 50.098 20.75 13.289 13.285 20.754 31.305 20.754 50.098 0 18.789-7.4648 36.809-20.754 50.098-13.285 13.285-31.305 20.75-50.098 20.75-18.789 0-36.809-7.4648-50.098-20.75-13.285-13.289-20.75-31.309-20.75-50.098z"/>
+                                <path d="m411.08 222.14c-25.055 0-49.086 9.9531-66.801 27.668-17.719 17.719-27.672 41.746-27.672 66.801v566.79c0 25.055 9.9531 49.086 27.672 66.801 17.715 17.719 41.746 27.668 66.801 27.668h377.85c25.055 0 49.086-9.9492 66.801-27.668 17.715-17.715 27.668-41.746 27.668-66.801v-566.79c0-25.055-9.9531-49.082-27.668-66.801-17.715-17.715-41.746-27.668-66.801-27.668zm283.39 188.93c0.003906 25.055-9.9492 49.086-27.664 66.805s-41.742 27.676-66.797 27.68c-25.055 0-49.086-9.9492-66.805-27.664-17.719-17.719-27.672-41.746-27.676-66.801 0-25.059 9.9531-49.086 27.668-66.805 17.719-17.719 41.746-27.672 66.801-27.672s49.082 9.9531 66.797 27.664c17.715 17.715 27.672 41.738 27.676 66.793zm-94.473 141.7c-43.844 0-85.895 17.418-116.89 48.422-31.004 31.004-48.422 73.051-48.422 116.9 0 43.844 17.418 85.895 48.422 116.9 31 31 73.051 48.418 116.89 48.418 43.848 0 85.895-17.418 116.9-48.418 31.004-31.004 48.422-73.055 48.422-116.9 0-29.02-7.6406-57.527-22.148-82.66-14.512-25.133-35.379-46-60.512-60.512-25.133-14.508-53.641-22.148-82.66-22.148z" fill-rule="evenodd"/>
+                            </g>
+                        </symbol>
+
+                        <symbol id="sym-listener" viewBox="-28 -10 44 64">
+                            <g class="silhouette" transform="scale(0.0874) translate(-667.77 -323)">
+                                <path d="m667.77 372.2c-27.051 0-48.98-21.93-48.98-48.98v-10.422c0-27.051 21.93-48.98 48.98-48.98s48.98 21.93 48.98 48.98v10.422c0 27.055-21.93 48.98-48.98 48.98z"/>
+                                <path d="m463.75 698.96c4.8477-14.641 17.137-25.59 32.238-28.723l120.72-29.57 10.902-202.15c1.1016-20.441 16.211-38.383 36.57-40.516 1.4805-0.15625 2.9766-0.23438 4.4883-0.23438h28.258c26.965 0 48.824 21.859 48.824 48.824v262.54l22.914-175.65c0.82422-6.3047 6.6016-10.75 12.906-9.9258l14.859 1.9375c6.3047 0.82422 10.746 6.5977 9.9258 12.898l-28.406 218.43c-0.0625 0.49219-0.097657 0.98828-0.097657 1.4844v166.36c0 6.3594-5.1523 11.512-11.512 11.512h-9.625c-6.3594 0-11.512-5.1562-11.512-11.512v-155.59c0-6.3594-5.1523-11.512-11.512-11.512h-143.42c-6.3594 0-11.512 5.1523-11.512 11.512v155.59c0 6.3594-5.1523 11.512-11.512 11.512h-9.625c-6.3594 0-11.512-5.1562-11.512-11.512v-193.6c0-4.6328 2.7539-8.6016 6.6992-10.426h-9.7812c-12.531 0-23.914 7.2852-29.16 18.664l-84.957 184.21c-2.6641 5.7734-9.5 8.2969-15.277 5.6328l-13.398-6.1797c-5.7734-2.6641-8.2969-9.5039-5.6328-15.277z"/>
+                            </g>
+                        </symbol>
+
+                        <symbol id="ring" viewBox="-20 -20 40 40">
+                            <circle r="17" cx="0" cy="0"/>
+                        </symbol>
+                    </defs>
+
+                    <line class="floor" x1="20" y1="386" x2="880" y2="386"/>
+
+                    <!-- Speaker coverage cone (hidden when speaker mode is "off") -->
+                    <g id="sandbox-speakerLobe" class="speaker-lobe is-hidden" data-bw="90">
+                        <path id="sandbox-speakerCone6" class="speaker-cone-6" d=""/>
+                        <path id="sandbox-speakerCone0" class="speaker-cone-0" d=""/>
+                    </g>
+
+                    <!-- Distance lines -->
+                    <line id="sandbox-lineD0" class="dline d0" x1="0" y1="0" x2="0" y2="0"/>
+                    <line id="sandbox-lineDS" class="dline"    x1="0" y1="0" x2="0" y2="0"/>
+                    <line id="sandbox-lineD1" class="dline"    x1="0" y1="0" x2="0" y2="0"/>
+                    <line id="sandbox-lineD2" class="dline"    x1="0" y1="0" x2="0" y2="0"/>
+
+                    <!-- Mic on-axis line + angle arc + polar lobe (hidden when mic is "off") -->
+                    <line id="sandbox-onaxis" class="mic-onaxis is-hidden" x1="0" y1="0" x2="0" y2="0"/>
+                    <path id="sandbox-angleArc" class="angle-arc is-hidden" d=""/>
+                    <text id="sandbox-angleLabel" class="angle-label is-hidden" x="0" y="0" text-anchor="start"></text>
+                    <g id="sandbox-polarLobe" class="polar-lobe is-hidden">
+                        <path id="sandbox-polarLobePath" d=""/>
+                    </g>
+
+                    <!-- Distance labels -->
+                    <g id="sandbox-labelDS" class="dlabel">
+                        <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
+                        <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">S</tspan></text>
+                        <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
+                        <text class="dlabel-val" id="sandbox-readDS" x="36" y="18.5"></text>
+                    </g>
+                    <g id="sandbox-labelD1" class="dlabel">
+                        <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
+                        <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">1</tspan></text>
+                        <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
+                        <text class="dlabel-val" id="sandbox-readD1" x="36" y="18.5"></text>
+                    </g>
+                    <g id="sandbox-labelD2" class="dlabel">
+                        <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
+                        <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">2</tspan></text>
+                        <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
+                        <text class="dlabel-val" id="sandbox-readD2" x="36" y="18.5"></text>
+                    </g>
+                    <g id="sandbox-labelD0" class="dlabel">
+                        <rect class="dlabel-bg" x="0" y="0" width="86" height="28" rx="7"/>
+                        <text class="dlabel-key" x="9" y="18.5">D<tspan font-size="9.5" baseline-shift="sub">0</tspan></text>
+                        <line class="dlabel-sep" x1="30" y1="7" x2="30" y2="21"/>
+                        <text class="dlabel-val" id="sandbox-readD0" x="36" y="18.5"></text>
+                    </g>
+
+                    <!-- Draggable figures -->
+                    <g class="figure" id="sandbox-fig-talker" data-id="talker">
+                        <use href="#sym-talker" x="-18" y="-22" width="36" height="92"/>
+                        <use class="handle-ring" href="#ring" x="-22" y="-22" width="44" height="44"/>
+                        <rect class="hit" x="-18" y="-22" width="36" height="92"/>
+                    </g>
+                    <g class="figure" id="sandbox-fig-mic" data-id="mic">
+                        <use href="#sym-mic-stand" x="-12" y="-12" width="24" height="80"/>
+                        <use class="mic-capsule" id="sandbox-fig-mic-capsule" href="#sym-mic-capsule" x="-12" y="-12" width="24" height="18"/>
+                        <use class="handle-ring" href="#ring" x="-22" y="-22" width="44" height="44"/>
+                        <rect class="hit" x="-12" y="-12" width="24" height="80"/>
+                    </g>
+                    <g class="figure" id="sandbox-fig-speaker" data-id="speaker">
+                        <use href="#sym-speaker" x="-36" y="-22" width="40" height="44"/>
+                        <use class="handle-ring" href="#ring" x="-22" y="-22" width="44" height="44"/>
+                        <rect class="hit" x="-36" y="-22" width="40" height="44"/>
+                    </g>
+                    <g class="figure" id="sandbox-fig-listener" data-id="listener">
+                        <use href="#sym-listener" x="-28" y="-10" width="44" height="64"/>
+                        <use class="handle-ring" href="#ring" x="-22" y="-22" width="44" height="44"/>
+                        <rect class="hit" x="-28" y="-10" width="44" height="64"/>
+                    </g>
+                </svg>
+            </figure>
+
+                <!-- PAG readout + dynamic equation, built into the bottom strip -->
+                <div class="sandbox-readout">
+                    <div class="pag-bar">
+                        <span class="label">Potential acoustic gain</span>
+                        <span class="value" id="sandbox-pagValue">14.3 dB</span>
+                    </div>
+                    <div class="formula in-canvas sandbox-formula side-by-side">
+                        <span class="formula-eq">
+                            PAG = 20<span class="log">log</span><sub>10</sub>
+                            <span class="brack">[</span>
+                            <span class="frac"><span class="num"><em>D</em><sub>1</sub></span><span class="den"><em>D</em><sub>S</sub></span></span>
+                            ×
+                            <span class="frac"><span class="num"><em>D</em><sub>0</sub></span><span class="den"><em>D</em><sub>2</sub></span></span>
+                            <span class="brack">]</span>
+                            <span class="formula-correction" id="sandbox-corrTerms"></span>
+                        </span>
+                        <span class="formula-eq numeric">
+                            = 20<span class="log">log</span><sub>10</sub>
+                            <span class="brack">[</span>
+                            <span class="frac"><span class="num" id="sandbox-numD1"></span><span class="den" id="sandbox-numDS"></span></span>
+                            ×
+                            <span class="frac"><span class="num" id="sandbox-numD0"></span><span class="den" id="sandbox-numD2"></span></span>
+                            <span class="brack">]</span>
+                        </span>
+                    </div>
+                </div>
 
             </div>
 
-            <nav class="slide-nav" aria-label="Slide navigation">
-                <button class="prev" aria-label="Previous slide" disabled>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-                </button>
-                <button class="indicator" aria-label="Jump to slide" aria-haspopup="true" aria-expanded="false">
-                    <span class="current">1</span><span class="sep"> / </span><span class="total">2</span>
-                </button>
-                <button class="next" aria-label="Next slide">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                </button>
-                <div class="slide-jump" role="menu" aria-label="Jump to slide" hidden></div>
-            </nav>
+            <aside class="colophon sandbox-colophon">
+                Adapted from <a href="https://www.youtube.com/watch?v=7uDQbjXdJPo" target="_blank" rel="noopener">"Why EQ Is Not the Answer to Microphone Feedback with Jason Romney"</a> (Live Sound Summit 2020, with Nathan Lively) and Romney's original Flash demo from <a href="https://digitalsoundandmusic.com/4-2-2-acoustic-considerations-for-live-performances/" target="_blank" rel="noopener">Digital Sound &amp; Music</a> by Romney et&nbsp;al. The original presentation traces this material to the <a href="https://jblpro.com/en-US/site_elements/jbl-professional-sound-system-design-manual-1999-edition-pt-1-1" target="_blank" rel="noopener">JBL <em>Sound System Design Reference Manual</em></a> (Augspurger, Eargle). Romney's original Flash demo no longer runs in modern browsers; this rebuild is intended as a working replacement for my Live Sound course.
+            </aside>
 
         </div>
     </main>
-
-    <footer>
-        <p>&copy; <span class="footer-year"></span> Blake Boyd</p>
-    </footer>
 </div>
 </body>
 </html>

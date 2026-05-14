@@ -409,7 +409,9 @@ const PAG = (() => {
     // talker-listener line. Each label avoids ALL figures and already-placed
     // labels.
     const placedRects = [];
-    const allFigureRects = Object.keys(figs).map(id => figureWorldRect(id, state[id], state));
+    const allFigureRects = Object.keys(figs)
+      .filter(id => FIGURE_BBOX[id] && state[id])
+      .map(id => figureWorldRect(id, state[id], state));
 
     // Helper that uses ALL figure rects (not excluding the anchor figure),
     // since labels should clear every figure including their own anchor.
@@ -747,10 +749,25 @@ const PAG = (() => {
     });
   });
 
-  // --- Slide navigation ---
+  buildGrid();
+  render();
+})();
+
+
+/* =====================================================================
+   Slide navigation (lives outside the slide-0 IIFE so it runs even when
+   slide 0 no longer hosts the interactive stage).
+   ===================================================================== */
+(() => {
+  'use strict';
   const slides = document.querySelectorAll('.slide');
+  if (!slides.length) return;
   const totalSlides = slides.length;
   let currentSlide  = 0;
+  // Find the initially-active slide from the DOM so deep links / refresh
+  // keep their place.
+  slides.forEach((s, idx) => { if (s.classList.contains('is-active')) currentSlide = idx; });
+
   const slideNav   = document.querySelector('.slide-nav');
   const navPrev    = document.querySelector('.slide-nav .prev');
   const navNext    = document.querySelector('.slide-nav .next');
@@ -759,8 +776,20 @@ const PAG = (() => {
   const navTotal   = document.querySelector('.slide-nav .indicator .total');
   const jumpMenu   = document.querySelector('.slide-nav .slide-jump');
   if (navTotal) navTotal.textContent = totalSlides;
+  if (navCurrent) navCurrent.textContent = currentSlide + 1;
 
-  // Build the jump-to-slide menu items.
+  // Extract the title for a given slide. Slide 0 has no .slide-eyebrow
+  // (it uses the masthead instead). Slides 1+ use the pattern
+  // "Potential acoustic gain · NN · Title" — we want just the Title segment.
+  function slideTitle(slide, idx) {
+    if (idx === 0) return 'Introduction';
+    const eyebrow = slide.querySelector('.slide-eyebrow');
+    if (!eyebrow) return '';
+    // Pull text only (the separator spans render as "·"); split on "·".
+    const parts = eyebrow.textContent.split('·').map(s => s.trim()).filter(Boolean);
+    return parts[parts.length - 1] || '';
+  }
+
   if (jumpMenu) {
     for (let i = 0; i < totalSlides; i++) {
       const btn = document.createElement('button');
@@ -768,7 +797,15 @@ const PAG = (() => {
       btn.className = 'slide-jump-item';
       btn.setAttribute('role', 'menuitem');
       btn.dataset.slide = String(i);
-      btn.textContent = String(i + 1);
+      const num = document.createElement('span');
+      num.className = 'slide-jump-num';
+      num.textContent = String(i + 1).padStart(2, '0');
+      const title = document.createElement('span');
+      title.className = 'slide-jump-title';
+      title.textContent = slideTitle(slides[i], i);
+      btn.appendChild(num);
+      btn.appendChild(title);
+      if (i === currentSlide) btn.classList.add('is-current');
       jumpMenu.appendChild(btn);
     }
   }
@@ -779,8 +816,16 @@ const PAG = (() => {
     navIndicator.setAttribute('aria-expanded', open ? 'true' : 'false');
   }
 
+  // The slide-host is the wrapper around all the slides. Scrolling it to
+  // the top of the viewport on every slide change gives each slide the
+  // same vertical starting point — otherwise long slides (especially
+  // slide 0's intro page) leave later slides scrolled past their headers.
+  const slideHost = document.querySelector('.slide-host');
+
   function showSlide(i) {
-    currentSlide = Math.max(0, Math.min(totalSlides - 1, i));
+    const next = Math.max(0, Math.min(totalSlides - 1, i));
+    const changed = next !== currentSlide;
+    currentSlide = next;
     slides.forEach((s, idx) => s.classList.toggle('is-active', idx === currentSlide));
     if (navCurrent) navCurrent.textContent = currentSlide + 1;
     if (navPrev) navPrev.disabled = currentSlide === 0;
@@ -790,23 +835,31 @@ const PAG = (() => {
         btn.classList.toggle('is-current', idx === currentSlide);
       });
     }
-    if (currentSlide === 0) requestAnimationFrame(() => render());
-    // Let other slide IIFEs re-measure their labels once the new slide is
-    // visible (getBBox returns 0 while display:none).
     const activeSlide = slides[currentSlide];
     if (activeSlide) {
       requestAnimationFrame(() => {
         activeSlide.dispatchEvent(new CustomEvent('pag:slide-active', { bubbles: true }));
       });
     }
+    if (changed && slideHost) {
+      // Match the scroll position you'd land at if you opened the page on
+      // slide 1: the top of the slide-host, with whatever margin sits above
+      // it (the site nav) still visible.
+      const top = slideHost.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
   }
 
-  if (navPrev) navPrev.addEventListener('click', () => showSlide(currentSlide - 1));
-  if (navNext) navNext.addEventListener('click', () => showSlide(currentSlide + 1));
-  if (navIndicator) {
-    navIndicator.addEventListener('click', () => {
-      setJumpOpen(jumpMenu.hidden);
-    });
+  if (navPrev) {
+    navPrev.disabled = currentSlide === 0;
+    navPrev.addEventListener('click', () => showSlide(currentSlide - 1));
+  }
+  if (navNext) {
+    navNext.disabled = currentSlide === totalSlides - 1;
+    navNext.addEventListener('click', () => showSlide(currentSlide + 1));
+  }
+  if (navIndicator && jumpMenu) {
+    navIndicator.addEventListener('click', () => setJumpOpen(jumpMenu.hidden));
   }
   if (jumpMenu) {
     jumpMenu.addEventListener('click', (e) => {
@@ -831,14 +884,6 @@ const PAG = (() => {
     if (e.key === 'ArrowLeft')  showSlide(currentSlide - 1);
     if (e.key === 'ArrowRight') showSlide(currentSlide + 1);
   });
-
-  buildGrid();
-  render();
-  // Initialize the jump menu's current-slide highlight.
-  if (jumpMenu) {
-    const first = jumpMenu.querySelector('.slide-jump-item');
-    if (first) first.classList.add('is-current');
-  }
 })();
 
 
@@ -1002,14 +1047,52 @@ const PAG = (() => {
   }
 
   for (const id of Object.keys(figs)) {
-    figs[id].addEventListener('pointerdown', (e) => startDrag(e, id));
+    figs[id].addEventListener('pointerdown', (e) => {
+      dismissHint();
+      startDrag(e, id);
+    });
   }
   stage.addEventListener('pointermove', moveDrag);
   window.addEventListener('pointerup', endDrag);
   window.addEventListener('pointercancel', endDrag);
 
-  stage.closest('.slide').addEventListener('pag:slide-active', () => render());
+  // --- Drag hint: a brief banner + figure pulse when the user lands on this
+  // slide for the first time in the session. Dismisses on first drag or
+  // after an auto-fade timeout.
+  const hint = document.getElementById('s5-drag-hint');
+  let hintTimer = null;
+  let hintShown = false;
+
+  function dismissHint() {
+    if (hint) hint.classList.remove('is-visible');
+    stage.classList.remove('is-pulsing');
+    if (hintTimer) { clearTimeout(hintTimer); hintTimer = null; }
+  }
+
+  function showHint() {
+    if (hintShown || !hint) return;
+    hintShown = true;
+    requestAnimationFrame(() => {
+      hint.classList.add('is-visible');
+      stage.classList.add('is-pulsing');
+    });
+    // Pulse animation is ~1.2s × 2 = 2.4s; banner lingers a bit longer.
+    hintTimer = setTimeout(() => {
+      hint.classList.remove('is-visible');
+      stage.classList.remove('is-pulsing');
+      hintTimer = null;
+    }, 5500);
+  }
+
+  stage.closest('.slide').addEventListener('pag:slide-active', () => {
+    render();
+    showHint();
+  });
   render();
+  // If slide 5 is the initially-active slide, fire the hint after first render.
+  if (stage.closest('.slide').classList.contains('is-active')) {
+    showHint();
+  }
 })();
 
 
@@ -1039,11 +1122,13 @@ const PAG = (() => {
   // Each scenario's overrides accumulate on the baseline (not on each other);
   // see showState(). Coordinates are chosen to reproduce the canonical
   // distances and PAG values from Digital Sound & Music's slide 7.
+  // Speaker y is kept >= ~140 so the D₁ label (which sits 50 px above the
+  // speaker) doesn't ride up into the relationship caption at y=56.
   const states = [
     { caption: '',                                                                            overrides: {} },
-    { caption: 'Moving the loudspeaker further away from the microphone',                     overrides: { speaker: { x: 390, y: 95  } } },
-    { caption: 'Moving the loudspeaker closer to the listener',                               overrides: { speaker: { x: 513, y: 137 } } },
-    { caption: 'Moving the sound source closer to the microphone (or vice versa)',            overrides: { speaker: { x: 513, y: 137 }, talker: { x: 160, y: T_Y } } },
+    { caption: 'Moving the loudspeaker further away from the microphone',                     overrides: { speaker: { x: 390, y: 140 } } },
+    { caption: 'Moving the loudspeaker closer to the listener',                               overrides: { speaker: { x: 513, y: 165 } } },
+    { caption: 'Moving the sound source closer to the microphone (or vice versa)',            overrides: { speaker: { x: 513, y: 165 }, talker: { x: 160, y: T_Y } } },
   ];
 
   let currentState = 0;
@@ -1959,7 +2044,8 @@ const PAG = (() => {
     // The line spans between the two speaker positions, with a gradient that
     // runs from red (at SPEAKER_B, the "no gain" end) to green (at SPEAKER_A,
     // the "10 dB PAG" end). Labels sit directly above each end.
-    const yLine = 175;
+    // Positioned above the D_1 distance label (which centers around y=182).
+    const yLine = 128;
     const yLabel = yLine - 14;
     markerLine.setAttribute('x1', SPEAKER_B.x.toFixed(1));
     markerLine.setAttribute('x2', SPEAKER_A.x.toFixed(1));
@@ -2026,293 +2112,625 @@ const PAG = (() => {
 
 
 /* =====================================================================
-   Slide 10 — Faders in action
-   Static 1 dB PAG geometry. Click the operator to open a fader overlay
-   that produces a feedback-like tone when the fader enters the red zone.
+   Slides 10 & 11 — Faders in action
+   Static PAG geometry. Click the operator to open a fader overlay that
+   produces a feedback-like tone when the fader enters the red zone.
+   Slide 10 = 1 dB PAG (original geometry). Slide 11 = 22.8 dB PAG with
+   the source moved close to the mic.
    ===================================================================== */
 (() => {
   'use strict';
-  const stage = document.getElementById('stage10');
-  if (!stage) return;
-  const { T_Y, M_Y, L_Y,
-          distPx, feet, fmtFeetInches,
-          setLineEndpoints, setLabelText, positionLabel, positionLabelAbove, placeAllLabels,
-          tiltMicCapsule } = PAG;
 
-  // Fixed scene geometry — matches the canonical demo's slide 13 figures:
-  // D_S = 7'1", D_1 = 6'11", D_2 = 43'1", D_0 = 49'5", PAG = 1 dB.
-  const T = { x: 80,  y: T_Y };
-  const M = { x: 172, y: M_Y };
-  const L = { x: 722, y: L_Y };
-  const S = { x: 171, y: 232 };   // produces D_1=6'11", D_2=43'1", PAG ≈ 1 dB
-  const OP = { x: 800, y: 220 };  // operator floats upstage of the listener
+  function buildFaderSlide(prefix, config) {
+    const stage = document.getElementById('stage' + prefix);
+    if (!stage) return;
+    const { T_Y, M_Y, L_Y,
+            distPx, feet, fmtFeetInches,
+            setLineEndpoints, setLabelText, placeAllLabels,
+            tiltMicCapsule } = PAG;
+
+    const T = { x: config.T.x,  y: T_Y };
+    const M = { x: config.M.x,  y: M_Y };
+    const L = { x: config.L.x,  y: L_Y };
+    const S = { x: config.S.x,  y: config.S.y };
+    const OP = { x: config.OP.x, y: config.OP.y };
+
+    const id = (suffix) => document.getElementById('s' + prefix + '-' + suffix);
+    const figs = {
+      talker:   id('fig-talker'),
+      mic:      id('fig-mic'),
+      speaker:  id('fig-speaker'),
+      listener: id('fig-listener'),
+      operator: id('fig-operator'),
+    };
+    const lineDS = id('lineDS');
+    const lineD1 = id('lineD1');
+    const lineD2 = id('lineD2');
+    const lineD0 = id('lineD0');
+    const labelDS = id('labelDS');
+    const labelD1 = id('labelD1');
+    const labelD2 = id('labelD2');
+    const labelD0 = id('labelD0');
+    const opLabel = id('operator-label');
+    const bubble = id('speech-bubble');
+    const bubbleShape = bubble.querySelector('.speech-bubble-shape');
+    const bubbleText = bubble.querySelector('.speech-bubble-text');
+
+    function render() {
+      figs.talker.setAttribute('transform',   'translate(' + T.x + ', ' + T.y + ')');
+      figs.mic.setAttribute('transform',      'translate(' + M.x + ', ' + M.y + ')');
+      figs.listener.setAttribute('transform', 'translate(' + L.x + ', ' + L.y + ')');
+      const ang = Math.atan2(L.y - S.y, L.x - S.x) * 180 / Math.PI;
+      figs.speaker.setAttribute('transform',
+        'translate(' + S.x + ', ' + S.y + ') rotate(' + ang.toFixed(1) + ')');
+      figs.operator.setAttribute('transform', 'translate(' + OP.x + ', ' + OP.y + ')');
+      opLabel.setAttribute('x', OP.x);
+      opLabel.setAttribute('y', (OP.y + 28).toFixed(1));
+
+      tiltMicCapsule(figs.mic, T, M);
+
+      // Speech bubble — rounded rect with a tail pointing down at the operator.
+      const bx = OP.x - 70;
+      const by = OP.y - 80;
+      const bw = 76, bh = 44, br = 12;
+      const left = bx - bw/2, right = bx + bw/2;
+      const top = by - bh/2, bottom = by + bh/2;
+      const tailApex = { x: OP.x - 12, y: OP.y - 48 };
+      const tailBase1 = { x: right - 18, y: bottom };
+      const tailBase2 = { x: right - 4,  y: bottom };
+      const d =
+        `M ${left + br} ${top}` +
+        ` H ${right - br}` +
+        ` Q ${right} ${top} ${right} ${top + br}` +
+        ` V ${bottom - br}` +
+        ` Q ${right} ${bottom} ${right - br} ${bottom}` +
+        ` L ${tailBase2.x} ${bottom}` +
+        ` L ${tailApex.x} ${tailApex.y}` +
+        ` L ${tailBase1.x} ${bottom}` +
+        ` H ${left + br}` +
+        ` Q ${left} ${bottom} ${left} ${bottom - br}` +
+        ` V ${top + br}` +
+        ` Q ${left} ${top} ${left + br} ${top}` +
+        ` Z`;
+      bubbleShape.setAttribute('d', d);
+      bubbleText.setAttribute('x', bx);
+      bubbleText.setAttribute('y', by - 4);
+      bubbleText.querySelector('tspan').setAttribute('x', bx);
+
+      setLineEndpoints(lineDS, T, M);
+      setLineEndpoints(lineD1, M, S);
+      setLineEndpoints(lineD2, S, L);
+      setLineEndpoints(lineD0, T, L);
+
+      const Ds = feet(distPx(T, M));
+      const D1 = feet(distPx(M, S));
+      const D2 = feet(distPx(S, L));
+      const D0 = feet(distPx(T, L));
+
+      placeAllLabels(
+        { DS: labelDS, D1: labelD1, D2: labelD2, D0: labelD0 },
+        figs,
+        { talker: T, mic: M, speaker: S, listener: L },
+        380
+      );
+      setLabelText(labelDS, fmtFeetInches(Ds));
+      setLabelText(labelD1, fmtFeetInches(D1));
+      setLabelText(labelD2, fmtFeetInches(D2));
+      setLabelText(labelD0, fmtFeetInches(D0));
+    }
+
+    // --- Fader overlay ---
+    const overlay = id('fader-overlay');
+    const closeBtn = id('fader-close');
+    const knob = id('fader-knob');
+    const track = knob.parentElement;
+
+    let faderValue = 0;
+    // Where the FEEDBACK zone starts on the 0-100 fader scale. Slide 10
+    // (1 dB PAG) puts feedback near the bottom; slide 11 (22.8 dB PAG)
+    // pushes it near the top.
+    const FEEDBACK_THRESHOLD = config.feedbackThreshold;
+
+    function setFader(value) {
+      faderValue = Math.max(0, Math.min(100, value));
+      const trackRect = track.getBoundingClientRect();
+      const usableHeight = trackRect.height - 28;
+      const yFromBottom = (faderValue / 100) * usableHeight;
+      knob.style.bottom = yFromBottom.toFixed(1) + 'px';
+      knob.setAttribute('aria-valuenow', String(Math.round(faderValue)));
+      updateFeedback();
+    }
+
+    let audioCtx = null;
+    let osc1 = null, osc2 = null, gain = null;
+    let toneActive = false;
+
+    function ensureAudio() {
+      if (audioCtx) return;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      audioCtx = new AC();
+    }
+
+    function startTone() {
+      ensureAudio();
+      if (!audioCtx || toneActive) return;
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      osc1 = audioCtx.createOscillator();
+      osc2 = audioCtx.createOscillator();
+      osc1.type = 'sine';
+      osc2.type = 'sine';
+      osc1.frequency.value = 2080;
+      osc2.frequency.value = 4150;
+      gain = audioCtx.createGain();
+      gain.gain.value = 0;
+      const harmonicGain = audioCtx.createGain();
+      harmonicGain.gain.value = 0.35;
+      osc1.connect(gain);
+      osc2.connect(harmonicGain).connect(gain);
+      gain.connect(audioCtx.destination);
+      osc1.start();
+      osc2.start();
+      toneActive = true;
+    }
+
+    function stopTone() {
+      if (!toneActive || !audioCtx) return;
+      const now = audioCtx.currentTime;
+      gain.gain.cancelScheduledValues(now);
+      gain.gain.setValueAtTime(gain.gain.value, now);
+      gain.gain.linearRampToValueAtTime(0, now + 0.08);
+      osc1.stop(now + 0.1);
+      osc2.stop(now + 0.1);
+      toneActive = false;
+    }
+
+    function updateFeedback() {
+      if (faderValue < FEEDBACK_THRESHOLD) {
+        if (toneActive) stopTone();
+        return;
+      }
+      if (!toneActive) startTone();
+      if (!audioCtx) return;
+      const intoRed = (faderValue - FEEDBACK_THRESHOLD) / (100 - FEEDBACK_THRESHOLD);
+      const targetGain = 0.005 + 0.18 * intoRed;
+      const now = audioCtx.currentTime;
+      gain.gain.cancelScheduledValues(now);
+      gain.gain.setTargetAtTime(targetGain, now, 0.03);
+    }
+
+    function openOverlay() {
+      overlay.hidden = false;
+      requestAnimationFrame(() => setFader(0));
+      document.addEventListener('keydown', handleEsc);
+    }
+
+    function closeOverlay() {
+      overlay.hidden = true;
+      stopTone();
+      document.removeEventListener('keydown', handleEsc);
+    }
+
+    function handleEsc(e) {
+      if (e.key === 'Escape') closeOverlay();
+    }
+
+    figs.operator.addEventListener('click', openOverlay);
+    figs.operator.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openOverlay();
+      }
+    });
+    bubble.addEventListener('click', openOverlay);
+    closeBtn.addEventListener('click', closeOverlay);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeOverlay();
+    });
+
+    let dragging = false;
+
+    function knobYToValue(clientY) {
+      const trackRect = track.getBoundingClientRect();
+      const usableHeight = trackRect.height - 28;
+      const yFromBottom = trackRect.bottom - clientY - 14;
+      return (yFromBottom / usableHeight) * 100;
+    }
+
+    knob.addEventListener('pointerdown', (e) => {
+      dragging = true;
+      knob.classList.add('is-dragging');
+      knob.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+    knob.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      setFader(knobYToValue(e.clientY));
+    });
+    knob.addEventListener('pointerup', (e) => {
+      dragging = false;
+      knob.classList.remove('is-dragging');
+      try { knob.releasePointerCapture(e.pointerId); } catch (err) {}
+    });
+    knob.addEventListener('pointercancel', () => {
+      dragging = false;
+      knob.classList.remove('is-dragging');
+    });
+    knob.addEventListener('keydown', (e) => {
+      const step = e.shiftKey ? 1 : 5;
+      if (e.key === 'ArrowUp')   { setFader(faderValue + step); e.preventDefault(); }
+      if (e.key === 'ArrowDown') { setFader(faderValue - step); e.preventDefault(); }
+      if (e.key === 'Home')      { setFader(100); e.preventDefault(); }
+      if (e.key === 'End')       { setFader(0);   e.preventDefault(); }
+    });
+
+    track.addEventListener('pointerdown', (e) => {
+      if (e.target === knob) return;
+      setFader(knobYToValue(e.clientY));
+    });
+
+    const slide = stage.closest('.slide');
+    slide.addEventListener('pag:slide-active', () => {
+      render();
+      if (!slide.classList.contains('is-active')) {
+        closeOverlay();
+      }
+    });
+    const navObserver = new MutationObserver(() => {
+      if (!slide.classList.contains('is-active') && !overlay.hidden) {
+        closeOverlay();
+      }
+    });
+    navObserver.observe(slide, { attributes: true, attributeFilter: ['class'] });
+
+    render();
+  }
+
+  // Slide 10 — original 1 dB PAG geometry. Feedback near the bottom of the fader.
+  buildFaderSlide('10', {
+    T:  { x: 80  },
+    M:  { x: 172 },
+    L:  { x: 722 },
+    S:  { x: 171, y: 232 },
+    OP: { x: 800, y: 220 },
+    feedbackThreshold: 52,
+  });
+
+  // Slide 11 — source moved within 6" of the mic. PAG ≈ 22.8 dB.
+  // Feedback zone is small relative to the much larger reinforcement
+  // headroom; threshold matches the visual layout (top ~28% of the track).
+  buildFaderSlide('11', {
+    T:  { x: 130 },
+    M:  { x: 172 },
+    L:  { x: 722 },
+    S:  { x: 171, y: 232 },
+    OP: { x: 800, y: 220 },
+    feedbackThreshold: 72,
+  });
+})();
+
+
+/* =====================================================================
+   Sandbox stage (index.html)
+   Live PAG playground: drag the four figures, toggle the mic polar
+   pattern and the loudspeaker beamwidth. When a directivity option is
+   "off" its visual overlay hides and the PAG equation drops the
+   corresponding correction term.
+   ===================================================================== */
+(() => {
+  'use strict';
+  const stage = document.getElementById('sandbox-stage');
+  if (!stage) return;
+  const { PX_PER_FT, SVG_W, FLOOR_Y, T_Y, M_Y, L_Y,
+          clamp, distPx, feet, fmtFeetInches,
+          setLineEndpoints, setLabelText, placeAllLabels,
+          tiltMicCapsule, applyCollisions,
+          polarResponse, buildMicLobePath } = PAG;
+
+  // Baseline geometry mirrors the canonical demo (slides 4–6).
+  const state = {
+    talker:   { x: 80,                       y: T_Y,  fixedY: true  },
+    mic:      { x: 80 + 7.08 * PX_PER_FT,    y: M_Y,  fixedY: true  },
+    speaker:  { x: 390,                      y: 126,  fixedY: false },
+    listener: { x: 80 + 49.42 * PX_PER_FT,   y: L_Y,  fixedY: true  },
+    micMode:     'off',          // 'off' | 'omni' | 'cardioid' | 'hypercardioid'
+    speakerMode: 'off',          // 'off' | '90' | '60' | '40'
+  };
+
+  const constraints = {
+    talker:   { minX: 26, maxX: 870 },
+    mic:      { minX: 26, maxX: 870 },
+    speaker:  { minX: 32, maxX: 866, minY: 26, maxY: FLOOR_Y - 22 },
+    listener: { minX: 26, maxX: 870 },
+  };
+
+  const MIN_GAP_TM = 22;
+  const MIN_GAP_ML = 50;
 
   const figs = {
-    talker:   document.getElementById('s10-fig-talker'),
-    mic:      document.getElementById('s10-fig-mic'),
-    speaker:  document.getElementById('s10-fig-speaker'),
-    listener: document.getElementById('s10-fig-listener'),
-    operator: document.getElementById('s10-fig-operator'),
+    talker:   document.getElementById('sandbox-fig-talker'),
+    mic:      document.getElementById('sandbox-fig-mic'),
+    speaker:  document.getElementById('sandbox-fig-speaker'),
+    listener: document.getElementById('sandbox-fig-listener'),
   };
-  const lineDS = document.getElementById('s10-lineDS');
-  const lineD1 = document.getElementById('s10-lineD1');
-  const lineD2 = document.getElementById('s10-lineD2');
-  const lineD0 = document.getElementById('s10-lineD0');
-  const labelDS = document.getElementById('s10-labelDS');
-  const labelD1 = document.getElementById('s10-labelD1');
-  const labelD2 = document.getElementById('s10-labelD2');
-  const labelD0 = document.getElementById('s10-labelD0');
-  const opLabel = document.getElementById('s10-operator-label');
-  const bubble = document.getElementById('s10-speech-bubble');
-  const bubbleShape = bubble.querySelector('.speech-bubble-shape');
-  const bubbleText = bubble.querySelector('.speech-bubble-text');
+  const lineDS = document.getElementById('sandbox-lineDS');
+  const lineD1 = document.getElementById('sandbox-lineD1');
+  const lineD2 = document.getElementById('sandbox-lineD2');
+  const lineD0 = document.getElementById('sandbox-lineD0');
+  const labelDS = document.getElementById('sandbox-labelDS');
+  const labelD1 = document.getElementById('sandbox-labelD1');
+  const labelD2 = document.getElementById('sandbox-labelD2');
+  const labelD0 = document.getElementById('sandbox-labelD0');
+  const onAxisLine = document.getElementById('sandbox-onaxis');
+  const angleArc = document.getElementById('sandbox-angleArc');
+  const angleLabel = document.getElementById('sandbox-angleLabel');
+  const polarLobe = document.getElementById('sandbox-polarLobe');
+  const polarLobePath = document.getElementById('sandbox-polarLobePath');
+  const speakerLobe = document.getElementById('sandbox-speakerLobe');
+  const speakerCone6 = document.getElementById('sandbox-speakerCone6');
+  const speakerCone0 = document.getElementById('sandbox-speakerCone0');
+  const pagValueEl = document.getElementById('sandbox-pagValue');
+  const corrTermsEl = document.getElementById('sandbox-corrTerms');
+  const numDSEl = document.getElementById('sandbox-numDS');
+  const numD1El = document.getElementById('sandbox-numD1');
+  const numD2El = document.getElementById('sandbox-numD2');
+  const numD0El = document.getElementById('sandbox-numD0');
+
+  // --- Directivity math (lifted from slide 7/8 of the guide) ---
+  const MIC_NULL_CAP_LINEAR = Math.pow(10, -25 / 20);
+  function micCorrectionDb(pattern, theta) {
+    if (pattern === 'off') return 0;
+    const D = Math.abs(polarResponse(pattern, theta));
+    return -20 * Math.log10(Math.max(D, MIC_NULL_CAP_LINEAR));
+  }
+  function speakerCorrectionDb(mode, theta) {
+    if (mode === 'off') return 0;
+    const bwDeg = parseFloat(mode);
+    const thetaDeg = Math.abs(theta * 180 / Math.PI);
+    const halfBw = bwDeg / 2;
+    if (thetaDeg <= halfBw) {
+      const quarterRad = (halfBw / 2) * Math.PI / 180;
+      const n = Math.log(0.5) / Math.log(Math.cos(quarterRad));
+      const D = Math.pow(Math.cos(thetaDeg * Math.PI / 180 / 2), n);
+      return -20 * Math.log10(Math.max(D, 1e-6));
+    }
+    return 6 + 0.27 * (thetaDeg - halfBw);
+  }
+
+  function compute() {
+    const t = state.talker, m = state.mic, s = state.speaker, l = state.listener;
+    const Ds = feet(distPx(t, m));
+    const D1 = feet(distPx(m, s));
+    const D2 = feet(distPx(s, l));
+    const D0 = feet(distPx(t, l));
+    let pagGeom;
+    if (Ds <= 0.001 || D2 <= 0.001) pagGeom = Infinity;
+    else if (D1 <= 0.001) pagGeom = -Infinity;
+    else pagGeom = 20 * Math.log10((D1 / Ds) * (D0 / D2));
+
+    const va = { x: t.x - m.x, y: t.y - m.y };
+    const vb = { x: s.x - m.x, y: s.y - m.y };
+    const la = Math.hypot(va.x, va.y) || 1;
+    const lb = Math.hypot(vb.x, vb.y) || 1;
+    const micTheta = Math.acos(clamp((va.x*vb.x + va.y*vb.y) / (la*lb), -1, 1));
+    const micCorr = micCorrectionDb(state.micMode, micTheta);
+
+    const sa = { x: l.x - s.x, y: l.y - s.y };
+    const sb = { x: m.x - s.x, y: m.y - s.y };
+    const lsa = Math.hypot(sa.x, sa.y) || 1;
+    const lsb = Math.hypot(sb.x, sb.y) || 1;
+    const spkTheta = Math.acos(clamp((sa.x*sb.x + sa.y*sb.y) / (lsa*lsb), -1, 1));
+    const spkCorr = speakerCorrectionDb(state.speakerMode, spkTheta);
+
+    return { Ds, D1, D2, D0, pagGeom, micTheta, micCorr, spkTheta, spkCorr };
+  }
+
+  // --- Visual helpers ---
+  const MIC_LOBE_SCALE = 30;
+  const lobePathCache = {};
+  function getLobePath(pattern) {
+    if (!(pattern in lobePathCache)) lobePathCache[pattern] = buildMicLobePath(pattern, MIC_LOBE_SCALE);
+    return lobePathCache[pattern];
+  }
+
+  const SPEAKER_CONE_LENGTH = 520;
+  function buildSpeakerWedge(halfAngleDeg) {
+    const half = halfAngleDeg * Math.PI / 180;
+    const L = SPEAKER_CONE_LENGTH;
+    const x1 = L * Math.cos(half), y1 = -L * Math.sin(half);
+    const x2 = L * Math.cos(half), y2 =  L * Math.sin(half);
+    return `M 0,0 L ${x1.toFixed(1)},${y1.toFixed(1)} A ${L},${L} 0 0,1 ${x2.toFixed(1)},${y2.toFixed(1)} Z`;
+  }
 
   function render() {
-    figs.talker.setAttribute('transform',   'translate(' + T.x + ', ' + T.y + ')');
-    figs.mic.setAttribute('transform',      'translate(' + M.x + ', ' + M.y + ')');
-    figs.listener.setAttribute('transform', 'translate(' + L.x + ', ' + L.y + ')');
-    const ang = Math.atan2(L.y - S.y, L.x - S.x) * 180 / Math.PI;
+    for (const id of ['talker', 'mic', 'listener']) {
+      const p = state[id];
+      figs[id].setAttribute('transform', 'translate(' + p.x.toFixed(1) + ', ' + p.y.toFixed(1) + ')');
+    }
+    const speakerAngle = Math.atan2(state.listener.y - state.speaker.y, state.listener.x - state.speaker.x) * 180 / Math.PI;
     figs.speaker.setAttribute('transform',
-      'translate(' + S.x + ', ' + S.y + ') rotate(' + ang.toFixed(1) + ')');
-    figs.operator.setAttribute('transform', 'translate(' + OP.x + ', ' + OP.y + ')');
-    opLabel.setAttribute('x', OP.x);
-    opLabel.setAttribute('y', (OP.y + 28).toFixed(1));
+      'translate(' + state.speaker.x.toFixed(1) + ', ' + state.speaker.y.toFixed(1) + ') rotate(' + speakerAngle.toFixed(1) + ')');
 
-    tiltMicCapsule(figs.mic, T, M);
+    tiltMicCapsule(figs.mic, state.talker, state.mic);
 
-    // Speech bubble — rounded rect with a tail pointing down at the operator.
-    // Positioned to the upper-left of the operator.
-    const bx = OP.x - 70;  // bubble center x
-    const by = OP.y - 80;  // bubble center y
-    const bw = 76, bh = 44, br = 12;
-    const left = bx - bw/2, right = bx + bw/2;
-    const top = by - bh/2, bottom = by + bh/2;
-    // Tail apex points toward operator head.
-    const tailApex = { x: OP.x - 12, y: OP.y - 48 };
-    const tailBase1 = { x: right - 18, y: bottom };
-    const tailBase2 = { x: right - 4,  y: bottom };
-    const d =
-      `M ${left + br} ${top}` +
-      ` H ${right - br}` +
-      ` Q ${right} ${top} ${right} ${top + br}` +
-      ` V ${bottom - br}` +
-      ` Q ${right} ${bottom} ${right - br} ${bottom}` +
-      ` L ${tailBase2.x} ${bottom}` +
-      ` L ${tailApex.x} ${tailApex.y}` +
-      ` L ${tailBase1.x} ${bottom}` +
-      ` H ${left + br}` +
-      ` Q ${left} ${bottom} ${left} ${bottom - br}` +
-      ` V ${top + br}` +
-      ` Q ${left} ${top} ${left + br} ${top}` +
-      ` Z`;
-    bubbleShape.setAttribute('d', d);
-    // Text positioned at bubble center; tspan in HTML handles the second line.
-    bubbleText.setAttribute('x', bx);
-    bubbleText.setAttribute('y', by - 4);
-    bubbleText.querySelector('tspan').setAttribute('x', bx);
+    // --- Speaker coverage cone ---
+    // Use the .is-hidden class (display: none) rather than the hidden
+    // attribute — SVG support for the attribute is inconsistent and some
+    // browsers leave the previously-rendered geometry behind.
+    speakerLobe.classList.toggle('is-hidden', state.speakerMode === 'off');
+    if (state.speakerMode !== 'off') {
+      speakerLobe.setAttribute('data-bw', state.speakerMode);
+      speakerLobe.setAttribute('transform',
+        'translate(' + state.speaker.x.toFixed(1) + ', ' + state.speaker.y.toFixed(1) + ') rotate(' + speakerAngle.toFixed(1) + ')');
+      const bwDeg = parseFloat(state.speakerMode);
+      const halfBw = bwDeg / 2;
+      const halfCore = halfBw * 0.55;
+      speakerCone6.setAttribute('d', buildSpeakerWedge(halfBw));
+      speakerCone0.setAttribute('d', buildSpeakerWedge(halfCore));
+    }
 
-    // Distance lines.
-    setLineEndpoints(lineDS, T, M);
-    setLineEndpoints(lineD1, M, S);
-    setLineEndpoints(lineD2, S, L);
-    setLineEndpoints(lineD0, T, L);
+    const { Ds, D1, D2, D0, pagGeom, micTheta, micCorr, spkTheta, spkCorr } = compute();
 
-    const Ds = feet(distPx(T, M));
-    const D1 = feet(distPx(M, S));
-    const D2 = feet(distPx(S, L));
-    const D0 = feet(distPx(T, L));
+    // --- Mic polar overlay ---
+    const micOff = state.micMode === 'off';
+    onAxisLine.classList.toggle('is-hidden', micOff);
+    polarLobe.classList.toggle('is-hidden', micOff);
+    angleArc.classList.toggle('is-hidden', micOff);
+    angleLabel.classList.toggle('is-hidden', micOff);
+    if (!micOff) {
+      const m = state.mic, t = state.talker, s = state.speaker;
+      const dx = t.x - m.x, dy = t.y - m.y;
+      const len = Math.hypot(dx, dy) || 1;
+      const ux = dx / len, uy = dy / len;
+      const endP = { x: m.x + ux * 70, y: m.y + uy * 70 };
+      onAxisLine.setAttribute('x1', m.x.toFixed(1));
+      onAxisLine.setAttribute('y1', m.y.toFixed(1));
+      onAxisLine.setAttribute('x2', endP.x.toFixed(1));
+      onAxisLine.setAttribute('y2', endP.y.toFixed(1));
+      const onAxisDeg = Math.atan2(dy, dx) * 180 / Math.PI;
+      polarLobe.setAttribute('transform',
+        'translate(' + m.x.toFixed(1) + ', ' + m.y.toFixed(1) + ') rotate(' + onAxisDeg.toFixed(1) + ')');
+      polarLobePath.setAttribute('d', getLobePath(state.micMode));
+      polarLobe.setAttribute('opacity', state.micMode === 'omni' ? '0.35' : '1');
+
+      // Angle arc between mic→talker and mic→speaker.
+      const aT = Math.atan2(t.y - m.y, t.x - m.x);
+      const aS = Math.atan2(s.y - m.y, s.x - m.x);
+      const r = 26;
+      let delta = aS - aT;
+      while (delta > Math.PI) delta -= 2 * Math.PI;
+      while (delta < -Math.PI) delta += 2 * Math.PI;
+      const sweepFlag = delta > 0 ? 1 : 0;
+      const largeArc = Math.abs(delta) > Math.PI ? 1 : 0;
+      const p1 = { x: m.x + r * Math.cos(aT), y: m.y + r * Math.sin(aT) };
+      const p2 = { x: m.x + r * Math.cos(aS), y: m.y + r * Math.sin(aS) };
+      angleArc.setAttribute('d', `M ${p1.x.toFixed(1)} ${p1.y.toFixed(1)} A ${r} ${r} 0 ${largeArc} ${sweepFlag} ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`);
+      angleLabel.setAttribute('x', (m.x + 36).toFixed(1));
+      angleLabel.setAttribute('y', (m.y + 30).toFixed(1));
+      angleLabel.textContent = Math.round(micTheta * 180 / Math.PI) + '°';
+    }
+
+    // --- Distance lines + labels ---
+    setLineEndpoints(lineDS, state.talker,  state.mic);
+    setLineEndpoints(lineD1, state.mic,     state.speaker);
+    setLineEndpoints(lineD2, state.speaker, state.listener);
+    setLineEndpoints(lineD0, state.talker,  state.listener);
 
     placeAllLabels(
       { DS: labelDS, D1: labelD1, D2: labelD2, D0: labelD0 },
       figs,
-      { talker: T, mic: M, speaker: S, listener: L },
+      { talker: state.talker, mic: state.mic, speaker: state.speaker, listener: state.listener },
       380
     );
     setLabelText(labelDS, fmtFeetInches(Ds));
     setLabelText(labelD1, fmtFeetInches(D1));
     setLabelText(labelD2, fmtFeetInches(D2));
     setLabelText(labelD0, fmtFeetInches(D0));
-  }
 
-  // --- Fader overlay ---
-  const overlay = document.getElementById('s10-fader-overlay');
-  const closeBtn = document.getElementById('s10-fader-close');
-  const knob = document.getElementById('s10-fader-knob');
-  const track = knob.parentElement;
-
-  // Fader value: 0 (bottom) to 100 (top). Feedback zone starts at the
-  // "edge" line near the top of the track.
-  let faderValue = 0;
-  // Geometry of zones inside the .fader-zones CSS layout — use percentages
-  // of the track height. The HTML uses flex weights 2:0:2 with a 36px edge
-  // band; we approximate the boundary at 50% (above = FEEDBACK, below = INAUDIBLE)
-  // but extend the FEEDBACK zone slightly to account for the edge band.
-  // Anything above value=52 triggers feedback.
-  const FEEDBACK_THRESHOLD = 52;
-
-  function setFader(value) {
-    faderValue = Math.max(0, Math.min(100, value));
-    const trackRect = track.getBoundingClientRect();
-    const usableHeight = trackRect.height - 28;  // knob height
-    // value=0 → bottom; value=100 → top
-    const yFromBottom = (faderValue / 100) * usableHeight;
-    knob.style.bottom = yFromBottom.toFixed(1) + 'px';
-    knob.setAttribute('aria-valuenow', String(Math.round(faderValue)));
-    updateFeedback();
-  }
-
-  // --- Feedback tone synthesis ---
-  let audioCtx = null;
-  let osc1 = null, osc2 = null, gain = null;
-  let toneActive = false;
-
-  function ensureAudio() {
-    if (audioCtx) return;
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) return;
-    audioCtx = new AC();
-  }
-
-  function startTone() {
-    ensureAudio();
-    if (!audioCtx || toneActive) return;
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    osc1 = audioCtx.createOscillator();
-    osc2 = audioCtx.createOscillator();
-    osc1.type = 'sine';
-    osc2.type = 'sine';
-    // Slightly detuned sines around 2 kHz — typical feedback frequency.
-    osc1.frequency.value = 2080;
-    osc2.frequency.value = 4150;  // second harmonic
-    gain = audioCtx.createGain();
-    gain.gain.value = 0;
-    const harmonicGain = audioCtx.createGain();
-    harmonicGain.gain.value = 0.35;  // second harmonic 9 dB below fundamental
-    osc1.connect(gain);
-    osc2.connect(harmonicGain).connect(gain);
-    gain.connect(audioCtx.destination);
-    osc1.start();
-    osc2.start();
-    toneActive = true;
-  }
-
-  function stopTone() {
-    if (!toneActive || !audioCtx) return;
-    const now = audioCtx.currentTime;
-    gain.gain.cancelScheduledValues(now);
-    gain.gain.setValueAtTime(gain.gain.value, now);
-    gain.gain.linearRampToValueAtTime(0, now + 0.08);
-    osc1.stop(now + 0.1);
-    osc2.stop(now + 0.1);
-    toneActive = false;
-  }
-
-  function updateFeedback() {
-    if (faderValue < FEEDBACK_THRESHOLD) {
-      if (toneActive) stopTone();
-      return;
+    // --- PAG readout + equation ---
+    const total = pagGeom + micCorr + spkCorr;
+    if (!isFinite(total)) {
+      pagValueEl.textContent = total > 0 ? '∞ dB' : '-∞ dB';
+    } else {
+      // Show breakdown only when at least one correction is active.
+      const corrPieces = [];
+      if (state.micMode !== 'off') corrPieces.push(micCorr.toFixed(1) + ' dB');
+      if (state.speakerMode !== 'off') corrPieces.push(spkCorr.toFixed(1) + ' dB');
+      if (corrPieces.length === 0) {
+        pagValueEl.textContent = pagGeom.toFixed(1) + ' dB';
+      } else {
+        pagValueEl.textContent = pagGeom.toFixed(1) + ' dB + ' + corrPieces.join(' + ') + ' = ' + total.toFixed(1) + ' dB';
+      }
     }
-    if (!toneActive) startTone();
-    if (!audioCtx) return;
-    // Tone level scales with how far into the red zone the fader is.
-    // 0 dB at threshold, ramping to ~-12 dBFS at the top (kept low for safety).
-    const intoRed = (faderValue - FEEDBACK_THRESHOLD) / (100 - FEEDBACK_THRESHOLD);
-    const targetGain = 0.005 + 0.18 * intoRed;  // 0.005 ≈ -46 dBFS, 0.185 ≈ -15 dBFS
-    const now = audioCtx.currentTime;
-    gain.gain.cancelScheduledValues(now);
-    gain.gain.setTargetAtTime(targetGain, now, 0.03);
+    // Equation tail: add "+ mic correction" / "+ loudspeaker correction" as appropriate.
+    const tail = [];
+    if (state.micMode !== 'off')     tail.push('mic correction');
+    if (state.speakerMode !== 'off') tail.push('loudspeaker correction');
+    corrTermsEl.textContent = tail.length ? ' + ' + tail.join(' + ') : '';
+
+    // Numeric substitution row — matches the slide 5 "side-by-side" layout.
+    numDSEl.textContent = Ds.toFixed(2);
+    numD1El.textContent = D1.toFixed(2);
+    numD2El.textContent = D2.toFixed(2);
+    numD0El.textContent = D0.toFixed(2);
   }
 
-  function openOverlay() {
-    overlay.hidden = false;
-    // Reset fader to bottom; user must push it themselves.
-    requestAnimationFrame(() => setFader(0));
-    document.addEventListener('keydown', handleEsc);
+  // --- Drag ---
+  let active = null;
+  const dragOffset = { x: 0, y: 0 };
+  function svgPoint(evt) {
+    const pt = stage.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(stage.getScreenCTM().inverse());
   }
-
-  function closeOverlay() {
-    overlay.hidden = true;
-    stopTone();
-    document.removeEventListener('keydown', handleEsc);
+  function startDrag(evt, id) {
+    active = id;
+    figs[id].classList.add('dragging');
+    const p = svgPoint(evt);
+    dragOffset.x = p.x - state[id].x;
+    dragOffset.y = p.y - state[id].y;
+    try { evt.target.setPointerCapture && evt.target.setPointerCapture(evt.pointerId); } catch (e) {}
+    evt.preventDefault();
   }
+  function moveDrag(evt) {
+    if (!active) return;
+    const p = svgPoint(evt);
+    const c = constraints[active];
+    let nx = p.x - dragOffset.x;
+    let ny = state[active].fixedY ? state[active].y : (p.y - dragOffset.y);
+    nx = clamp(nx, c.minX, c.maxX);
+    if (!state[active].fixedY) ny = clamp(ny, c.minY, c.maxY);
 
-  function handleEsc(e) {
-    if (e.key === 'Escape') closeOverlay();
-  }
-
-  figs.operator.addEventListener('click', openOverlay);
-  figs.operator.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      openOverlay();
+    // Pairwise gap enforcement (mirrors slide 5 behaviour).
+    if (active === 'talker') {
+      if (Math.abs(nx - state.mic.x) < MIN_GAP_TM) nx = state.mic.x - MIN_GAP_TM;
+    } else if (active === 'mic') {
+      if (Math.abs(nx - state.talker.x) < MIN_GAP_TM) nx = state.talker.x + MIN_GAP_TM;
+    } else if (active === 'speaker') {
+      const dx = nx - state.mic.x, dy = ny - state.mic.y;
+      const d = Math.hypot(dx, dy);
+      if (d < MIN_GAP_ML) {
+        const a = Math.atan2(dy, dx);
+        nx = state.mic.x + MIN_GAP_ML * Math.cos(a);
+        ny = state.mic.y + MIN_GAP_ML * Math.sin(a);
+        nx = clamp(nx, c.minX, c.maxX);
+        if (!state[active].fixedY) ny = clamp(ny, c.minY, c.maxY);
+      }
     }
-  });
-  bubble.addEventListener('click', openOverlay);
-  closeBtn.addEventListener('click', closeOverlay);
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) closeOverlay();
-  });
 
-  // --- Fader drag ---
-  let dragging = false;
-  let dragOffset = 0;
-
-  function knobYToValue(clientY) {
-    const trackRect = track.getBoundingClientRect();
-    const usableHeight = trackRect.height - 28;
-    const yFromBottom = trackRect.bottom - clientY - 14;  // 14 = half knob
-    return (yFromBottom / usableHeight) * 100;
-  }
-
-  knob.addEventListener('pointerdown', (e) => {
-    dragging = true;
-    knob.classList.add('is-dragging');
-    knob.setPointerCapture(e.pointerId);
-    e.preventDefault();
-  });
-  knob.addEventListener('pointermove', (e) => {
-    if (!dragging) return;
-    setFader(knobYToValue(e.clientY));
-  });
-  knob.addEventListener('pointerup', (e) => {
-    dragging = false;
-    knob.classList.remove('is-dragging');
-    try { knob.releasePointerCapture(e.pointerId); } catch (err) {}
-  });
-  knob.addEventListener('pointercancel', () => {
-    dragging = false;
-    knob.classList.remove('is-dragging');
-  });
-  // Keyboard accessibility on the knob.
-  knob.addEventListener('keydown', (e) => {
-    const step = e.shiftKey ? 1 : 5;
-    if (e.key === 'ArrowUp')   { setFader(faderValue + step); e.preventDefault(); }
-    if (e.key === 'ArrowDown') { setFader(faderValue - step); e.preventDefault(); }
-    if (e.key === 'Home')      { setFader(100); e.preventDefault(); }
-    if (e.key === 'End')       { setFader(0);   e.preventDefault(); }
-  });
-
-  // Also allow clicking anywhere on the track to jump the knob there.
-  track.addEventListener('pointerdown', (e) => {
-    if (e.target === knob) return;
-    setFader(knobYToValue(e.clientY));
-  });
-
-  // Pause tone if the user navigates away from this slide.
-  const slide = stage.closest('.slide');
-  slide.addEventListener('pag:slide-active', () => {
+    const resolved = applyCollisions(active, nx, ny, figs, state);
+    state[active].x = resolved.x;
+    if (!state[active].fixedY) state[active].y = resolved.y;
     render();
-    if (!slide.classList.contains('is-active')) {
-      closeOverlay();
-    }
+  }
+  function endDrag() {
+    if (!active) return;
+    figs[active].classList.remove('dragging');
+    active = null;
+  }
+
+  for (const id of Object.keys(figs)) {
+    figs[id].addEventListener('pointerdown', (e) => startDrag(e, id));
+  }
+  stage.addEventListener('pointermove', moveDrag);
+  window.addEventListener('pointerup', endDrag);
+  window.addEventListener('pointercancel', endDrag);
+
+  // --- Control pills ---
+  document.querySelectorAll('.sandbox-controls .pill[data-mic]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.micMode = btn.dataset.mic;
+      document.querySelectorAll('.sandbox-controls .pill[data-mic]').forEach(b => b.classList.toggle('is-active', b === btn));
+      render();
+    });
   });
-  // Also stop tone if user navigates anywhere — observe slide visibility.
-  const navObserver = new MutationObserver(() => {
-    if (!slide.classList.contains('is-active') && !overlay.hidden) {
-      closeOverlay();
-    }
+  document.querySelectorAll('.sandbox-controls .pill[data-speaker]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.speakerMode = btn.dataset.speaker;
+      document.querySelectorAll('.sandbox-controls .pill[data-speaker]').forEach(b => b.classList.toggle('is-active', b === btn));
+      render();
+    });
   });
-  navObserver.observe(slide, { attributes: true, attributeFilter: ['class'] });
 
   render();
 })();

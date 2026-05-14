@@ -227,6 +227,21 @@
     transition: fill 0.15s ease;
 }
 
+/* Symbol-defs container in slide 0: holds the <symbol> definitions used by
+   every other slide. Hidden in the layout but parsed for <use> references. */
+.pag-app .symbol-defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+/* Opaque rectangle behind the speaker silhouette so distance lines don't
+   show through the driver-hole cutouts. Matches the stage background. */
+.pag-app .speaker-backing {
+    fill: var(--color-card-bg);
+}
+
 .pag-app .figure.dragging .silhouette,
 .pag-app .figure.active .silhouette {
     fill: var(--color-accent);
@@ -613,14 +628,33 @@
     max-width: 740px;
 }
 
+/* Links across the explorable. Accent-colored with a clear underline so
+   they read as obviously clickable, not as styled body text. */
+.pag-app .prose a,
 .pag-app .colophon a {
-    color: var(--color-text);
+    color: var(--color-accent);
     text-decoration: underline;
-    text-decoration-color: var(--color-border);
+    text-decoration-thickness: 1.5px;
+    text-decoration-color: color-mix(in srgb, var(--color-accent) 55%, transparent);
     text-underline-offset: 3px;
+    transition: color 0.15s ease, text-decoration-color 0.15s ease;
 }
 
+.pag-app .prose a:hover,
 .pag-app .colophon a:hover {
+    color: var(--color-accent-hover);
+    text-decoration-color: var(--color-accent-hover);
+}
+
+[data-theme="dark"] .pag-app .prose a,
+[data-theme="dark"] .pag-app .colophon a {
+    color: var(--color-accent-medium);
+    text-decoration-color: color-mix(in srgb, var(--color-accent-medium) 55%, transparent);
+}
+
+[data-theme="dark"] .pag-app .prose a:hover,
+[data-theme="dark"] .pag-app .colophon a:hover {
+    color: var(--color-accent);
     text-decoration-color: var(--color-accent);
 }
 
@@ -695,12 +729,98 @@
 .pag-app .static-stage.interactive .figure {
     cursor: grab;
     touch-action: none;
+    /* Persistent subtle halo so users can see at a glance which figures are
+       interactive. Intensifies on hover/drag/keyboard focus. */
+    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-accent) 35%, transparent));
+    transition: filter 0.18s ease;
+}
+
+.pag-app .static-stage.interactive .figure:hover,
+.pag-app .static-stage.interactive .figure.dragging,
+.pag-app .static-stage.interactive .figure.active,
+.pag-app .static-stage.interactive .figure:focus-visible {
+    filter:
+        drop-shadow(0 0 5px color-mix(in srgb, var(--color-accent) 70%, transparent))
+        drop-shadow(0 0 12px color-mix(in srgb, var(--color-accent) 45%, transparent));
+}
+
+[data-theme="dark"] .pag-app .static-stage.interactive .figure {
+    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-accent-medium) 35%, transparent));
+}
+[data-theme="dark"] .pag-app .static-stage.interactive .figure:hover,
+[data-theme="dark"] .pag-app .static-stage.interactive .figure.dragging,
+[data-theme="dark"] .pag-app .static-stage.interactive .figure.active,
+[data-theme="dark"] .pag-app .static-stage.interactive .figure:focus-visible {
+    filter:
+        drop-shadow(0 0 5px color-mix(in srgb, var(--color-accent-medium) 70%, transparent))
+        drop-shadow(0 0 12px color-mix(in srgb, var(--color-accent-medium) 45%, transparent));
 }
 
 .pag-app .static-stage.interactive .figure.dragging { cursor: grabbing; }
 .pag-app .static-stage.interactive .figure:focus { outline: none; }
-.pag-app .static-stage.interactive .figure:focus-visible use {
-    filter: drop-shadow(0 0 0 2px var(--color-accent));
+
+/* Slide 5 drag-hint banner + first-visit pulse */
+.pag-app .diagram-figure.has-hint { position: relative; }
+
+.pag-app .drag-hint {
+    position: absolute;
+    top: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(-0.5rem);
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.55rem 0.95rem;
+    background: var(--color-card-bg);
+    color: var(--color-text);
+    border: 1px solid var(--color-accent);
+    border-radius: 999px;
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--color-accent) 22%, transparent);
+    font-family: var(--font-sans);
+    font-size: 0.92rem;
+    font-weight: var(--weight-medium);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.pag-app .drag-hint.is-visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.pag-app .drag-hint-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--color-accent);
+    flex-shrink: 0;
+}
+
+[data-theme="dark"] .pag-app .drag-hint {
+    border-color: var(--color-accent-medium);
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--color-accent-medium) 22%, transparent);
+}
+[data-theme="dark"] .pag-app .drag-hint-icon { color: var(--color-accent-medium); }
+
+/* Brief synchronized glow on the figures, triggered once when the user
+   lands on slide 5. The animation only runs while the .is-pulsing class
+   is present on the stage. */
+@keyframes pag-figure-pulse {
+    0%   { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-accent) 35%, transparent)); }
+    40%  { filter:
+            drop-shadow(0 0 8px color-mix(in srgb, var(--color-accent) 90%, transparent))
+            drop-shadow(0 0 22px color-mix(in srgb, var(--color-accent) 60%, transparent)); }
+    100% { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-accent) 35%, transparent)); }
+}
+
+.pag-app .static-stage.interactive.is-pulsing .figure {
+    animation: pag-figure-pulse 1.2s ease-in-out 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pag-app .drag-hint { transition: opacity 0.001s; }
+    .pag-app .static-stage.interactive.is-pulsing .figure { animation: none; }
 }
 
 /* Reveal button (slide 6+) */
@@ -710,7 +830,7 @@
 
 .pag-app .reveal-btn {
     position: absolute;
-    top: 1.25rem;
+    top: 0.4rem;
     right: 1.25rem;
     z-index: 2;
     display: inline-flex;
@@ -1232,7 +1352,18 @@
     color: var(--color-text-muted);
 }
 
-/* Slide-jump popup */
+/* When the indicator's blue hover/active state takes over, the muted
+   sep/total become unreadable — lift them to white to match .current. */
+.pag-app .slide-nav .indicator:hover:not(:disabled) .sep,
+.pag-app .slide-nav .indicator:hover:not(:disabled) .total,
+.pag-app .slide-nav .indicator[aria-expanded="true"] .sep,
+.pag-app .slide-nav .indicator[aria-expanded="true"] .total {
+    color: #ffffff;
+}
+
+/* Slide-jump popup — vertical list of "NN — Title" entries. The popup
+   width is determined by the longest item (each item is nowrap), so the
+   popup auto-sizes to whatever the longest title needs. */
 .pag-app .slide-nav .slide-jump {
     position: absolute;
     bottom: calc(100% + 0.5rem);
@@ -1243,9 +1374,14 @@
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
     padding: 0.4rem;
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 0.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.15rem;
+    max-width: 90vw;
+    max-height: 70vh;
+    overflow-y: auto;
+    /* min-width so very short titles still produce a roomy popup. */
     min-width: 240px;
 }
 
@@ -1255,20 +1391,43 @@
 
 .pag-app .slide-jump-item {
     background: transparent;
-    border: none;
-    width: 40px;
-    height: 40px;
+    border: 1px solid transparent;
+    padding: 0.5rem 0.75rem;
     border-radius: var(--radius-md);
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    font-weight: var(--weight-medium);
     color: var(--color-text);
     cursor: pointer;
-    transition: background-color 0.12s ease;
+    transition: background-color 0.12s ease, color 0.12s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    text-align: left;
+    /* Keep each item on a single line. The popup expands to fit the
+       longest title; shorter titles leave space after them. */
+    white-space: nowrap;
+}
+
+.pag-app .slide-jump-num {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: var(--weight-medium);
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+}
+
+.pag-app .slide-jump-title {
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    font-weight: var(--weight-medium);
+    line-height: 1.3;
 }
 
 .pag-app .slide-jump-item:hover {
     background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+    color: var(--color-accent);
+}
+
+.pag-app .slide-jump-item:hover .slide-jump-num {
     color: var(--color-accent);
 }
 
@@ -1277,9 +1436,8 @@
     color: var(--color-accent-medium);
 }
 
-.pag-app .slide-jump-item.is-current:hover {
-    /* Current is already accent-bg; keep it on hover (white text wins). */
-    color: #ffffff;
+[data-theme="dark"] .pag-app .slide-jump-item:hover .slide-jump-num {
+    color: var(--color-accent-medium);
 }
 
 .pag-app .slide-jump-item.is-current {
@@ -1287,8 +1445,18 @@
     color: #ffffff;
 }
 
+.pag-app .slide-jump-item.is-current .slide-jump-num {
+    color: #ffffff;
+    opacity: 0.85;
+}
+
 [data-theme="dark"] .pag-app .slide-jump-item.is-current {
     background: var(--color-accent-medium);
+}
+
+.pag-app .slide-jump-item.is-current:hover,
+.pag-app .slide-jump-item.is-current:hover .slide-jump-num {
+    color: #ffffff;
 }
 
 .pag-app .slide-jump-item:focus-visible {
@@ -1441,6 +1609,11 @@
     flex: 2;
 }
 
+.pag-app .fader-zone-reinforcement {
+    background: color-mix(in srgb, var(--color-success) 16%, var(--color-card-bg));
+    flex: 3;
+}
+
 .pag-app .fader-zone-edge {
     background: color-mix(in srgb, var(--color-warning) 14%, var(--color-card-bg));
     flex: 0 0 auto;
@@ -1462,6 +1635,7 @@
 }
 
 .pag-app .fader-zone-feedback .fader-zone-label { color: var(--color-error); }
+.pag-app .fader-zone-reinforcement .fader-zone-label { color: var(--color-success); }
 .pag-app .fader-zone-inaudible .fader-zone-label { color: var(--color-accent); }
 [data-theme="dark"] .pag-app .fader-zone-inaudible .fader-zone-label { color: var(--color-accent-medium); }
 
@@ -1578,4 +1752,242 @@
     .pag-app .review-panel { padding: 1.75rem 1.25rem 1.5rem; }
     .pag-app .formula.below-diagram { font-size: 1.05rem; padding: 0.55rem 0.9rem; }
     .pag-app .slide-title { font-size: 1.95rem; }
+}
+
+/* Back-link (guide page). Constrains the inline SVG icon so it doesn't
+   render at the page width. */
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    margin-bottom: 1.5rem;
+}
+.back-link:hover {
+    color: var(--color-accent);
+}
+.back-link svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+[data-theme="dark"] .back-link:hover {
+    color: var(--color-accent-medium);
+}
+
+
+/* =====================================================================
+   Sandbox page (index.html)
+   Wide single-page layout mirroring the cancelled-harmonics structure:
+   a page-header with title + subtitle on the left, View Guide button on
+   the right, then a single .card wrapping the controls, stage, and
+   readout. Sized to fill the wide container on a 14" MacBook.
+   ===================================================================== */
+
+/* Page header (outside the .pag-app, so it shares site-wide page-header
+   typography while letting us pin the guide link to the right). */
+.pag-page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 1.25rem;
+}
+
+.pag-page-header .pag-page-header-text {
+    min-width: 0;
+    flex: 1;
+}
+
+.pag-page-header .page-title {
+    margin-bottom: 0.35rem;
+}
+
+.pag-page-header .page-subtitle {
+    max-width: 760px;
+    margin: 0;
+}
+
+.sandbox-guide-link {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.1rem;
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    color: var(--color-text);
+    text-decoration: none;
+    font-size: 0.92rem;
+    font-weight: var(--weight-medium);
+    transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+}
+.sandbox-guide-link:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+.sandbox-guide-link svg {
+    width: 15px; height: 15px;
+}
+[data-theme="dark"] .sandbox-guide-link:hover {
+    border-color: var(--color-accent-medium);
+    color: var(--color-accent-medium);
+}
+
+/* ---- Sandbox card ---- */
+.pag-sandbox {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.pag-sandbox .sandbox-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+}
+
+/* ---- Control pills ---- */
+.pag-sandbox .sandbox-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2.25rem;
+    align-items: center;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.pag-sandbox .control-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.pag-sandbox .control-label {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: var(--weight-medium);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+}
+
+.pag-sandbox .pill-row {
+    display: inline-flex;
+    background: color-mix(in srgb, var(--color-border) 35%, transparent);
+    border-radius: 999px;
+    padding: 4px;
+    gap: 2px;
+}
+
+.pag-sandbox .pill {
+    appearance: none;
+    background: transparent;
+    border: none;
+    padding: 0.45rem 1.05rem;
+    border-radius: 999px;
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    font-weight: var(--weight-medium);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+.pag-sandbox .pill:hover {
+    color: var(--color-text);
+}
+.pag-sandbox .pill.is-active {
+    background: var(--color-accent);
+    color: #ffffff;
+}
+[data-theme="dark"] .pag-sandbox .pill.is-active {
+    background: var(--color-accent-medium);
+}
+
+/* ---- Stage ---- */
+.pag-sandbox .sandbox-stage-wrap {
+    margin: 0;
+    position: relative;
+}
+
+.pag-sandbox .sandbox-stage {
+    width: 100%;
+    /* Cap the stage so the readout + formula + colophon stay above the
+       viewport fold on a 14" MacBook. viewBox is 900x440 (aspect ~2.05),
+       so a max-height of 420px keeps it landscape and roomy without
+       pushing the rest off-screen. */
+    max-height: 420px;
+    height: auto;
+    display: block;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+}
+
+/* Reliable visibility toggle for SVG children (mic on-axis line, polar
+   lobe, speaker coverage cone). The hidden attribute is unreliable on
+   SVG in some browsers — this class always wins. */
+.pag-sandbox .is-hidden { display: none !important; }
+
+/* ---- Readout strip below the stage ---- */
+.pag-sandbox .sandbox-readout {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.pag-sandbox .sandbox-readout .pag-bar {
+    margin: 0;
+    width: 100%;
+    font-size: 1.05rem;
+    padding: 0.65rem 1.25rem;
+}
+
+.pag-sandbox .sandbox-formula {
+    justify-content: center;
+    line-height: 1.25;
+    font-variation-settings: "opsz" 28;
+    color: var(--color-text);
+}
+
+/* Two equation rows stacked tightly (or side-by-side on wide viewports). */
+.pag-sandbox .sandbox-formula .formula-eq { font-size: 20px; }
+.pag-sandbox .sandbox-formula .formula-eq.numeric { font-size: 18px; }
+
+.pag-sandbox .sandbox-formula .formula-correction {
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
+/* ---- Colophon (disclaimer) sits below the card, full width ---- */
+.pag-sandbox .sandbox-colophon {
+    margin-top: 0;
+    max-width: none;
+}
+
+/* ---- Compact under shorter viewports ---- */
+@media (max-height: 900px) {
+    .pag-page-header { margin-bottom: 0.85rem; }
+    .pag-sandbox { gap: 0.85rem; }
+    .pag-sandbox .sandbox-card { padding: 1rem 1.25rem; gap: 0.75rem; }
+    .pag-sandbox .sandbox-controls { padding-bottom: 0.65rem; gap: 0.8rem 2rem; }
+    .pag-sandbox .sandbox-stage { max-height: 360px; }
+    .pag-sandbox .sandbox-readout { gap: 0.55rem; }
+    .pag-sandbox .sandbox-readout .pag-bar { font-size: 0.98rem; padding: 0.55rem 1rem; }
+    .pag-sandbox .sandbox-formula .formula-eq { font-size: 17px; }
+    .pag-sandbox .sandbox-formula .formula-eq.numeric { font-size: 15px; }
+}
+
+@media (max-height: 780px) {
+    .pag-page-header .page-subtitle { display: none; }
+    .pag-page-header .page-title { font-size: 1.6rem; }
+    .pag-sandbox .sandbox-stage { max-height: 300px; }
+    .pag-sandbox .sandbox-formula .formula-eq { font-size: 15px; }
+    .pag-sandbox .sandbox-formula .formula-eq.numeric { font-size: 14px; }
 }
