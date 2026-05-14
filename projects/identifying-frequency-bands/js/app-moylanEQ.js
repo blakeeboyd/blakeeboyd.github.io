@@ -554,12 +554,21 @@ function loadRNBOScript(version) {
     gainValue.innerHTML = pinkNoiseGain + ' dB';
     updateSliderFill(gainSlider);
 
+    // Send a gain value to both RNBO devices via the "gain" parameter and the
+    // "gain" inport. The patch's pink noise level is driven by the inport
+    // (matching how filter/band controls are wired); the signal parameter is
+    // set too for completeness.
+    function applyRnboGain(db) {
+      devices.forEach(d => {
+        const gp = getParameter(d, "gain");
+        if (gp) gp.value = db;
+        d.scheduleEvent(new RNBO.MessageEvent(RNBO.TimeNow, "gain", [db]));
+      });
+    }
+
     // Set initial gains
     userAudioGain.gain.value = dbToLinear(userAudioGainValue);
-    devices.forEach(d => {
-      const gp = getParameter(d, "gain");
-      if (gp) gp.value = pinkNoiseGain;
-    });
+    applyRnboGain(pinkNoiseGain);
 
     // Update gain control visual state based on source
     const gainControl = document.getElementById("gain-control");
@@ -606,10 +615,7 @@ function loadRNBOScript(version) {
       if (currentSource === 1) {
         // Pink Noise - update RNBO gain on both devices and store
         pinkNoiseGain = value;
-        devices.forEach(d => {
-          const gp = getParameter(d, "gain");
-          if (gp) gp.value = value;
-        });
+        applyRnboGain(value);
       } else {
         // User Audio (or Mute) - update user audio gain node and store
         userAudioGainValue = value;
