@@ -1064,6 +1064,8 @@ function build() {
     const html = renderVideoPage(video, related, citekeyMap);
     fs.writeFileSync(path.join(OUT_VIDEOS_DIR, `${video.citekey}.html`), html);
   }
+  // Remove pages whose source breakdown no longer exists (deleted from the vault).
+  pruneOrphans(OUT_VIDEOS_DIR, videos.map((v) => `${v.citekey}.html`), 'video page');
 
   // Index JSON: keep concepts so client-side search can match against them.
   // Drop questions, takeaway, answers, courses — those are page-only.
@@ -1133,6 +1135,8 @@ function build() {
       fs.writeFileSync(path.join(OUT_COURSES_DIR, `${course.slug}.html`), html);
       courses.push(course);
     }
+    // Remove course pages whose source file no longer exists.
+    pruneOrphans(OUT_COURSES_DIR, courses.map((c) => `${c.slug}.html`), 'course page');
     courses.sort((a, b) => (a.courseNumber || a.slug).localeCompare(b.courseNumber || b.slug));
 
     // Emit a small courses.json for the index page to list them
@@ -1180,6 +1184,25 @@ function build() {
   // a link via renderInline's linkifier. This catches regressions where a
   // new renderer forgets to pass citekeyMap.
   auditCitekeyLeaks(videos);
+}
+
+// Delete .html files in `dir` that aren't in `expectedNames` — i.e. pages
+// whose source was removed from the vault since the last build. Without this,
+// stale pages linger on disk (and in git, and on the live site) forever.
+function pruneOrphans(dir, expectedNames, label) {
+  if (!fs.existsSync(dir)) return;
+  const keep = new Set(expectedNames);
+  let removed = 0;
+  for (const name of fs.readdirSync(dir)) {
+    if (!name.endsWith('.html')) continue;
+    if (keep.has(name)) continue;
+    fs.unlinkSync(path.join(dir, name));
+    console.log(`  − removed orphaned ${label}: ${name}`);
+    removed++;
+  }
+  if (removed > 0) {
+    console.log(`✓ Pruned ${removed} orphaned ${label}${removed === 1 ? '' : 's'}`);
+  }
 }
 
 function auditCitekeyLeaks(videos) {
