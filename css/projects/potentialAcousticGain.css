@@ -1361,108 +1361,106 @@
     color: #ffffff;
 }
 
-/* Slide-jump popup — vertical list of "NN — Title" entries. The popup
-   width is determined by the longest item (each item is nowrap), so the
-   popup auto-sizes to whatever the longest title needs. width:max-content
-   forces the absolutely-positioned popup to size to its content rather
-   than to a shrink-to-fit minimum, which previously clipped items. */
+/* ---------------------------------------------------------------------
+   Slide-jump popup — vertical list of "NN  Title" entries.
+
+   IMPORTANT: every selector below is scoped under `.slide-nav .slide-jump`
+   so it beats the generic `.pag-app .slide-nav button` rule (which forces
+   a 40x40 inline-flex box on ANY button inside .slide-nav). Without that
+   extra specificity the jump-menu items collapse into a 40px cluster.
+   --------------------------------------------------------------------- */
 .pag-app .slide-nav .slide-jump {
     position: absolute;
     bottom: calc(100% + 0.5rem);
     left: 50%;
     transform: translateX(-50%);
+    box-sizing: border-box;
     background: var(--color-card-bg);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
     padding: 0.4rem;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.15rem;
-    width: max-content;
-    min-width: 240px;
+    display: block;
+    width: 300px;
     max-width: 90vw;
     max-height: 70vh;
     overflow-y: auto;
-    overflow-x: hidden;
 }
 
 .pag-app .slide-nav .slide-jump[hidden] {
     display: none;
 }
 
-.pag-app .slide-jump-item {
+.pag-app .slide-nav .slide-jump .slide-jump-item {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 0 0 0.15rem;
     background: transparent;
     border: 1px solid transparent;
-    padding: 0.5rem 0.75rem;
     border-radius: var(--radius-md);
+    padding: 0.5rem 0.7rem;
     color: var(--color-text);
     cursor: pointer;
-    transition: background-color 0.12s ease, color 0.12s ease;
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
     text-align: left;
-    /* Keep each item on a single line. The popup expands to fit the
-       longest title; shorter titles leave space after them. */
     white-space: nowrap;
+    font: inherit;
+    transition: background-color 0.12s ease, color 0.12s ease;
+}
+.pag-app .slide-nav .slide-jump .slide-jump-item:last-child {
+    margin-bottom: 0;
 }
 
-.pag-app .slide-jump-num {
+.pag-app .slide-nav .slide-jump .slide-jump-num {
+    display: inline-block;
+    width: 1.7rem;
+    margin-right: 0.35rem;
     font-family: var(--font-mono);
     font-size: 0.78rem;
     font-weight: var(--weight-medium);
     color: var(--color-text-muted);
     font-variant-numeric: tabular-nums;
-    flex-shrink: 0;
 }
 
-.pag-app .slide-jump-title {
+.pag-app .slide-nav .slide-jump .slide-jump-title {
     font-family: var(--font-sans);
     font-size: 0.9rem;
     font-weight: var(--weight-medium);
-    line-height: 1.3;
 }
 
-.pag-app .slide-jump-item:hover {
+.pag-app .slide-nav .slide-jump .slide-jump-item:hover {
     background: color-mix(in srgb, var(--color-accent) 14%, transparent);
     color: var(--color-accent);
 }
-
-.pag-app .slide-jump-item:hover .slide-jump-num {
+.pag-app .slide-nav .slide-jump .slide-jump-item:hover .slide-jump-num {
     color: var(--color-accent);
 }
-
-[data-theme="dark"] .pag-app .slide-jump-item:hover {
+[data-theme="dark"] .pag-app .slide-nav .slide-jump .slide-jump-item:hover {
     background: color-mix(in srgb, var(--color-accent-medium) 22%, transparent);
     color: var(--color-accent-medium);
 }
-
-[data-theme="dark"] .pag-app .slide-jump-item:hover .slide-jump-num {
+[data-theme="dark"] .pag-app .slide-nav .slide-jump .slide-jump-item:hover .slide-jump-num {
     color: var(--color-accent-medium);
 }
 
-.pag-app .slide-jump-item.is-current {
+.pag-app .slide-nav .slide-jump .slide-jump-item.is-current {
     background: var(--color-accent);
     color: #ffffff;
 }
-
-.pag-app .slide-jump-item.is-current .slide-jump-num {
+.pag-app .slide-nav .slide-jump .slide-jump-item.is-current .slide-jump-num {
     color: #ffffff;
     opacity: 0.85;
 }
-
-[data-theme="dark"] .pag-app .slide-jump-item.is-current {
+[data-theme="dark"] .pag-app .slide-nav .slide-jump .slide-jump-item.is-current {
     background: var(--color-accent-medium);
 }
-
-.pag-app .slide-jump-item.is-current:hover,
-.pag-app .slide-jump-item.is-current:hover .slide-jump-num {
+.pag-app .slide-nav .slide-jump .slide-jump-item.is-current:hover,
+.pag-app .slide-nav .slide-jump .slide-jump-item.is-current:hover .slide-jump-num {
     color: #ffffff;
 }
 
-.pag-app .slide-jump-item:focus-visible {
+.pag-app .slide-nav .slide-jump .slide-jump-item:focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
 }

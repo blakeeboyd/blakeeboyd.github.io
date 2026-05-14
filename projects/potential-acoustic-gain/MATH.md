@@ -90,7 +90,7 @@ $$
 \Delta_{\text{spk}}(\theta) = 6 + 0.27 \cdot (|\theta| - \mathrm{BW}/2) \quad [\text{degrees, dB}]
 $$
 
-The 0.27 dB/degree slope was reverse-engineered from the original demo's screenshots — 90° pattern at 107.4° off-axis produces 22.8 dB correction; 60° at the same angle produces 26.4 dB.
+The 0.27 dB/degree slope was reverse-engineered from the original demo's screenshots — 90° pattern at 107.4° off-axis produces 22.85 dB correction; 60° at the same angle produces 26.90 dB.
 
 **Off-axis angle (speaker side):**
 

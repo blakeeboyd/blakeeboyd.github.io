@@ -146,7 +146,8 @@ const PAG = (() => {
 
   // Standard polar response D(θ), θ in radians. Returns linear gain (0..1+).
   function polarResponse(pattern, theta) {
-    if (pattern === 'cardioid') return 0.5 * (1 + Math.cos(theta));
+    if (pattern === 'cardioid')      return 0.5  * (1 + Math.cos(theta));
+    if (pattern === 'supercardioid') return 0.37 + 0.63 * Math.cos(theta);
     if (pattern === 'hypercardioid') return 0.25 + 0.75 * Math.cos(theta);
     return 1;  // omni
   }
