@@ -313,8 +313,12 @@ const PAG = (() => {
   function placeLabelAvoidingRects(label, anchor, verticalOffset, maxY, figureRadius, obstacles, opts) {
     opts = opts || {};
     const { bg } = getLabelParts(label);
-    const w = parseFloat(bg.getAttribute('width')) || 86;
-    const h = parseFloat(bg.getAttribute('height')) || 28;
+    // opts.scale visually enlarges the whole label (box + text) without
+    // re-tuning any of the coordinate math — w/h here are the on-screen
+    // (scaled) dimensions, and the transform appends a scale().
+    const scale = opts.scale && opts.scale > 0 ? opts.scale : 1;
+    const w = (parseFloat(bg.getAttribute('width')) || 86) * scale;
+    const h = (parseFloat(bg.getAttribute('height')) || 28) * scale;
     const pad = opts.labelPad != null ? opts.labelPad : 6;
     const preferHorizontalAlways = !!opts.preferHorizontal;
     const minCx = w / 2 + 4;
@@ -380,8 +384,14 @@ const PAG = (() => {
       if (!moved) break;
     }
 
+    // translate to the (scaled) top-left corner, then scale from there so
+    // the box grows toward the bottom-right of its anchor point.
+    const tx = (cx - w / 2).toFixed(1);
+    const ty = (cy - h / 2).toFixed(1);
     label.setAttribute('transform',
-      'translate(' + (cx - w / 2).toFixed(1) + ', ' + (cy - h / 2).toFixed(1) + ')');
+      scale === 1
+        ? 'translate(' + tx + ', ' + ty + ')'
+        : 'translate(' + tx + ', ' + ty + ') scale(' + scale + ')');
     return { x: cx - w / 2, y: cy - h / 2, w, h };
   }
 
@@ -404,7 +414,9 @@ const PAG = (() => {
   // figs:   { talker, mic, speaker, listener } - figure DOM elements.
   // state:  { talker, mic, speaker, listener } - figure positions.
   // maxY:   the bottom-clamp y for labels.
-  function placeAllLabels(labels, figs, state, maxY) {
+  // labelScale: optional uniform scale for the label cards (default 1).
+  function placeAllLabels(labels, figs, state, maxY, labelScale) {
+    const scale = labelScale && labelScale > 0 ? labelScale : 1;
     // D_S anchored above talker, D_1 above speaker.
     // D_2 anchored at midpoint of speaker-listener line, D_0 at midpoint of
     // talker-listener line. Each label avoids ALL figures and already-placed
@@ -418,7 +430,8 @@ const PAG = (() => {
     // since labels should clear every figure including their own anchor.
     function placeLabel(label, anchor, verticalOffset, figureRadius, opts) {
       const obstacles = allFigureRects.concat(placedRects);
-      const rect = placeLabelAvoidingRects(label, anchor, verticalOffset, maxY, figureRadius, obstacles, opts);
+      const mergedOpts = Object.assign({ scale }, opts);
+      const rect = placeLabelAvoidingRects(label, anchor, verticalOffset, maxY, figureRadius, obstacles, mergedOpts);
       placedRects.push(rect);
     }
 
@@ -2636,7 +2649,8 @@ const PAG = (() => {
       { DS: labelDS, D1: labelD1, D2: labelD2, D0: labelD0 },
       figs,
       { talker: state.talker, mic: state.mic, speaker: state.speaker, listener: state.listener },
-      380
+      380,
+      1.35  // larger distance cards — the sandbox stage has more room than the guide slides
     );
     setLabelText(labelDS, fmtFeetInches(Ds));
     setLabelText(labelD1, fmtFeetInches(D1));
