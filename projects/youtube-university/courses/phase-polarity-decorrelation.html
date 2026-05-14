@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A theoretical foundation in phase, polarity, and decorrelation, applied to live PA practice">
+    <title>Phase, Polarity, and Decorrelation — YouTube University — Blake Boyd</title>
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake E. Boyd">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+    <link rel="stylesheet" href="../../../css/base.css">
+    <link rel="stylesheet" href="../../../css/layout.css">
+    <link rel="stylesheet" href="../../../css/components.css">
+    <link rel="stylesheet" href="../../../css/projects/youtubeUniversity.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400..700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+    <script src="../../../js/theme.js"></script>
+    <script src="../../../js/nav-component.js" defer></script>
+</head>
+<body>
+    <div class="container wide">
+        <site-nav base="../../../"></site-nav>
+
+        <main id="main-content" class="yt-course-page">
+            <nav class="yt-breadcrumb" aria-label="Breadcrumb">
+                <a href="../">YouTube University</a>
+                <span aria-hidden="true">›</span>
+                <span class="yt-breadcrumb-current">Phase, Polarity, and Decorrelation</span>
+            </nav>
+
+            <header class="yt-course-header">
+                <p class="yt-course-eyebrow">Course</p>
+                <h1>Phase, Polarity, and Decorrelation</h1>
+                <p class="yt-course-description">A theoretical foundation in phase, polarity, and decorrelation, applied to live PA practice</p>
+                <p class="yt-course-meta"><span class="yt-course-meta-item">240 min</span><span class="yt-sep" aria-hidden="true">·</span><span class="yt-course-meta-item">5 videos</span><span class="yt-sep" aria-hidden="true">·</span><span class="yt-course-meta-item">foundational-to-applied</span></p>
+            </header>
+
+            <section class="yt-section"><h2>Before you start</h2><div class="yt-before-grid">
+        <div class="yt-before-group">
+            <h3 class="yt-before-heading">Prerequisites</h3>
+            <ul class="yt-before-list">
+                <li>Comfortable with basic EQ controls (frequency, gain, Q)</li>
+                <li>Familiar with stereo PAs in concept</li>
+                <li>Some exposure to live or studio mixing</li>
+            </ul>
+        </div>
+        <div class="yt-before-group">
+            <h3 class="yt-before-heading">By the end you'll be able to</h3>
+            <ul class="yt-before-list">
+                <li>Distinguish phase, polarity, and time delay from one another</li>
+                <li>Explain why two pink-noise sources don&#39;t comb-filter while one source to two speakers does</li>
+                <li>Apply decorrelation principles to dual-mic&#39;d instruments in a live PA</li>
+                <li>Trace the connection from phase theory to live-sound comb filtering and feedback</li>
+            </ul>
+        </div></div></section>
+            <section class="yt-section"><h2>Course overview</h2><div class="yt-prose"><p>Phase is one of the most consistently misunderstood concepts in audio. Engineers conflate it with time delay, fear it as a side effect of EQ, and miss its central role in why live PA systems comb-filter the way they do. This course walks from the abstract DSP version of phase (Dan Worrall&#39;s three videos) through phase as a physical reality in microphone capsules, then applies the same theory to live sound reinforcement (Dave Rat&#39;s decorrelation work).</p>
+<p>By the end you should be able to look at a phase trace and read it, predict whether two correlated sources will comb-filter at a given audience seat, and decide whether decorrelating your mics will help.</p></div></section>
+            
+        <section class="yt-section yt-course-module">
+            <h2>Module 1: Phase fundamentals</h2>
+            <div class="yt-prose"><p>The first two videos establish that phase shift is <strong>not</strong> the same as time delay, and that EQ doesn&#39;t cause phase shift as a side effect: phase shift causes EQ.</p></div>
+            
+            <div class="yt-course-video">
+                <a class="yt-course-video-card" href="../videos/danworrallDelayAlwaysMeans2020.html">
+                    <div class="yt-course-video-thumb">
+                        <img src="https://i.ytimg.com/vi/H3ZyaXgTqjM/mqdefault.jpg" alt="" loading="lazy">
+                        <span class="yt-card-duration">09:17</span>
+                    </div>
+                    <div class="yt-course-video-body">
+                        <h3 class="yt-course-video-title">Delay Always Means Phase Shift But Phase Shift Does Not Always Mean Delay</h3>
+                        <p class="yt-course-video-channel">Dan Worrall</p>
+                        <div class="yt-course-video-meta">
+                            <span class="yt-depth yt-depth-applied">Applied</span>
+                        </div>
+                    </div>
+                </a>
+                <div class="yt-prose"><p>Worrall demonstrates three ways to produce 180° of phase shift (polarity inversion, time delay, all-pass filter) and shows that they sound identical at one frequency but behave differently at every other frequency. The clincher: a sharp spike at the end of the test tone passes through the all-pass filter with its peak amplitude almost doubled, which explains why an EQ cut can sometimes make a track louder.</p></div>
+            </div>
+<div class="yt-course-connecting"><span class="yt-course-connecting-label">Then</span><div class="yt-prose"><p>Worrall ended the first video with an open question: how does an all-pass filter manage to shift the phase of certain frequencies while leaving amplitude flat? The next video answers this by showing that <strong>EQ filters are built out of all-pass filters and arithmetic</strong>.</p></div></div>
+
+            <div class="yt-course-video">
+                <a class="yt-course-video-card" href="../videos/danworrallEQDoesntCause2024.html">
+                    <div class="yt-course-video-thumb">
+                        <img src="https://i.ytimg.com/vi/1ormfTMYfv0/mqdefault.jpg" alt="" loading="lazy">
+                        <span class="yt-card-duration">04:22</span>
+                    </div>
+                    <div class="yt-course-video-body">
+                        <h3 class="yt-course-video-title">EQ Doesn&#39;t Cause Phase Shift...</h3>
+                        <p class="yt-course-video-channel">Dan Worrall</p>
+                        <div class="yt-course-video-meta">
+                            <span class="yt-depth yt-depth-applied">Applied</span>
+                        </div>
+                    </div>
+                </a>
+                <div class="yt-prose"><p>Worrall derives every standard EQ filter shape (low-pass, high-pass, shelf, bell) from an all-pass filter plus addition or subtraction. The punchline reverses the conventional question: EQ doesn&#39;t cause phase shift, phase shift causes EQ.</p></div>
+            </div>
+
+            <div class="yt-course-quiz">
+                <h3 class="yt-course-quiz-title">Checkpoint Quiz 1: Phase fundamentals</h3>
+                <ol class="yt-course-quiz-list">
+                    
+                    <li class="yt-course-quiz-item" data-interactive="true">
+                        <div class="yt-course-quiz-head">
+                            <span class="yt-course-quiz-num">Q1.</span>
+                            <span class="yt-course-quiz-text">Which of the following is true about a 5 ms delay applied to a 100 Hz signal vs. the same 5 ms delay applied to a 200 Hz signal?</span>
+                            <span class="yt-bloom yt-course-qtype">Multiple choice</span>
+                        </div>
+                        <ul class="yt-course-choices yt-course-choices-interactive">
+                            <li>
+                                <button type="button"
+                                    class="yt-course-choice-btn"
+                                    data-letter="a"
+                                    data-correct="false"
+                                    data-explanation="&lt;p&gt;This is the conflation Worrall spends the whole video correcting. A fixed time delay produces a &lt;em&gt;different&lt;/em&gt; phase shift at every frequency, not the same shift. If 5 ms produced 180° at every frequency, polarity inversion and time delay would be identical operations, but they aren&amp;#39;t: polarity flips all frequencies by 180° at once, while delay flips each frequency by an amount that depends on how its cycle length compares to 5 ms.&lt;/p&gt;">
+                                    <span class="yt-course-choice-letter">a.</span>
+                                    <span class="yt-course-choice-text">Both signals shift by 180° because 5 ms is fixed</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button"
+                                    class="yt-course-choice-btn"
+                                    data-letter="b"
+                                    data-correct="true"
+                                    data-explanation="&lt;p&gt;A 100 Hz signal completes one cycle in 10 ms, so 5 ms is half a cycle (180°). A 200 Hz signal completes one cycle in 5 ms, so 5 ms is a full cycle (360°), putting it back in phase. This is why mixing a delayed copy with the original creates comb filtering: each frequency gets a different phase relationship.&lt;/p&gt;">
+                                    <span class="yt-course-choice-letter">b.</span>
+                                    <span class="yt-course-choice-text">The 100 Hz signal shifts 180°; the 200 Hz signal shifts 360° (back in phase)</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button"
+                                    class="yt-course-choice-btn"
+                                    data-letter="c"
+                                    data-correct="false"
+                                    data-explanation="&lt;p&gt;The numbers are right but assigned to the wrong signals. This option flips the relationship between cycle length and frequency: lower frequencies have &lt;em&gt;longer&lt;/em&gt; cycle lengths, so a fixed delay covers a &lt;em&gt;smaller&lt;/em&gt; fraction of their cycle, not a larger one. 100 Hz (10 ms cycle) gets 180° of shift from 5 ms; 200 Hz (5 ms cycle) gets a full 360°.&lt;/p&gt;">
+                                    <span class="yt-course-choice-letter">c.</span>
+                                    <span class="yt-course-choice-text">The 100 Hz signal shifts 360°; the 200 Hz signal shifts 180°</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button"
+                                    class="yt-course-choice-btn"
+                                    data-letter="d"
+                                    data-correct="false"
+                                    data-explanation="&lt;p&gt;Delay and phase shift aren&amp;#39;t the same thing, but they are tightly linked: a time delay &lt;em&gt;always&lt;/em&gt; produces a phase shift, and the shift amount is frequency-dependent. The reverse isn&amp;#39;t true (phase shifts can exist without delay, as Module 2 shows), but you can&amp;#39;t escape the link by claiming delay leaves phase untouched.&lt;/p&gt;">
+                                    <span class="yt-course-choice-letter">d.</span>
+                                    <span class="yt-course-choice-text">Neither shifts in phase because phase is not the same as delay</span>
+                                </button>
+                            </li>
+                        </ul>
+                        <div class="yt-course-explanation" aria-live="polite" hidden>
+                            <p class="yt-course-explanation-verdict"></p>
+                            <div class="yt-course-explanation-body"></div>
+                            <button type="button" class="yt-course-reset" aria-label="Reset question">Try another</button>
+                        </div>
+                    </li>
+
+                    <li class="yt-course-quiz-item">
+                        <div class="yt-course-quiz-head">
+                            <span class="yt-course-quiz-num">Q2.</span>
+                            <span class="yt-course-quiz-text">Worrall builds a high-shelf filter using an all-pass filter, subtraction, and addition. Explain in your own words why this arithmetic produces a frequency-selective gain change even though the all-pass filter has a flat magnitude response.</span>
+                            <span class="yt-bloom yt-course-qtype">Short answer</span>
+                        </div>
+                        
+                        <details class="yt-course-answer"><summary aria-label="Show answer"></summary><div class="yt-prose"><p>The all-pass shifts phase increasingly across the cutoff frequency, ending at 180° in the high end. <strong>Subtracting</strong> the all-pass from the dry signal: at low frequencies (no phase shift) the subtraction cancels everything, while at high frequencies (180° shift) the subtraction adds, producing a high-pass shape. <strong>Scaling</strong> that high-pass and adding it to the dry signal reinforces only the high frequencies. The selectivity comes from how the phase shift varies across the spectrum, not from any amplitude change in the all-pass itself.</p></div></details>
+                    </li>
+
+                    <li class="yt-course-quiz-item">
+                        <div class="yt-course-quiz-head">
+                            <span class="yt-course-quiz-num">Q3.</span>
+                            <span class="yt-course-quiz-text">Worrall&#39;s claim is that EQ doesn&#39;t cause phase shift; phase shift causes EQ. What does this reframing change about how an engineer should think about minimum-phase EQ?</span>
+                            <span class="yt-bloom yt-course-qtype">Synthesis</span>
+                        </div>
+                        
+                        <details class="yt-course-answer"><summary aria-label="Show answer"></summary><div class="yt-prose"><p>The conventional framing treats phase shift as an unfortunate side effect that linear-phase EQ exists to &quot;fix.&quot; Worrall&#39;s reframing reveals that phase shift is the mechanism by which EQ works at all: the all-pass that produces a shelf or a bell is doing the phase work, and the amplitude change is a downstream consequence. This means minimum-phase EQ phase shifts aren&#39;t damage to be repaired but are inherent to the operation. It also explains why &quot;transparent&quot; EQs that promise zero phase shift have to use linear-phase topologies, which introduce pre-ringing as a different trade-off.</p></div></details>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <section class="yt-section yt-course-module">
+            <h2>Module 2: Phase in the physical world</h2>
+            <div class="yt-prose"><p>So far phase has been an abstract DSP concept inside Reaper and Reaktor. The next video shows that the same 90° phase relationships exist in physical microphone capsules.</p></div>
+            
+            <div class="yt-course-video">
+                <a class="yt-course-video-card" href="../videos/danworrallPhascinatingPhactsPhase2025.html">
+                    <div class="yt-course-video-thumb">
+                        <img src="https://i.ytimg.com/vi/nP74656yTi8/mqdefault.jpg" alt="" loading="lazy">
+                        <span class="yt-card-duration">08:24</span>
+                    </div>
+                    <div class="yt-course-video-body">
+                        <h3 class="yt-course-video-title">Phascinating Phacts about Phase</h3>
+                        <p class="yt-course-video-channel">Dan Worrall</p>
+                        <div class="yt-course-video-meta">
+                            <span class="yt-depth yt-depth-applied">Applied</span>
+                        </div>
+                    </div>
+                </a>
+                <div class="yt-prose"><p>Worrall reveals that dynamic and condenser microphones are 90° out of phase even when their capsules touch. The reason: a dynamic mic is a velocity transducer (it measures air movement), while a condenser is a pressure transducer (it measures air pressure). Velocity and pressure are 90° apart because pressure peaks when velocity drops to zero. He closes by deriving the same 90° phase shift in software using only a one-sample rate-of-change calculation, tying the physical and the mathematical together.</p></div>
+            </div>
+
+            <div class="yt-course-quiz">
+                <h3 class="yt-course-quiz-title">Checkpoint Quiz 2: Phase in the physical world</h3>
+                <ol class="yt-course-quiz-list">
+                    
+                    <li class="yt-course-quiz-item" data-interactive="true">
+                        <div class="yt-course-quiz-head">
+                            <span class="yt-course-quiz-num">Q1.</span>
+                            <span class="yt-course-quiz-text">A dynamic mic and a condenser mic are placed at exactly the same distance from a vocalist. What is the phase relationship between their outputs?</span>
+                            <span class="yt-bloom yt-course-qtype">Multiple choice</span>
+                        </div>
+                        <ul class="yt-course-choices yt-course-choices-interactive">
+                            <li>
+                                <button type="button"
+                                    class="yt-course-choice-btn"
+                                    data-letter="a"
+                                    data-correct="false"
+                                    data-explanation="&lt;p&gt;Same physical distance only guarantees the wavefront arrives at both diaphragms at the same instant; it doesn&amp;#39;t guarantee the two transducers convert that wavefront into the same electrical signal. Distance handles the timing, but the transducer principle handles the &lt;em&gt;quantity&lt;/em&gt; being measured, and that&amp;#39;s where the 90° offset comes from.&lt;/p&gt;">
+                                    <span class="yt-course-choice-letter">a.</span>
+                                    <span class="yt-course-choice-text">0° because they&#39;re at the same distance</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button"
+                                    class="yt-course-choice-btn"
+                                    data-letter="b"
+                                    data-correct="true"
+                                    data-explanation="&lt;p&gt;Dynamic mics are velocity transducers and condenser mics are pressure transducers. Air velocity and air pressure are 90° apart because pressure peaks when velocity drops to zero (the diaphragm momentarily stops before reversing direction). This is a frequency-independent 90° offset, not a timing-based shift.&lt;/p&gt;">
+                                    <span class="yt-course-choice-letter">b.</span>
+                                    <span class="yt-course-choice-text">90° because they measure different physical quantities (velocity vs. pressure)</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button"
+                                    class="yt-course-choice-btn"
+                                    data-letter="c"
+                                    data-correct="false"
+                                    data-explanation="&lt;p&gt;Polar pattern describes spatial sensitivity (which directions the mic picks up from), not the phase relationship between the electrical output and the air signal. A cardioid dynamic and an omni condenser would still be 90° apart even though their patterns differ in a totally separate dimension. Confusing polar pattern with transduction principle is a common mix-up.&lt;/p&gt;">
+                                    <span class="yt-course-choice-letter">c.</span>
+                                    <span class="yt-course-choice-text">180° because they have different polar patterns</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button"
+                                    class="yt-course-choice-btn"
+                                    data-letter="d"
+                                    data-correct="false"
+                                    data-explanation="&lt;p&gt;&amp;quot;Variable with frequency&amp;quot; is the signature of a &lt;em&gt;delay-based&lt;/em&gt; phase shift, where each frequency gets a different shift proportional to its cycle length. The dynamic-vs-condenser offset is the opposite: it&amp;#39;s frequency-&lt;em&gt;independent&lt;/em&gt;, a flat 90° at every frequency, because it comes from measuring two physical quantities that are constitutively 90° apart, not from any path-length difference.&lt;/p&gt;">
+                                    <span class="yt-course-choice-letter">d.</span>
+                                    <span class="yt-course-choice-text">Variable depending on frequency</span>
+                                </button>
+                            </li>
+                        </ul>
+                        <div class="yt-course-explanation" aria-live="polite" hidden>
+                            <p class="yt-course-explanation-verdict"></p>
+                            <div class="yt-course-explanation-body"></div>
+                            <button type="button" class="yt-course-reset" aria-label="Reset question">Try another</button>
+                        </div>
+                    </li>
+
+                    <li class="yt-course-quiz-item">
+                        <div class="yt-course-quiz-head">
+                            <span class="yt-course-quiz-num">Q2.</span>
+                            <span class="yt-course-quiz-text">If you wanted to &quot;fix&quot; the 90° offset between a dynamic and condenser by sliding one mic forward or backward, why does this fail?</span>
+                            <span class="yt-bloom yt-course-qtype">Short answer</span>
+                        </div>
+                        
+                        <details class="yt-course-answer"><summary aria-label="Show answer"></summary><div class="yt-prose"><p>Sliding the mic adds a time delay, which creates a frequency-dependent phase shift on top of the 90° pressure/velocity offset. You could find a distance where the two outputs align at one specific frequency, but at every other frequency the added delay would introduce comb filtering. You&#39;d trade one phase problem for many.</p></div></details>
+                    </li>
+
+                    <li class="yt-course-quiz-item">
+                        <div class="yt-course-quiz-head">
+                            <span class="yt-course-quiz-num">Q3.</span>
+                            <span class="yt-course-quiz-text">Worrall&#39;s refrain is &quot;delay always means phase shift, but phase shift does not always mean delay.&quot; Using the dynamic-vs-condenser example, explain what kind of phase shift this 90° offset is (not delay) and what makes it impossible to correct with timing.</span>
+                            <span class="yt-bloom yt-course-qtype">Synthesis</span>
+                        </div>
+                        
+                        <details class="yt-course-answer"><summary aria-label="Show answer"></summary><div class="yt-prose"><p>The 90° offset between dynamic and condenser mics is a <strong>frequency-independent</strong> phase shift that comes from measuring different physical quantities (velocity vs. pressure), not from any path-length difference. Both capsules receive the air wave at the same instant; the offset is in what they convert from the wave. Time delay is the wrong tool because timing-based phase shift is <strong>frequency-dependent</strong> (different frequencies get different shifts from the same delay). You cannot use a frequency-dependent tool to fix a frequency-independent offset without introducing new frequency-dependent problems.</p></div></details>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <section class="yt-section yt-course-module">
+            <h2>Module 3: Decorrelation in practice</h2>
+            <div class="yt-prose"><p>Now we leave the studio and head to live PA, where phase summation between correlated sources becomes the dominant tonality issue an engineer has to manage.</p></div>
+            
+            <div class="yt-course-video">
+                <a class="yt-course-video-card" href="../videos/daveratDecorrelationDemoReddit2022.html">
+                    <div class="yt-course-video-thumb">
+                        <img src="https://i.ytimg.com/vi/lhk1Sq00F6I/mqdefault.jpg" alt="" loading="lazy">
+                        <span class="yt-card-duration">12:30</span>
+                    </div>
+                    <div class="yt-course-video-body">
+                        <h3 class="yt-course-video-title">Decorrelation Demo - Reddit Respond Episode 5</h3>
+                        <p class="yt-course-video-channel">Dave Rat</p>
+                        <div class="yt-course-video-meta">
+                            <span class="yt-depth yt-depth-applied">Applied</span>
+                        </div>
+                    </div>
+                </a>
+                <div class="yt-prose"><p>Rat puts two mics (Royer ribbon and Audix OM7) on the same flat-panel speaker, EQ&#39;s them to match, and demonstrates that polarity-reversing one mic produces less cancellation than polarity-reversing the same mic sent to both speakers. The two mics are <strong>partially correlated</strong>: they share the source but differ in pickup pattern and EQ. Partial correlation means the comb-filter problems don&#39;t stack at the same frequencies for every listener.</p></div>
+            </div>
+<div class="yt-course-connecting"><span class="yt-course-connecting-label">Then</span><div class="yt-prose"><p>Decorrelation is more than a parlor trick: it&#39;s a principle that explains why so much of live sound reinforcement is fighting unnatural phenomena. The next video pulls the principle up to its general framing.</p></div></div>
+
+            <div class="yt-course-video">
+                <a class="yt-course-video-card" href="../videos/daveratSoundSystemsAre2024.html">
+                    <div class="yt-course-video-thumb">
+                        <img src="https://i.ytimg.com/vi/MlqJ5H8cA3M/mqdefault.jpg" alt="" loading="lazy">
+                        <span class="yt-card-duration">08:07</span>
+                    </div>
+                    <div class="yt-course-video-body">
+                        <h3 class="yt-course-video-title">Sound Systems are Completely Unnatural</h3>
+                        <p class="yt-course-video-channel">Dave Rat</p>
+                        <div class="yt-course-video-meta">
+                            <span class="yt-depth yt-depth-foundational">Foundational</span>
+                        </div>
+                    </div>
+                </a>
+                <div class="yt-prose"><p>Rat names two ways sound reinforcement is unnatural: the same sound radiating from multiple speakers (stereo PA) creates comb filtering, and multiple sounds from one speaker compresses spatial separation. Both are fixable by exploiting correlation: line arrays use controlled correlation to steer dispersion; cardioid sub arrays use controlled cancellation to direct bass. The dual-mic technique from video 4 is the practical version of the same principle applied to source decorrelation.</p></div>
+            </div>
+
+            <div class="yt-course-quiz">
+                <h3 class="yt-course-quiz-title">Checkpoint Quiz 3: Decorrelation in practice</h3>
+                <ol class="yt-course-quiz-list">
+                    
+                    <li class="yt-course-quiz-item" data-interactive="true">
+                        <div class="yt-course-quiz-head">
+                            <span class="yt-course-quiz-num">Q1.</span>
+                            <span class="yt-course-quiz-text">Two pink-noise sources played from two speakers produce no comb filtering, even with one polarity-reversed. Why?</span>
+                            <span class="yt-bloom yt-course-qtype">Multiple choice</span>
+                        </div>
+                        <ul class="yt-course-choices yt-course-choices-interactive">
+                            <li>
+                                <button type="button"
+                                    class="yt-course-choice-btn"
+                                    data-letter="a"
+                                    data-correct="false"
+                                    data-explanation="&lt;p&gt;Comb filtering doesn&amp;#39;t require a fundamental; it requires two signals that interfere at a &lt;em&gt;consistent&lt;/em&gt; phase relationship across frequencies. White and pink noise contain energy at every frequency, so there&amp;#39;s plenty for cancellation to act on; the reason cancellation doesn&amp;#39;t happen is that the two sources aren&amp;#39;t predictably related to each other, not that the signal lacks a fundamental.&lt;/p&gt;">
+                                    <span class="yt-course-choice-letter">a.</span>
+                                    <span class="yt-course-choice-text">Pink noise has no fundamental frequency to cancel</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button"
+                                    class="yt-course-choice-btn"
+                                    data-letter="b"
+                                    data-correct="true"
+                                    data-explanation="&lt;p&gt;Comb filtering happens when two signals with a consistent phase relationship across frequencies interfere predictably. Two pink-noise generators produce statistically independent random signals that happen to have similar spectra. They sound the same but don&amp;#39;t predict each other, so there&amp;#39;s no consistent phase relationship to cancel. The audible behavior of a sum depends on the relationship between the signals, not on what either signal sounds like alone.&lt;/p&gt;">
+                                    <span class="yt-course-choice-letter">b.</span>
+                                    <span class="yt-course-choice-text">The two sources are uncorrelated, so they don&#39;t have a consistent phase relationship to interfere</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button"
+                                    class="yt-course-choice-btn"
+                                    data-letter="c"
+                                    data-correct="false"
+                                    data-explanation="&lt;p&gt;Polarity reversal acts on whatever signal you send through it, correlated or not, by flipping the waveform across the time axis. The difference is that flipping a &lt;em&gt;correlated&lt;/em&gt; signal produces audible cancellation when summed with the original, while flipping one of two &lt;em&gt;uncorrelated&lt;/em&gt; signals produces statistically the same noise it was before. The cancellation lives in the relationship between the signals, not in what polarity-flip can or can&amp;#39;t operate on.&lt;/p&gt;">
+                                    <span class="yt-course-choice-letter">c.</span>
+                                    <span class="yt-course-choice-text">Polarity reversal only affects correlated sources</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button"
+                                    class="yt-course-choice-btn"
+                                    data-letter="d"
+                                    data-correct="false"
+                                    data-explanation="&lt;p&gt;Room absorption is frequency-dependent and gradual, not the kind of complete cancellation that comb filtering produces or fails to produce. Even in an anechoic chamber, two uncorrelated pink-noise sources still wouldn&amp;#39;t comb-filter, which rules out the room as the explanation. The mechanism is signal correlation, not acoustic absorption.&lt;/p&gt;">
+                                    <span class="yt-course-choice-letter">d.</span>
+                                    <span class="yt-course-choice-text">The room absorbs the cancellation</span>
+                                </button>
+                            </li>
+                        </ul>
+                        <div class="yt-course-explanation" aria-live="polite" hidden>
+                            <p class="yt-course-explanation-verdict"></p>
+                            <div class="yt-course-explanation-body"></div>
+                            <button type="button" class="yt-course-reset" aria-label="Reset question">Try another</button>
+                        </div>
+                    </li>
+
+                    <li class="yt-course-quiz-item">
+                        <div class="yt-course-quiz-head">
+                            <span class="yt-course-quiz-num">Q2.</span>
+                            <span class="yt-course-quiz-text">Rat hard-pans a Royer ribbon (front of a guitar cab) and an Audix OM7 (back of the same cab, polarity-reversed) across the stereo PA. Why does this produce smoother coverage across the audience than running a single mic to both sides?</span>
+                            <span class="yt-bloom yt-course-qtype">Short answer</span>
+                        </div>
+                        
+                        <details class="yt-course-answer"><summary aria-label="Show answer"></summary><div class="yt-prose"><p>A single mic sent to both PA sides is perfectly correlated, so every audience seat hears the same comb-filter pattern at the same frequencies as they move across the venue. Hard-panning two different mics on the same source decorrelates the signal: the comb filtering still exists for each mic, but the cancellation frequencies are different for the two mic signals because their pickup patterns and EQ differ. From any audience seat, the cancellations from mic A occur at slightly different frequencies than the cancellations from mic B. The result is broader-band thinning rather than complete cancellation at specific frequencies.</p></div></details>
+                    </li>
+
+                    <li class="yt-course-quiz-item">
+                        <div class="yt-course-quiz-head">
+                            <span class="yt-course-quiz-num">Q3.</span>
+                            <span class="yt-course-quiz-text">Rat says line arrays and cardioid sub arrays &quot;weaponize&quot; the same correlation effect that causes comb filtering when handled carelessly. Pick one (line array or cardioid sub) and explain how the engineer is using correlation constructively rather than fighting it.</span>
+                            <span class="yt-bloom yt-course-qtype">Synthesis</span>
+                        </div>
+                        
+                        <details class="yt-course-answer"><summary aria-label="Show answer"></summary><div class="yt-prose"><p>A <strong>line array</strong> stacks identical drivers vertically. The identical signal from each driver is perfectly correlated, which is exactly what causes comb filtering in the wrong context. In a line array, the engineer uses that correlation deliberately: horizontally the drivers couple into a coherent single source (smooth coverage side-to-side), and vertically the same correlation produces destructive interference at angles above and below the array&#39;s aim (sound cuts off above the audience and below their feet). The engineer chooses the geometry so the unavoidable comb-filter cancellations happen where there&#39;s no audience to hear them. <strong>OR</strong> A <strong>cardioid sub array</strong> uses two correlated subs at quarter-wavelength spacing with one digitally delayed by a quarter cycle. The forward sub and the delayed sub arrive in phase forward of the array (constructive summation) but out of phase behind it (cancellation). Same correlation physics; the timing offset reshapes where the cancellations happen.</p></div></details>
+                    </li>
+                </ol>
+            </div>
+        </section>
+            
+        <section class="yt-section yt-course-final">
+            <h2>Final assessment</h2>
+            <div class="yt-prose"><p>The final assessment requires pulling from across all three modules.</p></div>
+            <ol class="yt-course-quiz-list">
+                
+                    <li class="yt-course-quiz-item">
+                        <div class="yt-course-quiz-head">
+                            <span class="yt-course-quiz-num">FA1.</span>
+                            <span class="yt-course-quiz-text">Trace the connection from Worrall&#39;s dynamic-vs-condenser 90° offset (Module 2) to Rat&#39;s dual-mic decorrelation technique (Module 3). Why does Rat&#39;s two-different-mics setup work even though both mics capture the same source?</span>
+                            <span class="yt-bloom yt-course-qtype">Synthesis, written</span>
+                        </div>
+                        
+                        
+                    </li>
+
+                    <li class="yt-course-quiz-item">
+                        <div class="yt-course-quiz-head">
+                            <span class="yt-course-quiz-num">FA2.</span>
+                            <span class="yt-course-quiz-text">You&#39;re mixing a rock band on a stereo PA. The kick drum and bass guitar both end up as mono sources panned center. You notice the audience reports that the low end &quot;disappears&quot; at certain spots in the venue. Using the principles from this course, diagnose what&#39;s likely happening and propose two fixes.</span>
+                            <span class="yt-bloom yt-course-qtype">Application</span>
+                        </div>
+                        
+                        
+                    </li>
+            </ol>
+        </section>
+        </main>
+
+        <footer>
+            <p>&copy; <span class="footer-year"></span> Blake Boyd</p>
+        </footer>
+    </div>
+    <script>
+        const yearEl = document.querySelector('.footer-year');
+        if (yearEl) yearEl.textContent = new Date().getFullYear();
+    </script>
+    <script>
+        // Interactive multiple-choice quizzes: click an option to see whether
+        // it was correct and read the per-choice explanation. Click another
+        // option (or the "Try another" button) to switch. The href fallback
+        // is unnecessary here — non-JS users see the choices but can't get
+        // feedback, which is no worse than the static reveal version.
+        document.addEventListener('click', (e) => {
+            const reset = e.target.closest('.yt-course-reset');
+            if (reset) {
+                const item = reset.closest('.yt-course-quiz-item');
+                if (item) resetQuestion(item);
+                return;
+            }
+            const btn = e.target.closest('.yt-course-choice-btn');
+            if (!btn) return;
+            const item = btn.closest('.yt-course-quiz-item');
+            if (!item || item.dataset.interactive !== 'true') return;
+            selectChoice(item, btn);
+        });
+
+        function selectChoice(item, btn) {
+            const wasSelected = btn.classList.contains('is-selected');
+            // Clear all sibling states first
+            for (const other of item.querySelectorAll('.yt-course-choice-btn')) {
+                other.classList.remove('is-selected', 'is-correct', 'is-incorrect');
+            }
+            // If user clicked the already-selected choice, this acts as a reset
+            if (wasSelected) {
+                hideExplanation(item);
+                return;
+            }
+            const correct = btn.dataset.correct === 'true';
+            btn.classList.add('is-selected', correct ? 'is-correct' : 'is-incorrect');
+            showExplanation(item, btn.dataset.letter, correct, btn.dataset.explanation);
+        }
+
+        function showExplanation(item, letter, correct, htmlString) {
+            const panel = item.querySelector('.yt-course-explanation');
+            const verdict = panel.querySelector('.yt-course-explanation-verdict');
+            const body = panel.querySelector('.yt-course-explanation-body');
+            verdict.textContent = correct ? `Correct — ${letter}.` : `Not quite — ${letter}.`;
+            verdict.classList.toggle('is-correct', correct);
+            verdict.classList.toggle('is-incorrect', !correct);
+            body.innerHTML = htmlString || '';
+            panel.hidden = false;
+        }
+
+        function hideExplanation(item) {
+            const panel = item.querySelector('.yt-course-explanation');
+            if (!panel) return;
+            panel.hidden = true;
+            const body = panel.querySelector('.yt-course-explanation-body');
+            if (body) body.innerHTML = '';
+        }
+
+        function resetQuestion(item) {
+            for (const btn of item.querySelectorAll('.yt-course-choice-btn')) {
+                btn.classList.remove('is-selected', 'is-correct', 'is-incorrect');
+            }
+            hideExplanation(item);
+        }
+    </script>
+</body>
+</html>

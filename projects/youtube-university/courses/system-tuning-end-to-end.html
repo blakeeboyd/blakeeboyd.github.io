@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A practical course on tuning a live PA from measurement to musical context, covering target curves, EQ as last resort, and the measurement-tool workflow">
+    <title>System Tuning End to End — YouTube University — Blake Boyd</title>
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake E. Boyd">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+    <link rel="stylesheet" href="../../../css/base.css">
+    <link rel="stylesheet" href="../../../css/layout.css">
+    <link rel="stylesheet" href="../../../css/components.css">
+    <link rel="stylesheet" href="../../../css/projects/youtubeUniversity.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400..700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+    <script src="../../../js/theme.js"></script>
+    <script src="../../../js/nav-component.js" defer></script>
+</head>
+<body>
+    <div class="container wide">
+        <site-nav base="../../../"></site-nav>
+
+        <main id="main-content" class="yt-course-page">
+            <nav class="yt-breadcrumb" aria-label="Breadcrumb">
+                <a href="../">YouTube University</a>
+                <span aria-hidden="true">›</span>
+                <span class="yt-breadcrumb-current">System Tuning End to End</span>
+            </nav>
+
+            <header class="yt-course-header">
+                <p class="yt-course-eyebrow">Course</p>
+                <h1>System Tuning End to End</h1>
+                <p class="yt-course-description">A practical course on tuning a live PA from measurement to musical context, covering target curves, EQ as last resort, and the measurement-tool workflow</p>
+                <p class="yt-course-meta"><span class="yt-course-meta-item">290 min</span><span class="yt-sep" aria-hidden="true">·</span><span class="yt-course-meta-item">6 videos</span><span class="yt-sep" aria-hidden="true">·</span><span class="yt-course-meta-item">applied</span><span class="yt-sep" aria-hidden="true">·</span><span class="yt-course-meta-item">planned</span></p>
+            </header>
+
+            <section class="yt-section"><h2>Before you start</h2><div class="yt-before-grid">
+        <div class="yt-before-group">
+            <h3 class="yt-before-heading">Prerequisites</h3>
+            <ul class="yt-before-list">
+                <li>Comfortable with EQ basics (frequency, gain, Q)</li>
+                <li>Familiar with Smaart, Open Sound Meter, or similar measurement software (helpful)</li>
+                <li>Some exposure to live mixing</li>
+            </ul>
+        </div>
+        <div class="yt-before-group">
+            <h3 class="yt-before-heading">By the end you'll be able to</h3>
+            <ul class="yt-before-list">
+                <li>Build a target curve for a given show context (rock, corporate, EDM)</li>
+                <li>Apply Pat Brown&#39;s broad-to-narrow EQ workflow</li>
+                <li>Diagnose acoustic problems and distinguish EQ-solvable from EQ-unsolvable</li>
+                <li>Run a main-to-sub crossover alignment using the 10 dB window framework</li>
+            </ul>
+        </div></div></section>
+            
+            
+            
+        </main>
+
+        <footer>
+            <p>&copy; <span class="footer-year"></span> Blake Boyd</p>
+        </footer>
+    </div>
+    <script>
+        const yearEl = document.querySelector('.footer-year');
+        if (yearEl) yearEl.textContent = new Date().getFullYear();
+    </script>
+    <script>
+        // Interactive multiple-choice quizzes: click an option to see whether
+        // it was correct and read the per-choice explanation. Click another
+        // option (or the "Try another" button) to switch. The href fallback
+        // is unnecessary here — non-JS users see the choices but can't get
+        // feedback, which is no worse than the static reveal version.
+        document.addEventListener('click', (e) => {
+            const reset = e.target.closest('.yt-course-reset');
+            if (reset) {
+                const item = reset.closest('.yt-course-quiz-item');
+                if (item) resetQuestion(item);
+                return;
+            }
+            const btn = e.target.closest('.yt-course-choice-btn');
+            if (!btn) return;
+            const item = btn.closest('.yt-course-quiz-item');
+            if (!item || item.dataset.interactive !== 'true') return;
+            selectChoice(item, btn);
+        });
+
+        function selectChoice(item, btn) {
+            const wasSelected = btn.classList.contains('is-selected');
+            // Clear all sibling states first
+            for (const other of item.querySelectorAll('.yt-course-choice-btn')) {
+                other.classList.remove('is-selected', 'is-correct', 'is-incorrect');
+            }
+            // If user clicked the already-selected choice, this acts as a reset
+            if (wasSelected) {
+                hideExplanation(item);
+                return;
+            }
+            const correct = btn.dataset.correct === 'true';
+            btn.classList.add('is-selected', correct ? 'is-correct' : 'is-incorrect');
+            showExplanation(item, btn.dataset.letter, correct, btn.dataset.explanation);
+        }
+
+        function showExplanation(item, letter, correct, htmlString) {
+            const panel = item.querySelector('.yt-course-explanation');
+            const verdict = panel.querySelector('.yt-course-explanation-verdict');
+            const body = panel.querySelector('.yt-course-explanation-body');
+            verdict.textContent = correct ? `Correct — ${letter}.` : `Not quite — ${letter}.`;
+            verdict.classList.toggle('is-correct', correct);
+            verdict.classList.toggle('is-incorrect', !correct);
+            body.innerHTML = htmlString || '';
+            panel.hidden = false;
+        }
+
+        function hideExplanation(item) {
+            const panel = item.querySelector('.yt-course-explanation');
+            if (!panel) return;
+            panel.hidden = true;
+            const body = panel.querySelector('.yt-course-explanation-body');
+            if (body) body.innerHTML = '';
+        }
+
+        function resetQuestion(item) {
+            for (const btn of item.querySelectorAll('.yt-course-choice-btn')) {
+                btn.classList.remove('is-selected', 'is-correct', 'is-incorrect');
+            }
+            hideExplanation(item);
+        }
+    </script>
+</body>
+</html>

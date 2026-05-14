@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A curated library of YouTube videos for audio engineering students, organized by topic and depth.">
+    <title>YouTube University — Blake Boyd</title>
+    <meta property="og:title" content="YouTube University — Blake Boyd">
+    <meta property="og:description" content="A curated library of YouTube videos for audio engineering students, organized by topic and depth.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://blakeeboyd.github.io/projects/youtube-university/">
+    <meta property="og:site_name" content="Blake Boyd">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="YouTube University — Blake Boyd">
+    <meta name="twitter:description" content="A curated library of YouTube videos for audio engineering students.">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake E. Boyd">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+    <link rel="stylesheet" href="../../css/base.css">
+    <link rel="stylesheet" href="../../css/layout.css">
+    <link rel="stylesheet" href="../../css/components.css">
+    <link rel="stylesheet" href="../../css/projects/youtubeUniversity.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400..700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+    <script src="../../js/theme.js"></script>
+    <script src="../../js/nav-component.js" defer></script>
+</head>
+<body>
+    <div class="container wide">
+        <site-nav base="../../"></site-nav>
+
+        <main id="main-content" class="yt-index-page">
+            <section class="hero">
+                <h1>YouTube University</h1>
+                <p class="subtitle">A growing library of YouTube videos for audio engineering students. Each entry has a short description, tags, a depth level, and questions to think through after watching.</p>
+            </section>
+
+            <section class="yt-courses-section" id="yt-courses-section">
+                <header class="yt-courses-header">
+                    <h2>Courses <span class="yt-courses-soon">Coming soon</span></h2>
+                    <p class="yt-courses-blurb">Sequenced reading orders that combine multiple video breakdowns into a pedagogical arc, with checkpoint quizzes and a final synthesis assessment.</p>
+                </header>
+                <div class="yt-courses-grid" id="yt-courses-grid"></div>
+            </section>
+
+            <section class="yt-controls" aria-label="Filter videos">
+                <div class="yt-control-row">
+                    <label class="yt-search-label">
+                        <span class="yt-control-label">Search</span>
+                        <div class="yt-search-wrap">
+                            <input type="search" id="yt-search" placeholder="Title, channel, or concept…" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="yt-suggestions">
+                            <ul class="yt-suggestions" id="yt-suggestions" role="listbox" hidden></ul>
+                        </div>
+                    </label>
+                    <label class="yt-sort-label">
+                        <span class="yt-control-label">Sort</span>
+                        <select id="yt-sort">
+                            <option value="title">Title (A→Z)</option>
+                            <option value="depth">Depth (foundational first)</option>
+                            <option value="channel">Channel</option>
+                            <option value="year">Year (newest first)</option>
+                        </select>
+                    </label>
+                    <div class="yt-view-toggle">
+                        <span class="yt-control-label">View</span>
+                        <div class="yt-segmented" role="group" aria-label="View mode">
+                            <button type="button" class="yt-seg-btn" data-view="list" aria-pressed="true">List</button>
+                            <button type="button" class="yt-seg-btn" data-view="channel" aria-pressed="false">By channel</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="yt-tag-filter" id="yt-tag-filter" role="group" aria-label="Filter by tag">
+                    <!-- tag chips injected by JS -->
+                </div>
+
+                <details class="yt-advanced" id="yt-advanced">
+                    <summary class="yt-advanced-summary">
+                        <span class="yt-advanced-label">Advanced search</span>
+                        <span class="yt-advanced-active" id="yt-advanced-active" aria-hidden="true"></span>
+                        <button type="button" class="yt-clear-all" id="yt-clear-all" hidden>Clear all</button>
+                    </summary>
+                    <div class="yt-advanced-body">
+                        <div class="yt-advanced-group">
+                            <span class="yt-control-label">Depth</span>
+                            <div class="yt-chip-row" id="yt-depth-chips" role="group" aria-label="Filter by depth">
+                                <!-- depth chips injected by JS -->
+                            </div>
+                        </div>
+                        <div class="yt-advanced-group">
+                            <span class="yt-control-label">Domain</span>
+                            <div class="yt-chip-row" id="yt-domain-chips" role="group" aria-label="Filter by domain">
+                                <!-- domain chips injected by JS -->
+                            </div>
+                        </div>
+                        <div class="yt-advanced-group" id="yt-subdomain-group" hidden>
+                            <span class="yt-control-label">Subdomain</span>
+                            <div class="yt-chip-row" id="yt-subdomain-chips" role="group" aria-label="Filter by subdomain">
+                                <!-- subdomain chips injected by JS -->
+                            </div>
+                        </div>
+                        <div class="yt-advanced-group">
+                            <span class="yt-control-label">Channel</span>
+                            <div class="yt-chip-row" id="yt-channel-chips" role="group" aria-label="Filter by channel">
+                                <!-- channel chips injected by JS -->
+                            </div>
+                        </div>
+                        <p class="yt-advanced-hint">Subdomains appear once a domain is selected. Tags above filter by topic; advanced filters narrow by practice context and difficulty.</p>
+                    </div>
+                </details>
+
+                <p class="yt-count" id="yt-count" aria-live="polite"></p>
+            </section>
+
+            <section class="yt-list" id="yt-list" aria-label="Videos">
+                <p class="yt-loading">Loading videos…</p>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; <span class="footer-year"></span> Blake Boyd</p>
+        </footer>
+    </div>
+    <script src="js/index.js" defer></script>
+    <script>
+        const yearEl = document.querySelector('.footer-year');
+        if (yearEl) yearEl.textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>

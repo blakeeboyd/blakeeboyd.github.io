@@ -1,0 +1,42 @@
+[
+  {
+    "slug": "phase-polarity-decorrelation",
+    "courseNumber": "01",
+    "title": "Phase, Polarity, and Decorrelation",
+    "description": "A theoretical foundation in phase, polarity, and decorrelation, applied to live PA practice",
+    "status": "active",
+    "durationMinutes": 240,
+    "videoCount": 5,
+    "track": "foundational-to-applied"
+  },
+  {
+    "slug": "system-tuning-end-to-end",
+    "courseNumber": "02",
+    "title": "System Tuning End to End",
+    "description": "A practical course on tuning a live PA from measurement to musical context, covering target curves, EQ as last resort, and the measurement-tool workflow",
+    "status": "planned",
+    "durationMinutes": 290,
+    "videoCount": 6,
+    "track": "applied"
+  },
+  {
+    "slug": "loudspeaker-fundamentals",
+    "courseNumber": "03",
+    "title": "Loudspeaker Fundamentals",
+    "description": "Foundational physics of how speakers work, from voice-coil basics through cabinet design and array behavior",
+    "status": "planned",
+    "durationMinutes": 200,
+    "videoCount": 5,
+    "track": "foundational"
+  },
+  {
+    "slug": "live-mixing-craft",
+    "courseNumber": "04",
+    "title": "Live Mixing Craft",
+    "description": "Practical live mixing from soundcheck through showtime, including gain structure, compression-driven automix strategy, and feedback management",
+    "status": "planned",
+    "durationMinutes": 250,
+    "videoCount": 5,
+    "track": "applied"
+  }
+]

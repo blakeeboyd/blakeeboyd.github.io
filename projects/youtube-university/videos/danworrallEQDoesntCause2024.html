@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EQ Doesn&#39;t Cause Phase Shift... — video breakdown for audio engineering coursework.">
+    <title>EQ Doesn&#39;t Cause Phase Shift... — YouTube University — Blake Boyd</title>
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake E. Boyd">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+    <link rel="stylesheet" href="../../../css/base.css">
+    <link rel="stylesheet" href="../../../css/layout.css">
+    <link rel="stylesheet" href="../../../css/components.css">
+    <link rel="stylesheet" href="../../../css/projects/youtubeUniversity.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400..700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+    <script src="../../../js/theme.js"></script>
+    <script src="../../../js/nav-component.js" defer></script>
+</head>
+<body>
+    <div class="container wide">
+        <site-nav base="../../../"></site-nav>
+
+        <main id="main-content" class="yt-video-page">
+            <nav class="yt-breadcrumb" aria-label="Breadcrumb">
+                <a href="../">YouTube University</a>
+                <span aria-hidden="true">›</span>
+                <span class="yt-breadcrumb-current">EQ Doesn&#39;t Cause Phase Shift...</span>
+            </nav>
+
+            <section class="yt-video-hero">
+                <div class="yt-embed">
+                    <iframe
+                        id="yt-player"
+                        src="https://www.youtube-nocookie.com/embed/1ormfTMYfv0?enablejsapi=1"
+                        title="EQ Doesn&#39;t Cause Phase Shift..."
+                        frameborder="0"
+                        allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allowfullscreen></iframe>
+                </div>
+
+                <header class="yt-video-header">
+                    <h1>EQ Doesn&#39;t Cause Phase Shift...</h1>
+                    <p class="yt-video-meta">
+                        <span class="yt-channel">Dan Worrall</span>
+                        <span class="yt-sep" aria-hidden="true">·</span>
+                        <span class="yt-duration">04:22</span>
+                        <span class="yt-sep" aria-hidden="true">·</span>
+                        <span class="yt-depth yt-depth-applied">Applied</span>
+                    </p>
+                    <p class="yt-domain-trail"><a class="yt-domain-link" href="../#domain=Audio%20Theory">Audio Theory</a> / Signal Processing, Filter Theory</p>
+                    <p class="yt-tags-row"><a class="yt-tag yt-tag-link" href="../#tag=eq">eq</a><a class="yt-tag yt-tag-link" href="../#tag=phase">phase</a></p>
+                    <p class="yt-watch-on-yt">
+                        <a href="https://www.youtube.com/watch?v=1ormfTMYfv0" target="_blank" rel="noopener">Watch on YouTube ↗</a>
+                    </p>
+                </header>
+            </section>
+
+            <section class="yt-section">
+                <h2>Takeaway</h2>
+                <div class="yt-prose">
+                    <p>Worrall demonstrates in Reaktor that every standard EQ filter shape (low-pass, high-pass, low shelf, high shelf, bell, notch) can be derived from an all-pass filter (which is flat in frequency but introduces phase shift) plus simple arithmetic. Add the all-pass to the dry signal and you get a low-pass. Subtract it (or invert and add) and you get a high-pass. Scale and add and you get a shelf with adjustable gain. Wire two all-passes in series and you get a bell. The punchline reverses the usual question: EQ doesn&#39;t cause phase shift. Phase shift causes EQ. The real question is how an all-pass filter selectively shifts the phase of certain frequencies while leaving the amplitude completely flat, which Worrall leaves as an open puzzle.</p>
+                </div>
+            </section>
+
+            <section class="yt-section">
+                <h2>Before you watch</h2>
+                <div class="yt-before-grid">
+                <div class="yt-before-group">
+                    <h3 class="yt-before-heading">Prerequisites</h3>
+                    <ul class="yt-before-list">
+                        <li>Watch <a class="yt-citekey-link" href="danworrallDelayAlwaysMeans2020.html">Delay Always Means Phase Shift But Phase Shift Does Not Always Mean Delay</a> first for foundational phase concepts</li>
+                        <li>Familiarity with EQ filter types (low-pass, high-pass, shelf, bell)</li>
+                        <li>Comfortable with the idea of summing two signals</li>
+                    </ul>
+                </div>
+                <div class="yt-before-group">
+                    <h3 class="yt-before-heading">By the end you'll be able to</h3>
+                    <ul class="yt-before-list">
+                        <li>Derive a low-pass filter from an all-pass filter and addition</li>
+                        <li>Explain how subtraction (instead of addition) yields a high-pass filter</li>
+                        <li>Build a shelving or bell EQ from one or more all-pass filters and a gain scale</li>
+                        <li>Articulate why &#39;EQ doesn&#39;t cause phase shift, phase shift causes EQ&#39;</li>
+                    </ul>
+                </div>
+                </div>
+            </section>
+
+            <section class="yt-section">
+                <h2>Watch for</h2>
+                <ul class="yt-watch-for-list">
+                    <li><a class="yt-watch-for-time" href="https://www.youtube.com/watch?v=1ormfTMYfv0&amp;t=12" data-seconds="12" target="_blank" rel="noopener">0:12</a> <span class="yt-watch-for-text">the all-pass filter: flat frequency response, varying phase across the spectrum</span></li>
+                    <li><a class="yt-watch-for-time" href="https://www.youtube.com/watch?v=1ormfTMYfv0&amp;t=66" data-seconds="66" target="_blank" rel="noopener">1:06</a> <span class="yt-watch-for-text">adding the all-pass to the dry signal produces a low-pass filter</span></li>
+                    <li><a class="yt-watch-for-time" href="https://www.youtube.com/watch?v=1ormfTMYfv0&amp;t=199" data-seconds="199" target="_blank" rel="noopener">3:19</a> <span class="yt-watch-for-text">two all-passes in series create a bell filter at the midrange</span></li>
+                </ul>
+            </section>
+            <section class="yt-section">
+                <h2>Questions</h2>
+                <ol class="yt-questions">
+                    <li><span class="yt-q-num">1.</span><span class="yt-q-text">Worrall starts with an all-pass filter that has a totally flat frequency response but causes increasing phase shift across the spectrum. Why does this filter sound inaudible on its own, and what is it actually doing to the signal?</span><span class="yt-bloom">Understand</span></li>
+            <li><span class="yt-q-num">2.</span><span class="yt-q-text">Worrall builds a low-pass, a high-pass, a high shelf, and a bell out of nothing more than an all-pass filter plus addition or subtraction. Walk through one of these (say, the high shelf) and explain how parallel summing with a phase-shifted copy produces a frequency-selective gain change.</span><span class="yt-bloom">Analyze</span></li>
+            <li><span class="yt-q-num">3.</span><span class="yt-q-text">The video&#39;s punchline is that &quot;EQ doesn&#39;t cause phase shift. Phase shift causes EQ.&quot; What does Worrall mean by this, and why is it not just a semantic flip? How does this reframing change the way an engineer should think about the unavoidable phase shifts that come with EQ boosts and cuts?</span><span class="yt-bloom">Analyze</span></li>
+            <li><span class="yt-q-num">4.</span><span class="yt-q-text">To get a bell-shaped boost in the mid-range, Worrall wires two all-passes in series so that the high frequencies get shifted 360° back into phase. Why does it take two all-passes rather than one to make a bell, and what would happen if you tried to build a bell from just a single all-pass and an addition module?</span><span class="yt-bloom">Analyze</span></li>
+                </ol>
+            </section>
+
+            <section class="yt-section">
+                <h2>Related videos</h2>
+                <div class="yt-related-grid">
+                    
+                <a href="danworrallDelayAlwaysMeans2020.html" class="yt-related-card">
+                    <div class="yt-related-thumb">
+                        <img src="https://i.ytimg.com/vi/H3ZyaXgTqjM/mqdefault.jpg" alt="" loading="lazy">
+                    </div>
+                    <div class="yt-related-info">
+                        <div class="yt-related-title">Delay Always Means Phase Shift But Phase Shift Does Not Always Mean Delay</div>
+                        <div class="yt-related-meta">Dan Worrall · Applied</div>
+                    </div>
+                </a>
+                <a href="danworrallPhascinatingPhactsPhase2025.html" class="yt-related-card">
+                    <div class="yt-related-thumb">
+                        <img src="https://i.ytimg.com/vi/nP74656yTi8/mqdefault.jpg" alt="" loading="lazy">
+                    </div>
+                    <div class="yt-related-info">
+                        <div class="yt-related-title">Phascinating Phacts about Phase</div>
+                        <div class="yt-related-meta">Dan Worrall · Applied</div>
+                    </div>
+                </a>
+                <a href="alphasoundYouUnderstandPhase2023.html" class="yt-related-card">
+                    <div class="yt-related-thumb">
+                        <img src="https://i.ytimg.com/vi/I64sIfMGpXU/mqdefault.jpg" alt="" loading="lazy">
+                    </div>
+                    <div class="yt-related-info">
+                        <div class="yt-related-title">Do you understand the phase graph?</div>
+                        <div class="yt-related-meta">Alpha Sound · Applied</div>
+                    </div>
+                </a>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; <span class="footer-year"></span> Blake Boyd</p>
+        </footer>
+    </div>
+    <script>
+        const yearEl = document.querySelector('.footer-year');
+        if (yearEl) yearEl.textContent = new Date().getFullYear();
+    </script>
+    <script>
+        // YouTube IFrame API: seek the embedded player when a timestamp is clicked.
+        // The href is kept as a fallback so right-click/middle-click still work.
+        // The intercept always preventDefault()s a left-click on a watch-for link
+        // so the target="_blank" never fires unexpectedly. If the player API hasn't
+        // finished loading yet, the click is queued and applied once ready.
+        let player = null;
+        let playerReady = false;
+        let pendingSeek = null;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('yt-player', {
+                events: {
+                    onReady: () => {
+                        playerReady = true;
+                        if (pendingSeek != null) {
+                            applySeek(pendingSeek);
+                            pendingSeek = null;
+                        }
+                    },
+                },
+            });
+        }
+        function applySeek(seconds) {
+            if (!player || typeof player.seekTo !== 'function') return;
+            player.seekTo(seconds, true);
+            if (typeof player.playVideo === 'function') player.playVideo();
+            const iframe = document.getElementById('yt-player');
+            const rect = iframe.getBoundingClientRect();
+            if (rect.top < 0 || rect.bottom > window.innerHeight) {
+                iframe.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('.yt-watch-for-time');
+            if (!link) return;
+            // Allow modifier-clicks (Cmd/Ctrl/middle-click) to open in a new tab as usual
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+            const seconds = Number(link.dataset.seconds);
+            if (!Number.isFinite(seconds)) return;
+            e.preventDefault();
+            if (playerReady) {
+                applySeek(seconds);
+            } else {
+                // Queue, then fall back to the href if the player never initializes
+                pendingSeek = seconds;
+                setTimeout(() => {
+                    if (!playerReady && pendingSeek === seconds) {
+                        pendingSeek = null;
+                        window.location.href = link.href;
+                    }
+                }, 2000);
+            }
+        });
+        // Load the IFrame API. The global onYouTubeIframeAPIReady is called when ready.
+        (function loadApi() {
+            const tag = document.createElement('script');
+            tag.src = 'https://www.youtube.com/iframe_api';
+            document.head.appendChild(tag);
+        })();
+    </script>
+</body>
+</html>

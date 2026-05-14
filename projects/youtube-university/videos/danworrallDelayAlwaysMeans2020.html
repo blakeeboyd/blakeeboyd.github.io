@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Delay Always Means Phase Shift But Phase Shift Does Not Always Mean Delay — video breakdown for audio engineering coursework.">
+    <title>Delay Always Means Phase Shift But Phase Shift Does Not Always Mean Delay — YouTube University — Blake Boyd</title>
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake E. Boyd">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+    <link rel="stylesheet" href="../../../css/base.css">
+    <link rel="stylesheet" href="../../../css/layout.css">
+    <link rel="stylesheet" href="../../../css/components.css">
+    <link rel="stylesheet" href="../../../css/projects/youtubeUniversity.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400..700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+    <script src="../../../js/theme.js"></script>
+    <script src="../../../js/nav-component.js" defer></script>
+</head>
+<body>
+    <div class="container wide">
+        <site-nav base="../../../"></site-nav>
+
+        <main id="main-content" class="yt-video-page">
+            <nav class="yt-breadcrumb" aria-label="Breadcrumb">
+                <a href="../">YouTube University</a>
+                <span aria-hidden="true">›</span>
+                <span class="yt-breadcrumb-current">Delay Always Means Phase Shift But Phase Shift Does Not Always Mean Delay</span>
+            </nav>
+
+            <section class="yt-video-hero">
+                <div class="yt-embed">
+                    <iframe
+                        id="yt-player"
+                        src="https://www.youtube-nocookie.com/embed/H3ZyaXgTqjM?enablejsapi=1"
+                        title="Delay Always Means Phase Shift But Phase Shift Does Not Always Mean Delay"
+                        frameborder="0"
+                        allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allowfullscreen></iframe>
+                </div>
+
+                <header class="yt-video-header">
+                    <h1>Delay Always Means Phase Shift But Phase Shift Does Not Always Mean Delay</h1>
+                    <p class="yt-video-meta">
+                        <span class="yt-channel">Dan Worrall</span>
+                        <span class="yt-sep" aria-hidden="true">·</span>
+                        <span class="yt-duration">09:17</span>
+                        <span class="yt-sep" aria-hidden="true">·</span>
+                        <span class="yt-depth yt-depth-applied">Applied</span>
+                    </p>
+                    <p class="yt-domain-trail"><a class="yt-domain-link" href="../#domain=Audio%20Theory">Audio Theory</a> / Signal Processing, Filter Theory</p>
+                    <p class="yt-tags-row"><a class="yt-tag yt-tag-link" href="../#tag=eq">eq</a><a class="yt-tag yt-tag-link" href="../#tag=phase">phase</a></p>
+                    <p class="yt-watch-on-yt">
+                        <a href="https://www.youtube.com/watch?v=H3ZyaXgTqjM" target="_blank" rel="noopener">Watch on YouTube ↗</a>
+                    </p>
+                </header>
+            </section>
+
+            <section class="yt-section">
+                <h2>Takeaway</h2>
+                <div class="yt-prose">
+                    <p>Worrall corrects a common misunderstanding about minimum-phase EQs: the phase shift they introduce is not the same as a time delay. He sets up a 100 Hz sine wave in Reaper and produces cancellation three different ways. First by inverting polarity (no delay, perfect cancellation across all frequencies). Second by nudging the waveform forward 5 ms, which is half a cycle at 100 Hz but would actually shift a 200 Hz signal a full cycle and put it back in phase. Third by running it through an all-pass filter set at 100 Hz, which produces cancellation in the middle of the tone but reveals on the waveform that the filter is anticipating, ringing, and rearranging the signal in time rather than delaying it. He closes with a sharp spike at the end of the test tone, which passes through the all-pass filter with its peak amplitude almost doubled. This is why EQ cuts can sometimes make a track louder rather than quieter.</p>
+                </div>
+            </section>
+
+            <section class="yt-section">
+                <h2>Before you watch</h2>
+                <div class="yt-before-grid">
+                <div class="yt-before-group">
+                    <h3 class="yt-before-heading">Prerequisites</h3>
+                    <ul class="yt-before-list">
+                        <li>Familiarity with the concepts of phase and amplitude</li>
+                        <li>Some awareness of DAW operations (delay, EQ plugins)</li>
+                        <li>Exposure to comb filtering as a result of summed signals</li>
+                    </ul>
+                </div>
+                <div class="yt-before-group">
+                    <h3 class="yt-before-heading">By the end you'll be able to</h3>
+                    <ul class="yt-before-list">
+                        <li>Distinguish three methods of producing 180° phase shift: polarity, delay, and all-pass filter</li>
+                        <li>Explain why delay always means phase shift but phase shift does not always mean delay</li>
+                        <li>Describe filter ringing and why minimum-phase filters ring only after the impulse</li>
+                        <li>Explain how phase rearrangement can make an EQ-cut signal louder in peak amplitude</li>
+                    </ul>
+                </div>
+                </div>
+            </section>
+
+            <section class="yt-section">
+                <h2>Watch for</h2>
+                <ul class="yt-watch-for-list">
+                    <li><a class="yt-watch-for-time" href="https://www.youtube.com/watch?v=H3ZyaXgTqjM&amp;t=36" data-seconds="36" target="_blank" rel="noopener">0:36</a> <span class="yt-watch-for-text">the polarity-inversion cancellation method. Same effect at every frequency</span></li>
+                    <li><a class="yt-watch-for-time" href="https://www.youtube.com/watch?v=H3ZyaXgTqjM&amp;t=238" data-seconds="238" target="_blank" rel="noopener">3:58</a> <span class="yt-watch-for-text">the all-pass filter cancellation method. Listen for how it differs from delay</span></li>
+                    <li><a class="yt-watch-for-time" href="https://www.youtube.com/watch?v=H3ZyaXgTqjM&amp;t=372" data-seconds="372" target="_blank" rel="noopener">6:12</a> <span class="yt-watch-for-text">the spike at the end of the test tone. Peak amplitude almost doubles</span></li>
+                </ul>
+            </section>
+            <section class="yt-section">
+                <h2>Questions</h2>
+                <ol class="yt-questions">
+                    <li><span class="yt-q-num">1.</span><span class="yt-q-text">Worrall demonstrates that 180° of phase shift can be achieved three different ways: polarity reversal, time delay, and an all-pass filter. Walk through each method and explain what is identical about the result at a single frequency, and what is different about how each method behaves at other frequencies.</span><span class="yt-bloom">Analyze</span></li>
+            <li><span class="yt-q-num">2.</span><span class="yt-q-text">Worrall says delay always implies phase shift, but phase shift does not always imply delay. Use a 100 Hz signal vs. a 200 Hz signal and a 5 ms delay to show why this is true. Why is this distinction important for understanding what a zero-latency EQ plugin is actually doing to your audio?</span><span class="yt-bloom">Analyze</span></li>
+            <li><span class="yt-q-num">3.</span><span class="yt-q-text">The all-pass filter waveform shows that the processed signal starts high (same as the original) but then quickly reverses direction and &quot;anticipates&quot; the delayed copy. Worrall says this is not delay but filter ringing. Explain what ringing is, why minimum-phase filters ring only after the impulse, and why this shows up as a kind of ramp-up at the start.</span><span class="yt-bloom">Understand</span></li>
+            <li><span class="yt-q-num">4.</span><span class="yt-q-text">Worrall closes with the observation that the sharp spike at the end of the test tone passes through the all-pass filter with its peak amplitude almost doubled. He says this answers the question &quot;how come an EQ cut makes my track louder?&quot; Reconstruct his argument: how can a process that flattens the frequency response also push peak levels higher?</span><span class="yt-bloom">Analyze</span></li>
+                </ol>
+            </section>
+
+            <section class="yt-section">
+                <h2>Related videos</h2>
+                <div class="yt-related-grid">
+                    
+                <a href="danworrallEQDoesntCause2024.html" class="yt-related-card">
+                    <div class="yt-related-thumb">
+                        <img src="https://i.ytimg.com/vi/1ormfTMYfv0/mqdefault.jpg" alt="" loading="lazy">
+                    </div>
+                    <div class="yt-related-info">
+                        <div class="yt-related-title">EQ Doesn&#39;t Cause Phase Shift...</div>
+                        <div class="yt-related-meta">Dan Worrall · Applied</div>
+                    </div>
+                </a>
+                <a href="alphasoundYouUnderstandPhase2023.html" class="yt-related-card">
+                    <div class="yt-related-thumb">
+                        <img src="https://i.ytimg.com/vi/I64sIfMGpXU/mqdefault.jpg" alt="" loading="lazy">
+                    </div>
+                    <div class="yt-related-info">
+                        <div class="yt-related-title">Do you understand the phase graph?</div>
+                        <div class="yt-related-meta">Alpha Sound · Applied</div>
+                    </div>
+                </a>
+                <a href="alphasoundSubwoofersAirItself2024.html" class="yt-related-card">
+                    <div class="yt-related-thumb">
+                        <img src="https://i.ytimg.com/vi/Qg3x27Y83w0/mqdefault.jpg" alt="" loading="lazy">
+                    </div>
+                    <div class="yt-related-info">
+                        <div class="yt-related-title">Subwoofers (and the air itself!) are NOT in-phase with your mixer and amplifier.</div>
+                        <div class="yt-related-meta">Alpha Sound · Applied</div>
+                    </div>
+                </a>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; <span class="footer-year"></span> Blake Boyd</p>
+        </footer>
+    </div>
+    <script>
+        const yearEl = document.querySelector('.footer-year');
+        if (yearEl) yearEl.textContent = new Date().getFullYear();
+    </script>
+    <script>
+        // YouTube IFrame API: seek the embedded player when a timestamp is clicked.
+        // The href is kept as a fallback so right-click/middle-click still work.
+        // The intercept always preventDefault()s a left-click on a watch-for link
+        // so the target="_blank" never fires unexpectedly. If the player API hasn't
+        // finished loading yet, the click is queued and applied once ready.
+        let player = null;
+        let playerReady = false;
+        let pendingSeek = null;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('yt-player', {
+                events: {
+                    onReady: () => {
+                        playerReady = true;
+                        if (pendingSeek != null) {
+                            applySeek(pendingSeek);
+                            pendingSeek = null;
+                        }
+                    },
+                },
+            });
+        }
+        function applySeek(seconds) {
+            if (!player || typeof player.seekTo !== 'function') return;
+            player.seekTo(seconds, true);
+            if (typeof player.playVideo === 'function') player.playVideo();
+            const iframe = document.getElementById('yt-player');
+            const rect = iframe.getBoundingClientRect();
+            if (rect.top < 0 || rect.bottom > window.innerHeight) {
+                iframe.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('.yt-watch-for-time');
+            if (!link) return;
+            // Allow modifier-clicks (Cmd/Ctrl/middle-click) to open in a new tab as usual
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+            const seconds = Number(link.dataset.seconds);
+            if (!Number.isFinite(seconds)) return;
+            e.preventDefault();
+            if (playerReady) {
+                applySeek(seconds);
+            } else {
+                // Queue, then fall back to the href if the player never initializes
+                pendingSeek = seconds;
+                setTimeout(() => {
+                    if (!playerReady && pendingSeek === seconds) {
+                        pendingSeek = null;
+                        window.location.href = link.href;
+                    }
+                }, 2000);
+            }
+        });
+        // Load the IFrame API. The global onYouTubeIframeAPIReady is called when ready.
+        (function loadApi() {
+            const tag = document.createElement('script');
+            tag.src = 'https://www.youtube.com/iframe_api';
+            document.head.appendChild(tag);
+        })();
+    </script>
+</body>
+</html>

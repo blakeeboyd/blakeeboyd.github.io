@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Do you understand the phase graph? — video breakdown for audio engineering coursework.">
+    <title>Do you understand the phase graph? — YouTube University — Blake Boyd</title>
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake E. Boyd">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+    <link rel="stylesheet" href="../../../css/base.css">
+    <link rel="stylesheet" href="../../../css/layout.css">
+    <link rel="stylesheet" href="../../../css/components.css">
+    <link rel="stylesheet" href="../../../css/projects/youtubeUniversity.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400..700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+    <script src="../../../js/theme.js"></script>
+    <script src="../../../js/nav-component.js" defer></script>
+</head>
+<body>
+    <div class="container wide">
+        <site-nav base="../../../"></site-nav>
+
+        <main id="main-content" class="yt-video-page">
+            <nav class="yt-breadcrumb" aria-label="Breadcrumb">
+                <a href="../">YouTube University</a>
+                <span aria-hidden="true">›</span>
+                <span class="yt-breadcrumb-current">Do you understand the phase graph?</span>
+            </nav>
+
+            <section class="yt-video-hero">
+                <div class="yt-embed">
+                    <iframe
+                        id="yt-player"
+                        src="https://www.youtube-nocookie.com/embed/I64sIfMGpXU?enablejsapi=1"
+                        title="Do you understand the phase graph?"
+                        frameborder="0"
+                        allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allowfullscreen></iframe>
+                </div>
+
+                <header class="yt-video-header">
+                    <h1>Do you understand the phase graph?</h1>
+                    <p class="yt-video-meta">
+                        <span class="yt-channel">Alpha Sound</span>
+                        <span class="yt-sep" aria-hidden="true">·</span>
+                        <span class="yt-duration">08:53</span>
+                        <span class="yt-sep" aria-hidden="true">·</span>
+                        <span class="yt-depth yt-depth-applied">Applied</span>
+                    </p>
+                    <p class="yt-domain-trail"><a class="yt-domain-link" href="../#domain=Live%20Sound">Live Sound</a> / System Tuning, Signal Processing, Filter Theory · <a class="yt-domain-link" href="../#domain=Audio%20Theory">Audio Theory</a> / System Tuning, Signal Processing, Filter Theory</p>
+                    <p class="yt-tags-row"><a class="yt-tag yt-tag-link" href="../#tag=phase">phase</a><a class="yt-tag yt-tag-link" href="../#tag=eq">eq</a></p>
+                    <p class="yt-watch-on-yt">
+                        <a href="https://www.youtube.com/watch?v=I64sIfMGpXU" target="_blank" rel="noopener">Watch on YouTube ↗</a>
+                    </p>
+                </header>
+            </section>
+
+            <section class="yt-section">
+                <h2>Takeaway</h2>
+                <div class="yt-prose">
+                    <p>Sheets opens with a pop quiz: when the phase trace slopes downward, are the low frequencies actually behind the high frequencies, or not? The answer turns out to be &quot;it depends on what you&#39;re measuring.&quot; He builds the case in three stages. First, he adds delay to test signals through linear-phase filters and shows that delay does shift each band&#39;s phase trace downward in proportion to the delay amount, while unwrapping reveals how the graph keeps the line continuous even when the underlying frequencies are not actually offset from one another. Second, he switches to an oscilloscope view with stacked 20 Hz and 160 Hz tones and demonstrates how each frequency moves independently in time when delayed. Third, he introduces a minimum-phase EQ filter and shows on a single-sample impulse and a single-cycle 120 Hz waveform that the filter reshapes the waveform without ever pushing the start of the sound earlier than it began. The video closes on the diagnostic point: a downward phase slope on a speaker measurement may indicate physical time arrival differences (cone mass, miscalibrated processing), while the same slope from a minimum-phase EQ is pure waveform reshaping. Global delay fixes the first.</p>
+                </div>
+            </section>
+
+            <section class="yt-section">
+                <h2>Before you watch</h2>
+                <div class="yt-before-grid">
+                <div class="yt-before-group">
+                    <h3 class="yt-before-heading">Prerequisites</h3>
+                    <ul class="yt-before-list">
+                        <li>Familiarity with reading a magnitude trace and a phase trace on a measurement display</li>
+                        <li>Basic understanding of delay alignment for stacked speakers or processed signals</li>
+                        <li>Awareness that filters can be either minimum-phase or linear-phase</li>
+                    </ul>
+                </div>
+                <div class="yt-before-group">
+                    <h3 class="yt-before-heading">By the end you'll be able to</h3>
+                    <ul class="yt-before-list">
+                        <li>Read a downward-sloping phase trace as the visual signature of a time delay</li>
+                        <li>Distinguish wrapped from unwrapped phase display and explain why the line stays continuous</li>
+                        <li>Explain why a minimum-phase EQ produces phase shift without delaying the start of the sound</li>
+                        <li>Decide whether a phase anomaly points to delay alignment or to filter behavior, based on what is being measured</li>
+                    </ul>
+                </div>
+                </div>
+            </section>
+
+            <section class="yt-section">
+                <h2>Watch for</h2>
+                <ul class="yt-watch-for-list">
+                    <li><a class="yt-watch-for-time" href="https://www.youtube.com/watch?v=I64sIfMGpXU&amp;t=99" data-seconds="99" target="_blank" rel="noopener">1:39</a> <span class="yt-watch-for-text">the unwrapped phase trace dropping below 180°. The graph keeps the line continuous, which is not the same as the low frequencies arriving late</span></li>
+                    <li><a class="yt-watch-for-time" href="https://www.youtube.com/watch?v=I64sIfMGpXU&amp;t=230" data-seconds="230" target="_blank" rel="noopener">3:50</a> <span class="yt-watch-for-text">the oscilloscope demo with stacked 20 Hz and 160 Hz tones. Each frequency moves independently when delayed</span></li>
+                    <li><a class="yt-watch-for-time" href="https://www.youtube.com/watch?v=I64sIfMGpXU&amp;t=431" data-seconds="431" target="_blank" rel="noopener">7:11</a> <span class="yt-watch-for-text">the linear-phase EQ sweep showing pre-ringing and post-ringing symmetrical around the impulse, in contrast to the asymmetric minimum-phase ringing earlier</span></li>
+                </ul>
+            </section>
+            <section class="yt-section">
+                <h2>Questions</h2>
+                <ol class="yt-questions">
+                    <li><span class="yt-q-num">1.</span><span class="yt-q-text">Sheets uses three linear-phase EQ channel strips with low, mid, and high filters and adds delay to each in turn. Describe what happens to the phase trace when only the mid-range is delayed, and explain why the trace stays continuous instead of jumping back up to zero in the high band.</span><span class="yt-bloom">Understand</span></li>
+            <li><span class="yt-q-num">2.</span><span class="yt-q-text">Sheets says each frequency on the phase graph &quot;is only thinking about the one directly on either side of it.&quot; Use the oscilloscope segment (20 Hz stacked on 160 Hz) to explain what he means, and why this local-only behavior is what produces the apparently global downward slope when delay is added.</span><span class="yt-bloom">Analyze</span></li>
+            <li><span class="yt-q-num">3.</span><span class="yt-q-text">Compare what the regular EQ does to the single-sample impulse and the single-cycle 120 Hz waveform with what a linear-phase EQ doing the same filter does to those signals. What is visibly different about how each filter type handles the start of the sound, and what does Sheets mean by &quot;digital look-ahead&quot;?</span><span class="yt-bloom">Analyze</span></li>
+            <li><span class="yt-q-num">4.</span><span class="yt-q-text">Sheets closes by arguing that interpreting a downward phase slope depends on whether the measurement is of a speaker or of a filter. Defend or complicate this position: when is &quot;add global delay&quot; the right corrective move, and when would it make things worse?</span><span class="yt-bloom">Evaluate</span></li>
+                </ol>
+            </section>
+
+            <section class="yt-section">
+                <h2>Related videos</h2>
+                <div class="yt-related-grid">
+                    
+                <a href="danworrallDelayAlwaysMeans2020.html" class="yt-related-card">
+                    <div class="yt-related-thumb">
+                        <img src="https://i.ytimg.com/vi/H3ZyaXgTqjM/mqdefault.jpg" alt="" loading="lazy">
+                    </div>
+                    <div class="yt-related-info">
+                        <div class="yt-related-title">Delay Always Means Phase Shift But Phase Shift Does Not Always Mean Delay</div>
+                        <div class="yt-related-meta">Dan Worrall · Applied</div>
+                    </div>
+                </a>
+                <a href="danworrallEQDoesntCause2024.html" class="yt-related-card">
+                    <div class="yt-related-thumb">
+                        <img src="https://i.ytimg.com/vi/1ormfTMYfv0/mqdefault.jpg" alt="" loading="lazy">
+                    </div>
+                    <div class="yt-related-info">
+                        <div class="yt-related-title">EQ Doesn&#39;t Cause Phase Shift...</div>
+                        <div class="yt-related-meta">Dan Worrall · Applied</div>
+                    </div>
+                </a>
+                <a href="alphasoundSubwoofersAirItself2024.html" class="yt-related-card">
+                    <div class="yt-related-thumb">
+                        <img src="https://i.ytimg.com/vi/Qg3x27Y83w0/mqdefault.jpg" alt="" loading="lazy">
+                    </div>
+                    <div class="yt-related-info">
+                        <div class="yt-related-title">Subwoofers (and the air itself!) are NOT in-phase with your mixer and amplifier.</div>
+                        <div class="yt-related-meta">Alpha Sound · Applied</div>
+                    </div>
+                </a>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; <span class="footer-year"></span> Blake Boyd</p>
+        </footer>
+    </div>
+    <script>
+        const yearEl = document.querySelector('.footer-year');
+        if (yearEl) yearEl.textContent = new Date().getFullYear();
+    </script>
+    <script>
+        // YouTube IFrame API: seek the embedded player when a timestamp is clicked.
+        // The href is kept as a fallback so right-click/middle-click still work.
+        // The intercept always preventDefault()s a left-click on a watch-for link
+        // so the target="_blank" never fires unexpectedly. If the player API hasn't
+        // finished loading yet, the click is queued and applied once ready.
+        let player = null;
+        let playerReady = false;
+        let pendingSeek = null;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('yt-player', {
+                events: {
+                    onReady: () => {
+                        playerReady = true;
+                        if (pendingSeek != null) {
+                            applySeek(pendingSeek);
+                            pendingSeek = null;
+                        }
+                    },
+                },
+            });
+        }
+        function applySeek(seconds) {
+            if (!player || typeof player.seekTo !== 'function') return;
+            player.seekTo(seconds, true);
+            if (typeof player.playVideo === 'function') player.playVideo();
+            const iframe = document.getElementById('yt-player');
+            const rect = iframe.getBoundingClientRect();
+            if (rect.top < 0 || rect.bottom > window.innerHeight) {
+                iframe.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('.yt-watch-for-time');
+            if (!link) return;
+            // Allow modifier-clicks (Cmd/Ctrl/middle-click) to open in a new tab as usual
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+            const seconds = Number(link.dataset.seconds);
+            if (!Number.isFinite(seconds)) return;
+            e.preventDefault();
+            if (playerReady) {
+                applySeek(seconds);
+            } else {
+                // Queue, then fall back to the href if the player never initializes
+                pendingSeek = seconds;
+                setTimeout(() => {
+                    if (!playerReady && pendingSeek === seconds) {
+                        pendingSeek = null;
+                        window.location.href = link.href;
+                    }
+                }, 2000);
+            }
+        });
+        // Load the IFrame API. The global onYouTubeIframeAPIReady is called when ready.
+        (function loadApi() {
+            const tag = document.createElement('script');
+            tag.src = 'https://www.youtube.com/iframe_api';
+            document.head.appendChild(tag);
+        })();
+    </script>
+</body>
+</html>

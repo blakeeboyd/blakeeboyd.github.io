@@ -152,10 +152,22 @@ When building new features:
     │   ├── guide.html          # User guide
     │   └── js/
     │       └── app.js          # Pure JavaScript, no dependencies
-    └── understanding-phase-correlation/
-        ├── index.html          # Main page (uses .container.wide)
-        └── js/
-            └── app.js          # Pure Web Audio API, stereo correlation meter
+    ├── understanding-phase-correlation/
+    │   ├── index.html          # Main page (uses .container.wide)
+    │   └── js/
+    │       └── app.js          # Pure Web Audio API, stereo correlation meter
+    └── youtube-university/
+        ├── index.html          # Listing page with search + tag/depth filters
+        ├── videos.json         # Generated index data (do not edit by hand)
+        ├── videos/             # Generated per-video HTML pages (do not edit by hand)
+        ├── source/             # Mirror of Obsidian vault video-breakdowns *.md
+        ├── scripts/
+        │   ├── build.js        # MD → JSON + HTML generator
+        │   └── video-template.html
+        ├── js/
+        │   └── index.js        # Filter/search logic for listing page
+        ├── package.json        # npm run build / npm run sync
+        └── README.md           # Workflow docs
 ```
 
 **Redirect stubs:** Old category paths (`projects/creative-tools/`, `projects/ear-training/`, `projects/explorable-explanations/`) and renamed projects (`projects/sounddocs/`) contain redirect stubs that forward to the current flat structure.

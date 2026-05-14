@@ -1,0 +1,2296 @@
+{
+  "videos": [
+    {
+      "citekey": "nathanlively4SoundSystem2017",
+      "title": "#4 Is sound system tuning without software really possible?",
+      "channel": "Nathan Lively",
+      "duration": "01:09",
+      "ytId": "MKUo33CLCwI",
+      "domains": [
+        "Live Sound",
+        "Professional Practice"
+      ],
+      "subdomains": [
+        "System Tuning",
+        "Workflow"
+      ],
+      "tags": [
+        "ear-training"
+      ],
+      "concepts": [
+        "system tuning without software",
+        "by-ear tuning",
+        "audio analyzer",
+        "measurement microphone",
+        "tool dependence",
+        "doctor in an elevator analogy",
+        "professional improvisation",
+        "good enough tuning",
+        "reader Q&A format"
+      ],
+      "depth": "reflective"
+    },
+    {
+      "citekey": "nathanlively5VolkerLinear2017",
+      "title": "#5 Volker: Is linear sound really good sound?",
+      "channel": "Nathan Lively",
+      "duration": "01:23",
+      "ytId": "xhmo1HJE4sI",
+      "domains": [
+        "Live Sound",
+        "Professional Practice"
+      ],
+      "subdomains": [
+        "System Tuning",
+        "Workflow"
+      ],
+      "tags": [
+        "eq",
+        "ear-training"
+      ],
+      "concepts": [
+        "linear tuning",
+        "flat tuning",
+        "same sound vs good sound",
+        "system-to-system consistency",
+        "front-of-house to broadcast translation",
+        "overflow room translation",
+        "touring mix consistency",
+        "garbage in garbage out",
+        "reader Q&A format",
+        "110 Questions series",
+        "musical tuning vs measurement-flat",
+        "client expectation framing"
+      ],
+      "depth": "reflective"
+    },
+    {
+      "citekey": "nathanlively6DennisHow2017",
+      "title": "#6 Dennis: How to save time in tuning a system?",
+      "channel": "Nathan Lively",
+      "duration": "01:42",
+      "ytId": "ESzH2biOttk",
+      "domains": [
+        "Live Sound",
+        "Professional Practice"
+      ],
+      "subdomains": [
+        "System Tuning",
+        "Workflow"
+      ],
+      "tags": [
+        "troubleshooting"
+      ],
+      "concepts": [
+        "triage in system tuning",
+        "tuning time pressure",
+        "shared scheduling with lighting focus",
+        "shared scheduling with scenic artists",
+        "biggest-problems-first heuristic",
+        "speaker placement and aim as first move",
+        "limited quiet time",
+        "broad-to-narrow workflow",
+        "reader Q&A format",
+        "Hurricane Harvey reference"
+      ],
+      "depth": "reflective"
+    },
+    {
+      "citekey": "nathanlively7MichaelWhat2017",
+      "title": "#7 Michael: What are ways to make tuning more efficient or faster in a limited timeframe?",
+      "channel": "Nathan Lively",
+      "duration": "01:29",
+      "ytId": "GAY2L_9JMRU",
+      "domains": [
+        "Live Sound",
+        "Professional Practice"
+      ],
+      "subdomains": [
+        "System Tuning",
+        "Workflow"
+      ],
+      "tags": [
+        "troubleshooting"
+      ],
+      "concepts": [
+        "tuning under time pressure",
+        "night-before preparation",
+        "microphone position planning",
+        "named measurement positions",
+        "on-axis A1",
+        "off-axis A1",
+        "crossover measurement position",
+        "per-position action list",
+        "level setting",
+        "EQ",
+        "delay",
+        "right measurement wrong position",
+        "multiple measurement microphones",
+        "workshop polarity check",
+        "pre-show verification",
+        "reader Q&A format"
+      ],
+      "depth": "reflective"
+    },
+    {
+      "citekey": "nathanlively8JonathanWhats2017",
+      "title": "#8 Jonathan: What's the biggest bang for buck in terms of tuning with limited amount of time?",
+      "channel": "Nathan Lively",
+      "duration": "03:12",
+      "ytId": "SzqRJ-lyr4c",
+      "domains": [
+        "Live Sound",
+        "Professional Practice"
+      ],
+      "subdomains": [
+        "System Tuning",
+        "Workflow"
+      ],
+      "tags": [
+        "troubleshooting"
+      ],
+      "concepts": [
+        "tuning under time pressure",
+        "biggest bang for buck",
+        "60 seconds of tuning",
+        "5 minutes of tuning",
+        "15 minutes of tuning",
+        "30 minutes of tuning",
+        "output verification",
+        "main array priority",
+        "main array covers the most people",
+        "subs to mains phase alignment",
+        "subsystem matching",
+        "delay, level, EQ",
+        "sound system tuning roadmap",
+        "next most important step",
+        "hypothetical ideal scenario",
+        "technical problems first",
+        "broken sub during line check",
+        "optimization during the show",
+        "reader Q&A format"
+      ],
+      "depth": "reflective"
+    },
+    {
+      "citekey": "nathanlively110QuestionsSound2017",
+      "title": "110 Questions about Sound System Tuning - #1 Why tune the sound system?",
+      "channel": "Nathan Lively",
+      "duration": "02:16",
+      "ytId": "U1QtG2SSGo0",
+      "domains": [
+        "Live Sound",
+        "Professional Practice"
+      ],
+      "subdomains": [
+        "System Tuning",
+        "Career Development"
+      ],
+      "tags": [
+        "ear-training"
+      ],
+      "concepts": [
+        "why tune a sound system",
+        "consistency across seats",
+        "consistency across venues",
+        "getting booked solid",
+        "client referrals",
+        "tour manager rehire",
+        "enjoyment of the work",
+        "presence during the show",
+        "troubleshooting versus mixing",
+        "series opener framing",
+        "reader question format",
+        "motivations for tuning"
+      ],
+      "depth": "reflective"
+    },
+    {
+      "citekey": "nathanlively110QuestionsSound2017a",
+      "title": "110 Questions about Sound System Tuning - #2 Kyra: What is sound system tuning?",
+      "channel": "Nathan Lively",
+      "duration": "2:32",
+      "ytId": "2C4R1vOZHtg",
+      "domains": [
+        "Live Sound"
+      ],
+      "subdomains": [
+        "System Tuning"
+      ],
+      "tags": [
+        "eq",
+        "room-acoustics"
+      ],
+      "concepts": [
+        "sound system tuning",
+        "sound system optimization",
+        "flat frequency response",
+        "handheld RTA",
+        "spatial averaging",
+        "graphic EQ inversion",
+        "Bob McCarthy",
+        "principles of minimum variance",
+        "minimum level variance",
+        "minimum spectral variance",
+        "appropriate sonic image",
+        "same sound everywhere",
+        "front to back tonal consistency",
+        "stage localization"
+      ],
+      "depth": "foundational"
+    },
+    {
+      "citekey": "nathanlively110QuestionsSound2017c",
+      "title": "110 Questions about Sound System Tuning – Pt. 4",
+      "channel": "Nathan Lively",
+      "duration": "17:30",
+      "ytId": "wIbtJO17j9A",
+      "domains": [
+        "Live Sound"
+      ],
+      "subdomains": [
+        "System Tuning",
+        "System Design",
+        "Sound Reinforcement"
+      ],
+      "tags": [
+        "feedback",
+        "subs",
+        "loudspeakers"
+      ],
+      "concepts": [
+        "polarity verification",
+        "auto adjust delay",
+        "delay tracking",
+        "Smaart Live",
+        "near-field solo measurement",
+        "remote client measurement",
+        "speaker placement",
+        "spread out array vs brute force",
+        "range ratio",
+        "frequency response variance",
+        "microphone feedback",
+        "headroom",
+        "gain before feedback",
+        "ringing out a system",
+        "marked filters as backup",
+        "microphone position feedback test",
+        "monitor placement",
+        "monitor delay myth",
+        "polar pattern null aimed at microphone",
+        "phase issues with microphone placement",
+        "isolation by directional microphones",
+        "close miking",
+        "coincident pair overheads",
+        "polarity inversion drum mics",
+        "reference point delay alignment",
+        "speaker coverage shape",
+        "subdivision of coverage",
+        "vertical aim at edge of coverage",
+        "K&M speaker tilt adapter",
+        "fast verification workflow",
+        "reference trace comparison",
+        "speaker position mapping",
+        "sub placement",
+        "hung subs vs ground stacked",
+        "front-to-back distance ratio",
+        "half-space loading",
+        "+6 dB ground coupling",
+        "multiple speakers reasoning",
+        "forward and lateral aspect ratio",
+        "two-sub configurations",
+        "stacked subs coupling",
+        "corner loading",
+        "inline gradient array",
+        "inverted stack array",
+        "broadband rear cancellation",
+        "boundary as mirror",
+        "cardioid sub array under stage",
+        "sub spacing for combing",
+        "120 degrees phase offset",
+        "two-thirds wavelength rule",
+        "coupled point source",
+        "splay angle isolation",
+        "parallel speaker connection",
+        "reflections and phase cancellation",
+        "architectural absorption",
+        "path length reduction",
+        "acoustic problems versus electronic solutions"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "nathanlively110QuestionsSound2017b",
+      "title": "110 Questions about Sound System Tuning #3 Will I be able to master the art of sound system tuning?",
+      "channel": "Nathan Lively",
+      "duration": "01:21",
+      "ytId": "_cXLzn-3gW4",
+      "domains": [
+        "Professional Practice",
+        "Live Sound"
+      ],
+      "subdomains": [
+        "Career Development",
+        "System Tuning"
+      ],
+      "tags": [
+        "ear-training"
+      ],
+      "concepts": [
+        "mastery",
+        "art vs science of tuning",
+        "pass/fail processes",
+        "open-ended skill ceiling",
+        "career patience",
+        "caring as a predictor",
+        "reader question",
+        "learning curve",
+        "short-horizon wins",
+        "long-horizon practice",
+        "self-directed learning",
+        "early-career reassurance"
+      ],
+      "depth": "reflective"
+    },
+    {
+      "citekey": "nathanlivelyBobMcCarthySound2025",
+      "title": "Bob McCarthy on Sound System Tuning: Why \"It Measures Good But Sounds Bad\" is BS",
+      "channel": "Nathan Lively",
+      "duration": "33:33",
+      "ytId": "Jpp7WzxJPdY",
+      "domains": [
+        "Live Sound",
+        "Professional Practice"
+      ],
+      "subdomains": [
+        "System Tuning",
+        "FOH Mixing",
+        "Workflow"
+      ],
+      "tags": [
+        "eq",
+        "room-acoustics",
+        "troubleshooting"
+      ],
+      "concepts": [
+        "subjective vs objective audio",
+        "shades of gray",
+        "measures good sounds bad",
+        "trust your tools",
+        "Mr. Spock moment",
+        "whole-space thinking",
+        "stereo center bias",
+        "A + B = AB formula",
+        "individual component analysis",
+        "FFT analyzer",
+        "SIM",
+        "Smaart",
+        "SatLive",
+        "Open Sound Meter",
+        "normal vs abnormal response",
+        "dirty trace",
+        "speaker aiming methodology",
+        "edge-to-edge bracketing",
+        "coverage angle vs aim",
+        "left-right outward aim",
+        "midpoint depth measurement",
+        "analyzer as answering machine",
+        "framing the question",
+        "gross over-equalization",
+        "narrow filter abuse",
+        "five-filter limit",
+        "octave-wide filters",
+        "filter expiration date",
+        "low frequency longevity",
+        "high frequency ice sculpture",
+        "one-seat solution",
+        "polarity reversal",
+        "phase and time interaction",
+        "standing waves as reflections",
+        "small room phenomenon",
+        "irregular studio geometry",
+        "M-noise",
+        "pink noise",
+        "maximum SPL specification",
+        "Beatles at Shea Stadium",
+        "Meyer Sound",
+        "John Meyer",
+        "humbling failed gigs"
+      ],
+      "depth": "reflective"
+    },
+    {
+      "citekey": "daveratDecorrelationDemoReddit2022",
+      "title": "Decorrelation Demo - Reddit Respond Episode 5",
+      "channel": "Dave Rat",
+      "duration": "12:30",
+      "ytId": "lhk1Sq00F6I",
+      "domains": [
+        "Live Sound",
+        "Audio Theory"
+      ],
+      "subdomains": [
+        "System Design",
+        "Acoustics"
+      ],
+      "tags": [
+        "microphones",
+        "loudspeakers",
+        "decorrelation",
+        "phase"
+      ],
+      "concepts": [
+        "decorrelation",
+        "correlated signals",
+        "uncorrelated signals",
+        "comb filtering",
+        "phase interference",
+        "polarity reversal",
+        "pink noise testing",
+        "dual mic technique",
+        "Royer ribbon microphone",
+        "Audix OM7",
+        "mic placement",
+        "kick drum miking",
+        "front and back miking",
+        "EQ matching",
+        "stereo PA decorrelation",
+        "sonic landscape",
+        "PFL monitoring"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "danworrallDelayAlwaysMeans2020",
+      "title": "Delay Always Means Phase Shift But Phase Shift Does Not Always Mean Delay",
+      "channel": "Dan Worrall",
+      "duration": "09:17",
+      "ytId": "H3ZyaXgTqjM",
+      "domains": [
+        "Audio Theory"
+      ],
+      "subdomains": [
+        "Signal Processing",
+        "Filter Theory"
+      ],
+      "tags": [
+        "eq",
+        "phase"
+      ],
+      "concepts": [
+        "phase shift",
+        "time delay",
+        "minimum phase EQ",
+        "all-pass filter",
+        "polarity inversion",
+        "filter ringing",
+        "linear phase filter",
+        "feedback loops in filters",
+        "impulse response",
+        "phase shift causes louder peaks",
+        "EQ cut making track louder",
+        "zero-latency plugin",
+        "phase response curve",
+        "comb filtering",
+        "sine wave demonstration",
+        "Reaper",
+        "ReaEQ"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "daveratDifferentTypesPanning2022",
+      "title": "Different Types of Panning Demo - Increase Stereo Image",
+      "channel": "Dave Rat",
+      "duration": "18:42",
+      "ytId": "OS6CKnkEUlA",
+      "domains": [
+        "Live Sound",
+        "Audio Theory"
+      ],
+      "subdomains": [
+        "FOH Mixing",
+        "Psychoacoustics"
+      ],
+      "tags": [
+        "panning",
+        "effects"
+      ],
+      "concepts": [
+        "panning",
+        "level panning",
+        "Haas effect",
+        "delay panning",
+        "EQ panning",
+        "compression panning",
+        "stereo imaging",
+        "stereo perception",
+        "live sound panning",
+        "reverse panning",
+        "PA coverage",
+        "headphone panning",
+        "perceptual localization",
+        "interaural time difference",
+        "interaural level difference",
+        "summation point",
+        "Warped Tour"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "daveratDifferentTypesPanning2023",
+      "title": "Different Types of Panning Demo Part #2 - Combinations",
+      "channel": "Dave Rat",
+      "duration": "19:15",
+      "ytId": "gP-ntaw0nnY",
+      "domains": [
+        "Live Sound",
+        "Audio Theory"
+      ],
+      "subdomains": [
+        "FOH Mixing",
+        "Psychoacoustics"
+      ],
+      "tags": [
+        "panning",
+        "phase",
+        "effects"
+      ],
+      "concepts": [
+        "panning",
+        "polarity reversal",
+        "mono compatibility",
+        "frequency-dependent phase shift",
+        "phase vs polarity",
+        "combined panning techniques",
+        "30 millisecond threshold",
+        "perceptual fusion",
+        "reverb panning",
+        "auditory processing",
+        "audiology",
+        "speech-language pathology",
+        "sound vs light perception",
+        "hearing range",
+        "cochlea",
+        "infrared perception",
+        "ultraviolet perception"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "daveratWeWantNeed2023",
+      "title": "Do We Want & Need Audio Compressors?",
+      "channel": "Dave Rat",
+      "duration": "21:43",
+      "ytId": "vjMbWOWrMOs",
+      "domains": [
+        "Live Sound",
+        "Audio Theory"
+      ],
+      "subdomains": [
+        "FOH Mixing",
+        "Acoustics"
+      ],
+      "tags": [
+        "compression",
+        "microphones"
+      ],
+      "concepts": [
+        "compression",
+        "dynamic range",
+        "proximity effect",
+        "close miking",
+        "distance miking",
+        "volume differentials",
+        "handling noise",
+        "microphone distortion",
+        "room sound",
+        "noise gate",
+        "reverberant capture",
+        "cymbal compression",
+        "vocal compression",
+        "bass DI",
+        "bass mic",
+        "mechanical speaker compression",
+        "transient response",
+        "horn-loaded systems",
+        "reflex systems",
+        "Danley",
+        "Funktion-One",
+        "digital console",
+        "analog console",
+        "console crosstalk",
+        "tube compressor",
+        "transformer",
+        "transient capture",
+        "spark transient",
+        "direct vs reverberant ratio"
+      ],
+      "depth": "reflective"
+    },
+    {
+      "citekey": "alphasoundYouKnowHow2019",
+      "title": "Do you know how subwoofers really work?",
+      "channel": "Alpha Sound",
+      "duration": "09:20",
+      "ytId": "ewyRJLhlwz4",
+      "domains": [
+        "Audio Theory",
+        "Live Sound"
+      ],
+      "subdomains": [
+        "Electroacoustics",
+        "Acoustics",
+        "System Design"
+      ],
+      "tags": [
+        "subs",
+        "loudspeakers",
+        "phase"
+      ],
+      "concepts": [
+        "ported subwoofer",
+        "vented enclosure",
+        "bass reflex",
+        "Nexo RS18",
+        "Nexo LS18",
+        "front-loaded sub",
+        "dual chamber cabinet",
+        "port resonance",
+        "driver chamber resonance",
+        "resonant frequency",
+        "32 Hz tuning",
+        "60 Hz tuning",
+        "raw response vs processed response",
+        "frequency response trace",
+        "phase response trace",
+        "180 degree phase relationship",
+        "in-phase summation",
+        "out-of-phase cancellation",
+        "phase flip at resonance",
+        "harmonic resonance",
+        "port phase reversal",
+        "ripples-on-pond analogy",
+        "stream-of-water analogy",
+        "summing vs cancellation thresholds",
+        "high-pass low-pass shaping",
+        "subwoofer processing"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "alphasoundYouUnderstandPhase2023",
+      "title": "Do you understand the phase graph?",
+      "channel": "Alpha Sound",
+      "duration": "08:53",
+      "ytId": "I64sIfMGpXU",
+      "domains": [
+        "Live Sound",
+        "Audio Theory"
+      ],
+      "subdomains": [
+        "System Tuning",
+        "Signal Processing",
+        "Filter Theory"
+      ],
+      "tags": [
+        "phase",
+        "eq"
+      ],
+      "concepts": [
+        "phase graph",
+        "phase trace",
+        "downward sloping phase",
+        "delay",
+        "linear phase EQ",
+        "minimum phase EQ",
+        "high-pass filter",
+        "low-pass filter",
+        "mid-range filter",
+        "delay alignment",
+        "RTA mic",
+        "reference trace",
+        "phase wrapping",
+        "phase unwrapping",
+        "oscilloscope demonstration",
+        "20 Hz sine wave",
+        "160 Hz sine wave",
+        "single sample impulse",
+        "single cycle waveform",
+        "filter pre-ringing",
+        "filter post-ringing",
+        "digital look-ahead",
+        "waveform reshaping",
+        "speaker phase response",
+        "cone weight and time arrival",
+        "system calibration"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "danworrallEQDoesntCause2024",
+      "title": "EQ Doesn't Cause Phase Shift...",
+      "channel": "Dan Worrall",
+      "duration": "04:22",
+      "ytId": "1ormfTMYfv0",
+      "domains": [
+        "Audio Theory"
+      ],
+      "subdomains": [
+        "Signal Processing",
+        "Filter Theory"
+      ],
+      "tags": [
+        "eq",
+        "phase"
+      ],
+      "concepts": [
+        "all-pass filter",
+        "phase shift",
+        "minimum phase EQ",
+        "low-pass filter",
+        "high-pass filter",
+        "high shelf",
+        "low shelf",
+        "bell EQ",
+        "notch filter",
+        "band-pass filter",
+        "parallel filter summing",
+        "filter derivation",
+        "Reaktor",
+        "Plugin Doctor",
+        "phase shift causes EQ"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "dallastaylorHeMixedSNL2025",
+      "title": "He mixed SNL for 40 years. This was his final night",
+      "channel": "Dallas Taylor",
+      "duration": "20:02",
+      "ytId": "tlmK-QCLthI",
+      "domains": [
+        "Broadcast"
+      ],
+      "subdomains": [
+        "Live Broadcast"
+      ],
+      "tags": [
+        "microphones",
+        "signal-flow"
+      ],
+      "concepts": [
+        "Saturday Night Live",
+        "SNL",
+        "A1 broadcast mixer",
+        "dialogue mixer",
+        "Bob Palladino",
+        "Fred Hedemark",
+        "RF microphone",
+        "wireless microphone",
+        "boom microphone",
+        "backup boom",
+        "audience microphone",
+        "applause foot pedal",
+        "DPS machine",
+        "playback room",
+        "sound effects room",
+        "PL system",
+        "party line communication",
+        "script book",
+        "color-coded script changes",
+        "dress to air rewrites",
+        "50th anniversary show",
+        "split-desk mixing",
+        "studio map",
+        "home base",
+        "music stage",
+        "production meeting",
+        "spy cam",
+        "broadcast workflow",
+        "live TV mixing",
+        "30 Rock"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "dallastaylorHeMixesSound2026",
+      "title": "He mixes sound for Cirque du Soleil",
+      "channel": "Dallas Taylor",
+      "duration": "17:48",
+      "ytId": "_KosWNzjyqk",
+      "domains": [
+        "Theater Sound",
+        "Sound Design"
+      ],
+      "subdomains": [
+        "Immersive Theater",
+        "Immersive Audio"
+      ],
+      "tags": [
+        "loudspeakers",
+        "effects",
+        "line-array"
+      ],
+      "concepts": [
+        "Cirque du Soleil",
+        "Drawn to Life",
+        "music follows action",
+        "click track",
+        "VCA",
+        "track substitution",
+        "Meyer LEOPARD",
+        "line array",
+        "Meyer 900 sub",
+        "Meyer 1100 sub",
+        "cardioid sub array",
+        "Meyer JM-1P",
+        "Meyer UPA Slim",
+        "front fill",
+        "EAW KF300",
+        "Meyer MSL-2",
+        "surround speakers",
+        "delay speakers",
+        "d&b 8S",
+        "Meyer D-Mitri",
+        "sound triangulation",
+        "Constellation",
+        "VRAS",
+        "virtual room acoustic system",
+        "audience augmentation",
+        "ambient microphones",
+        "direct-to-reverberant ratio",
+        "coherence",
+        "dynamic mixing",
+        "fader riding",
+        "performer safety",
+        "immersive audio",
+        "Fantasia influence"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "dallastaylorHeMixesVulfpeck2025",
+      "title": "He mixes Vulfpeck live",
+      "channel": "Dallas Taylor",
+      "duration": "21:03",
+      "ytId": "g-HC64mO9-Q",
+      "domains": [
+        "Live Sound"
+      ],
+      "subdomains": [
+        "FOH Mixing",
+        "Monitor Engineering"
+      ],
+      "tags": [
+        "signal-flow",
+        "gain-structure",
+        "compression"
+      ],
+      "concepts": [
+        "front of house mixing",
+        "Red Rocks",
+        "Vulfpeck",
+        "stage box",
+        "sub snake",
+        "transformer-isolated split",
+        "Allen and Heath dLive",
+        "DM64",
+        "monitor mixing",
+        "in-ear monitors",
+        "Shure PSM 1000",
+        "wedge monitors",
+        "ambient microphones",
+        "custom-molded IEMs",
+        "channel strip",
+        "high-pass filter",
+        "gate",
+        "compressor",
+        "multi-band compressor",
+        "auto-tune",
+        "gain staging",
+        "master bus",
+        "matrix output",
+        "line array",
+        "front fill",
+        "vocal reverb",
+        "vocal delay",
+        "stream mix",
+        "outdoor sound",
+        "wind effects",
+        "humidity",
+        "audience absorption",
+        "fader riding",
+        "intelligibility"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "dallastaylorHowMLBMixed2025",
+      "title": "How MLB is mixed live inside a truck",
+      "channel": "Dallas Taylor",
+      "duration": "12:08",
+      "ytId": "cAj-UCSZB0s",
+      "domains": [
+        "Broadcast"
+      ],
+      "subdomains": [
+        "Sports Broadcast"
+      ],
+      "tags": [
+        "eq",
+        "signal-flow",
+        "microphones"
+      ],
+      "concepts": [
+        "broadcast audio",
+        "MLB",
+        "Major League Baseball",
+        "A1 mixer",
+        "Calrec Artemis",
+        "GPI trigger",
+        "parabolic microphone",
+        "bat crack",
+        "video frame delay",
+        "strike box graphic",
+        "mult cable",
+        "multipair audio cable",
+        "patch panel",
+        "alternate audio",
+        "EQ as problem solving",
+        "frequency layering",
+        "crowd microphones",
+        "specialty microphones",
+        "fax check",
+        "broadcast readiness",
+        "mix minus",
+        "feedback loop",
+        "comms channels",
+        "5.1 surround",
+        "5.1.4 Atmos",
+        "Dolby Atmos",
+        "Neumann monitors",
+        "overhead channels",
+        "Nationals Park",
+        "ENCO music player",
+        "Digi Cart"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "animagraffsHowSpeakersMake2020",
+      "title": "How Speakers Make Sound",
+      "channel": "Animagraffs",
+      "duration": "07:06",
+      "ytId": "RxdFP31QYAg",
+      "domains": [
+        "Audio Theory"
+      ],
+      "subdomains": [
+        "Electroacoustics",
+        "Acoustics"
+      ],
+      "tags": [
+        "loudspeakers"
+      ],
+      "concepts": [
+        "loudspeaker construction",
+        "voice coil",
+        "electromagnet",
+        "former",
+        "permanent magnet",
+        "magnet top plate",
+        "pole piece",
+        "magnetic field gap",
+        "speaker cone",
+        "surround",
+        "spider",
+        "dust cap",
+        "tinsel leads",
+        "sound wave physics",
+        "3D sound waves",
+        "elastic medium",
+        "amplitude",
+        "frequency",
+        "Hertz",
+        "pitch",
+        "timbre",
+        "frequency sandwich",
+        "guitar string harmonics",
+        "combined waveforms",
+        "audible range",
+        "20 Hz to 20 kHz",
+        "multi-driver speaker",
+        "subwoofer"
+      ],
+      "depth": "foundational"
+    },
+    {
+      "citekey": "daveratHowEQLive2021",
+      "title": "How to EQ Live Sound Systems Tricks - Updated Version",
+      "channel": "Dave Rat",
+      "duration": "15:09",
+      "ytId": "KdnvhwWyPDs",
+      "domains": [
+        "Live Sound"
+      ],
+      "subdomains": [
+        "System Tuning",
+        "FOH Mixing",
+        "Monitor Engineering"
+      ],
+      "tags": [
+        "eq",
+        "feedback",
+        "troubleshooting"
+      ],
+      "concepts": [
+        "live sound EQ",
+        "channel EQ",
+        "system processor",
+        "system EQ",
+        "graphic EQ",
+        "1/3 octave EQ",
+        "parametric EQ",
+        "sonic consistency",
+        "headphone reference",
+        "Denon D2000",
+        "Shure SRH840",
+        "pink noise tuning",
+        "Smaart",
+        "monitor EQ",
+        "ringing out monitors",
+        "feedback control",
+        "over-EQ",
+        "graphic EQ bandwidth",
+        "cut and sweep",
+        "venue-system correction",
+        "three-EQ framework"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "dallastaylorSoundWickedBroadway2025",
+      "title": "Inside the Sound of Wicked on Broadway",
+      "channel": "Dallas Taylor",
+      "duration": "24:44",
+      "ytId": "I4uc1t6Ghiw",
+      "domains": [
+        "Theater Sound"
+      ],
+      "subdomains": [
+        "Musical Theater"
+      ],
+      "tags": [
+        "microphones",
+        "wireless",
+        "effects"
+      ],
+      "concepts": [
+        "Broadway musical mixing",
+        "Wicked",
+        "Meyer Sound",
+        "hidden PA",
+        "Tony Meola",
+        "foldback monitors",
+        "Countryman B6",
+        "lavalier microphone",
+        "wig-mounted mic",
+        "ear rig",
+        "glasses-mounted mic",
+        "redundant microphone",
+        "frequency coordination",
+        "PRG",
+        "orchestra miking",
+        "Aviom",
+        "personal monitor mix",
+        "Yamaha DM2000",
+        "Cadac J-Type",
+        "analog console",
+        "MIDI triggers",
+        "Kontakt sampler",
+        "VCA",
+        "Lexicon 960L",
+        "Lexicon PCM81",
+        "under-balcony delay",
+        "delay speaker",
+        "surround speaker",
+        "speed of sound",
+        "line array",
+        "fader riding",
+        "pitch shifter",
+        "voice processing",
+        "Gershwin Theatre"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "alphasoundDoublingSpeakers+3dB2023",
+      "title": "Is doubling speakers +3dB or +6dB? What's parallel and series wiring?",
+      "channel": "Alpha Sound",
+      "duration": "08:30",
+      "ytId": "Om_1IYsqPWg",
+      "domains": [
+        "Audio Theory",
+        "Live Sound"
+      ],
+      "subdomains": [
+        "Electroacoustics",
+        "Sound Reinforcement"
+      ],
+      "tags": [
+        "loudspeakers",
+        "decibels"
+      ],
+      "concepts": [
+        "parallel wiring",
+        "series wiring",
+        "speaker impedance",
+        "ohms",
+        "Ohm's law",
+        "voltage",
+        "current",
+        "wattage",
+        "amplifier load",
+        "2 ohm minimum load",
+        "16 ohm speaker",
+        "8 ohm load",
+        "32 ohm load",
+        "voltage divider",
+        "current divider",
+        "decibel doubling rule",
+        "+3 dB per doubling of energy",
+        "+6 dB per doubling of amplitude",
+        "acoustic power",
+        "electrical power",
+        "impedance curve",
+        "impedance sweep",
+        "tuning frequency",
+        "subwoofer port",
+        "driver and enclosure pairing",
+        "frequency-dependent impedance",
+        "real-time voltage measurement",
+        "real-time current measurement"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "michaelcurtisLearnSpeakerEQ2023",
+      "title": "Learn Speaker EQ Step by Step With NO GEAR in Open Sound Meter",
+      "channel": "Michael Curtis",
+      "duration": "15:34",
+      "ytId": "_EltTpCQxYI",
+      "domains": [
+        "Live Sound",
+        "Audio Theory"
+      ],
+      "subdomains": [
+        "System Tuning"
+      ],
+      "tags": [
+        "eq",
+        "phase"
+      ],
+      "concepts": [
+        "Open Sound Meter",
+        "math source",
+        "apply function",
+        "peak filter",
+        "Butterworth filter",
+        "all-pass filter",
+        "LTW logarithmic time window",
+        "transfer function setup",
+        "pink noise reference",
+        "analog loop",
+        "digital loop",
+        "coherence",
+        "transform mode",
+        "invert magnitude trace",
+        "target trace",
+        "1 point per octave smoothing",
+        "3 points per octave smoothing",
+        "6 points per octave smoothing",
+        "Pat Brown methodology",
+        "Fostex speaker",
+        "system tuning practice",
+        "EVO 8 interface",
+        "filter Q",
+        "1k tilt point"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "daveratLiveSoundMixing2021",
+      "title": "Live Sound Mixing Strategy - Updated",
+      "channel": "Dave Rat",
+      "duration": "15:55",
+      "ytId": "H5S34Hf95gI",
+      "domains": [
+        "Live Sound"
+      ],
+      "subdomains": [
+        "FOH Mixing"
+      ],
+      "tags": [
+        "signal-flow",
+        "effects",
+        "compression"
+      ],
+      "concepts": [
+        "rock show mixing",
+        "Red Hot Chili Peppers",
+        "subgroups",
+        "stereo subgroup",
+        "mono subgroup",
+        "instrument grouping",
+        "vocal subgroup",
+        "kick-snare group",
+        "tom group",
+        "guitar group",
+        "compression",
+        "compression ratio",
+        "compression threshold",
+        "compressor linking",
+        "stereo image preservation",
+        "automix",
+        "vocal threshold",
+        "VCA",
+        "pre-compressor VCA",
+        "post-compressor VCA",
+        "compression makeup gain",
+        "dynamic range control",
+        "effects routing",
+        "vocal effects routing",
+        "compressor metering"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "alphasoundLoudspeakerBasicsTen2022",
+      "title": "Loudspeaker basics in under ten minutes!",
+      "channel": "Alpha Sound",
+      "duration": "09:15",
+      "ytId": "YbYg-FmGoIg",
+      "domains": [
+        "Audio Theory",
+        "Live Sound"
+      ],
+      "subdomains": [
+        "Electroacoustics",
+        "Sound Reinforcement"
+      ],
+      "tags": [
+        "loudspeakers",
+        "subs"
+      ],
+      "concepts": [
+        "loudspeaker construction",
+        "voice coil",
+        "magnet",
+        "speaker cone",
+        "frequency",
+        "audible range",
+        "20 Hz",
+        "20 kHz",
+        "speaker enclosure",
+        "throat analogy",
+        "horn",
+        "subwoofer",
+        "tweeter",
+        "high frequency driver",
+        "low frequency driver",
+        "coaxial driver",
+        "horn-loaded woofer",
+        "NEXO"
+      ],
+      "depth": "foundational"
+    },
+    {
+      "citekey": "michaelcurtisMainSubCrossover2023",
+      "title": "Main to Sub Crossover Alignment Fundamentals With Open Sound Meter | Pt. 1",
+      "channel": "Michael Curtis",
+      "duration": "19:21",
+      "ytId": "CSXSglYpd1U",
+      "domains": [
+        "Live Sound",
+        "Audio Theory"
+      ],
+      "subdomains": [
+        "System Tuning",
+        "Acoustics"
+      ],
+      "tags": [
+        "phase",
+        "subs"
+      ],
+      "concepts": [
+        "main to sub crossover",
+        "crossover alignment",
+        "Open Sound Meter",
+        "OSM project file",
+        "tracebook.org",
+        "QSC KW153",
+        "QSC KS118",
+        "transfer function",
+        "magnitude response",
+        "phase response",
+        "10 dB window",
+        "combing zone",
+        "transition zone",
+        "isolation zone",
+        "Bob McCarthy three zones",
+        "phase slope",
+        "Butterworth filter",
+        "target trace",
+        "timing standard",
+        "delay alignment",
+        "math source",
+        "vector sum",
+        "Merlin van Bean phase wheel",
+        "45 degree phase summation",
+        "5 dB summation",
+        "Godzilla versus Bambi",
+        "speaker processing presets",
+        "crossover frequency",
+        "deep mode"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "nathanlivelyNobodyCaresShit2022",
+      "title": "Nobody Cares until the Shit Hits the Fan (Sean Sullivan)",
+      "channel": "Nathan Lively",
+      "duration": "57:45",
+      "ytId": "uhebex1DHU8",
+      "domains": [
+        "Professional Practice",
+        "Live Sound"
+      ],
+      "subdomains": [
+        "Career Development",
+        "FOH Mixing",
+        "System Tuning",
+        "Workflow"
+      ],
+      "tags": [
+        "troubleshooting",
+        "gain-structure",
+        "loudspeakers"
+      ],
+      "concepts": [
+        "backup plan",
+        "redundant console",
+        "Waves LV1 backup",
+        "Avid S6L",
+        "console crash recovery",
+        "Radiohead Coachella 2017",
+        "career advice",
+        "starting at a vendor",
+        "Eighth Day Sound",
+        "desire to be better",
+        "ten thousand hours",
+        "instant gratification",
+        "blaming the gear",
+        "managing transients",
+        "huge vs loud",
+        "hearing protection",
+        "in-ear monitors at FOH",
+        "cue bus alignment",
+        "OSHA exposure limits",
+        "virtual sound check",
+        "Pro Tools live recording",
+        "tuning to relevant material",
+        "L-Acoustics K1",
+        "d&b array processing",
+        "atmospheric conditions",
+        "vendor walled garden",
+        "sine sweep alignment",
+        "FFT coherence",
+        "sub array geometry",
+        "Avid tech support",
+        "Waves tech support",
+        "Met Gala mixing",
+        "professional reputation",
+        "gig prep at home",
+        "Genelec 8040 near fields",
+        "perspective on hard days"
+      ],
+      "depth": "reflective"
+    },
+    {
+      "citekey": "michaelcurtisPatBrownPaintbrushes2023",
+      "title": "Pat Brown and Paintbrushes | Understanding EQ and Facing the Phase Boogeyman",
+      "channel": "Michael Curtis",
+      "duration": "35:31",
+      "ytId": "6uE6YPcLKSk",
+      "domains": [
+        "Live Sound",
+        "Audio Theory"
+      ],
+      "subdomains": [
+        "System Tuning",
+        "Acoustics"
+      ],
+      "tags": [
+        "eq",
+        "phase",
+        "room-acoustics"
+      ],
+      "concepts": [
+        "system EQ",
+        "speaker EQ",
+        "system equalization vs speaker equalization",
+        "target trace",
+        "Michael Lawrence target curve",
+        "Pat Brown",
+        "SynAudCon",
+        "paintbrush EQ workflow",
+        "one octave banding",
+        "one-third octave banding",
+        "one-sixth octave banding",
+        "coherence",
+        "minimum phase EQ",
+        "IIR filter",
+        "FIR filter",
+        "Fulcrum Acoustics",
+        "Compass software",
+        "complementary EQ",
+        "phase shift",
+        "30 degrees phase shift",
+        "room modes",
+        "low-mid buildup",
+        "floor bounce",
+        "comb filter",
+        "9 ms reflection",
+        "SBIR",
+        "speaker boundary interference response",
+        "MAPP XT",
+        "subwoofer placement",
+        "speaker against wall",
+        "whack-a-mole EQ",
+        "timing issue vs tonality issue"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "danworrallPhascinatingPhactsPhase2025",
+      "title": "Phascinating Phacts about Phase",
+      "channel": "Dan Worrall",
+      "duration": "08:24",
+      "ytId": "nP74656yTi8",
+      "domains": [
+        "Audio Theory",
+        "Studio Production"
+      ],
+      "subdomains": [
+        "Acoustics",
+        "Recording"
+      ],
+      "tags": [
+        "microphones",
+        "phase"
+      ],
+      "concepts": [
+        "dynamic microphone",
+        "condenser microphone",
+        "velocity transducer",
+        "pressure transducer",
+        "microphone capsule",
+        "90 degree phase shift",
+        "180 degree phase shift",
+        "phase vs polarity",
+        "phase vs timing",
+        "rate of change",
+        "air pressure",
+        "air velocity",
+        "frequency-independent phase shift",
+        "Reaktor demo",
+        "sample-by-sample phase shift",
+        "scanner crossfade",
+        "barometer analogy",
+        "DPA microphones"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "daveratProAudioGain2024",
+      "title": "Pro Audio Gain Structure - Updated",
+      "channel": "Dave Rat",
+      "duration": "14:36",
+      "ytId": "kQQyq7xrNnA",
+      "domains": [
+        "Live Sound"
+      ],
+      "subdomains": [
+        "FOH Mixing"
+      ],
+      "tags": [
+        "gain-structure",
+        "signal-flow"
+      ],
+      "concepts": [
+        "gain structure",
+        "gain staging",
+        "noise floor",
+        "distortion",
+        "clip light",
+        "fader sensitivity",
+        "fader ergonomics",
+        "send hot turn down late",
+        "amp gain",
+        "input gain",
+        "output fader",
+        "console meter",
+        "dynamic signal",
+        "continuous signal",
+        "kick drum gain",
+        "fader visual layout",
+        "mic preamp",
+        "headroom"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "michaelcurtisShouldYouTune2022",
+      "title": "Should You Tune Your Live Sound System Flat?",
+      "channel": "Michael Curtis",
+      "duration": "18:53",
+      "ytId": "YvNdMtZZjP8",
+      "domains": [
+        "Live Sound",
+        "Audio Theory"
+      ],
+      "subdomains": [
+        "System Tuning",
+        "Acoustics"
+      ],
+      "tags": [
+        "eq",
+        "room-acoustics"
+      ],
+      "concepts": [
+        "system tuning",
+        "flat tuning",
+        "target trace",
+        "target curve",
+        "Smaart",
+        "Open Sound Meter",
+        "transfer function",
+        "magnitude response",
+        "Michael Lawrence target curve",
+        "L-Acoustics target curve",
+        "1k tilt point",
+        "low end bump",
+        "low mid build up",
+        "Sonarworks Reference ID",
+        "reference playlist",
+        "Phoenix Andrew Holmes",
+        "Vultures John Mayer",
+        "Get Lucky Daft Punk",
+        "SPAN Voxengo",
+        "Tonal Balance Control iZotope",
+        "pink noise",
+        "meter slope weighting",
+        "aux-fed subs",
+        "matrix bus",
+        "front-to-back tonal balance",
+        "psychoacoustic distance cues",
+        "low frequency steering",
+        "line array LF coupling"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "daveratDaveRatSound2024",
+      "title": "Sound Check Strategy - Updated",
+      "channel": "Dave Rat",
+      "duration": "08:43",
+      "ytId": "QP45728O1Jk",
+      "domains": [
+        "Live Sound",
+        "Professional Practice"
+      ],
+      "subdomains": [
+        "Soundcheck",
+        "FOH Mixing",
+        "Workflow"
+      ],
+      "tags": [
+        "feedback",
+        "troubleshooting"
+      ],
+      "concepts": [
+        "sound check",
+        "line check",
+        "active sound check",
+        "soundcheck scenarios",
+        "mic bleed",
+        "stage resonance",
+        "kick drum EQ in context",
+        "monitor engineering",
+        "feedback stability check",
+        "headroom check",
+        "broken channel handling",
+        "artist stage time",
+        "EQ in context",
+        "six scenarios framework"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "alphasoundSoundSystemTuning2019",
+      "title": "Sound System Tuning By Ear",
+      "channel": "Alpha Sound",
+      "duration": "15:01",
+      "ytId": "1IbvhgfGEhU",
+      "domains": [
+        "Live Sound",
+        "Professional Practice"
+      ],
+      "subdomains": [
+        "System Tuning",
+        "FOH Mixing",
+        "Workflow"
+      ],
+      "tags": [
+        "ear-training",
+        "eq"
+      ],
+      "concepts": [
+        "system tuning",
+        "by-ear tuning",
+        "flat tuning",
+        "Fletcher-Munson curves",
+        "default channel EQ",
+        "ear training",
+        "feedback avoidance",
+        "pink noise",
+        "measurement microphone",
+        "Smaart",
+        "vision vs skill framework",
+        "replication as mastery",
+        "Nexo GEO S",
+        "Yamaha digital console",
+        "Salem Art Fair",
+        "Dream Is Collapsing",
+        "sine sweep"
+      ],
+      "depth": "reflective"
+    },
+    {
+      "citekey": "daveratSoundSystemsAre2024",
+      "title": "Sound Systems are Completely Unnatural",
+      "channel": "Dave Rat",
+      "duration": "08:07",
+      "ytId": "MlqJ5H8cA3M",
+      "domains": [
+        "Audio Theory",
+        "Live Sound"
+      ],
+      "subdomains": [
+        "Acoustics",
+        "System Design"
+      ],
+      "tags": [
+        "loudspeakers",
+        "decorrelation",
+        "comb-filtering"
+      ],
+      "concepts": [
+        "sound reinforcement physics",
+        "comb filtering",
+        "phase interference",
+        "correlated sources",
+        "uncorrelated sources",
+        "decorrelation",
+        "polarity reversal",
+        "line array",
+        "cardioid sub array",
+        "controlled cancellation",
+        "controlled correlation",
+        "pink noise demonstration",
+        "stereo PA",
+        "dual mic technique",
+        "system measurement",
+        "unnatural sound radiation"
+      ],
+      "depth": "foundational"
+    },
+    {
+      "citekey": "nathanlivelySubwooferSaturdayLearn2022",
+      "title": "Subwoofer Saturday - Learn the Basics of Subwoofer Arrays in Live Sound",
+      "channel": "Nathan Lively",
+      "duration": "1:56:02",
+      "ytId": "mW2FtrYBojI",
+      "domains": [
+        "Live Sound"
+      ],
+      "subdomains": [
+        "System Design",
+        "System Tuning"
+      ],
+      "tags": [
+        "subs",
+        "phase",
+        "line-array"
+      ],
+      "concepts": [
+        "subwoofer array design",
+        "left hand rule",
+        "beam narrowing",
+        "directional subwoofer arrays",
+        "cardioid sub array",
+        "hypercardioid sub array",
+        "end-fire array",
+        "gradient array",
+        "broadside array",
+        "center cluster vs left-right subs",
+        "ground stacked subs",
+        "flown subs",
+        "delay alignment",
+        "polarity inversion",
+        "two principles of alignment: preparation and delay",
+        "every battle is won before it is fought",
+        "main to sub crossover",
+        "10 dB window",
+        "combing zone",
+        "isolation zone",
+        "coupled vs uncoupled subwoofers",
+        "air absorption",
+        "absorption coefficient",
+        "subwoofer array designer",
+        "Sub Aligner",
+        "Bob McCarthy",
+        "Mauricio Ramirez",
+        "Merlin van Veen",
+        "in-fire array",
+        "high pass filter for subs",
+        "all-pass filter widening",
+        "aux-fed subs"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "alphasoundSubwoofersAirItself2024",
+      "title": "Subwoofers (and the air itself!) are NOT in-phase with your mixer and amplifier.",
+      "channel": "Alpha Sound",
+      "duration": "30:10",
+      "ytId": "Qg3x27Y83w0",
+      "domains": [
+        "Audio Theory",
+        "Live Sound"
+      ],
+      "subdomains": [
+        "Acoustics",
+        "Electroacoustics",
+        "System Tuning"
+      ],
+      "tags": [
+        "phase",
+        "subs",
+        "microphones"
+      ],
+      "concepts": [
+        "AC coupling",
+        "DC coupling",
+        "high pass filter phase shift",
+        "infinite baffle",
+        "free air measurement",
+        "laser displacement measurement",
+        "voltage reading",
+        "current reading",
+        "impedance spike",
+        "Thiele-Small parameters",
+        "Qts",
+        "driver resonance frequency",
+        "back EMF",
+        "phase graph interpretation",
+        "FFT phase response",
+        "transfer function",
+        "comparative analysis",
+        "polarity test",
+        "displacement velocity acceleration",
+        "first derivative",
+        "second derivative",
+        "180 degree phase shift",
+        "90 degree phase shift",
+        "pressure transducer",
+        "condenser microphone polarity",
+        "slow motion driver footage",
+        "LED voltage indicator",
+        "B&C Speakers",
+        "Nexo R&D",
+        "Yamaha Rio",
+        "Signal Scope"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "daveratMechanicsAudioBalanced2024",
+      "title": "The Mechanics Of Audio Balanced Lines Explained",
+      "channel": "Dave Rat",
+      "duration": "05:50",
+      "ytId": "I4cUl3YW128",
+      "domains": [
+        "Audio Theory",
+        "Live Sound"
+      ],
+      "subdomains": [
+        "Signal Processing",
+        "Sound Reinforcement"
+      ],
+      "tags": [
+        "signal-flow",
+        "microphones"
+      ],
+      "concepts": [
+        "balanced line",
+        "unbalanced line",
+        "pin 2 (hot conductor)",
+        "pin 3 (return conductor)",
+        "ground as reference vs. ground as conductor",
+        "microphone coil voltage generation",
+        "equal-and-opposite voltages",
+        "subtractive sum at preamp input",
+        "preamp polarity inversion",
+        "differential signaling",
+        "common-mode noise",
+        "common-mode rejection",
+        "noise induction onto a cable run",
+        "XLR connector pinout",
+        "mechanical model of a circuit",
+        "scope visualization"
+      ],
+      "depth": "foundational"
+    },
+    {
+      "citekey": "alphasoundTruthSoundEngineering2019",
+      "title": "The Truth About Sound Engineering",
+      "channel": "Alpha Sound",
+      "duration": "06:48",
+      "ytId": "Oho-4_PhjjM",
+      "domains": [
+        "Professional Practice",
+        "Live Sound"
+      ],
+      "subdomains": [
+        "Communication"
+      ],
+      "tags": [
+        "aesthetics"
+      ],
+      "concepts": [
+        "sound engineering identity",
+        "amplification aesthetics",
+        "classical music amplification",
+        "photography analogy",
+        "cinematography analogy",
+        "minimalist amplification",
+        "faithful reproduction",
+        "sound design philosophy",
+        "kick drum miking",
+        "subwoofer aesthetic",
+        "engineer credit",
+        "language of audio",
+        "medium as expression"
+      ],
+      "depth": "reflective"
+    },
+    {
+      "citekey": "alphasoundThingsYouDidnt2022",
+      "title": "Things you didn't realize about bass... until now.",
+      "channel": "Alpha Sound",
+      "duration": "19:49",
+      "ytId": "23q3zoKiuGs",
+      "domains": [
+        "Audio Theory",
+        "Live Sound"
+      ],
+      "subdomains": [
+        "Electroacoustics",
+        "System Design"
+      ],
+      "tags": [
+        "loudspeakers",
+        "subs",
+        "phase"
+      ],
+      "concepts": [
+        "vented enclosure",
+        "ported enclosure",
+        "bass reflex",
+        "port tuning frequency",
+        "phase shift",
+        "cabinet resonance",
+        "port turbulence",
+        "aerodynamic port",
+        "nozzle port",
+        "cardioid sub array",
+        "half wavelength spacing",
+        "quarter wavelength spacing",
+        "polarity reverse",
+        "digital delay",
+        "frequency-dependent delay",
+        "harmonic phase shift",
+        "V-shaped slotted port",
+        "two-driver subwoofer",
+        "binaural microphone",
+        "phase measurement",
+        "slow-motion port airflow",
+        "NEXO"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "dallastaylorWhatSNLBand2025",
+      "title": "What the SNL band hears",
+      "channel": "Dallas Taylor",
+      "duration": "05:36",
+      "ytId": "ylj_MkqCFAw",
+      "domains": [
+        "Broadcast",
+        "Live Sound"
+      ],
+      "subdomains": [
+        "Live Broadcast",
+        "Monitor Engineering"
+      ],
+      "tags": [
+        "signal-flow",
+        "wireless"
+      ],
+      "concepts": [
+        "Saturday Night Live",
+        "SNL band",
+        "monitor mixing",
+        "Alex Raytses",
+        "Chris Costello",
+        "in-ear monitors",
+        "IEMs",
+        "wedges",
+        "Dante controller",
+        "personal monitor mix",
+        "SSL Live 500",
+        "256 inputs",
+        "redundancy mix",
+        "backup signal path",
+        "VCA layout",
+        "show elements",
+        "applause mics",
+        "boom mics",
+        "guest band monitor engineer",
+        "Bad Bunny",
+        "on-air mix priority",
+        "foldback for production",
+        "house band",
+        "guest act"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "nathanlivelyWhyEQNot2024",
+      "title": "Why EQ Is Not the Answer to Microphone Feedback with Jason Romney",
+      "channel": "Nathan Lively",
+      "duration": "01:03:01",
+      "ytId": "7uDQbjXdJPo",
+      "domains": [
+        "Live Sound",
+        "Audio Theory"
+      ],
+      "subdomains": [
+        "Sound Reinforcement",
+        "FOH Mixing",
+        "Monitor Engineering",
+        "Acoustics"
+      ],
+      "tags": [
+        "feedback",
+        "microphones",
+        "gain-structure"
+      ],
+      "concepts": [
+        "microphone feedback",
+        "gain before feedback",
+        "acoustical gain",
+        "potential acoustical gain",
+        "EQ as last resort",
+        "graphic EQ limitations",
+        "talker distance",
+        "microphone distance",
+        "loudspeaker distance",
+        "listener distance",
+        "D0 D1 D2 DS",
+        "Sound System Design Reference Manual",
+        "George Augspurger",
+        "John Eargle",
+        "JBL reference manual",
+        "feedback as geometry",
+        "zero degree phase summation",
+        "6 dB summation",
+        "microphone directivity",
+        "cardioid pattern",
+        "hypercardioid pattern",
+        "supercardioid pattern",
+        "omnidirectional pattern",
+        "polar pattern node",
+        "loudspeaker directivity",
+        "40 degree loudspeaker",
+        "line array directivity",
+        "subwoofer directivity",
+        "monitor wedge placement",
+        "mic cupping",
+        "polarity inversion feedback",
+        "decorrelation",
+        "reverb decorrelation",
+        "feedback exterminator",
+        "automatic EQ",
+        "room resonance",
+        "standing waves",
+        "multiple wedges",
+        "comb filtering between wedges",
+        "high pass filter for monitors",
+        "lavalier microphone placement",
+        "headworn microphone",
+        "forehead microphone placement",
+        "anechoic chamber test",
+        "Live Sound Summit",
+        "digitalsoundandmusic.com"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "nathanlivelyWhyEveryLive2024",
+      "title": "Why Every Live Sound Engineer Should Embrace the Humble Checklist",
+      "channel": "Nathan Lively",
+      "duration": "24:30",
+      "ytId": "JM6o-SNQRuE",
+      "domains": [
+        "Professional Practice",
+        "Live Sound"
+      ],
+      "subdomains": [
+        "Workflow",
+        "Career Development",
+        "Soundcheck"
+      ],
+      "tags": [
+        "troubleshooting"
+      ],
+      "concepts": [
+        "checklists",
+        "Atul Gawande",
+        "Checklist Manifesto",
+        "complexity in live production",
+        "specialization",
+        "A1 audio engineer",
+        "wired backup microphone",
+        "single points of failure",
+        "heroes vs systems",
+        "process design",
+        "cross-department communication",
+        "surgical checklists",
+        "aviation checklists",
+        "construction checklists",
+        "working memory",
+        "five to nine items",
+        "outcome-focused checklists",
+        "pre-show audio checklist",
+        "version control",
+        "GitHub",
+        "Workflowy",
+        "collaborative task management",
+        "learning loops",
+        "post-show learning",
+        "project visibility",
+        "show retrospective"
+      ],
+      "depth": "reflective"
+    },
+    {
+      "citekey": "daveratWhyGroundStacked2024",
+      "title": "Why Ground Stacked PA Sucks",
+      "channel": "Dave Rat",
+      "duration": "06:31",
+      "ytId": "zPtM1OWsO-4",
+      "domains": [
+        "Live Sound",
+        "Audio Theory"
+      ],
+      "subdomains": [
+        "System Design",
+        "Acoustics"
+      ],
+      "tags": [
+        "loudspeakers",
+        "room-acoustics"
+      ],
+      "concepts": [
+        "ground-stacked PA",
+        "flown PA",
+        "near/far distance ratio",
+        "audience blocking",
+        "thermal layer",
+        "temperature refraction",
+        "atmospheric refraction",
+        "body heat from audience",
+        "pink noise demonstration",
+        "candle simulation",
+        "angle of incidence",
+        "skipping stone analogy",
+        "outdoor venue acoustics",
+        "sun-heated ground refraction",
+        "delay clusters",
+        "mic switcher A/B comparison",
+        "speaker placement geometry",
+        "coverage uniformity"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "wiredWhyMusicFestivals2023",
+      "title": "Why Music Festivals Sound Better Than Ever | WIRED",
+      "channel": "WIRED",
+      "duration": "05:58",
+      "ytId": "8c-gD4mwI8A",
+      "domains": [
+        "Live Sound"
+      ],
+      "subdomains": [
+        "Festival Production",
+        "System Design"
+      ],
+      "tags": [
+        "loudspeakers",
+        "line-array",
+        "comb-filtering"
+      ],
+      "concepts": [
+        "line array",
+        "point source speaker",
+        "vertical line array",
+        "music festival",
+        "Coachella",
+        "comb filtering",
+        "horizontal coverage",
+        "vertical coverage",
+        "L-Acoustics aiming software",
+        "rigging",
+        "festival stage design",
+        "stage isolation",
+        "laser rangefinders",
+        "3D mapping",
+        "V-DOSC",
+        "K1 system",
+        "Rat Trap",
+        "invisible sound system",
+        "Dave Rat"
+      ],
+      "depth": "foundational"
+    },
+    {
+      "citekey": "alphasoundWhyPutALL2021",
+      "title": "Why put ALL your subwoofers on one side??",
+      "channel": "Alpha Sound",
+      "duration": "03:33",
+      "ytId": "vFliN9F_MNY",
+      "domains": [
+        "Live Sound"
+      ],
+      "subdomains": [
+        "System Design",
+        "System Tuning"
+      ],
+      "tags": [
+        "subs",
+        "comb-filtering"
+      ],
+      "concepts": [
+        "mono sub array",
+        "stereo subwoofer configuration",
+        "all subs one side",
+        "comb filtering",
+        "power alley",
+        "per-frequency vs broadband prediction",
+        "uniform frequency response",
+        "level variance across audience",
+        "9 dB front-row side-to-side difference",
+        "3 dB midway difference",
+        "mix for center of venue",
+        "spatial ambiguity of low frequencies",
+        "psychoacoustic binding of bass to mid-range harmonics",
+        "stage banner sightline constraint",
+        "center cluster ideal placement",
+        "outdoor venue subwoofer placement",
+        "98% coverage rationale"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "danworrallWTFDecibel2024",
+      "title": "WTF is a Decibel?",
+      "channel": "Dan Worrall",
+      "duration": "05:04",
+      "ytId": "lomuVw49GM0",
+      "domains": [
+        "Audio Theory"
+      ],
+      "subdomains": [
+        "Fundamentals"
+      ],
+      "tags": [
+        "gain-structure",
+        "decibels"
+      ],
+      "concepts": [
+        "decibel",
+        "logarithmic scale",
+        "amplitude ratio",
+        "pitch analogy",
+        "octave doubling",
+        "dBFS",
+        "dBu",
+        "dBV",
+        "dB SPL",
+        "dynamic range",
+        "16-bit audio",
+        "24-bit audio",
+        "floating point audio",
+        "null testing",
+        "noise floor",
+        "dither",
+        "reference level"
+      ],
+      "depth": "foundational"
+    }
+  ],
+  "subdomainOwner": {
+    "FOH Mixing": "Live Sound",
+    "Monitor Engineering": "Live Sound",
+    "System Tuning": "Live Sound",
+    "System Design": "Live Sound",
+    "Sound Reinforcement": "Live Sound",
+    "Festival Production": "Live Sound",
+    "Soundcheck": "Live Sound",
+    "Recording": "Studio Production",
+    "Mixing": "Studio Production",
+    "Mastering": "Studio Production",
+    "Sports Broadcast": "Broadcast",
+    "News Broadcast": "Broadcast",
+    "Live Broadcast": "Broadcast",
+    "Musical Theater": "Theater Sound",
+    "Immersive Theater": "Theater Sound",
+    "Game Audio": "Sound Design",
+    "Film Audio": "Sound Design",
+    "Immersive Audio": "Sound Design",
+    "Acoustics": "Audio Theory",
+    "Psychoacoustics": "Audio Theory",
+    "Signal Processing": "Audio Theory",
+    "Electroacoustics": "Audio Theory",
+    "Fundamentals": "Audio Theory",
+    "Filter Theory": "Audio Theory",
+    "Career Development": "Professional Practice",
+    "Communication": "Professional Practice",
+    "Pedagogy": "Professional Practice",
+    "Workflow": "Professional Practice"
+  }
+}

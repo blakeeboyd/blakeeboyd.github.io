@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{{TITLE}} — video breakdown for audio engineering coursework.">
+    <title>{{TITLE}} — YouTube University — Blake Boyd</title>
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake E. Boyd">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+    <link rel="stylesheet" href="../../../css/base.css">
+    <link rel="stylesheet" href="../../../css/layout.css">
+    <link rel="stylesheet" href="../../../css/components.css">
+    <link rel="stylesheet" href="../../../css/projects/youtubeUniversity.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400..700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+    <script src="../../../js/theme.js"></script>
+    <script src="../../../js/nav-component.js" defer></script>
+</head>
+<body>
+    <div class="container wide">
+        <site-nav base="../../../"></site-nav>
+
+        <main id="main-content" class="yt-video-page">
+            <nav class="yt-breadcrumb" aria-label="Breadcrumb">
+                <a href="../">YouTube University</a>
+                <span aria-hidden="true">›</span>
+                <span class="yt-breadcrumb-current">{{TITLE}}</span>
+            </nav>
+
+            <section class="yt-video-hero">
+                <div class="yt-embed">
+                    <iframe
+                        id="yt-player"
+                        src="https://www.youtube-nocookie.com/embed/{{YT_ID}}?enablejsapi=1"
+                        title="{{TITLE}}"
+                        frameborder="0"
+                        allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allowfullscreen></iframe>
+                </div>
+
+                <header class="yt-video-header">
+                    <h1>{{TITLE}}</h1>
+                    <p class="yt-video-meta">
+                        <span class="yt-channel">{{CHANNEL}}</span>
+                        <span class="yt-sep" aria-hidden="true">·</span>
+                        <span class="yt-duration">{{DURATION}}</span>
+                        <span class="yt-sep" aria-hidden="true">·</span>
+                        <span class="yt-depth yt-depth-{{DEPTH_SLUG}}">{{DEPTH}}</span>
+                    </p>
+                    <p class="yt-domain-trail">{{DOMAIN_TRAIL}}</p>
+                    <p class="yt-tags-row">{{TAGS_HTML}}</p>
+                    <p class="yt-watch-on-yt">
+                        <a href="{{YT_URL}}" target="_blank" rel="noopener">Watch on YouTube ↗</a>
+                    </p>
+                </header>
+            </section>
+
+            <section class="yt-section">
+                <h2>Takeaway</h2>
+                <div class="yt-prose">
+                    {{TAKEAWAY_HTML}}
+                </div>
+            </section>
+{{BEFORE_HTML}}
+{{WATCH_FOR_HTML}}
+            <section class="yt-section">
+                <h2>Questions</h2>
+                <ol class="yt-questions">
+                    {{QUESTIONS_HTML}}
+                </ol>
+            </section>
+
+            <section class="yt-section">
+                <h2>Related videos</h2>
+                <div class="yt-related-grid">
+                    {{RELATED_HTML}}
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; <span class="footer-year"></span> Blake Boyd</p>
+        </footer>
+    </div>
+    <script>
+        const yearEl = document.querySelector('.footer-year');
+        if (yearEl) yearEl.textContent = new Date().getFullYear();
+    </script>
+    <script>
+        // YouTube IFrame API: seek the embedded player when a timestamp is clicked.
+        // The href is kept as a fallback so right-click/middle-click still work.
+        // The intercept always preventDefault()s a left-click on a watch-for link
+        // so the target="_blank" never fires unexpectedly. If the player API hasn't
+        // finished loading yet, the click is queued and applied once ready.
+        let player = null;
+        let playerReady = false;
+        let pendingSeek = null;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('yt-player', {
+                events: {
+                    onReady: () => {
+                        playerReady = true;
+                        if (pendingSeek != null) {
+                            applySeek(pendingSeek);
+                            pendingSeek = null;
+                        }
+                    },
+                },
+            });
+        }
+        function applySeek(seconds) {
+            if (!player || typeof player.seekTo !== 'function') return;
+            player.seekTo(seconds, true);
+            if (typeof player.playVideo === 'function') player.playVideo();
+            const iframe = document.getElementById('yt-player');
+            const rect = iframe.getBoundingClientRect();
+            if (rect.top < 0 || rect.bottom > window.innerHeight) {
+                iframe.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('.yt-watch-for-time');
+            if (!link) return;
+            // Allow modifier-clicks (Cmd/Ctrl/middle-click) to open in a new tab as usual
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+            const seconds = Number(link.dataset.seconds);
+            if (!Number.isFinite(seconds)) return;
+            e.preventDefault();
+            if (playerReady) {
+                applySeek(seconds);
+            } else {
+                // Queue, then fall back to the href if the player never initializes
+                pendingSeek = seconds;
+                setTimeout(() => {
+                    if (!playerReady && pendingSeek === seconds) {
+                        pendingSeek = null;
+                        window.location.href = link.href;
+                    }
+                }, 2000);
+            }
+        });
+        // Load the IFrame API. The global onYouTubeIframeAPIReady is called when ready.
+        (function loadApi() {
+            const tag = document.createElement('script');
+            tag.src = 'https://www.youtube.com/iframe_api';
+            document.head.appendChild(tag);
+        })();
+    </script>
+</body>
+</html>
