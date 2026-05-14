@@ -4,3 +4,9 @@ audio/stadium-rock/
 # Claude Code local settings & session artifacts
 .claude/
 *-compacted.md
+
+# YouTube University build inputs — symlinks into the Obsidian vault.
+# These are local-only; GitHub Pages can't resolve them and the build
+# script consumes them to generate the committed videos/ and courses/ output.
+projects/youtube-university/source
+projects/youtube-university/courses-source
