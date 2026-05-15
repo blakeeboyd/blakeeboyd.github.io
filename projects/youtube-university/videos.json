@@ -1,6 +1,59 @@
 {
   "videos": [
     {
+      "citekey": "silvercreekaudio12MonthsGigs2025",
+      "title": "12 Months of Gigs Taught Me This About PA Setup",
+      "channel": "Silver Creek Audio",
+      "duration": "~15:30",
+      "ytId": "wKj7KFNEsUE",
+      "domains": [
+        "Live Sound"
+      ],
+      "subdomains": [
+        "System Design",
+        "Sound Reinforcement",
+        "Monitor Engineering",
+        "Soundcheck"
+      ],
+      "tags": [
+        "loudspeakers",
+        "microphones",
+        "feedback"
+      ],
+      "concepts": [
+        "PA system evolution",
+        "gear upgrades",
+        "QSC K12.2",
+        "EV ZLX-12P",
+        "powered loudspeakers",
+        "speaker low-end character",
+        "rental availability",
+        "Behringer X32",
+        "Behringer Wing",
+        "flex stands",
+        "speaker stands",
+        "PowerCon distribution",
+        "quad box",
+        "Triad-Orbit adapters",
+        "wireless microphones",
+        "floor monitor",
+        "single monitor for solo artists",
+        "front fill",
+        "point source speaker",
+        "DIY IEC cables",
+        "stage lighting",
+        "PAR cans",
+        "Chauvet quad bars",
+        "Wolfmix lighting controller",
+        "Nanlite Forza",
+        "ringing out monitors",
+        "Sonible Sound Bullet",
+        "monitor mix levels",
+        "Max and Heather Stalling"
+      ],
+      "depth": "reflective"
+    },
+    {
       "citekey": "audiouniversitySIMPLERuleChoosing2020",
       "title": "A SIMPLE Rule For Choosing An Amplifier | Ohms, Watts, & More",
       "channel": "Audio University",
@@ -1887,6 +1940,51 @@
         "phase measurement",
         "slow-motion port airflow",
         "NEXO"
+      ],
+      "depth": "applied"
+    },
+    {
+      "citekey": "silvercreekaudioWhatRunningSmall2025",
+      "title": "What Running a Small Live Sound Company Looks Like",
+      "channel": "Silver Creek Audio",
+      "duration": "~10:30",
+      "ytId": "bj8ZdgWhFME",
+      "domains": [
+        "Live Sound"
+      ],
+      "subdomains": [
+        "Sound Reinforcement",
+        "Soundcheck",
+        "FOH Mixing"
+      ],
+      "tags": [
+        "microphones",
+        "signal-flow",
+        "gain-structure"
+      ],
+      "concepts": [
+        "small live sound company",
+        "singer-songwriter production",
+        "Behringer X32",
+        "PA system setup",
+        "load-in",
+        "van load-out",
+        "speaker poles",
+        "tilter stands",
+        "mic check",
+        "soundcheck",
+        "monitor wedges",
+        "DI box",
+        "phantom power",
+        "rough mix",
+        "FOH mixing",
+        "Bri Bagwell",
+        "Paul Eason",
+        "DFW music scene",
+        "acoustic guitar amplification",
+        "wedge monitor mix",
+        "redundant gear",
+        "one-person crew"
       ],
       "depth": "applied"
     },
