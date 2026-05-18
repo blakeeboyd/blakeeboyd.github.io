@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Subnetting: What do the IP Address, Subnet Mask, and Gateway do? — video breakdown for audio engineering coursework.">
+    <title>Subnetting: What do the IP Address, Subnet Mask, and Gateway do? — YouTube University — Blake Boyd</title>
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake E. Boyd">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+    <link rel="stylesheet" href="../../../css/base.css">
+    <link rel="stylesheet" href="../../../css/layout.css">
+    <link rel="stylesheet" href="../../../css/components.css">
+    <link rel="stylesheet" href="../../../css/projects/youtubeUniversity.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400..700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+    <script src="../../../js/theme.js"></script>
+    <script src="../../../js/nav-component.js" defer></script>
+</head>
+<body>
+    <div class="container wide">
+        <site-nav base="../../../"></site-nav>
+
+        <main id="main-content" class="yt-video-page">
+            <nav class="yt-breadcrumb" aria-label="Breadcrumb">
+                <a href="../">YouTube University</a>
+                <span aria-hidden="true">›</span>
+                <span class="yt-breadcrumb-current">Subnetting: What do the IP Address, Subnet Mask, and Gateway do?</span>
+            </nav>
+
+            <section class="yt-video-hero">
+                <div class="yt-embed">
+                    <iframe
+                        id="yt-player"
+                        src="https://www.youtube-nocookie.com/embed/RfL78xzN8zc?enablejsapi=1"
+                        title="Subnetting: What do the IP Address, Subnet Mask, and Gateway do?"
+                        frameborder="0"
+                        allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allowfullscreen></iframe>
+                </div>
+
+                <header class="yt-video-header">
+                    <h1>Subnetting: What do the IP Address, Subnet Mask, and Gateway do?</h1>
+                    <p class="yt-video-meta">
+                        <a class="yt-channel yt-channel-link" href="../#channel=Audinate&view=channel">Audinate</a>
+                        <span class="yt-sep" aria-hidden="true">·</span>
+                        <span class="yt-duration">04:48</span>
+                        <span class="yt-sep" aria-hidden="true">·</span>
+                        <span class="yt-depth yt-depth-foundational">Foundational</span>
+                    </p>
+                    <p class="yt-domain-trail"><a class="yt-domain-link" href="../#domain=Live%20Sound">Live Sound</a> / System Design</p>
+                    <p class="yt-tags-row"><a class="yt-tag yt-tag-link" href="../#tag=networking">networking</a></p>
+                    <p class="yt-watch-on-yt">
+                        <a href="https://www.youtube.com/watch?v=RfL78xzN8zc" target="_blank" rel="noopener">Watch on YouTube ↗</a>
+                    </p>
+                </header>
+            </section>
+
+            <section class="yt-section">
+                <h2>Takeaway</h2>
+                <div class="yt-prose">
+                    <p>Audinate&#39;s short explainer covers the three settings every networked-audio device asks for: IP address, subnet mask, and gateway. The framing is a phone call. Every device gets a phone number (the IP address). The subnet mask defines who counts as being on the same exchange, the local area network. The gateway is the operator&#39;s phone number: the address you contact when the destination is outside your exchange. The video distinguishes a network switch (transparent infrastructure, like a phone-company switching station that you do not dial) from a router (an active participant that translates between two networks for the duration of the call). It closes with the routing decision a network device makes: if the destination is in your subnet, contact it directly. If not, hand the request to the gateway and let the router open the next leg.</p>
+                </div>
+            </section>
+
+            <section class="yt-section">
+                <h2>Before you watch</h2>
+                <div class="yt-before-grid">
+                <div class="yt-before-group">
+                    <h3 class="yt-before-heading">Prerequisites</h3>
+                    <ul class="yt-before-list">
+                        <li>General awareness that networked audio (Dante, AVB) exists in modern production</li>
+                        <li>Comfortable with the idea that devices on a network need unique addresses</li>
+                        <li>No prior IT or networking experience required</li>
+                    </ul>
+                </div>
+                <div class="yt-before-group">
+                    <h3 class="yt-before-heading">By the end you'll be able to</h3>
+                    <ul class="yt-before-list">
+                        <li>Explain what an IP address, subnet mask, and gateway each contribute to a network configuration</li>
+                        <li>Describe how a 255.255.255.0 mask defines which addresses count as local</li>
+                        <li>Distinguish a network switch (transparent) from a router (active participant) by what each does to a signal</li>
+                        <li>Apply the routing decision a network device makes: in-subnet means direct contact, out-of-subnet means through the gateway</li>
+                    </ul>
+                </div>
+                </div>
+            </section>
+
+            <section class="yt-section">
+                <h2>Watch for</h2>
+                <ul class="yt-watch-for-list">
+                    <li><a class="yt-watch-for-time" href="https://www.youtube.com/watch?v=RfL78xzN8zc&amp;t=33" data-seconds="33" target="_blank" rel="noopener">0:33</a> <span class="yt-watch-for-text">the network switch as transparent infrastructure. Like a phone-company switching station, it carries the connection without being addressed</span></li>
+                    <li><a class="yt-watch-for-time" href="https://www.youtube.com/watch?v=RfL78xzN8zc&amp;t=99" data-seconds="99" target="_blank" rel="noopener">1:39</a> <span class="yt-watch-for-text">the router as active participant. It continually translates between the two networks it connects, unlike the operator who connects two lines and steps off the call</span></li>
+                    <li><a class="yt-watch-for-time" href="https://www.youtube.com/watch?v=RfL78xzN8zc&amp;t=232" data-seconds="232" target="_blank" rel="noopener">3:52</a> <span class="yt-watch-for-text">the mask rule. 255 in a field means the destination address must match in this field. 0 means any value still counts as local. The matching range is the subnet</span></li>
+                </ul>
+            </section>
+            <section class="yt-section">
+                <h2>Questions</h2>
+                <ol class="yt-questions">
+                    <li><div class="yt-q-row"><span class="yt-q-num">1.</span><span class="yt-q-text">Explain in your own words what each of the three settings (IP address, subnet mask, gateway) contributes to a network configuration, using the phone-call analogy the video sets up.</span><span class="yt-bloom">Understand</span></div><details class="yt-course-answer yt-question-answer"><summary aria-label="Show answer"></summary><div class="yt-prose"><p>The IP address is the number that identifies your device on the network, like a phone number identifies a specific line. The subnet mask defines which other addresses count as being on the same local network: it is the rule that says which digits of a phone number have to match for the call to count as local. The gateway is the address you contact to reach a device outside your local network, like the operator&#39;s number you dial to place an outside call. Together, the three settings tell your device its identity, the boundary of its local neighborhood, and where to route anything beyond that boundary.</p></div></details></li>
+            <li><div class="yt-q-row"><span class="yt-q-num">2.</span><span class="yt-q-text">The video draws an arrowhead from the laptop to the destination unit, but no arrowhead on the network switch in between. Why is the switch drawn without an arrowhead, while the router later in the video is drawn as an active participant in the connection?</span><span class="yt-bloom">Understand</span></div><details class="yt-course-answer yt-question-answer"><summary aria-label="Show answer"></summary><div class="yt-prose"><p>The network switch is drawn without an arrowhead because it does not participate in the conversation. It receives a packet on one port and sends it out another port toward the destination, but it has no IP address that the laptop or destination addresses directly. It is transparent infrastructure, like the phone company&#39;s switching stations that route a call without anyone needing to know they exist. The router is different. It has an IP address (the gateway address), and the sending device addresses it explicitly when the destination is outside the subnet. It translates between the two networks for the whole connection rather than handing off and stepping aside. The arrowhead in the diagram represents addressed traffic, and only the router is addressed.</p></div></details></li>
+            <li><div class="yt-q-row"><span class="yt-q-num">3.</span><span class="yt-q-text">A device on your network has IP address 192.168.10.11 with subnet mask 255.255.255.0. Apply the mask rule (255 means must match, 0 means any value) to decide which of these destinations are reachable directly and which require the gateway: 192.168.10.50, 192.168.11.10, 192.168.10.255, 10.0.0.5.</span><span class="yt-bloom">Apply</span></div><details class="yt-course-answer yt-question-answer"><summary aria-label="Show answer"></summary><div class="yt-prose"><p>With mask 255.255.255.0, the first three octets must match the device&#39;s IP (192.168.10) for the destination to be in the same subnet. The fourth octet can be any value (0-255). 192.168.10.50: first three octets match, in subnet, contact directly. 192.168.11.10: third octet differs (11 vs 10), not in subnet, send through the gateway. 192.168.10.255: first three octets match, in subnet, contact directly. (.255 is the broadcast address for this subnet, so the packet reaches all hosts on the LAN rather than one specific device, but the routing decision is still direct.) 10.0.0.5: first octet differs (10 vs 192), not in subnet, send through the gateway.</p></div></details></li>
+            <li><div class="yt-q-row"><span class="yt-q-num">4.</span><span class="yt-q-text">Walk through the phone-call analogy in full. Identify what each element stands for (the local call, dialing 0, the switching station, the operator&#39;s active participation) and where the analogy starts to break down compared to how an actual IP router operates.</span><span class="yt-bloom">Analyze</span></div><details class="yt-course-answer yt-question-answer"><summary aria-label="Show answer"></summary><div class="yt-prose"><p>The local call stands for communication between two devices on the same LAN, reachable by IP without any intermediary. Dialing 0 stands for sending a packet to the gateway address when the destination is outside the LAN. The switching station is the network switch: infrastructure that routes the packet without being addressed itself. The operator&#39;s active participation maps to the router, which translates between two networks for the duration of the connection. The analogy breaks down at the moment the video itself flags: the old phone operator connected the two lines and stepped out, while the modern router stays in the middle and continually translates packets in both directions. The analogy also hides the asymmetry of routing tables (a router knows about many networks, not just two), the existence of multiple gateways in larger networks, and the network address translation that consumer routers usually layer on top. The phone-call frame answers the basic question of who calls whom. The layered, multi-hop reality of IP routing lies beyond it.</p></div></details></li>
+                </ol>
+            </section>
+
+            <section class="yt-section">
+                <h2>Related videos</h2>
+                <div class="yt-related-grid">
+                    
+                <a href="audiouniversityWhatAudioEngineers2024.html" class="yt-related-card">
+                    <div class="yt-related-thumb">
+                        <img src="https://i.ytimg.com/vi/AHgpPsZHpVE/mqdefault.jpg" alt="" loading="lazy">
+                    </div>
+                    <div class="yt-related-info">
+                        <div class="yt-related-title">What Audio Engineers Should Know About IT &amp; Networking</div>
+                        <div class="yt-related-meta">Audio University · Foundational</div>
+                    </div>
+                </a>
+                <a href="professormesserProfessorMesserSeven2017.html" class="yt-related-card">
+                    <div class="yt-related-thumb">
+                        <img src="https://i.ytimg.com/vi/ZxAwQB8TZsM/mqdefault.jpg" alt="" loading="lazy">
+                    </div>
+                    <div class="yt-related-info">
+                        <div class="yt-related-title">Professor Messer - Seven Second Subnetting</div>
+                        <div class="yt-related-meta">Professor Messer · Applied</div>
+                    </div>
+                </a>
+                <a href="dallastaylorWhatSNLBand2025.html" class="yt-related-card">
+                    <div class="yt-related-thumb">
+                        <img src="https://i.ytimg.com/vi/ylj_MkqCFAw/mqdefault.jpg" alt="" loading="lazy">
+                    </div>
+                    <div class="yt-related-info">
+                        <div class="yt-related-title">What the SNL band hears</div>
+                        <div class="yt-related-meta">Dallas Taylor · Applied</div>
+                    </div>
+                </a>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; <span class="footer-year"></span> Blake Boyd</p>
+        </footer>
+    </div>
+    <script>
+        const yearEl = document.querySelector('.footer-year');
+        if (yearEl) yearEl.textContent = new Date().getFullYear();
+    </script>
+    <script>
+        // YouTube IFrame API: seek the embedded player when a timestamp is clicked.
+        // The href is kept as a fallback so right-click/middle-click still work.
+        // The intercept always preventDefault()s a left-click on a watch-for link
+        // so the target="_blank" never fires unexpectedly. If the player API hasn't
+        // finished loading yet, the click is queued and applied once ready.
+        let player = null;
+        let playerReady = false;
+        let pendingSeek = null;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('yt-player', {
+                events: {
+                    onReady: () => {
+                        playerReady = true;
+                        if (pendingSeek != null) {
+                            applySeek(pendingSeek);
+                            pendingSeek = null;
+                        }
+                    },
+                },
+            });
+        }
+        function applySeek(seconds) {
+            if (!player || typeof player.seekTo !== 'function') return;
+            player.seekTo(seconds, true);
+            if (typeof player.playVideo === 'function') player.playVideo();
+            const iframe = document.getElementById('yt-player');
+            const rect = iframe.getBoundingClientRect();
+            if (rect.top < 0 || rect.bottom > window.innerHeight) {
+                iframe.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('.yt-watch-for-time');
+            if (!link) return;
+            // Allow modifier-clicks (Cmd/Ctrl/middle-click) to open in a new tab as usual
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+            const seconds = Number(link.dataset.seconds);
+            if (!Number.isFinite(seconds)) return;
+            e.preventDefault();
+            if (playerReady) {
+                applySeek(seconds);
+            } else {
+                // Queue, then fall back to the href if the player never initializes
+                pendingSeek = seconds;
+                setTimeout(() => {
+                    if (!playerReady && pendingSeek === seconds) {
+                        pendingSeek = null;
+                        window.location.href = link.href;
+                    }
+                }, 2000);
+            }
+        });
+        // Load the IFrame API. The global onYouTubeIframeAPIReady is called when ready.
+        (function loadApi() {
+            const tag = document.createElement('script');
+            tag.src = 'https://www.youtube.com/iframe_api';
+            document.head.appendChild(tag);
+        })();
+    </script>
+</body>
+</html>

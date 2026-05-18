@@ -100,10 +100,10 @@
             <section class="yt-section">
                 <h2>Questions</h2>
                 <ol class="yt-questions">
-                    <li><span class="yt-q-num">1.</span><span class="yt-q-text">Worrall says decibels work the same way as musical pitch: both are logarithmic scales. Walk through the analogy. What does +12 semitones do to frequency, and what does +6 dB do to amplitude? Why is this comparison helpful for understanding why -6 dB doesn&#39;t subtract a fixed amount?</span><span class="yt-bloom">Understand</span></li>
-            <li><span class="yt-q-num">2.</span><span class="yt-q-text">A decibel &quot;is actually a ratio&quot; and &quot;doesn&#39;t actually mean anything&quot; without a reference. Explain what dBFS, dBu, dBV, and dB SPL each reference, and what the difference would be between calling a concert &quot;120 dB&quot; vs. &quot;120 dB SPL.&quot;</span><span class="yt-bloom">Understand</span></li>
-            <li><span class="yt-q-num">3.</span><span class="yt-q-text">Worrall says the commenter&#39;s glass-of-water analogy got the math backwards: if there are 120 dB of water in a glass and you remove 100 dB, you don&#39;t have 16.6% left, you have about 0.001%. Reconstruct the arithmetic and explain why this is so much smaller than naive subtraction would suggest.</span><span class="yt-bloom">Apply</span></li>
-            <li><span class="yt-q-num">4.</span><span class="yt-q-text">Worrall says digital audio formats technically have infinite dynamic range because they can do total silence (a string of zeros), and zero is &quot;minus infinity&quot; dB rather than any specific dB value. Why is total silence not the same as -120 dB or -140 dB? How does this connect to why dither matters near the noise floor of a fixed-bit format?</span><span class="yt-bloom">Analyze</span></li>
+                    <li><div class="yt-q-row"><span class="yt-q-num">1.</span><span class="yt-q-text">Worrall says decibels work the same way as musical pitch: both are logarithmic scales. Walk through the analogy. What does +12 semitones do to frequency, and what does +6 dB do to amplitude? Why is this comparison helpful for understanding why -6 dB doesn&#39;t subtract a fixed amount?</span><span class="yt-bloom">Understand</span></div><details class="yt-course-answer yt-question-answer"><summary aria-label="Show answer"></summary><div class="yt-prose"><p>+12 semitones doubles the frequency (an octave up); -12 semitones halves it. +6 dB doubles the amplitude; -6 dB halves it. Both are logarithmic scales because what feels like an even step to our ear or our intuition (one octave up, 6 dB louder) corresponds to a multiplicative change, not an additive one. The analogy explains why -6 dB doesn&#39;t subtract a fixed amount: it always halves whatever amplitude is currently there, the same way -12 semitones always halves whatever frequency is currently there.</p></div></details></li>
+            <li><div class="yt-q-row"><span class="yt-q-num">2.</span><span class="yt-q-text">A decibel &quot;is actually a ratio&quot; and &quot;doesn&#39;t actually mean anything&quot; without a reference. Explain what dBFS, dBu, dBV, and dB SPL each reference, and what the difference would be between calling a concert &quot;120 dB&quot; vs. &quot;120 dB SPL.&quot;</span><span class="yt-bloom">Understand</span></div><details class="yt-course-answer yt-question-answer"><summary aria-label="Show answer"></summary><div class="yt-prose"><p><strong>dBFS</strong> (decibels full scale): referenced to 0 dBFS, the maximum digital level; everything else is negative. <strong>dBu and dBV:</strong> referenced to specific analog voltages (0.775 V and 1 V respectively), both for line-level signals. <strong>dB SPL:</strong> referenced to the threshold of human hearing (20 µPa); the loudness scale used to describe concert SPL, traffic noise, etc. So &quot;120 dB&quot; alone is meaningless because you don&#39;t know what&#39;s being doubled relative to what. &quot;120 dB SPL&quot; means a sound 120 dB louder than the threshold of hearing, which is concert-loud. &quot;120 dBFS&quot; doesn&#39;t make sense because full scale is the maximum; you can&#39;t go louder than zero.</p></div></details></li>
+            <li><div class="yt-q-row"><span class="yt-q-num">3.</span><span class="yt-q-text">Worrall says the commenter&#39;s glass-of-water analogy got the math backwards: if there are 120 dB of water in a glass and you remove 100 dB, you don&#39;t have 16.6% left, you have about 0.001%. Reconstruct the arithmetic and explain why this is so much smaller than naive subtraction would suggest.</span><span class="yt-bloom">Apply</span></div><details class="yt-course-answer yt-question-answer"><summary aria-label="Show answer"></summary><div class="yt-prose"><p>Every 6 dB of attenuation halves the amplitude. 100 dB of attenuation is roughly 100/6 ≈ 16.7 halvings, so the amplitude is multiplied by (1/2)^16.7 ≈ 1/100,000 ≈ 0.001%. The naive subtraction (120 - 100 = 20, 20/120 ≈ 16.6%) treats decibels as linear units like pounds of water, but decibels are logarithmic ratios. Each 6 dB removed is half of whatever is currently in the glass, not a fixed amount.</p></div></details></li>
+            <li><div class="yt-q-row"><span class="yt-q-num">4.</span><span class="yt-q-text">Worrall says digital audio formats technically have infinite dynamic range because they can do total silence (a string of zeros), and zero is &quot;minus infinity&quot; dB rather than any specific dB value. Why is total silence not the same as -120 dB or -140 dB? How does this connect to why dither matters near the noise floor of a fixed-bit format?</span><span class="yt-bloom">Analyze</span></div><details class="yt-course-answer yt-question-answer"><summary aria-label="Show answer"></summary><div class="yt-prose"><p>A string of zero samples has no amplitude at all: it&#39;s true silence, which mathematically corresponds to negative infinity in dB (the log of zero is -∞). Any specific dB value (-120, -140) is some small but non-zero amplitude. Floating-point digital audio can express truly zero amplitude exactly; fixed-bit formats can&#39;t represent values below their quantization step, but they can store zero. Dither matters at the bottom of a fixed-bit range because signals get rounded to the nearest quantization step, adding harmonic distortion correlated with the signal. Dither adds a small random noise that decorrelates the rounding errors, trading a small constant noise for the elimination of audible distortion at the noise floor.</p></div></details></li>
                 </ol>
             </section>
 
@@ -120,6 +120,15 @@
                         <div class="yt-related-meta">Dave Rat · Applied</div>
                     </div>
                 </a>
+                <a href="zoomsoundlabUnderstanding32BitFloat2022.html" class="yt-related-card">
+                    <div class="yt-related-thumb">
+                        <img src="https://i.ytimg.com/vi/Jh34nsTETBI/mqdefault.jpg" alt="" loading="lazy">
+                    </div>
+                    <div class="yt-related-info">
+                        <div class="yt-related-title">Understanding 32-Bit Float Recording</div>
+                        <div class="yt-related-meta">ZoomSoundLab · Foundational</div>
+                    </div>
+                </a>
                 <a href="alphasoundSoundSystemTuning2019.html" class="yt-related-card">
                     <div class="yt-related-thumb">
                         <img src="https://i.ytimg.com/vi/1IbvhgfGEhU/mqdefault.jpg" alt="" loading="lazy">
@@ -127,15 +136,6 @@
                     <div class="yt-related-info">
                         <div class="yt-related-title">Sound System Tuning By Ear</div>
                         <div class="yt-related-meta">Alpha Sound · Reflective</div>
-                    </div>
-                </a>
-                <a href="alphasoundDoublingSpeakers+3dB2023.html" class="yt-related-card">
-                    <div class="yt-related-thumb">
-                        <img src="https://i.ytimg.com/vi/Om_1IYsqPWg/mqdefault.jpg" alt="" loading="lazy">
-                    </div>
-                    <div class="yt-related-info">
-                        <div class="yt-related-title">Is doubling speakers +3dB or +6dB? What&#39;s parallel and series wiring?</div>
-                        <div class="yt-related-meta">Alpha Sound · Applied</div>
                     </div>
                 </a>
                 </div>

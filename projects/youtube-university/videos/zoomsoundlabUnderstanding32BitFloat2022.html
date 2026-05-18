@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Understanding 32-Bit Float Recording — video breakdown for audio engineering coursework.">
+    <title>Understanding 32-Bit Float Recording — YouTube University — Blake Boyd</title>
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake E. Boyd">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+    <link rel="stylesheet" href="../../../css/base.css">
+    <link rel="stylesheet" href="../../../css/layout.css">
+    <link rel="stylesheet" href="../../../css/components.css">
+    <link rel="stylesheet" href="../../../css/projects/youtubeUniversity.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400..700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+    <script src="../../../js/theme.js"></script>
+    <script src="../../../js/nav-component.js" defer></script>
+</head>
+<body>
+    <div class="container wide">
+        <site-nav base="../../../"></site-nav>
+
+        <main id="main-content" class="yt-video-page">
+            <nav class="yt-breadcrumb" aria-label="Breadcrumb">
+                <a href="../">YouTube University</a>
+                <span aria-hidden="true">›</span>
+                <span class="yt-breadcrumb-current">Understanding 32-Bit Float Recording</span>
+            </nav>
+
+            <section class="yt-video-hero">
+                <div class="yt-embed">
+                    <iframe
+                        id="yt-player"
+                        src="https://www.youtube-nocookie.com/embed/Jh34nsTETBI?enablejsapi=1"
+                        title="Understanding 32-Bit Float Recording"
+                        frameborder="0"
+                        allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allowfullscreen></iframe>
+                </div>
+
+                <header class="yt-video-header">
+                    <h1>Understanding 32-Bit Float Recording</h1>
+                    <p class="yt-video-meta">
+                        <a class="yt-channel yt-channel-link" href="../#channel=ZoomSoundLab&view=channel">ZoomSoundLab</a>
+                        <span class="yt-sep" aria-hidden="true">·</span>
+                        <span class="yt-duration">04:35</span>
+                        <span class="yt-sep" aria-hidden="true">·</span>
+                        <span class="yt-depth yt-depth-foundational">Foundational</span>
+                    </p>
+                    <p class="yt-domain-trail"><a class="yt-domain-link" href="../#domain=Audio%20Theory">Audio Theory</a> / Fundamentals, Recording · <a class="yt-domain-link" href="../#domain=Studio%20Production">Studio Production</a> / Fundamentals, Recording</p>
+                    <p class="yt-tags-row"><a class="yt-tag yt-tag-link" href="../#tag=gain-structure">gain-structure</a></p>
+                    <p class="yt-watch-on-yt">
+                        <a href="https://www.youtube.com/watch?v=Jh34nsTETBI" target="_blank" rel="noopener">Watch on YouTube ↗</a>
+                    </p>
+                </header>
+            </section>
+
+            <section class="yt-section">
+                <h2>Takeaway</h2>
+                <div class="yt-prose">
+                    <p>Samuel Greene argues that 32-bit float recording removes the gain-setting problem from field recording. The format&#39;s dynamic range is so large that no real microphone-and-preamp signal can clip the digital representation, so the engineer can plug in, hit record, and adjust levels later in post without quality penalty. The demo records the same phrase three times at very different input magnifier positions (too low, about right, too loud and clipped), then normalizes each one in Adobe Audition and shows that all three sound identical. The video closes by listing the audio and video software that already imports 32-bit float files (Pro Tools, Audition, Audacity, Premiere, Final Cut, DaVinci Resolve) and arguing that the workflow simplification frees attention for the things that need attention at recording time: mic placement and environmental noise. A short manufacturer explainer that holds up because the demonstration is concrete and the technical claim is correct.</p>
+                </div>
+            </section>
+
+            <section class="yt-section">
+                <h2>Before you watch</h2>
+                <div class="yt-before-grid">
+                <div class="yt-before-group">
+                    <h3 class="yt-before-heading">Prerequisites</h3>
+                    <ul class="yt-before-list">
+                        <li>Familiarity with what a microphone preamp&#39;s gain knob does</li>
+                        <li>Awareness of clipping (signal too loud) and noise floor (signal too quiet)</li>
+                        <li>Comfortable with the idea that digital audio is stored as numerical samples</li>
+                    </ul>
+                </div>
+                <div class="yt-before-group">
+                    <h3 class="yt-before-heading">By the end you'll be able to</h3>
+                    <ul class="yt-before-list">
+                        <li>Explain why 32-bit float audio can capture any signal level without clipping in the file itself</li>
+                        <li>Describe what normalization does to a recorded file&#39;s peaks and noise floor</li>
+                        <li>Identify the workflow tradeoff between setting gain at the time of recording (24-bit) and adjusting in post (32-bit float)</li>
+                        <li>Recognize which DAWs and video editors import 32-bit float files natively</li>
+                    </ul>
+                </div>
+                </div>
+            </section>
+
+            <section class="yt-section">
+                <h2>Watch for</h2>
+                <ul class="yt-watch-for-list">
+                    <li><a class="yt-watch-for-time" href="https://www.youtube.com/watch?v=Jh34nsTETBI&amp;t=37" data-seconds="37" target="_blank" rel="noopener">0:37</a> <span class="yt-watch-for-text">the core claim. 32-bit float means you do not have to set gain at all, because the format&#39;s dynamic range makes clipping mathematically impossible</span></li>
+                    <li><a class="yt-watch-for-time" href="https://www.youtube.com/watch?v=Jh34nsTETBI&amp;t=106" data-seconds="106" target="_blank" rel="noopener">1:46</a> <span class="yt-watch-for-text">the three-clip demo. The same phrase recorded too low, about right, and way too loud and distorting</span></li>
+                    <li><a class="yt-watch-for-time" href="https://www.youtube.com/watch?v=Jh34nsTETBI&amp;t=138" data-seconds="138" target="_blank" rel="noopener">2:18</a> <span class="yt-watch-for-text">the same three clips after normalization in Adobe Audition. All three are now indistinguishable</span></li>
+                </ul>
+            </section>
+            <section class="yt-section">
+                <h2>Questions</h2>
+                <ol class="yt-questions">
+                    <li><div class="yt-q-row"><span class="yt-q-num">1.</span><span class="yt-q-text">The video opens with the claim that 32-bit float recording lets you &quot;plug in your microphones and hit record&quot; without setting gain. Explain why this is technically true. What property of 32-bit float gives it this advantage over 24-bit recording?</span><span class="yt-bloom">Understand</span></div><details class="yt-course-answer yt-question-answer"><summary aria-label="Show answer"></summary><div class="yt-prose"><p>32-bit float represents amplitude as a sign bit, an 8-bit exponent, and a 23-bit mantissa, which gives an effective dynamic range around 1500 dB versus 24-bit&#39;s 144 dB. In practical terms the format can store signals far louder than any analog preamp will pass without distortion and signals quieter than any microphone&#39;s self-noise. There is no useful audio level at which the digital representation itself will clip. The engineer no longer has to fit the signal into a narrow window with the gain knob: whatever the preamp puts out gets recorded faithfully, and the engineer scales the samples mathematically in post.</p></div></details></li>
+            <li><div class="yt-q-row"><span class="yt-q-num">2.</span><span class="yt-q-text">You recorded a podcast interview at 24-bit and your subject&#39;s voice was barely audible (peaks at -40 dBFS). What happens when you normalize that file up to -1 dBFS, and how does it compare to what would happen with the same recording at 32-bit float?</span><span class="yt-bloom">Apply</span></div><details class="yt-course-answer yt-question-answer"><summary aria-label="Show answer"></summary><div class="yt-prose"><p>With the 24-bit file, normalization raises every sample by the same factor (the factor that puts the peak at -1 dBFS, roughly +39 dB in this case). This raises the signal AND the noise floor by the same amount, so the preamp&#39;s hiss and the file&#39;s quantization noise both get pulled up from inaudible to clearly audible. With 32-bit float, the same normalization is a numerical scaling: the signal is lifted to -1 dBFS and the noise floor of the recording is whatever the analog stages captured, neither inflated nor degraded by the operation. The 32-bit float file&#39;s floor is the analog noise floor. The 24-bit file&#39;s floor is the analog noise floor plus quantization noise that becomes audible only after the gain-up.</p></div></details></li>
+            <li><div class="yt-q-row"><span class="yt-q-num">3.</span><span class="yt-q-text">Greene says that if you tried the same demo at 24-bit, &quot;we would be able to raise the volume of the soft section, but we would introduce a lot of noise, and the loud section would be unusable.&quot; Walk through why each of those problems occurs at 24-bit, and explain how the 32-bit float representation avoids both.</span><span class="yt-bloom">Analyze</span></div><details class="yt-course-answer yt-question-answer"><summary aria-label="Show answer"></summary><div class="yt-prose"><p>The soft section: at 24-bit, soft signals are encoded with fewer effective bits because their quietest LSBs are at or below the quantization step. Lifting those samples in post amplifies the rounding error along with the signal, producing the noise heard in the demo. The loud section: at 24-bit fixed-point, samples above full scale clip to the ceiling and stay there. The waveform tops are flattened, producing audible distortion that cannot be recovered no matter how the file is processed. 32-bit float avoids the first because soft signals are encoded with the same relative precision as loud ones (the exponent moves to track the signal level, keeping the mantissa fully used). It avoids the second because the exponent can range far above the analog ceiling, so even severely overdriven preamp output is captured numerically without the file clipping.</p></div></details></li>
+            <li><div class="yt-q-row"><span class="yt-q-num">4.</span><span class="yt-q-text">Greene argues that 32-bit float is &quot;really a no-brainer&quot; for any recording context. Where might that recommendation be too strong? Identify a scenario where a working engineer might still reach for 24-bit and explain why.</span><span class="yt-bloom">Evaluate</span></div><details class="yt-course-answer yt-question-answer"><summary aria-label="Show answer"></summary><div class="yt-prose"><p>A strong response names at least two scenarios. File size and storage matter for long-form field work: 32-bit float files are 33% larger than 24-bit at the same sample rate, which adds up across multi-day shoots. Older recorders, broadcast plants, and archival workflows may not support the format end-to-end. When the recording is destined for a delivery format that reduces to 16-bit or 24-bit anyway, setting gain at the source remains good discipline because it controls how much noise gets baked in upstream. And the format addresses only the digital side of the chain: if the preamp itself distorts at high SPL, 32-bit float will capture that analog distortion faithfully but cannot undo it. Greene&#39;s core claim (&quot;the format itself cannot clip&quot;) is correct. His framing glosses the upstream analog stages that still can.</p></div></details></li>
+                </ol>
+            </section>
+
+            <section class="yt-section">
+                <h2>Related videos</h2>
+                <div class="yt-related-grid">
+                    
+                <a href="danworrallWTFDecibel2024.html" class="yt-related-card">
+                    <div class="yt-related-thumb">
+                        <img src="https://i.ytimg.com/vi/lomuVw49GM0/mqdefault.jpg" alt="" loading="lazy">
+                    </div>
+                    <div class="yt-related-info">
+                        <div class="yt-related-title">WTF is a Decibel?</div>
+                        <div class="yt-related-meta">Dan Worrall · Foundational</div>
+                    </div>
+                </a>
+                <a href="daveratProAudioGain2024.html" class="yt-related-card">
+                    <div class="yt-related-thumb">
+                        <img src="https://i.ytimg.com/vi/kQQyq7xrNnA/mqdefault.jpg" alt="" loading="lazy">
+                    </div>
+                    <div class="yt-related-info">
+                        <div class="yt-related-title">Pro Audio Gain Structure - Updated</div>
+                        <div class="yt-related-meta">Dave Rat · Applied</div>
+                    </div>
+                </a>
+                <a href="audiouniversityGainStagingSecrets2021.html" class="yt-related-card">
+                    <div class="yt-related-thumb">
+                        <img src="https://i.ytimg.com/vi/TCBHysRV4vs/mqdefault.jpg" alt="" loading="lazy">
+                    </div>
+                    <div class="yt-related-info">
+                        <div class="yt-related-title">Gain Staging Secrets Every Great Audio Engineer Understands!</div>
+                        <div class="yt-related-meta">Audio University · Applied</div>
+                    </div>
+                </a>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; <span class="footer-year"></span> Blake Boyd</p>
+        </footer>
+    </div>
+    <script>
+        const yearEl = document.querySelector('.footer-year');
+        if (yearEl) yearEl.textContent = new Date().getFullYear();
+    </script>
+    <script>
+        // YouTube IFrame API: seek the embedded player when a timestamp is clicked.
+        // The href is kept as a fallback so right-click/middle-click still work.
+        // The intercept always preventDefault()s a left-click on a watch-for link
+        // so the target="_blank" never fires unexpectedly. If the player API hasn't
+        // finished loading yet, the click is queued and applied once ready.
+        let player = null;
+        let playerReady = false;
+        let pendingSeek = null;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('yt-player', {
+                events: {
+                    onReady: () => {
+                        playerReady = true;
+                        if (pendingSeek != null) {
+                            applySeek(pendingSeek);
+                            pendingSeek = null;
+                        }
+                    },
+                },
+            });
+        }
+        function applySeek(seconds) {
+            if (!player || typeof player.seekTo !== 'function') return;
+            player.seekTo(seconds, true);
+            if (typeof player.playVideo === 'function') player.playVideo();
+            const iframe = document.getElementById('yt-player');
+            const rect = iframe.getBoundingClientRect();
+            if (rect.top < 0 || rect.bottom > window.innerHeight) {
+                iframe.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('.yt-watch-for-time');
+            if (!link) return;
+            // Allow modifier-clicks (Cmd/Ctrl/middle-click) to open in a new tab as usual
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+            const seconds = Number(link.dataset.seconds);
+            if (!Number.isFinite(seconds)) return;
+            e.preventDefault();
+            if (playerReady) {
+                applySeek(seconds);
+            } else {
+                // Queue, then fall back to the href if the player never initializes
+                pendingSeek = seconds;
+                setTimeout(() => {
+                    if (!playerReady && pendingSeek === seconds) {
+                        pendingSeek = null;
+                        window.location.href = link.href;
+                    }
+                }, 2000);
+            }
+        });
+        // Load the IFrame API. The global onYouTubeIframeAPIReady is called when ready.
+        (function loadApi() {
+            const tag = document.createElement('script');
+            tag.src = 'https://www.youtube.com/iframe_api';
+            document.head.appendChild(tag);
+        })();
+    </script>
+</body>
+</html>

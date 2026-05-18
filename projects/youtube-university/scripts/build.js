@@ -181,6 +181,18 @@ function splitBody(body, citekey) {
   const questionsEnd = answersIdx != null ? answersIdx : lines.length;
   const questionsLines = lines.slice(questionsIdx + 1, questionsEnd);
 
+  // Answers: parse the same way as questions. The Answers section runs from
+  // its heading to the next "##" heading (or end of body).
+  const headingsAfterAnswers = answersIdx != null
+    ? headings.filter((h) => h.idx > answersIdx)
+    : [];
+  const answersEnd = headingsAfterAnswers.length
+    ? headingsAfterAnswers[0].idx
+    : lines.length;
+  const answersLines = answersIdx != null
+    ? lines.slice(answersIdx + 1, answersEnd)
+    : [];
+
   const takeaway = takeawayLines.join('\n').trim();
 
   // Questions: each starts with "1. " possibly preceded by "*(Bloom)* " prefix
@@ -193,15 +205,41 @@ function splitBody(body, citekey) {
       const rest = m[2];
       const bloomMatch = rest.match(/^\*\(([^)]+)\)\*\s*(.*)$/);
       if (bloomMatch) {
-        current = { bloom: bloomMatch[1].trim(), text: bloomMatch[2].trim() };
+        current = { num: parseInt(m[1], 10), bloom: bloomMatch[1].trim(), text: bloomMatch[2].trim() };
       } else {
-        current = { bloom: null, text: rest.trim() };
+        current = { num: parseInt(m[1], 10), bloom: null, text: rest.trim() };
       }
     } else if (current && line.trim() !== '') {
       current.text += ' ' + line.trim();
     }
   }
   if (current) questions.push(current);
+
+  // Answers: same shape, plain numbered prose.
+  const answersByNum = new Map();
+  let curAnsNum = null;
+  let curAnsBuf = [];
+  const flushAnswer = () => {
+    if (curAnsNum != null) {
+      answersByNum.set(curAnsNum, curAnsBuf.join('\n').trim());
+    }
+  };
+  for (const line of answersLines) {
+    const m = line.match(/^(\d+)\.\s+(.*)$/);
+    if (m) {
+      flushAnswer();
+      curAnsNum = parseInt(m[1], 10);
+      curAnsBuf = [m[2]];
+    } else if (curAnsNum != null) {
+      curAnsBuf.push(line);
+    }
+  }
+  flushAnswer();
+
+  // Attach each answer to its question by number.
+  for (const q of questions) {
+    if (answersByNum.has(q.num)) q.answer = answersByNum.get(q.num);
+  }
 
   return { takeaway, questions };
 }
@@ -351,7 +389,13 @@ function renderVideoPage(video, related, citekeyMap) {
       const bloom = q.bloom
         ? `<span class="yt-bloom">${escapeHtml(q.bloom)}</span>`
         : '';
-      return `<li><span class="yt-q-num">${i + 1}.</span><span class="yt-q-text">${renderInline(q.text, citekeyMap)}</span>${bloom}</li>`;
+      // Per-question answer reveal. The answer text is in the HTML — anyone
+      // viewing source can read it — but the toggle keeps it out of the
+      // student's eye until they choose to look.
+      const answer = q.answer
+        ? `<details class="yt-course-answer yt-question-answer"><summary aria-label="Show answer"></summary><div class="yt-prose">${renderProse(q.answer, citekeyMap)}</div></details>`
+        : '';
+      return `<li><div class="yt-q-row"><span class="yt-q-num">${i + 1}.</span><span class="yt-q-text">${renderInline(q.text, citekeyMap)}</span>${bloom}</div>${answer}</li>`;
     })
     .join('\n            ');
 

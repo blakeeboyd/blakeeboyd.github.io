@@ -54,6 +54,58 @@
       "depth": "reflective"
     },
     {
+      "citekey": "audiouniversity3WaysExpand2023",
+      "title": "3 Ways To Expand Audio I/O For Recording, Live Sound, & Broadcast",
+      "channel": "Audio University",
+      "duration": "14:27",
+      "ytId": "LWGVoxiIRIA",
+      "domains": [
+        "Studio Production",
+        "Live Sound"
+      ],
+      "subdomains": [
+        "Recording",
+        "System Design"
+      ],
+      "tags": [
+        "signal-flow",
+        "networking"
+      ],
+      "concepts": [
+        "ADAT",
+        "MADI",
+        "Dante",
+        "audio over Ethernet",
+        "audio over IP",
+        "8 channels at 48 kHz",
+        "64 channels at 48 kHz",
+        "optical cable",
+        "coaxial cable",
+        "multimode fiber",
+        "single-mode fiber",
+        "5-meter ADAT limit",
+        "100m MADI coax",
+        "2km MADI multimode",
+        "10km MADI single-mode",
+        "point-to-point topology",
+        "MADI loop",
+        "Dante star topology",
+        "word clock",
+        "clock source mismatch",
+        "TotalMix",
+        "Dante Controller",
+        "cross-point matrix",
+        "primary/secondary network redundancy",
+        "RME 12Mic Dante",
+        "RME Digiface USB",
+        "RME Digiface Dante",
+        "500-series hardware insert",
+        "AVB",
+        "MADI as protocol bridge"
+      ],
+      "depth": "applied"
+    },
+    {
       "citekey": "audiouniversitySIMPLERuleChoosing2020",
       "title": "A SIMPLE Rule For Choosing An Amplifier | Ohms, Watts, & More",
       "channel": "Audio University",
@@ -1456,6 +1508,52 @@
       "depth": "applied"
     },
     {
+      "citekey": "professormesserProfessorMesserSeven2017",
+      "title": "Professor Messer - Seven Second Subnetting",
+      "channel": "Professor Messer",
+      "duration": "20:52",
+      "ytId": "ZxAwQB8TZsM",
+      "domains": [
+        "Live Sound"
+      ],
+      "subdomains": [
+        "System Design"
+      ],
+      "tags": [
+        "networking"
+      ],
+      "concepts": [
+        "IP subnetting",
+        "subnet mask",
+        "CIDR block notation",
+        "dotted decimal notation",
+        "network address",
+        "broadcast address",
+        "first usable IP",
+        "last usable IP",
+        "host bits",
+        "subnet bits",
+        "powers of 2",
+        "borrowing bits",
+        "octet",
+        "8-bit boundary",
+        "/24 mask",
+        "/26 mask",
+        "/20 mask",
+        "/11 mask",
+        "255.255.255.0",
+        "255.255.255.192",
+        "255.255.240.0",
+        "CIDR-to-decimal chart",
+        "address-grouping chart",
+        "subnet boundary",
+        "62 hosts per subnet",
+        "exam pressure",
+        "table lookup vs binary math"
+      ],
+      "depth": "applied"
+    },
+    {
       "citekey": "michaelcurtisShouldYouTune2022",
       "title": "Should You Tune Your Live Sound System Flat?",
       "channel": "Michael Curtis",
@@ -1719,6 +1817,49 @@
       "depth": "applied"
     },
     {
+      "citekey": "audinateSubnettingWhatIP2022",
+      "title": "Subnetting: What do the IP Address, Subnet Mask, and Gateway do?",
+      "channel": "Audinate",
+      "duration": "04:48",
+      "ytId": "RfL78xzN8zc",
+      "domains": [
+        "Live Sound"
+      ],
+      "subdomains": [
+        "System Design"
+      ],
+      "tags": [
+        "networking"
+      ],
+      "concepts": [
+        "IP address",
+        "unique IP per device",
+        "subnet mask",
+        "gateway",
+        "router",
+        "network switch",
+        "local area network",
+        "wide area network",
+        "phone call analogy",
+        "operator analogy",
+        "dotted quad notation",
+        "dot decimal notation",
+        "192.168.10.x",
+        "255.255.255.0",
+        "subnet",
+        "routing decision",
+        "in-subnet destination",
+        "out-of-subnet destination",
+        "gateway IP",
+        "direct connection on LAN",
+        "transparent switch",
+        "active participant router",
+        "translating between networks",
+        "Dante certification program"
+      ],
+      "depth": "foundational"
+    },
+    {
       "citekey": "nathanlivelySubwooferSaturdayLearn2022",
       "title": "Subwoofer Saturday - Learn the Basics of Subwoofer Arrays in Live Sound",
       "channel": "Nathan Lively",
@@ -1942,6 +2083,98 @@
         "NEXO"
       ],
       "depth": "applied"
+    },
+    {
+      "citekey": "zoomsoundlabUnderstanding32BitFloat2022",
+      "title": "Understanding 32-Bit Float Recording",
+      "channel": "ZoomSoundLab",
+      "duration": "04:35",
+      "ytId": "Jh34nsTETBI",
+      "domains": [
+        "Audio Theory",
+        "Studio Production"
+      ],
+      "subdomains": [
+        "Fundamentals",
+        "Recording"
+      ],
+      "tags": [
+        "gain-structure"
+      ],
+      "concepts": [
+        "32-bit float recording",
+        "24-bit recording",
+        "dynamic range",
+        "input gain",
+        "clipping",
+        "no gain setting needed",
+        "Zoom F3",
+        "waveform magnifier",
+        "normalization",
+        "peak adjustment",
+        "Adobe Audition",
+        "Pro Tools",
+        "Audacity",
+        "Adobe Premiere",
+        "Final Cut",
+        "DaVinci Resolve",
+        "post-production flexibility",
+        "soft signal noise",
+        "loud signal distortion",
+        "field recording workflow",
+        "quantization noise",
+        "noise floor"
+      ],
+      "depth": "foundational"
+    },
+    {
+      "citekey": "audiouniversityWhatAudioEngineers2024",
+      "title": "What Audio Engineers Should Know About IT & Networking",
+      "channel": "Audio University",
+      "duration": "10:59",
+      "ytId": "AHgpPsZHpVE",
+      "domains": [
+        "Live Sound"
+      ],
+      "subdomains": [
+        "System Design"
+      ],
+      "tags": [
+        "networking",
+        "troubleshooting"
+      ],
+      "concepts": [
+        "audio over IP",
+        "Dante",
+        "Dante Controller",
+        "AES50",
+        "analog audio over ethernet",
+        "digital audio over IP",
+        "point-to-point connection",
+        "local area network",
+        "network switch",
+        "stage box",
+        "Dante AVIO adapter",
+        "IP address",
+        "binary representation",
+        "subnet mask",
+        "255.255.255.0",
+        "192.168.50.x",
+        "254 hosts per subnet",
+        "DHCP server",
+        "automatic IP assignment",
+        "link-local address",
+        "169.254.x.x",
+        "static IP",
+        "MAC address",
+        "network interface card",
+        "arp -a",
+        "ping",
+        "Identify button",
+        "Unicast vs Multicast",
+        "master clock election"
+      ],
+      "depth": "foundational"
     },
     {
       "citekey": "silvercreekaudioWhatRunningSmall2025",

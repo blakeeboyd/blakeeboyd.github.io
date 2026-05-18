@@ -662,6 +662,13 @@ function sortVideos(videos) {
 }
 
 const DEPTH_RANK = { foundational: 0, applied: 1, reflective: 2 };
+const OTHER_CHANNEL_THRESHOLD = 3; // channels with fewer videos collapse into "Other"
+
+const pedagogicalSort = (a, b) => {
+    const dr = (DEPTH_RANK[a.depth] ?? 99) - (DEPTH_RANK[b.depth] ?? 99);
+    if (dr !== 0) return dr;
+    return a.title.localeCompare(b.title);
+};
 
 function renderGroupedByChannel(videos) {
     const groups = new Map();
@@ -669,31 +676,38 @@ function renderGroupedByChannel(videos) {
         if (!groups.has(v.channel)) groups.set(v.channel, []);
         groups.get(v.channel).push(v);
     }
-    const channels = [...groups.keys()].sort((a, b) => a.localeCompare(b));
+    const allChannels = [...groups.keys()].sort((a, b) => a.localeCompare(b));
     // When only one channel is visible (e.g. after "See all" or a channel filter),
-    // show all of its videos uncapped. The per-channel cap is for browsing multiple
-    // channels in parallel, not for drilling into one.
-    const isSingleChannelView = channels.length === 1;
-    return channels
-        .map((channel) => {
-            const all = groups.get(channel);
-            // Pedagogical pick order: Foundational → Applied → Reflective, then title.
-            const sorted = [...all].sort((a, b) => {
-                const dr = (DEPTH_RANK[a.depth] ?? 99) - (DEPTH_RANK[b.depth] ?? 99);
-                if (dr !== 0) return dr;
-                return a.title.localeCompare(b.title);
-            });
-            const shown = isSingleChannelView ? sorted : sorted.slice(0, CHANNEL_VIEW_LIMIT);
-            const remaining = all.length - shown.length;
-            const cards = shown.map(cardHtml).join('');
-            // "See all" sets the channel filter (which prunes the result to this
-            // channel); we keep view='channel' so the user stays in the by-channel
-            // layout but now sees the section expanded.
-            const seeAll =
-                remaining > 0
-                    ? `<a href="#channel=${encodeURIComponent(channel)}&view=channel" class="yt-channel-filter-link yt-channel-see-all" data-channel="${escapeAttr(channel)}">See all ${all.length} videos →</a>`
-                    : '';
-            return `
+    // show all of its videos uncapped — regardless of how many it has. The
+    // per-channel cap and "Other" pooling are for browsing across creators,
+    // not for drilling into one.
+    const isSingleChannelView = allChannels.length === 1;
+
+    // Split into main (>= threshold videos) and small (< threshold). Small
+    // channels pool into a single "Other" section at the end. Skip the split
+    // when only one channel is visible — drilling in shouldn't push you to
+    // "Other" just because that creator has few videos.
+    const mainChannels = isSingleChannelView
+        ? allChannels
+        : allChannels.filter((c) => groups.get(c).length >= OTHER_CHANNEL_THRESHOLD);
+    const smallChannels = isSingleChannelView
+        ? []
+        : allChannels.filter((c) => groups.get(c).length < OTHER_CHANNEL_THRESHOLD);
+
+    const mainSections = mainChannels.map((channel) => {
+        const all = groups.get(channel);
+        const sorted = [...all].sort(pedagogicalSort);
+        const shown = isSingleChannelView ? sorted : sorted.slice(0, CHANNEL_VIEW_LIMIT);
+        const remaining = all.length - shown.length;
+        const cards = shown.map(cardHtml).join('');
+        // "See all" sets the channel filter (which prunes the result to this
+        // channel); we keep view='channel' so the user stays in the by-channel
+        // layout but now sees the section expanded.
+        const seeAll =
+            remaining > 0
+                ? `<a href="#channel=${encodeURIComponent(channel)}&view=channel" class="yt-channel-filter-link yt-channel-see-all" data-channel="${escapeAttr(channel)}">See all ${all.length} videos →</a>`
+                : '';
+        return `
                 <section class="yt-channel-group">
                     <header class="yt-channel-header">
                         <a href="#channel=${encodeURIComponent(channel)}&view=channel" class="yt-channel-filter-link yt-channel-name-link" data-channel="${escapeAttr(channel)}">
@@ -705,8 +719,29 @@ function renderGroupedByChannel(videos) {
                     ${seeAll}
                 </section>
             `;
-        })
-        .join('');
+    });
+
+    // "Other" section: all small-channel videos, grouped first by channel name
+    // then pedagogically within each channel so videos from the same creator
+    // cluster together inside the section.
+    let otherSection = '';
+    if (smallChannels.length > 0) {
+        const otherVideos = smallChannels.flatMap((c) =>
+            [...groups.get(c)].sort(pedagogicalSort),
+        );
+        const cards = otherVideos.map(cardHtml).join('');
+        otherSection = `
+                <section class="yt-channel-group yt-channel-group-other">
+                    <header class="yt-channel-header">
+                        <span class="yt-channel-name">Other</span>
+                        <span class="yt-channel-count">${otherVideos.length} video${otherVideos.length === 1 ? '' : 's'} from ${smallChannels.length} channel${smallChannels.length === 1 ? '' : 's'}</span>
+                    </header>
+                    <div class="yt-channel-cards">${cards}</div>
+                </section>
+            `;
+    }
+
+    return [...mainSections, otherSection].join('');
 }
 
 function cardHtml(v) {

@@ -401,12 +401,16 @@ html:has(.yt-index-page) {
     padding: 0.4rem 0;
 }
 
-.yt-channel-name-link {
-    text-decoration: none;
-    color: var(--color-text);
+.yt-channel-name {
     font-size: 1.05rem;
     font-weight: 600;
+    color: var(--color-text);
     transition: color 0.12s;
+}
+
+.yt-channel-name-link {
+    text-decoration: none;
+    color: inherit;
 }
 
 .yt-channel-name-link:hover .yt-channel-name {
@@ -418,10 +422,6 @@ html:has(.yt-index-page) {
 
 [data-theme="dark"] .yt-channel-name-link:hover .yt-channel-name {
     color: var(--color-accent-medium, #3b82f6);
-}
-
-.yt-channel-name {
-    transition: color 0.12s;
 }
 
 .yt-channel-count {
@@ -490,6 +490,24 @@ html:has(.yt-index-page) {
     height: 100%;
     object-fit: cover;
     display: block;
+    transition: filter 0.15s, opacity 0.15s;
+}
+
+/* Dim thumbnails in dark mode so the bright YouTube previews don't dominate
+   the card UI; full color returns on hover so the user can identify videos
+   they're looking at closely. */
+[data-theme="dark"] .yt-card-thumb img {
+    opacity: 0.75;
+}
+
+[data-theme="dark"] .yt-card:hover .yt-card-thumb img {
+    opacity: 1;
+}
+
+/* Bump the card body a half-step brighter in dark mode so title + channel
+   text reads with more contrast against the page background. */
+[data-theme="dark"] .yt-card {
+    background: #2a3543;
 }
 
 .yt-card-duration {
@@ -872,9 +890,23 @@ a.yt-channel-link:hover {
     border-radius: var(--radius-sm);
     line-height: 1.55;
     font-family: var(--font-serif);
+}
+
+/* The question row (number + text + bloom badge) lays out horizontally;
+   the answer reveal sits below it inside the same <li>. */
+.yt-q-row {
     display: flex;
     align-items: flex-start;
     gap: 0.5rem;
+}
+
+.yt-question-answer {
+    margin-top: 0.5rem;
+    /* Override the course-answer 1.5rem left indent — video-page questions
+       don't have the hanging indent that course quiz items use. */
+    margin-left: 0;
+    /* The yt-course-answer styles handle the rest (Show/Hide answer pill,
+       expanded background, prose typography). */
 }
 
 .yt-q-text {
