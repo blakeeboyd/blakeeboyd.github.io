@@ -1011,6 +1011,51 @@
       "depth": "foundational"
     },
     {
+      "citekey": "professormesserIPv4AddressesSubnetting2015",
+      "title": "IPv4 Addresses and Subnetting - CompTIA Network+ N10-006 - 1.8",
+      "channel": "Professor Messer",
+      "duration": "17:13",
+      "ytId": "_bn0CF5zqvo",
+      "domains": [
+        "Live Sound"
+      ],
+      "subdomains": [
+        "System Design"
+      ],
+      "tags": [
+        "networking"
+      ],
+      "concepts": [
+        "IPv4 address",
+        "32-bit address",
+        "octet",
+        "byte",
+        "binary representation",
+        "subnet mask",
+        "/24 mask",
+        "/16 mask",
+        "/26 mask",
+        "/27 mask",
+        "CIDR block notation",
+        "network address",
+        "host address",
+        "broadcast address",
+        "bitwise AND",
+        "host bits",
+        "subnet bits",
+        "192.168.1.0/24",
+        "10.11.0.0/16",
+        "254 hosts per /24",
+        "65,534 hosts per /16",
+        "62 hosts per /26",
+        "subnetting",
+        "ISP-assigned address block",
+        "4 networks by 62 hosts split",
+        "router interface assignment"
+      ],
+      "depth": "foundational"
+    },
+    {
       "citekey": "alphasoundDoublingSpeakers+3dB2023",
       "title": "Is doubling speakers +3dB or +6dB? What's parallel and series wiring?",
       "channel": "Alpha Sound",

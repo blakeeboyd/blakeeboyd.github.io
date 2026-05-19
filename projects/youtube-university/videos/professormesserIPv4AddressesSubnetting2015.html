@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="IPv4 Addresses and Subnetting - CompTIA Network+ N10-006 - 1.8 — video breakdown for audio engineering coursework.">
+    <title>IPv4 Addresses and Subnetting - CompTIA Network+ N10-006 - 1.8 — YouTube University — Blake Boyd</title>
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake E. Boyd">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+    <link rel="stylesheet" href="../../../css/base.css">
+    <link rel="stylesheet" href="../../../css/layout.css">
+    <link rel="stylesheet" href="../../../css/components.css">
+    <link rel="stylesheet" href="../../../css/projects/youtubeUniversity.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400..700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+    <script src="../../../js/theme.js"></script>
+    <script src="../../../js/nav-component.js" defer></script>
+</head>
+<body>
+    <div class="container wide">
+        <site-nav base="../../../"></site-nav>
+
+        <main id="main-content" class="yt-video-page">
+            <nav class="yt-breadcrumb" aria-label="Breadcrumb">
+                <a href="../">YouTube University</a>
+                <span aria-hidden="true">›</span>
+                <span class="yt-breadcrumb-current">IPv4 Addresses and Subnetting - CompTIA Network+ N10-006 - 1.8</span>
+            </nav>
+
+            <section class="yt-video-hero">
+                <div class="yt-embed">
+                    <iframe
+                        id="yt-player"
+                        src="https://www.youtube-nocookie.com/embed/_bn0CF5zqvo?enablejsapi=1"
+                        title="IPv4 Addresses and Subnetting - CompTIA Network+ N10-006 - 1.8"
+                        frameborder="0"
+                        allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allowfullscreen></iframe>
+                </div>
+
+                <header class="yt-video-header">
+                    <h1>IPv4 Addresses and Subnetting - CompTIA Network+ N10-006 - 1.8</h1>
+                    <p class="yt-video-meta">
+                        <a class="yt-channel yt-channel-link" href="../#channel=Professor%20Messer&view=channel">Professor Messer</a>
+                        <span class="yt-sep" aria-hidden="true">·</span>
+                        <span class="yt-duration">17:13</span>
+                        <span class="yt-sep" aria-hidden="true">·</span>
+                        <span class="yt-depth yt-depth-foundational">Foundational</span>
+                    </p>
+                    <p class="yt-domain-trail"><a class="yt-domain-link" href="../#domain=Live%20Sound">Live Sound</a> / System Design</p>
+                    <p class="yt-tags-row"><a class="yt-tag yt-tag-link" href="../#tag=networking">networking</a></p>
+                    <p class="yt-watch-on-yt">
+                        <a href="https://www.youtube.com/watch?v=_bn0CF5zqvo" target="_blank" rel="noopener">Watch on YouTube ↗</a>
+                    </p>
+                </header>
+            </section>
+
+            <section class="yt-section">
+                <h2>Takeaway</h2>
+                <div class="yt-prose">
+                    <p>Professor Messer walks through the full binary procedure for IPv4 subnetting. Convert the IP and subnet mask to binary, perform a bitwise AND to find the network address, set the host bits to all ones to find the broadcast address, and count the numbers in between as the usable host range. He works two examples (192.168.1.165 with /24, then 10.11.12.13 with /16) to show the procedure is identical regardless of where the mask falls. The closing section sets up a problem that becomes recognizable to anyone who has seen his later Seven Second Subnetting video: a remote site is handed 192.168.1.0/24 by the home office and needs four networks of 40 devices each, which works out to a /26 split. The video shows the long-form binary derivation of all four resulting subnets (.0, .64, .128, .192) and their host ranges. This is the chronological predecessor to his shortcut method and the source of the math that the shortcut hides.</p>
+                </div>
+            </section>
+
+            <section class="yt-section">
+                <h2>Before you watch</h2>
+                <div class="yt-before-grid">
+                <div class="yt-before-group">
+                    <h3 class="yt-before-heading">Prerequisites</h3>
+                    <ul class="yt-before-list">
+                        <li>Familiarity with binary math (converting between decimal and 8-bit binary)</li>
+                        <li>Awareness that an IPv4 address has four octets, each 0-255</li>
+                        <li>Comfort with bitwise operations (AND, OR)</li>
+                    </ul>
+                </div>
+                <div class="yt-before-group">
+                    <h3 class="yt-before-heading">By the end you'll be able to</h3>
+                    <ul class="yt-before-list">
+                        <li>Convert any IPv4 address and subnet mask between decimal and binary</li>
+                        <li>Apply a bitwise AND to derive the network address from an IP and mask</li>
+                        <li>Compute the broadcast address by setting all host bits to 1</li>
+                        <li>Subnet a given /N block into smaller subnets to fit a known network-count and host-count requirement</li>
+                    </ul>
+                </div>
+                </div>
+            </section>
+
+            <section class="yt-section">
+                <h2>Watch for</h2>
+                <ul class="yt-watch-for-list">
+                    <li><a class="yt-watch-for-time" href="https://www.youtube.com/watch?v=_bn0CF5zqvo&amp;t=208" data-seconds="208" target="_blank" rel="noopener">3:28</a> <span class="yt-watch-for-text">the bitwise AND procedure with its full rule set. 1 AND 1 brings down 1, anything else brings down 0</span></li>
+                    <li><a class="yt-watch-for-time" href="https://www.youtube.com/watch?v=_bn0CF5zqvo&amp;t=552" data-seconds="552" target="_blank" rel="noopener">9:12</a> <span class="yt-watch-for-text">the design question that motivates subnetting. The ISP hands you a block and you have to decide how to split it</span></li>
+                    <li><a class="yt-watch-for-time" href="https://www.youtube.com/watch?v=_bn0CF5zqvo&amp;t=864" data-seconds="864" target="_blank" rel="noopener">14:24</a> <span class="yt-watch-for-text">the four /26 subnets enumerated by walking the two extra bits through 00, 01, 10, 11</span></li>
+                </ul>
+            </section>
+            <section class="yt-section">
+                <h2>Questions</h2>
+                <ol class="yt-questions">
+                    <li><div class="yt-q-row"><span class="yt-q-num">1.</span><span class="yt-q-text">The subnet mask is the tool that separates an IPv4 address into a network portion and a host portion. Explain in your own words how a contiguous string of ones followed by zeros performs that separation, and walk through why a /24 mask gives you 254 usable hosts on the subnet (not 256).</span><span class="yt-bloom">Understand</span></div><details class="yt-course-answer yt-question-answer"><summary aria-label="Show answer"></summary><div class="yt-prose"><p>A subnet mask is 32 bits long, with some number of contiguous ones at the left followed by zeros. Where the mask is 1, the corresponding bit of the IPv4 address belongs to the network portion: its value is fixed for every host on this subnet. Where the mask is 0, the corresponding bit belongs to the host portion: its value varies across the hosts on the subnet. A /24 mask has 24 network bits and 8 host bits, so the 8 host bits can take 2^8 = 256 values. Two of those values are reserved: the all-zeros value identifies the subnet itself (the network address) and the all-ones value is the broadcast address. The remaining 254 values are usable host addresses.</p></div></details></li>
+            <li><div class="yt-q-row"><span class="yt-q-num">2.</span><span class="yt-q-text">Apply Messer&#39;s procedure to a new problem: 172.16.45.200 with subnet mask 255.255.255.224 (a /27). Find the network address, the broadcast address, and the first and last usable host addresses. Show the binary work for the fourth octet.</span><span class="yt-bloom">Apply</span></div><details class="yt-course-answer yt-question-answer"><summary aria-label="Show answer"></summary><div class="yt-prose"><p>/27 means 27 bits in the mask: three additional ones in the fourth octet beyond /24, so the fourth-octet mask is 11100000 = 224. Convert 200 to binary: 11001000. Bitwise AND of 11100000 with 11001000 = 11000000 = 192, so the network address is 172.16.45.192. To find the broadcast, set the five host bits to ones: 11011111 = 223, so the broadcast is 172.16.45.223. The first usable host is one above the network address (172.16.45.193), and the last usable host is one below the broadcast (172.16.45.222), giving 30 usable hosts on this /27 subnet (2^5 minus 2).</p></div></details></li>
+            <li><div class="yt-q-row"><span class="yt-q-num">3.</span><span class="yt-q-text">You are given 10.50.0.0/24 by your ISP and you need to fit 4 networks of 40 devices each. Walk through Messer&#39;s table comparison: why does /25 fail, why does /27 fail, and why is /26 the right choice? Identify the constraint each rejected option violates.</span><span class="yt-bloom">Apply</span></div><details class="yt-course-answer yt-question-answer"><summary aria-label="Show answer"></summary><div class="yt-prose"><p>/25 (255.255.255.128) borrows one bit from the host portion and gives 2 subnets of 126 hosts each. It fails the network-count constraint: 2 is less than 4. /26 (255.255.255.192) borrows two bits and gives 4 subnets of 62 hosts each. It satisfies both constraints: 4 networks matches the requirement and 62 hosts per subnet exceeds the 40 needed, with comfortable headroom. /27 (255.255.255.224) borrows three bits and gives 8 subnets of 30 hosts each. It fails the host-count constraint: 30 is less than 40, even though the network count is more than enough. A strong answer notes Messer&#39;s pattern: each step down doubles the network count and roughly halves the per-subnet host count, so the right choice is the leftmost option on the table that satisfies both constraints simultaneously.</p></div></details></li>
+            <li><div class="yt-q-row"><span class="yt-q-num">4.</span><span class="yt-q-text">Compare this video&#39;s long-form binary procedure to Messer&#39;s later Seven Second Subnetting shortcut method. What does the long form give an engineer that the shortcut cannot, and where is the shortcut the right tool? Identify at least one problem the long form can solve that the shortcut cannot.</span><span class="yt-bloom">Analyze</span></div><details class="yt-course-answer yt-question-answer"><summary aria-label="Show answer"></summary><div class="yt-prose"><p>The long form grounds the calculation in the underlying binary structure. The engineer sees that /26 means &quot;two additional network bits in the fourth octet,&quot; that the four subnets correspond to the four combinations 00, 01, 10, 11 of those bits, and that 62 hosts comes from 2^6 minus 2. That understanding generalizes. The seven-second shortcut replaces the binary work with two pre-drawn lookup tables and a small rule set: faster under exam pressure, and a smaller error surface for the four standard answers (network, broadcast, first usable, last usable). Where the long form pays off and the shortcut does not: variable-length subnet masking (subnets of different sizes inside the same block), supernetting (combining smaller blocks into a larger one), checking whether two arbitrary hosts on different masks can reach each other directly, and reasoning about /30 point-to-point links or /31 and /32 edge cases. The long form belongs to understanding and non-standard problems. The shortcut belongs to timed exams.</p></div></details></li>
+                </ol>
+            </section>
+
+            <section class="yt-section">
+                <h2>Related videos</h2>
+                <div class="yt-related-grid">
+                    
+                <a href="professormesserProfessorMesserSeven2017.html" class="yt-related-card">
+                    <div class="yt-related-thumb">
+                        <img src="https://i.ytimg.com/vi/ZxAwQB8TZsM/mqdefault.jpg" alt="" loading="lazy">
+                    </div>
+                    <div class="yt-related-info">
+                        <div class="yt-related-title">Professor Messer - Seven Second Subnetting</div>
+                        <div class="yt-related-meta">Professor Messer · Applied</div>
+                    </div>
+                </a>
+                <a href="audinateSubnettingWhatIP2022.html" class="yt-related-card">
+                    <div class="yt-related-thumb">
+                        <img src="https://i.ytimg.com/vi/RfL78xzN8zc/mqdefault.jpg" alt="" loading="lazy">
+                    </div>
+                    <div class="yt-related-info">
+                        <div class="yt-related-title">Subnetting: What do the IP Address, Subnet Mask, and Gateway do?</div>
+                        <div class="yt-related-meta">Audinate · Foundational</div>
+                    </div>
+                </a>
+                <a href="audiouniversityWhatAudioEngineers2024.html" class="yt-related-card">
+                    <div class="yt-related-thumb">
+                        <img src="https://i.ytimg.com/vi/AHgpPsZHpVE/mqdefault.jpg" alt="" loading="lazy">
+                    </div>
+                    <div class="yt-related-info">
+                        <div class="yt-related-title">What Audio Engineers Should Know About IT &amp; Networking</div>
+                        <div class="yt-related-meta">Audio University · Foundational</div>
+                    </div>
+                </a>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; <span class="footer-year"></span> Blake Boyd</p>
+        </footer>
+    </div>
+    <script>
+        const yearEl = document.querySelector('.footer-year');
+        if (yearEl) yearEl.textContent = new Date().getFullYear();
+    </script>
+    <script>
+        // YouTube IFrame API: seek the embedded player when a timestamp is clicked.
+        // The href is kept as a fallback so right-click/middle-click still work.
+        // The intercept always preventDefault()s a left-click on a watch-for link
+        // so the target="_blank" never fires unexpectedly. If the player API hasn't
+        // finished loading yet, the click is queued and applied once ready.
+        let player = null;
+        let playerReady = false;
+        let pendingSeek = null;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('yt-player', {
+                events: {
+                    onReady: () => {
+                        playerReady = true;
+                        if (pendingSeek != null) {
+                            applySeek(pendingSeek);
+                            pendingSeek = null;
+                        }
+                    },
+                },
+            });
+        }
+        function applySeek(seconds) {
+            if (!player || typeof player.seekTo !== 'function') return;
+            player.seekTo(seconds, true);
+            if (typeof player.playVideo === 'function') player.playVideo();
+            const iframe = document.getElementById('yt-player');
+            const rect = iframe.getBoundingClientRect();
+            if (rect.top < 0 || rect.bottom > window.innerHeight) {
+                iframe.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('.yt-watch-for-time');
+            if (!link) return;
+            // Allow modifier-clicks (Cmd/Ctrl/middle-click) to open in a new tab as usual
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+            const seconds = Number(link.dataset.seconds);
+            if (!Number.isFinite(seconds)) return;
+            e.preventDefault();
+            if (playerReady) {
+                applySeek(seconds);
+            } else {
+                // Queue, then fall back to the href if the player never initializes
+                pendingSeek = seconds;
+                setTimeout(() => {
+                    if (!playerReady && pendingSeek === seconds) {
+                        pendingSeek = null;
+                        window.location.href = link.href;
+                    }
+                }, 2000);
+            }
+        });
+        // Load the IFrame API. The global onYouTubeIframeAPIReady is called when ready.
+        (function loadApi() {
+            const tag = document.createElement('script');
+            tag.src = 'https://www.youtube.com/iframe_api';
+            document.head.appendChild(tag);
+        })();
+    </script>
+</body>
+</html>
