@@ -2,15 +2,14 @@
    YouTube University - Project Styles
    =========================================== */
 
-/* Bump the root font-size on per-video and per-course pages by ~10% so
-   prose feels comfortable to read without browser zoom. This page type uses
-   rem-based spacing and type throughout, so adjusting at the root scales
-   everything uniformly. Only fires when the page actually contains these
-   wrappers — other pages on the site keep the default. */
+/* YouTube University runs slightly smaller than the site default (18px) for
+   a denser, more reading-oriented feel — closer to the typography scale of
+   reference sites like Teaching AI Ethics. All spacing and type in this
+   project uses rem, so this single override scales everything uniformly. */
 html:has(.yt-video-page),
 html:has(.yt-course-page),
 html:has(.yt-index-page) {
-    font-size: 19.8px;
+    font-size: 17px;
 }
 
 /* Controls (search, depth, tags) */
