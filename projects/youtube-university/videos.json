@@ -1599,6 +1599,112 @@
       "depth": "applied"
     },
     {
+      "citekey": "pdravservicesQlabBasics2026",
+      "title": "Qlab Basics",
+      "channel": "PDR AV Services",
+      "duration": "13:29",
+      "ytId": "dQy58fz1Yaw",
+      "domains": [
+        "Live Sound",
+        "Professional Practice"
+      ],
+      "subdomains": [
+        "Sound Reinforcement",
+        "Workflow"
+      ],
+      "tags": [
+        "show-control",
+        "signal-flow",
+        "gain-structure"
+      ],
+      "concepts": [
+        "QLab",
+        "show control software",
+        "QLab workspace",
+        "park template",
+        "video cue",
+        "audio cue",
+        "cue list",
+        "video output routing",
+        "LED wall",
+        "output grid identification",
+        "geometry",
+        "fill and stretch",
+        "infinite loop",
+        "IO routing",
+        "active cues list",
+        "fade cue",
+        "opacity fade",
+        "fade curve duration",
+        "continue modes",
+        "auto continue",
+        "auto follow",
+        "cue grouping",
+        "stop target when done",
+        "cue labeling",
+        "cue color coding",
+        "time and loops trim",
+        "audio level fade",
+        "pause cue",
+        "hotkey triggers",
+        "sudden stop cue"
+      ],
+      "depth": "foundational"
+    },
+    {
+      "citekey": "michaelcurtisQLabBasicsNail2023",
+      "title": "QLab Basics | Nail VOG & Walk-Up Tracks On Corporate Audio Gigs",
+      "channel": "Michael Curtis",
+      "duration": "17:00",
+      "ytId": "m-KHJJT1FdE",
+      "domains": [
+        "Live Sound",
+        "Professional Practice"
+      ],
+      "subdomains": [
+        "Sound Reinforcement",
+        "Workflow"
+      ],
+      "tags": [
+        "show-control",
+        "signal-flow",
+        "gain-structure"
+      ],
+      "concepts": [
+        "QLab",
+        "Figure 53 QLab",
+        "show control software",
+        "audio playback cues",
+        "corporate audio gig",
+        "A1 engineer",
+        "VOG (voice of God)",
+        "walk-up tracks",
+        "walk-on stinger",
+        "stinger",
+        "pre-show announcements",
+        "QLab workspace",
+        "cue list",
+        "save to project folder",
+        "media bundling",
+        "audio routing",
+        "cue outputs",
+        "patch routing",
+        "mono to stereo routing",
+        "unity gain",
+        "loopback recording",
+        "Audient Evo 16",
+        "show flow",
+        "cue numbering",
+        "cue color coding",
+        "Auto Follow",
+        "cue start time",
+        "panic button",
+        "panic duration",
+        "Stream Deck integration"
+      ],
+      "depth": "applied"
+    },
+    {
       "citekey": "michaelcurtisShouldYouTune2022",
       "title": "Should You Tune Your Live Sound System Flat?",
       "channel": "Michael Curtis",
