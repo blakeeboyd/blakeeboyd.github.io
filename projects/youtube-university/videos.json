@@ -1324,6 +1324,60 @@
       "depth": "foundational"
     },
     {
+      "citekey": "recordingstudioloserMonitorEngineerShow2023",
+      "title": "Monitor Engineer Show Us Everything! | STYX Evan McElhinney Mixing Tommy Shaw, JY, Todd Sucherman",
+      "channel": "Recording Studio Loser",
+      "duration": "37:28",
+      "ytId": "01c2XyHtcHc",
+      "domains": [
+        "Live Sound"
+      ],
+      "subdomains": [
+        "Monitor Engineering",
+        "System Design",
+        "Soundcheck",
+        "Festival Production"
+      ],
+      "tags": [
+        "signal-flow",
+        "wireless",
+        "gain-structure"
+      ],
+      "concepts": [
+        "monitor engineering",
+        "in-ear monitors",
+        "independent monitor mixes",
+        "Westone ES60",
+        "in-ear maintenance",
+        "Jodi-Vac",
+        "coupling microphone",
+        "Audix TM2",
+        "Smaart Live",
+        "driver health check",
+        "DiGiCo SD12",
+        "shared stage rack",
+        "head amp gain",
+        "gain tracking",
+        "snapshots",
+        "control groups",
+        "virtual sound check",
+        "Waves Tracks Live",
+        "pre-fader vs post-fader",
+        "pre-mute",
+        "kick drum ducking",
+        "hearing conservation",
+        "console redundancy",
+        "Shure Axient Digital",
+        "PSM1000",
+        "RF coordination",
+        "Wireless Workbench",
+        "cable management",
+        "Cam-Lok safety",
+        "Styx"
+      ],
+      "depth": "applied"
+    },
+    {
       "citekey": "nathanlivelyNobodyCaresShit2022",
       "title": "Nobody Cares until the Shit Hits the Fan (Sean Sullivan)",
       "channel": "Nathan Lively",
