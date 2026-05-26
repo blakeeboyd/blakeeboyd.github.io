@@ -2193,6 +2193,10 @@ function formatArchiveDate(ts) {
   return y + "-" + mo + "-" + da + " " + h12 + ":" + mm + " " + period;
 }
 
+/* Number of archives surfaced in the admin panel for quick access. The full
+   list lives at projects/backchannel/archives/. */
+const ADMIN_PANEL_ARCHIVE_PREVIEW = 3;
+
 function renderArchiveList() {
   archiveListEl.innerHTML = "";
   if (archivesData.length === 0) {
@@ -2202,7 +2206,8 @@ function renderArchiveList() {
     archiveListEl.appendChild(empty);
     return;
   }
-  for (const row of archivesData) {
+  const preview = archivesData.slice(0, ADMIN_PANEL_ARCHIVE_PREVIEW);
+  for (const row of preview) {
     const li = document.createElement("li");
     li.className = "admin-panel__row";
 
@@ -2247,6 +2252,20 @@ function renderArchiveList() {
     li.appendChild(actions);
     archiveListEl.appendChild(li);
   }
+
+  // Footer link to the dedicated archives page. Always shown when at least
+  // one archive exists; the "+ N more" suffix only appears when there are
+  // archives beyond what fits in the preview.
+  const footer = document.createElement("li");
+  footer.className = "admin-panel__empty";
+  const link = document.createElement("a");
+  link.href = "archives/";
+  const overflow = archivesData.length - preview.length;
+  link.textContent = overflow > 0
+    ? "View all archives (" + archivesData.length + ")"
+    : "View all archives";
+  footer.appendChild(link);
+  archiveListEl.appendChild(footer);
 }
 
 /* Sort a messages map (the same { pushId: msg } shape Firebase stores) by ts.

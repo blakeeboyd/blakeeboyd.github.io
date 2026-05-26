@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!--
+  Backchannel archives page
+
+  Browses the backchannel/archives node in Firebase. Each archive is a
+  full snapshot of the room captured at clear-room time. The page is
+  intentionally unlinked from anywhere except the admin panel of the
+  room itself; anyone with the URL can read (matches current Firebase
+  rules .read: true). This is the same soft-lock threat model as the
+  rest of the app.
+-->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backchannel archives</title>
+
+<style>
+/* ============================================================
+   Tokens (mirror of projects/backchannel/index.html). Kept in sync
+   manually since this is a separate self-contained page. If you
+   change tokens in the room, change them here too.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap');
+
+:root {
+  --color-bg:#f8f9fa; --color-text:#1a1a1a; --color-text-muted:#5b6370;
+  --color-accent:#2563eb; --color-accent-light:#dbeafe; --color-accent-medium:#3b82f6;
+  --color-accent-hover:#1d4ed8; --color-border:#e5e7eb; --color-card-bg:#ffffff;
+  --color-control-bg:#f3f4f6;
+  --color-success:#10b981; --color-warning:#f59e0b; --color-error:#ef4444;
+  --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --font-serif:'Source Serif 4','Source Serif Pro',Charter,Georgia,serif;
+  --font-mono:'JetBrains Mono','SF Mono',Monaco,Consolas,monospace;
+  --feat-sans:"cv11","ss01","cv05"; --feat-mono:"tnum","zero";
+  --text-xs:0.75rem; --text-sm:0.875rem; --text-base:1rem; --text-md:1.125rem;
+  --text-lg:1.4rem; --text-xl:1.75rem; --text-2xl:2.1875rem; --text-3xl:2.75rem;
+  --lh-tight:1.1; --lh-snug:1.25; --lh-body:1.55;
+  --tracking-tight:-0.015em; --tracking-wide:0.05em;
+  --weight-medium:500; --weight-semibold:600;
+  --spacing-xs:0.5rem; --spacing-sm:1rem; --spacing-md:1.5rem; --spacing-lg:2rem;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.05);
+  --radius-sm:0.375rem; --radius-md:0.5rem; --radius-lg:0.75rem;
+  --transition-fast:0.15s ease; --transition-normal:0.2s ease;
+}
+[data-theme="dark"] {
+  --color-bg:#111827; --color-text:#f3f4f6; --color-text-muted:#9ca3af;
+  --color-accent:#bfdbfe; --color-accent-light:rgba(191,219,254,0.15);
+  --color-border:#374151; --color-card-bg:#1f2937; --color-control-bg:#374151;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.3);
+}
+html { font-size:18px; -webkit-font-smoothing:antialiased; }
+body {
+  margin:0; font-family:var(--font-sans); font-feature-settings:var(--feat-sans);
+  background:var(--color-bg); color:var(--color-text); line-height:var(--lh-body);
+}
+*, *::before, *::after { box-sizing:border-box; }
+button { font:inherit; color:inherit; background:none; border:0; cursor:pointer; }
+a { color:var(--color-accent); text-decoration:underline; text-underline-offset:2px; }
+a:hover { opacity:0.8; }
+
+/* ============================================================
+   Layout
+   ============================================================ */
+.app {
+  max-width:1100px; margin:0 auto;
+  padding:var(--spacing-md) var(--spacing-sm);
+  display:flex; flex-direction:column; gap:var(--spacing-md);
+  min-height:100vh; min-height:100dvh;
+}
+
+.header {
+  display:flex; align-items:center; gap:var(--spacing-sm);
+}
+.header__brand {
+  display:flex; align-items:center; gap:0.75rem; flex:1; min-width:0;
+}
+.header__brand svg { flex-shrink:0; display:block; }
+.header__title {
+  font-family:var(--font-serif); font-variation-settings:"opsz" 28;
+  font-size:var(--text-xl); font-weight:600; line-height:var(--lh-tight);
+  letter-spacing:var(--tracking-tight); margin:0;
+}
+.header__controls { display:flex; align-items:center; gap:var(--spacing-sm); }
+.header__back {
+  font-size:var(--text-sm); color:var(--color-text-muted);
+  text-decoration:none; padding:0.375rem 0.625rem;
+  border:1px solid var(--color-border); border-radius:var(--radius-md);
+  background:var(--color-card-bg);
+  transition:border-color var(--transition-fast), background var(--transition-fast);
+}
+.header__back:hover {
+  border-color:var(--color-text); background:var(--color-control-bg); opacity:1;
+}
+
+.theme-toggle {
+  width:36px; height:36px;
+  display:inline-flex; align-items:center; justify-content:center;
+  border:1px solid var(--color-border); border-radius:var(--radius-md);
+  color:var(--color-text); background:var(--color-card-bg);
+  transition:background var(--transition-fast), color var(--transition-fast),
+             border-color var(--transition-fast);
+}
+.theme-toggle svg { transition:transform var(--transition-normal); }
+.theme-toggle:hover {
+  background:var(--color-text); color:var(--color-card-bg); border-color:var(--color-text);
+}
+.theme-toggle:hover svg { transform:rotate(15deg); }
+
+/* ============================================================
+   Notice (demo mode / connection issues)
+   ============================================================ */
+.notice {
+  display:none;
+  padding:var(--spacing-xs) var(--spacing-sm);
+  background:var(--color-card-bg);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  box-shadow:var(--shadow-sm);
+  font-size:var(--text-sm);
+}
+.notice.is-visible { display:block; }
+.notice__dot {
+  display:inline-block; width:8px; height:8px; border-radius:50%;
+  background:var(--color-warning); margin-right:0.5rem; vertical-align:middle;
+}
+
+/* ============================================================
+   Body grid: archive list + transcript
+   ============================================================ */
+.layout {
+  display:grid;
+  grid-template-columns: minmax(240px, 320px) 1fr;
+  gap:var(--spacing-md);
+  flex:1; min-height:0;
+}
+@media (max-width: 720px) {
+  .layout { grid-template-columns: 1fr; }
+}
+
+.list-card {
+  background:var(--color-card-bg);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  box-shadow:var(--shadow-sm);
+  padding:var(--spacing-sm);
+  display:flex; flex-direction:column; gap:0.5rem;
+  align-self:flex-start;
+}
+.list-card__title {
+  font-size:var(--text-xs); font-family:var(--font-mono);
+  font-feature-settings:var(--feat-mono); font-weight:500;
+  text-transform:uppercase; letter-spacing:var(--tracking-wide);
+  color:var(--color-text-muted); margin:0;
+}
+.list-card__list {
+  list-style:none; padding:0; margin:0;
+  display:flex; flex-direction:column; gap:0.25rem;
+  max-height:60vh; overflow-y:auto;
+  scrollbar-width:thin;
+  scrollbar-color:var(--color-border) transparent;
+}
+.list-card__list::-webkit-scrollbar { width:8px; }
+.list-card__list::-webkit-scrollbar-track { background:transparent; }
+.list-card__list::-webkit-scrollbar-thumb {
+  background:var(--color-border); border-radius:var(--radius-md);
+}
+.list-card__empty {
+  font-size:var(--text-sm); color:var(--color-text-muted); padding:0.5rem 0.25rem;
+}
+.list-item {
+  display:flex; flex-direction:column; gap:0.125rem;
+  padding:0.5rem 0.625rem;
+  border:1px solid transparent;
+  border-radius:var(--radius-sm);
+  background:transparent;
+  text-align:left;
+  cursor:pointer;
+  transition:border-color var(--transition-fast), background var(--transition-fast);
+}
+.list-item:hover {
+  border-color:var(--color-border);
+  background:var(--color-control-bg);
+}
+.list-item.is-active {
+  border-color:var(--color-accent);
+  background:var(--color-accent-light);
+}
+.list-item__ts {
+  font-size:var(--text-sm); font-weight:500;
+  font-variant-numeric:tabular-nums;
+}
+.list-item__meta {
+  font-size:var(--text-xs); color:var(--color-text-muted);
+}
+
+/* ============================================================
+   Transcript pane
+   ============================================================ */
+.viewer-card {
+  background:var(--color-card-bg);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  box-shadow:var(--shadow-sm);
+  padding:var(--spacing-md);
+  display:flex; flex-direction:column;
+  min-height:50vh;
+}
+.viewer-card__empty {
+  margin:auto; color:var(--color-text-muted); font-size:var(--text-sm);
+  text-align:center;
+}
+.viewer-card__header {
+  display:flex; align-items:flex-start; justify-content:space-between;
+  gap:var(--spacing-sm);
+  padding-bottom:var(--spacing-sm);
+  margin-bottom:var(--spacing-sm);
+  border-bottom:1px solid var(--color-border);
+}
+.viewer-card__title {
+  margin:0; font-family:var(--font-serif); font-variation-settings:"opsz" 24;
+  font-size:var(--text-lg); font-weight:600; letter-spacing:var(--tracking-tight);
+}
+.viewer-card__meta {
+  margin-top:0.25rem;
+  font-size:var(--text-xs); color:var(--color-text-muted);
+}
+.viewer-card__actions {
+  display:flex; gap:0.375rem; flex-wrap:wrap; justify-content:flex-end;
+}
+.action-btn {
+  font-size:var(--text-xs); font-family:var(--font-mono);
+  font-feature-settings:var(--feat-mono); font-weight:500;
+  text-transform:uppercase; letter-spacing:var(--tracking-wide);
+  padding:0.25rem 0.625rem;
+  border:1px solid var(--color-border); border-radius:var(--radius-sm);
+  background:transparent; color:var(--color-accent);
+  transition:border-color var(--transition-fast), background var(--transition-fast);
+}
+.action-btn:hover {
+  border-color:var(--color-accent); background:var(--color-card-bg);
+}
+.action-btn--danger { color:var(--color-error); }
+.action-btn--danger:hover { border-color:var(--color-error); }
+
+.transcript {
+  display:flex; flex-direction:column; gap:0.5rem;
+  overflow-y:auto;
+  max-height:70vh;
+  scrollbar-width:thin;
+  scrollbar-color:var(--color-border) transparent;
+}
+.transcript::-webkit-scrollbar { width:10px; }
+.transcript::-webkit-scrollbar-track { background:transparent; }
+.transcript::-webkit-scrollbar-thumb {
+  background:var(--color-border); border-radius:var(--radius-md);
+  border:2px solid var(--color-bg);
+}
+
+.transcript__msg {
+  background:var(--color-bg);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  padding:0.5rem 0.75rem;
+}
+.transcript__msg-header {
+  display:flex; align-items:baseline; gap:0.5rem;
+  font-size:var(--text-xs);
+  margin-bottom:0.25rem;
+}
+.transcript__name {
+  font-family:var(--font-mono); font-feature-settings:var(--feat-mono);
+  font-weight:500; text-transform:uppercase; letter-spacing:var(--tracking-wide);
+}
+.transcript__time {
+  font-family:var(--font-mono); font-feature-settings:var(--feat-mono);
+  font-variant-numeric:tabular-nums; color:var(--color-text-muted);
+}
+.transcript__time::before {
+  content:"·"; padding-right:0.5rem; color:var(--color-text-muted);
+}
+.transcript__text {
+  margin:0; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word;
+  font-size:var(--text-base);
+}
+
+/* Small-screen tightening */
+@media (max-width: 480px) {
+  .app { padding:var(--spacing-sm) var(--spacing-xs); }
+  .header__title { font-size:var(--text-md); }
+  .viewer-card { padding:var(--spacing-sm); }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <header class="header">
+    <div class="header__brand">
+      <span aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="28" height="28">
+          <rect width="32" height="32" rx="6" fill="#2563eb"></rect>
+          <path d="M4,16 Q8,8 12,16 T20,16 T28,16" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"></path>
+          <path d="M4,16 Q10,22 16,16 T28,16" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.7"></path>
+        </svg>
+      </span>
+      <h1 class="header__title">Backchannel archives</h1>
+    </div>
+    <div class="header__controls">
+      <a class="header__back" href="../">Back to room</a>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle theme">
+        <!-- icon injected by JS -->
+      </button>
+    </div>
+  </header>
+
+  <div class="notice" id="notice" role="status">
+    <span class="notice__dot" aria-hidden="true"></span>
+    <span id="notice-text">Could not reach the archive database.</span>
+  </div>
+
+  <div class="layout">
+    <aside class="list-card" aria-label="Archive list">
+      <p class="list-card__title">All archives</p>
+      <ul class="list-card__list" id="archive-list">
+        <li class="list-card__empty" id="archive-empty">Loading…</li>
+      </ul>
+    </aside>
+
+    <section class="viewer-card" id="viewer" aria-label="Archive transcript">
+      <div class="viewer-card__empty" id="viewer-empty">
+        Select an archive to view its transcript.
+      </div>
+    </section>
+  </div>
+</div>
+
+<script type="module">
+/* ============================================================
+   Config (must match projects/backchannel/index.html)
+   ============================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyAoN6kYjrq4b3aatmnd8pgxgg5wV-ekScE",
+  authDomain: "soundbox-9.firebaseapp.com",
+  databaseURL: "https://soundbox-9-default-rtdb.firebaseio.com",
+  projectId: "soundbox-9",
+  appId: "1:1069332070599:web:4959225a4eb3d33e6ebee2"
+};
+const ARCHIVES_PATH = "backchannel/archives";
+
+const STORAGE_THEME = "backchannel.theme";
+
+/* ============================================================
+   DOM
+   ============================================================ */
+const $ = (id) => document.getElementById(id);
+const root         = document.documentElement;
+const themeBtn     = $("theme-toggle");
+const noticeEl     = $("notice");
+const noticeText   = $("notice-text");
+const listEl       = $("archive-list");
+const listEmptyEl  = $("archive-empty");
+const viewerEl     = $("viewer");
+const viewerEmpty  = $("viewer-empty");
+
+/* ============================================================
+   Theme (shared key with the room so the choice persists across pages)
+   ============================================================ */
+const SUN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`;
+const MOON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+
+function applyTheme(theme) {
+  root.setAttribute("data-theme", theme);
+  themeBtn.innerHTML = theme === "dark" ? SUN_SVG : MOON_SVG;
+  themeBtn.setAttribute("aria-label", theme === "dark" ? "Switch to light theme" : "Switch to dark theme");
+}
+function initTheme() {
+  let theme = null;
+  try { theme = localStorage.getItem(STORAGE_THEME); } catch (e) {}
+  if (theme !== "light" && theme !== "dark") {
+    theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  applyTheme(theme);
+}
+themeBtn.addEventListener("click", () => {
+  const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  applyTheme(next);
+  try { localStorage.setItem(STORAGE_THEME, next); } catch (e) {}
+});
+initTheme();
+
+/* ============================================================
+   Notice (connectivity / config issues)
+   ============================================================ */
+function showNotice(text) {
+  noticeText.textContent = text;
+  noticeEl.classList.add("is-visible");
+}
+
+/* ============================================================
+   Backend
+   ============================================================ */
+function configLooksReal(cfg) {
+  return cfg && cfg.databaseURL && cfg.apiKey
+    && cfg.apiKey !== "PASTE" && cfg.databaseURL !== "PASTE";
+}
+
+let dbMod = null;
+let archivesRef = null;
+let archives = [];        // [{ id, ts, archivedBy, count }, ...] sorted desc
+let activeArchiveId = null;
+
+async function initBackend() {
+  if (!configLooksReal(firebaseConfig)) {
+    showNotice("Archive backend not configured. Add Firebase config to view archives.");
+    return;
+  }
+  try {
+    const appMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    dbMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+    const app = appMod.initializeApp(firebaseConfig);
+    const db = dbMod.getDatabase(app);
+    archivesRef = dbMod.ref(db, ARCHIVES_PATH);
+
+    dbMod.onValue(archivesRef, (snap) => {
+      const v = snap.val() || {};
+      const rows = [];
+      for (const id of Object.keys(v)) {
+        const entry = v[id] || {};
+        rows.push({
+          id,
+          ts: typeof entry.ts === "number" ? entry.ts : 0,
+          archivedBy: entry.archivedBy || "unknown",
+          count: typeof entry.count === "number" ? entry.count : 0
+        });
+      }
+      rows.sort((a, b) => b.ts - a.ts);
+      archives = rows;
+      renderList();
+      // If the currently-viewed archive got deleted, drop the transcript.
+      if (activeArchiveId && !archives.some((r) => r.id === activeArchiveId)) {
+        activeArchiveId = null;
+        renderEmptyViewer();
+      }
+    });
+  } catch (err) {
+    console.error("Firebase init failed:", err);
+    showNotice("Could not reach the archive database.");
+  }
+}
+
+async function fetchArchive(id) {
+  if (!dbMod || !archivesRef) return null;
+  const ref = dbMod.ref(dbMod.getDatabase(), ARCHIVES_PATH + "/" + id);
+  const snap = await dbMod.get(ref);
+  return snap.val();
+}
+
+async function deleteArchive(id) {
+  if (!dbMod) return;
+  const ref = dbMod.ref(dbMod.getDatabase(), ARCHIVES_PATH + "/" + id);
+  await dbMod.set(ref, null);
+}
+
+/* ============================================================
+   Rendering
+   ============================================================ */
+function formatDate(ts) {
+  if (!ts) return "—";
+  const d = new Date(ts);
+  const y = d.getFullYear();
+  const mo = String(d.getMonth() + 1).padStart(2, "0");
+  const da = String(d.getDate()).padStart(2, "0");
+  const h24 = d.getHours();
+  const period = h24 >= 12 ? "PM" : "AM";
+  const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return y + "-" + mo + "-" + da + " " + h12 + ":" + mm + " " + period;
+}
+
+function formatTimeOfDay(ts) {
+  const d = new Date(ts);
+  const h24 = d.getHours();
+  const period = h24 >= 12 ? "PM" : "AM";
+  const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return h12 + ":" + mm + " " + period;
+}
+
+const PALETTE = [
+  "var(--color-accent)", "var(--color-success)", "var(--color-warning)",
+  "var(--color-error)", "var(--color-accent-medium)"
+];
+function colorFor(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return PALETTE[h % PALETTE.length];
+}
+
+function renderList() {
+  listEl.innerHTML = "";
+  if (archives.length === 0) {
+    const empty = document.createElement("li");
+    empty.className = "list-card__empty";
+    empty.textContent = "No archives yet.";
+    listEl.appendChild(empty);
+    return;
+  }
+  for (const row of archives) {
+    const li = document.createElement("li");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "list-item" + (row.id === activeArchiveId ? " is-active" : "");
+    btn.addEventListener("click", () => openArchive(row.id));
+
+    const tsEl = document.createElement("div");
+    tsEl.className = "list-item__ts";
+    tsEl.textContent = formatDate(row.ts);
+    btn.appendChild(tsEl);
+
+    const metaEl = document.createElement("div");
+    metaEl.className = "list-item__meta";
+    metaEl.textContent = row.count + " messages, by " + row.archivedBy;
+    btn.appendChild(metaEl);
+
+    li.appendChild(btn);
+    listEl.appendChild(li);
+  }
+}
+
+function renderEmptyViewer() {
+  viewerEl.innerHTML = "";
+  const e = document.createElement("div");
+  e.className = "viewer-card__empty";
+  e.textContent = "Select an archive to view its transcript.";
+  viewerEl.appendChild(e);
+}
+
+function renderViewer(meta, full) {
+  viewerEl.innerHTML = "";
+
+  // Header with metadata + action buttons
+  const header = document.createElement("div");
+  header.className = "viewer-card__header";
+
+  const headerInfo = document.createElement("div");
+  const title = document.createElement("h2");
+  title.className = "viewer-card__title";
+  title.textContent = "Archive from " + formatDate(meta.ts);
+  headerInfo.appendChild(title);
+  const metaEl = document.createElement("div");
+  metaEl.className = "viewer-card__meta";
+  metaEl.textContent = meta.count + " messages, archived by " + meta.archivedBy;
+  headerInfo.appendChild(metaEl);
+  header.appendChild(headerInfo);
+
+  const actions = document.createElement("div");
+  actions.className = "viewer-card__actions";
+
+  const jsonBtn = document.createElement("button");
+  jsonBtn.type = "button";
+  jsonBtn.className = "action-btn";
+  jsonBtn.textContent = "download json";
+  jsonBtn.addEventListener("click", () => downloadJson(meta, full));
+  actions.appendChild(jsonBtn);
+
+  const delBtn = document.createElement("button");
+  delBtn.type = "button";
+  delBtn.className = "action-btn action-btn--danger";
+  delBtn.textContent = "delete";
+  delBtn.addEventListener("click", () => deleteWithConfirm(meta));
+  actions.appendChild(delBtn);
+
+  header.appendChild(actions);
+  viewerEl.appendChild(header);
+
+  // Sorted transcript
+  const messages = sortMessages(full.messages || {});
+  if (messages.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "viewer-card__empty";
+    empty.textContent = "Archive is empty.";
+    viewerEl.appendChild(empty);
+    return;
+  }
+
+  const transcript = document.createElement("div");
+  transcript.className = "transcript";
+  for (const m of messages) {
+    const msg = document.createElement("article");
+    msg.className = "transcript__msg";
+
+    const msgHeader = document.createElement("header");
+    msgHeader.className = "transcript__msg-header";
+    const nameEl = document.createElement("span");
+    nameEl.className = "transcript__name";
+    nameEl.style.color = colorFor(m.name || "");
+    nameEl.textContent = m.name || "(no name)";  // textContent always; never innerHTML for user data
+    msgHeader.appendChild(nameEl);
+    const time = document.createElement("time");
+    time.className = "transcript__time";
+    time.dateTime = new Date(m.ts).toISOString();
+    time.textContent = formatTimeOfDay(m.ts);
+    msgHeader.appendChild(time);
+    msg.appendChild(msgHeader);
+
+    const p = document.createElement("p");
+    p.className = "transcript__text";
+    p.textContent = m.text || "";
+    msg.appendChild(p);
+
+    transcript.appendChild(msg);
+  }
+  viewerEl.appendChild(transcript);
+}
+
+function sortMessages(messagesMap) {
+  const rows = [];
+  for (const id of Object.keys(messagesMap || {})) {
+    const m = messagesMap[id] || {};
+    rows.push({
+      name: typeof m.name === "string" ? m.name : "",
+      text: typeof m.text === "string" ? m.text : "",
+      ts: typeof m.ts === "number" ? m.ts : 0,
+      deviceId: typeof m.deviceId === "string" ? m.deviceId : ""
+    });
+  }
+  rows.sort((a, b) => a.ts - b.ts);
+  return rows;
+}
+
+/* ============================================================
+   Actions
+   ============================================================ */
+async function openArchive(id) {
+  activeArchiveId = id;
+  renderList();
+  // Show a quick loading state in the viewer.
+  viewerEl.innerHTML = "";
+  const loading = document.createElement("div");
+  loading.className = "viewer-card__empty";
+  loading.textContent = "Loading transcript…";
+  viewerEl.appendChild(loading);
+
+  const meta = archives.find((r) => r.id === id);
+  if (!meta) { renderEmptyViewer(); return; }
+  try {
+    const full = await fetchArchive(id);
+    if (!full) {
+      renderEmptyViewer();
+      return;
+    }
+    renderViewer(meta, full);
+  } catch (err) {
+    console.error("Open archive failed:", err);
+    viewerEl.innerHTML = "";
+    const e = document.createElement("div");
+    e.className = "viewer-card__empty";
+    e.textContent = "Could not load this archive.";
+    viewerEl.appendChild(e);
+  }
+}
+
+function downloadJson(meta, full) {
+  const sorted = sortMessages(full.messages || {});
+  const payload = {
+    archiveId: meta.id,
+    ts: full.ts || meta.ts,
+    archivedBy: full.archivedBy || meta.archivedBy,
+    count: sorted.length,
+    messages: sorted
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  const stamp = new Date(full.ts || meta.ts).toISOString().replace(/[:.]/g, "-").slice(0, 19);
+  a.download = "backchannel-archive-" + stamp + ".json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+async function deleteWithConfirm(meta) {
+  const ok = window.confirm("Delete the archive from " + formatDate(meta.ts) + "? This cannot be undone.");
+  if (!ok) return;
+  try {
+    await deleteArchive(meta.id);
+    // The onValue listener will refresh the list and clear the viewer.
+  } catch (err) {
+    console.error("Delete archive failed:", err);
+    window.alert("Could not delete the archive.");
+  }
+}
+
+/* ============================================================
+   Boot
+   ============================================================ */
+initBackend();
+</script>
+</body>
+</html>
