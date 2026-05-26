@@ -1,6 +1,8 @@
-# SoundBox
+# Backchannel
 
-A live text backchannel for in-class listening sessions. Students land in one shared room, no auth, names persist per-browser. Designed for use on student phones during a session. Hosted as a static page on blakeeboyd.github.io.
+A live text backchannel for in-class sessions. Students land in one shared room, no auth, names persist per-browser. Designed for use on student phones during a session. Hosted as a static page on blakeeboyd.github.io.
+
+Previously named SoundBox. The rename moved the directory from `projects/soundbox/` to `projects/backchannel/` and renamed Firebase paths from `soundbox/*` to `backchannel/*`. The Firebase **project ID** is still `soundbox-9` (renaming the project itself would require a data migration). A one-time localStorage migration in `index.html` ports old `soundbox.*` keys to `backchannel.*` on first visit.
 
 ## Architecture
 
@@ -13,16 +15,23 @@ Single self-contained `index.html`. No build step, no framework, no bundler. Ope
 
 ### Data model
 
-Messages live at `soundbox/messages`. Each message: `{ name, text, ts: serverTimestamp() }`. Read via `query(ref(db, ROOM_PATH), limitToLast(200))` plus `onChildAdded`.
+Messages live at `backchannel/messages`. Each message: `{ name, text, ts: serverTimestamp(), deviceId }`. Read via `query(ref(db, ROOM_PATH), limitToLast(200))` plus `onChildAdded`.
+
+Other Firebase paths:
+- `backchannel/adminSession` — `{ token, ts }`. Single-slot admin lock. A fresh token kicks any prior admin.
+- `backchannel/bans` — `{ [deviceId]: { ts, byName } }`. Banned devices have their composer disabled and their messages visually muted on every client.
 
 ### State
 
 | Where | What | Lifespan |
 |---|---|---|
-| Firebase RTDB | Messages | Persistent, server-side |
-| `localStorage["soundbox.name"]` | Per-user name | Per-browser, until cleared |
-| `localStorage["soundbox.theme"]` | Light/dark choice | Per-browser, until cleared |
-| In-memory only | Demo-mode messages, live participant count | Tab-scoped |
+| Firebase RTDB | Messages, admin session, bans | Persistent, server-side |
+| `localStorage["backchannel.name"]` | Per-user name | Per-browser, until cleared |
+| `localStorage["backchannel.theme"]` | Light/dark choice | Per-browser, until cleared |
+| `localStorage["backchannel.notify"]` | Notification opt-in | Per-browser, until cleared |
+| `localStorage["backchannel.deviceId"]` | Stable random per-device id (rides on every message) | Per-browser, until cleared |
+| `localStorage["backchannel.renames"]` | This device's name-change history (for "previously known as") | Per-browser, until cleared |
+| In-memory only | Demo-mode messages, live participant count, admin status, rate-limit window, banlist | Tab-scoped |
 
 ## Design system (Blake Boyd)
 
@@ -50,7 +59,7 @@ Five colors only, picked deterministically from a name hash:
 Use the existing utility classes (`.h-page-title`, `.h-card`, `.t-body`, `.t-subtitle`, `.t-small`, `.t-label`, `.t-mono`, `.t-numeric`). Don't reinvent them.
 
 ### Theming
-Light is default. Dark via `data-theme="dark"` on `<html>`. First load uses `prefers-color-scheme`; subsequent loads honor `localStorage["soundbox.theme"]`. Toggle icon shows the mode you'd switch *to* (moon while in light, sun while in dark) and rotates 15° on hover.
+Light is default. Dark via `data-theme="dark"` on `<html>`. First load uses `prefers-color-scheme`; subsequent loads honor `localStorage["backchannel.theme"]`. Toggle icon shows the mode you'd switch *to* (moon while in light, sun while in dark) and rotates 15° on hover. The `.messages` scrollbar is tokenized via `scrollbar-color` and `::-webkit-scrollbar` so it reads correctly in both themes.
 
 ## Voice and copy rules
 
@@ -107,9 +116,20 @@ The admin name (`Blake`, set as `ADMIN_NAME` in the script) is reserved and can'
 
 This is enforced by `ADMIN_GESTURE` in `index.html`. Sticky for the session once completed.
 
-Takeover: each Blake-join writes a new token to `soundbox/adminSession`. Any other device already admin sees the token change and bounces itself to the join screen with "You were signed out of admin on another device."
+Takeover: each Blake-join writes a new token to `backchannel/adminSession`. Any other device already admin sees the token change and bounces itself to the join screen with "You were signed out of admin on another device."
 
 This is a soft lock. Anyone with View Source can find the gesture. Acceptable threat model for a class session, not for anything FERPA-sensitive.
+
+## Admin actions
+
+When `isAdmin` is true, the room element carries `.is-admin`, which reveals admin-only affordances via CSS:
+
+- **Ban**: a small "ban" button appears in every non-own, non-admin chain header. Clicking it prompts a confirm, then writes the message's `deviceId` to `backchannel/bans`. The banned device's client sees its own id appear in the banlist on the next `onValue` fire, disables its composer, and the device's messages get visually muted (opacity 0.4, italic) on every client. Unbanning happens from the Firebase console (no UI yet).
+- **Soft lock**: same caveat as the admin gesture. A user with dev tools can post messages with a custom `deviceId` field and dodge the ban. Real enforcement needs Firebase security rules or Cloud Functions (planned alongside push notifications).
+
+## Send rate limit
+
+Every device enforces a rolling window of `SEND_RATE_MAX` (5) messages per `SEND_RATE_WINDOW_MS` (10s). When the limit trips, the composer's character-count slot shows "Slow down. Try again in Ns." and the submit is silently rejected. This is also a soft lock, bypassable in dev tools. Real per-IP rate limits will come via the Cloud Functions stage.
 
 ## Deployment
 
@@ -126,7 +146,7 @@ Test-mode rules are fine for a single class session. Tighten (auth-gated, shape-
 Before implementing, check:
 
 1. **Does it require a backend change beyond `push` and `onChildAdded`?** If so, document it and confirm before adding Firebase calls. New paths need rules consideration.
-2. **Does it require persisting new client state?** Use `localStorage["soundbox.<key>"]`. Wrap in try/catch — Safari private mode can throw.
+2. **Does it require persisting new client state?** Use `localStorage["backchannel.<key>"]`. Wrap in try/catch — Safari private mode can throw.
 3. **Does it introduce new copy?** Run it through the voice rules above before writing.
 4. **Does it introduce new visuals?** Use existing tokens. If a token doesn't exist for what you need, surface that rather than hardcoding.
 5. **Does it survive demo mode?** Features that only work with Firebase need a clean degraded behavior.
@@ -138,9 +158,11 @@ If a request conflicts with the design system, voice rules, or constraints above
 
 These are plausible next features that have been discussed but not implemented. Don't assume any are wanted without confirmation.
 
-- An admin "clear room" affordance gated by a passphrase or query parameter
+- An admin "clear room" affordance, ideally as a button visible when `roomEl.is-admin` is set (rather than the current "open the Firebase console" workflow)
+- An admin "unban" UI to complement the ban affordance (currently bans can only be cleared from the Firebase console)
 - Optional pseudonym prompting on the join card for FERPA-sensitive sessions
-- Tightened Firebase rules with shape validation and per-IP rate limits (likely via Cloud Functions)
-- A per-session room ID in the URL hash so multiple classes can run in parallel
+- Tightened Firebase rules with shape validation and per-IP rate limits via Cloud Functions (this is what makes the client-side ban and rate-limit actually enforceable)
+- A per-session room ID in the URL hash (or query param) so multiple classes can run in parallel without sharing backfill
 - Light moderation: a soft client-side report button that flags a message for instructor review
 - An "instructor view" with the same UI but a slow-mode toggle, message-rate display, or post-session export
+- Push notifications (a separate plan exists at `~/.claude/projects/-Users-harrisgb-Library-CloudStorage-SynologyDrive-Maranasati-Projects-GitHub-blakeeboyd-github-io/memory/soundbox-push-notifications-plan.md`)
