@@ -318,6 +318,97 @@ input, textarea { font:inherit; color:inherit; }
 .msg-chain--banned { opacity:0.4; }
 .msg-chain--banned .msg { font-style:italic; }
 
+/* Admin header toggle — visually echoes the live button but only renders
+   when the room carries .is-admin. Sits in the header next to live. */
+.admin-toggle {
+  display:none;
+  align-items:center;
+  gap:0.5rem;
+  padding:0.375rem 0.625rem;
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  background:var(--color-card-bg);
+  color:var(--color-accent);
+  cursor:pointer;
+  transition:border-color var(--transition-fast), background var(--transition-fast);
+}
+.room.is-admin .admin-toggle { display:inline-flex; }
+.admin-toggle:hover {
+  border-color:var(--color-accent);
+  background:var(--color-accent-light);
+}
+.admin-toggle[aria-expanded="true"] {
+  border-color:var(--color-accent);
+  background:var(--color-accent-light);
+}
+
+/* Admin panel — same chrome as .who-panel, but with multiple sections. */
+.admin-panel {
+  background:var(--color-card-bg);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  box-shadow:var(--shadow-sm);
+  padding:var(--spacing-sm);
+  display:flex; flex-direction:column; gap:var(--spacing-sm);
+}
+.admin-panel.is-hidden { display:none; }
+.admin-panel__section { display:flex; flex-direction:column; gap:0.5rem; }
+.admin-panel__title { margin:0; }
+.admin-panel__danger {
+  align-self:flex-start;
+  color:var(--color-error);
+  border-color:var(--color-border);
+}
+.admin-panel__danger:hover {
+  border-color:var(--color-error);
+  background:var(--color-control-bg);
+}
+.admin-panel__list {
+  list-style:none; padding:0; margin:0;
+  display:flex; flex-direction:column; gap:0.375rem;
+}
+.admin-panel__row {
+  display:flex; align-items:center; justify-content:space-between; gap:var(--spacing-xs);
+  padding:0.375rem 0.5rem;
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-sm);
+  background:var(--color-control-bg);
+}
+.admin-panel__row-name {
+  font-family:var(--font-mono);
+  font-feature-settings:var(--feat-mono);
+  font-size:var(--text-xs);
+  font-weight:500;
+  text-transform:uppercase;
+  letter-spacing:var(--tracking-wide);
+}
+.admin-panel__row-meta {
+  font-size:var(--text-xs);
+  color:var(--color-text-muted);
+}
+.admin-panel__unban {
+  font-size:var(--text-xs);
+  font-family:var(--font-mono);
+  font-feature-settings:var(--feat-mono);
+  font-weight:500;
+  text-transform:uppercase;
+  letter-spacing:var(--tracking-wide);
+  color:var(--color-accent);
+  padding:0.125rem 0.5rem;
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-sm);
+  background:transparent;
+  transition:border-color var(--transition-fast), background var(--transition-fast);
+}
+.admin-panel__unban:hover {
+  border-color:var(--color-accent);
+  background:var(--color-card-bg);
+}
+.admin-panel__empty {
+  font-size:var(--text-sm);
+  color:var(--color-text-muted);
+}
+
 /* "Previously known as" annotation, visible only on this device's own renamed chains */
 .msg-header__rename {
   font-size:var(--text-xs);
@@ -648,6 +739,9 @@ input, textarea { font:inherit; color:inherit; }
         <span class="t-label">live</span>
         <span class="t-label live__count" id="live-count" aria-hidden="true"></span>
       </button>
+      <button class="admin-toggle" id="admin-toggle" type="button" aria-expanded="false" aria-controls="admin-panel" aria-label="Admin controls">
+        <span class="t-label">admin</span>
+      </button>
       <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle theme">
         <!-- icon injected by JS -->
       </button>
@@ -682,6 +776,17 @@ input, textarea { font:inherit; color:inherit; }
     <div class="who-panel is-hidden" id="who-panel" role="region" aria-label="Active users">
       <p class="t-label who-panel__title">Active in the last 10 minutes</p>
       <ul class="who-panel__list" id="who-list"></ul>
+    </div>
+
+    <div class="admin-panel is-hidden" id="admin-panel" role="region" aria-label="Admin controls">
+      <div class="admin-panel__section">
+        <p class="t-label admin-panel__title">Room</p>
+        <button class="btn-ghost admin-panel__danger" id="clear-room" type="button">Clear all messages</button>
+      </div>
+      <div class="admin-panel__section">
+        <p class="t-label admin-panel__title">Banned devices</p>
+        <ul class="admin-panel__list" id="ban-list"></ul>
+      </div>
     </div>
 
     <div class="messages" id="messages" aria-live="polite" aria-relevant="additions" aria-atomic="false">
@@ -856,6 +961,10 @@ const notifyBtnEl  = $("notify-toggle");
 const notifyNoteEl = $("notify-note");
 const logoEl       = $("logo-target");
 const jumpBtnEl    = $("jump-button");
+const adminToggleEl = $("admin-toggle");
+const adminPanelEl  = $("admin-panel");
+const banListEl     = $("ban-list");
+const clearRoomBtn  = $("clear-room");
 
 /* ============================================================
    Theme
@@ -1269,6 +1378,12 @@ async function initBackend() {
           onChange(v);
         });
       },
+      clearRoom() {
+        // Wipe all messages. Existing clients with the room open will keep
+        // showing what they already rendered until they reload; new joiners
+        // see an empty room. We deliberately don't wipe bans or adminSession.
+        return dbMod.set(messagesRef, null);
+      },
       listen(onMessage) {
         dbMod.onChildAdded(recent, (snap) => {
           const v = snap.val();
@@ -1320,7 +1435,8 @@ function makeDemoBackend() {
     listenAdminSession() {},
     banDevice() { return Promise.resolve(); },
     unbanDevice() { return Promise.resolve(); },
-    listenBans() {}
+    listenBans() {},
+    clearRoom() { return Promise.resolve(); }
   };
 }
 
@@ -1504,6 +1620,14 @@ function renderMessage(msg) {
 
   // Track recent senders for the live count
   seenSenders.set(msg.name, Math.max(seenSenders.get(msg.name) || 0, msg.ts));
+  // Track the latest display name per deviceId so the admin panel can label
+  // banned rows by name. Only update if this message is newer than what we have.
+  if (msg.deviceId) {
+    const prev = deviceLastName.get(msg.deviceId);
+    if (!prev || msg.ts >= prev.ts) {
+      deviceLastName.set(msg.deviceId, { name: msg.name, ts: msg.ts });
+    }
+  }
   updateLiveCount();
 
   if (inHydrationWindow || wasNearBottom) scrollToBottom();
@@ -1688,6 +1812,9 @@ function handleRemoteAdminSession(token) {
     myAdminToken = null;
     myName = null;
     roomEl.classList.remove("is-admin");
+    // Close the admin panel if it's open; the button itself is also hidden by CSS now.
+    adminPanelEl.classList.add("is-hidden");
+    adminToggleEl.setAttribute("aria-expanded", "false");
     // Reset gesture so taking back admin requires re-doing the unlock
     gestureComplete = false;
     resetGesture();
@@ -1713,9 +1840,17 @@ function handleRemoteAdminSession(token) {
    classroom session it's enough friction to stop the disruption.
    ============================================================ */
 let bannedDevices = new Set();
+// Full banlist payload from Firebase: { [deviceId]: { ts, byName } }. Used by
+// the admin panel to show who banned whom and when. Mirrored from handleBansUpdate.
+let bansData = {};
+// Most-recent display name we've seen per deviceId, harvested from incoming
+// messages. Lets the admin panel show a meaningful label ("Sam") instead of
+// the opaque UUID. Bounded only by the 200-message window we hydrate from.
+const deviceLastName = new Map();
 
 function handleBansUpdate(map) {
-  bannedDevices = new Set(Object.keys(map || {}));
+  bansData = map || {};
+  bannedDevices = new Set(Object.keys(bansData));
   // If this device just got banned, kick the composer into a disabled state.
   refreshBannedSelfState();
   // Re-mute any already-rendered messages whose deviceId is now in the set,
@@ -1725,6 +1860,8 @@ function handleBansUpdate(map) {
     if (!id) continue;
     chain.classList.toggle("msg-chain--banned", bannedDevices.has(id));
   }
+  // Keep the admin panel in sync when it's open; cheap when closed.
+  if (!adminPanelEl.classList.contains("is-hidden")) renderAdminPanel();
 }
 
 function iAmBanned() {
@@ -1754,7 +1891,7 @@ async function banDeviceWithConfirm(targetDeviceId, displayName) {
     // Defensive: never let the admin ban themselves
     return;
   }
-  const ok = window.confirm("Ban " + displayName + " from the room? They can be unbanned from the database.");
+  const ok = window.confirm("Ban " + displayName + " from the room? You can unban from the admin panel.");
   if (!ok) return;
   try {
     await backend.banDevice(targetDeviceId, myName || ADMIN_NAME);
@@ -1762,6 +1899,100 @@ async function banDeviceWithConfirm(targetDeviceId, displayName) {
     console.error("Ban failed:", err);
   }
 }
+
+async function unbanDeviceById(targetDeviceId) {
+  if (!isAdmin || !backend) return;
+  if (!targetDeviceId) return;
+  try {
+    await backend.unbanDevice(targetDeviceId);
+  } catch (err) {
+    console.error("Unban failed:", err);
+  }
+}
+
+async function clearRoomWithConfirm() {
+  if (!isAdmin || !backend) return;
+  const ok = window.confirm("Clear all messages from this room? This cannot be undone.");
+  if (!ok) return;
+  try {
+    await backend.clearRoom();
+    // Locally clear the rendered chains. Other clients keep seeing what they
+    // already loaded until they reload, but new joiners see an empty room.
+    messagesEl.innerHTML = "";
+    messagesEl.appendChild(emptyEl);
+    lastMessage = null;
+  } catch (err) {
+    console.error("Clear room failed:", err);
+  }
+}
+
+/* Admin panel rendering.
+
+   The panel has two sections: a clear-room button and a list of banned
+   devices. The list shows the most recent display name we've seen for that
+   deviceId (from the in-memory deviceLastName map, populated as messages
+   arrive), plus who placed the ban. If we never saw the device post, we
+   show a truncated deviceId so the row is still actionable.
+*/
+function renderAdminPanel() {
+  banListEl.innerHTML = "";
+  const ids = Object.keys(bansData);
+  if (ids.length === 0) {
+    const empty = document.createElement("li");
+    empty.className = "admin-panel__empty";
+    empty.textContent = "No devices banned.";
+    banListEl.appendChild(empty);
+    return;
+  }
+  // Most recently banned first
+  ids.sort((a, b) => (bansData[b].ts || 0) - (bansData[a].ts || 0));
+  for (const id of ids) {
+    const meta = bansData[id] || {};
+    const seen = deviceLastName.get(id);
+    const displayName = seen ? seen.name : "(unknown) " + id.slice(0, 6);
+
+    const row = document.createElement("li");
+    row.className = "admin-panel__row";
+
+    const left = document.createElement("div");
+    const nameEl = document.createElement("span");
+    nameEl.className = "admin-panel__row-name";
+    if (seen) nameEl.style.color = colorFor(seen.name);
+    nameEl.textContent = displayName;
+    left.appendChild(nameEl);
+    if (meta.byName) {
+      const metaEl = document.createElement("div");
+      metaEl.className = "admin-panel__row-meta";
+      metaEl.textContent = "banned by " + meta.byName;
+      left.appendChild(metaEl);
+    }
+    row.appendChild(left);
+
+    const unbanBtn = document.createElement("button");
+    unbanBtn.type = "button";
+    unbanBtn.className = "admin-panel__unban";
+    unbanBtn.textContent = "unban";
+    unbanBtn.setAttribute("aria-label", "Unban " + displayName);
+    unbanBtn.addEventListener("click", () => unbanDeviceById(id));
+    row.appendChild(unbanBtn);
+
+    banListEl.appendChild(row);
+  }
+}
+
+adminToggleEl.addEventListener("click", () => {
+  const isOpen = !adminPanelEl.classList.contains("is-hidden");
+  if (isOpen) {
+    adminPanelEl.classList.add("is-hidden");
+    adminToggleEl.setAttribute("aria-expanded", "false");
+  } else {
+    renderAdminPanel();
+    adminPanelEl.classList.remove("is-hidden");
+    adminToggleEl.setAttribute("aria-expanded", "true");
+  }
+});
+
+clearRoomBtn.addEventListener("click", clearRoomWithConfirm);
 
 /* ============================================================
    Composer

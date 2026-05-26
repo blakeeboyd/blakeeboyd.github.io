@@ -124,7 +124,10 @@ This is a soft lock. Anyone with View Source can find the gesture. Acceptable th
 
 When `isAdmin` is true, the room element carries `.is-admin`, which reveals admin-only affordances via CSS:
 
-- **Ban**: a small "ban" button appears in every non-own, non-admin chain header. Clicking it prompts a confirm, then writes the message's `deviceId` to `backchannel/bans`. The banned device's client sees its own id appear in the banlist on the next `onValue` fire, disables its composer, and the device's messages get visually muted (opacity 0.4, italic) on every client. Unbanning happens from the Firebase console (no UI yet).
+- **Admin button in header**: an "admin" toggle appears next to the live indicator. Clicking it expands `.admin-panel` (mirrors the `.who-panel` pattern: card, two sections, list rows). The button doubles as the visible admin indicator — its presence tells the user this tab holds the admin slot.
+- **Clear room**: section one of the admin panel. Confirm dialog, then `backend.clearRoom()` calls `set(messagesRef, null)`. This device immediately empties its rendered chains and reinserts the empty-state element. Other already-loaded clients keep showing what they had until they reload (no remote clear-detection yet); new joiners see an empty room.
+- **Ban**: a small "ban" button appears in every non-own, non-admin chain header. Clicking it prompts a confirm, then writes the message's `deviceId` to `backchannel/bans`. The banned device's client sees its own id appear in the banlist on the next `onValue` fire, disables its composer, and the device's messages get visually muted (opacity 0.4, italic) on every client.
+- **Unban**: section two of the admin panel lists every device currently in `backchannel/bans`. Each row shows the most recent display name we've seen from that deviceId (from the in-memory `deviceLastName` map populated as messages arrive), plus who placed the ban. An "unban" button on each row writes `null` to that deviceId's slot in the banlist.
 - **Soft lock**: same caveat as the admin gesture. A user with dev tools can post messages with a custom `deviceId` field and dodge the ban. Real enforcement needs Firebase security rules or Cloud Functions (planned alongside push notifications).
 
 ## Send rate limit
@@ -158,11 +161,10 @@ If a request conflicts with the design system, voice rules, or constraints above
 
 These are plausible next features that have been discussed but not implemented. Don't assume any are wanted without confirmation.
 
-- An admin "clear room" affordance, ideally as a button visible when `roomEl.is-admin` is set (rather than the current "open the Firebase console" workflow)
-- An admin "unban" UI to complement the ban affordance (currently bans can only be cleared from the Firebase console)
+- Remote clear-detection: when one admin clears the room, other already-loaded clients keep showing their hydrated messages. Subscribing to `onValue(messagesRef)` and noticing when it goes empty would let everyone visibly clear together.
 - Optional pseudonym prompting on the join card for FERPA-sensitive sessions
 - Tightened Firebase rules with shape validation and per-IP rate limits via Cloud Functions (this is what makes the client-side ban and rate-limit actually enforceable)
 - A per-session room ID in the URL hash (or query param) so multiple classes can run in parallel without sharing backfill
 - Light moderation: a soft client-side report button that flags a message for instructor review
-- An "instructor view" with the same UI but a slow-mode toggle, message-rate display, or post-session export
+- An "instructor view" with slow-mode toggle, message-rate display, or post-session export
 - Push notifications (a separate plan exists at `~/.claude/projects/-Users-harrisgb-Library-CloudStorage-SynologyDrive-Maranasati-Projects-GitHub-blakeeboyd-github-io/memory/soundbox-push-notifications-plan.md`)
