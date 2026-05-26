@@ -6,7 +6,7 @@ Hosted at `blakeeboyd.github.io/projects/backchannel/`.
 
 ## What it does
 
-- One shared room. Everyone who opens the page joins the same conversation.
+- One shared room per URL. Add `?room=<name>` to use a separate namespace for a specific class or event. Without the parameter, everyone lands in the default room.
 - Pick a display name on first visit. It persists on your device until you change it.
 - Messages from the same person within two minutes group into a chain, so a quick burst reads as one turn.
 - A small live count shows how many people have posted in the last ten minutes. Tap it to see who.

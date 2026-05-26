@@ -13,14 +13,21 @@ Single self-contained `index.html`. No build step, no framework, no bundler. Ope
 - Backend: Firebase Realtime Database v10 modular SDK, loaded from `gstatic` via **dynamic** `import()`
 - Falls back to in-memory demo mode if config is still `"PASTE"` or imports fail (sandboxed previews, blocked networks)
 
+### Rooms
+
+All Firebase paths are namespaced under `backchannel/{roomKey}/...` so multiple classes can run in parallel without sharing history. The room key comes from the `?room=` URL param, validated against `^[a-z0-9-]{1,40}$`. Invalid input falls back to `DEFAULT_ROOM` (`"default"`) with a visible notice. The default room behaves identically to a custom room — there is no special-cased "global" namespace anymore. Existing flat data at `backchannel/messages` etc. from before this namespacing is orphaned (same treatment as the original `soundbox/*` data after the Backchannel rename).
+
+When the room is non-default, the header shows the room key as a small `· <key>` badge under the title. The "View all archives" link in the admin panel and the "Back to room" link on the archives page both preserve `?room=` so the user stays in the same namespace.
+
 ### Data model
 
-Messages live at `backchannel/messages`. Each message: `{ name, text, ts: serverTimestamp(), deviceId }`. Read via `query(ref(db, ROOM_PATH), limitToLast(200))` plus `onChildAdded`.
+Messages live at `backchannel/{room}/messages`. Each message: `{ name, text, ts: serverTimestamp(), deviceId }`. Read via `query(ref(db, ROOM_PATH), limitToLast(200))` plus `onChildAdded`.
 
-Other Firebase paths:
-- `backchannel/adminSession` — `{ token, ts }`. Single-slot admin lock. A fresh token kicks any prior admin.
-- `backchannel/bans` — `{ [deviceId]: { ts, byName } }`. Banned devices have their composer disabled and their messages visually muted on every client.
-- `backchannel/archives/{pushId}` — `{ ts, archivedBy, count, messages: { ...snapshot... } }`. Snapshot of the messages path captured at clear-room time. Every admin "Clear all messages" archives before wiping, so destruction is always reversible from the admin panel's Archives section.
+Other Firebase paths (all room-scoped):
+- `backchannel/{room}/adminSession` — `{ token, ts }`. Single-slot admin lock. A fresh token kicks any prior admin.
+- `backchannel/{room}/bans` — `{ [deviceId]: { ts, byName } }`. Banned devices have their composer disabled and their messages visually muted on every client.
+- `backchannel/{room}/archives/{pushId}` — `{ ts, archivedBy, count, messages: { ...snapshot... } }`. Snapshot of the messages path captured at clear-room time. Every admin "Clear all messages" archives before wiping, so destruction is always reversible from the admin panel's Archives section.
+- `backchannel/{room}/locked` — `true` when the room is paused, absent otherwise. When true, non-admin clients are blocked from sending (UI-disabled composer + send-handler guard, and server-side rejection once the tightened Firebase rules are deployed).
 
 ### State
 
@@ -126,6 +133,7 @@ This is a soft lock. Anyone with View Source can find the gesture. Acceptable th
 When `isAdmin` is true, `<body>` carries `.is-admin`, which reveals admin-only affordances via CSS. The class lives on `<body>` (not on `.room`) because the admin toggle button sits inside `<header>`, which is a sibling of `.room`, not a descendant — a `.room.is-admin` selector would never reach it.
 
 - **Admin button in header**: an "admin" toggle appears next to the live indicator. Clicking it expands `.admin-panel` (mirrors the `.who-panel` pattern: card, multiple sections, list rows). The button doubles as the visible admin indicator — its presence tells the user this tab holds the admin slot.
+- **Lock room**: first section of the admin panel, alongside Clear room. Toggle button (`#lock-toggle`) that writes `true` or `null` to `backchannel/{room}/locked`. While locked, non-admin clients see a disabled composer with "The room is locked." placeholder and "Locked by admin." in the character-count slot. The admin's own composer is never disabled by the lock (the lock check in `refreshComposerState()` short-circuits when `isAdmin` is true). Lock state is mirrored on every client via `listenLocked` and survives `clearRoom` — clearing wipes messages, not the lock.
 - **Clear room**: first section of the admin panel. Confirm dialog, then `backend.archiveAndClearRoom(myName)` runs: a one-shot `get(messagesRef)` reads the current snapshot, that snapshot plus metadata gets written to `backchannel/archives/{pushId}`, and only then does `set(messagesRef, null)` fire. An archive write failure aborts the wipe (the destructive step never runs without a successful archive first). The initiating device empties its rendered chains via `clearRoomLocally()`. Every other connected device is subscribed to `backend.listenRoomCleared`, which fires when `onValue(messagesRef)` transitions from populated to empty, and they run the same `clearRoomLocally()` to catch up without a reload. New joiners see an empty room.
 - **Archives**: fourth section of the admin panel. Shows the `ADMIN_PANEL_ARCHIVE_PREVIEW` (3) most-recent archives for quick access, each with three actions: `view` opens a standalone HTML transcript in a new tab via a Blob URL, `json` downloads a `backchannel-archive-{iso}.json` file, and `delete` permanently removes the archive. The section footer is a link to the dedicated archives page (see below) showing the full count when there are more archives than fit in the preview. The metadata listing is live via `listenArchives` (refreshes when archives are created or deleted elsewhere); the full messages payload is fetched on demand via `getArchive(id)` rather than held in memory.
 
@@ -147,13 +155,17 @@ Every device enforces a rolling window of `SEND_RATE_MAX` (5) messages per `SEND
 
 ## Deployment
 
-Static site on blakeeboyd.github.io (or any static host). Just upload `index.html`. Firebase database rules during a trusted event:
+Static site on blakeeboyd.github.io (or any static host). Just upload `index.html` and `archives/index.html`.
+
+### Firebase rules
+
+Two stages live in the repo. **Test-mode** (open) was the original setup and still works for a one-off trusted class session:
 
 ```json
 { "rules": { ".read": true, ".write": true } }
 ```
 
-Test-mode rules are fine for a single class session. Tighten (auth-gated, shape-validated, rate-limited) before extended use. The setup notes are in an HTML comment at the top of `index.html`.
+**Tightened rules** live at `firebase-rules.json` and add shape validation plus ban/lock enforcement at the database layer. Deploy via Firebase Console → Realtime Database → Rules tab → paste → Publish. Full instructions in `firebase-rules-deploy.md`. The tightened rules still allow public read and public write (no Firebase Auth in play), so the admin name is still a soft lock at the application layer. What the tightened rules buy is: garbage writes are rejected, banned devices can't post messages, and locked rooms only accept admin-name writes. To move past soft locks, the next step is Firebase Authentication.
 
 ## When making changes
 
@@ -173,8 +185,7 @@ If a request conflicts with the design system, voice rules, or constraints above
 These are plausible next features that have been discussed but not implemented. Don't assume any are wanted without confirmation.
 
 - Optional pseudonym prompting on the join card for FERPA-sensitive sessions
-- Tightened Firebase rules with shape validation and per-IP rate limits via Cloud Functions (this is what makes the client-side ban and rate-limit actually enforceable)
-- A per-session room ID in the URL hash (or query param) so multiple classes can run in parallel without sharing backfill
+- Firebase Authentication (currently no auth at all). Would let rules really enforce admin-only writes to bans/locked/adminSession, server-side rate limits via Cloud Functions, and message-author verification (deviceId in body must match writer UID). The shape-validation rules in `firebase-rules.json` are the prerequisite step; auth is the next one.
 - Light moderation: a soft client-side report button that flags a message for instructor review
 - An "instructor view" with slow-mode toggle, message-rate display, or post-session export
 - Push notifications (a separate plan exists at `~/.claude/projects/-Users-harrisgb-Library-CloudStorage-SynologyDrive-Maranasati-Projects-GitHub-blakeeboyd-github-io/memory/soundbox-push-notifications-plan.md`)

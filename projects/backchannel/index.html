@@ -152,7 +152,7 @@ input, textarea { font:inherit; color:inherit; }
   cursor:pointer;
   border-radius:var(--radius-sm);
 }
-.header__title-block { min-width:0; }
+.header__title-block { min-width:0; display:flex; flex-direction:column; gap:0.125rem; }
 .header__title {
   font-family:var(--font-serif); font-variation-settings:"opsz" 28;
   font-size:var(--text-xl); font-weight:600; line-height:var(--lh-tight);
@@ -164,6 +164,13 @@ input, textarea { font:inherit; color:inherit; }
   user-select:none;
   -webkit-touch-callout:none;
 }
+/* Room key badge under the title, visible only when the active room is not
+   the default. Mirrors the .t-label monospace cap style for consistency
+   with the other header tags ("live", "admin"). */
+.header__room {
+  color:var(--color-text-muted);
+}
+.header__room::before { content:"·"; padding-right:0.5rem; }
 .header__controls {
   display:flex; align-items:center; gap:var(--spacing-sm); padding-top:0.25rem;
 }
@@ -350,13 +357,25 @@ body.is-admin .admin-toggle { display:inline-flex; }
 .admin-panel__section { display:flex; flex-direction:column; gap:0.5rem; }
 .admin-panel__title { margin:0; }
 .admin-panel__danger {
-  align-self:flex-start;
   color:var(--color-error);
   border-color:var(--color-border);
 }
 .admin-panel__danger:hover {
   border-color:var(--color-error);
   background:var(--color-control-bg);
+}
+/* Side-by-side room actions (lock toggle + clear). Wraps to two rows on
+   narrow screens. */
+.admin-panel__room-actions {
+  display:flex; gap:0.5rem; flex-wrap:wrap;
+}
+/* Lock toggle button reads as pressed when the room is locked. We don't
+   recolor the whole button, just give it the accent border + tint so it's
+   obvious which state we're in. */
+#lock-toggle[aria-pressed="true"] {
+  border-color:var(--color-accent);
+  background:var(--color-accent-light);
+  color:var(--color-accent);
 }
 .admin-panel__list {
   list-style:none; padding:0; margin:0;
@@ -737,6 +756,7 @@ body.is-admin .admin-toggle { display:inline-flex; }
       </span>
       <div class="header__title-block">
         <h1 class="header__title">Backchannel</h1>
+        <span class="header__room t-label" id="header-room" hidden></span>
       </div>
     </div>
     <div class="header__controls">
@@ -787,7 +807,10 @@ body.is-admin .admin-toggle { display:inline-flex; }
     <div class="admin-panel is-hidden" id="admin-panel" role="region" aria-label="Admin controls">
       <div class="admin-panel__section">
         <p class="t-label admin-panel__title">Room</p>
-        <button class="btn-ghost admin-panel__danger" id="clear-room" type="button">Clear all messages</button>
+        <div class="admin-panel__room-actions">
+          <button class="btn-ghost" id="lock-toggle" type="button" aria-pressed="false">Lock room</button>
+          <button class="btn-ghost admin-panel__danger" id="clear-room" type="button">Clear all messages</button>
+        </div>
       </div>
       <div class="admin-panel__section">
         <p class="t-label admin-panel__title">Recent participants</p>
@@ -858,7 +881,43 @@ const firebaseConfig = {
 /* The Firebase project ID is still "soundbox-9" (the backend project predates this rename
    and changing it would require migrating data and reconfiguring the database).
    The user-facing app is Backchannel; storage paths below use the new "backchannel/" prefix. */
-const ROOM_PATH = "backchannel/messages";
+
+/* ------------------------------------------------------------
+   Room key (per-class namespace)
+
+   All Firebase paths are namespaced under backchannel/{roomKey}/...
+   so multiple classes can run in parallel without sharing history.
+   Room key comes from the ?room= URL param. If absent or invalid,
+   we fall back to DEFAULT_ROOM and surface a notice when the user
+   tried to specify something invalid.
+
+   Validation: ^[a-z0-9-]{1,40}$. Rejects path-illegal characters
+   (Firebase paths can't contain . # $ [ ] /), keeps case-sensitivity
+   from biting, and bounds the slug length.
+
+   Note: existing data at flat paths like backchannel/messages from
+   before this namespacing remains in Firebase but is no longer read
+   by the app. Treat it as orphaned, like the original soundbox/* data
+   after the Backchannel rename.
+   ------------------------------------------------------------ */
+const DEFAULT_ROOM = "default";
+const ROOM_KEY_RE  = /^[a-z0-9-]{1,40}$/;
+
+function deriveRoomKey() {
+  let raw = "";
+  try {
+    const params = new URLSearchParams(window.location.search);
+    raw = (params.get("room") || "").trim().toLowerCase();
+  } catch (e) { /* ancient browser, fall through */ }
+  if (!raw) return { key: DEFAULT_ROOM, isDefault: true, invalidInput: null };
+  if (!ROOM_KEY_RE.test(raw)) return { key: DEFAULT_ROOM, isDefault: true, invalidInput: raw };
+  return { key: raw, isDefault: raw === DEFAULT_ROOM, invalidInput: null };
+}
+
+const ROOM = deriveRoomKey();
+const ROOM_BASE = "backchannel/" + ROOM.key;
+
+const ROOM_PATH = ROOM_BASE + "/messages";
 
 /* ------------------------------------------------------------
    Admin name (soft lock via join-screen gesture, takeover via Firebase)
@@ -890,9 +949,10 @@ const ROOM_PATH = "backchannel/messages";
    token boots itself off (back to the join screen).
    ------------------------------------------------------------ */
 const ADMIN_NAME         = "Blake";
-const ADMIN_SESSION_PATH = "backchannel/adminSession";
-const BANS_PATH          = "backchannel/bans";
-const ARCHIVES_PATH      = "backchannel/archives";
+const ADMIN_SESSION_PATH = ROOM_BASE + "/adminSession";
+const BANS_PATH          = ROOM_BASE + "/bans";
+const ARCHIVES_PATH      = ROOM_BASE + "/archives";
+const LOCKED_PATH        = ROOM_BASE + "/locked";
 /* ============================================================ */
 
 const STORAGE_NAME      = "backchannel.name";
@@ -982,6 +1042,22 @@ const banListEl     = $("ban-list");
 const participantsListEl = $("participants-list");
 const archiveListEl = $("archive-list");
 const clearRoomBtn  = $("clear-room");
+const headerRoomEl  = $("header-room");
+
+// Surface the room key in the header when it's not the default. Done at
+// module load so it lights up before the join screen renders. Also flag
+// the invalid-input fallback, if any, via the demo-style notice.
+if (!ROOM.isDefault) {
+  headerRoomEl.textContent = ROOM.key;
+  headerRoomEl.hidden = false;
+}
+if (ROOM.invalidInput) {
+  // The notice element is reused from the demo-mode path. Function
+  // declarations are hoisted within this module, so calling showDemoNotice
+  // up here lands fine. We don't echo the raw invalid string (could be very
+  // long or contain confusing characters), just a short hint.
+  showDemoNotice("That room name has invalid characters. Showing the default room instead.");
+}
 
 /* ============================================================
    Theme
@@ -1385,6 +1461,7 @@ async function initBackend() {
     const adminSessionRef = dbMod.ref(db, ADMIN_SESSION_PATH);
     const bansRef         = dbMod.ref(db, BANS_PATH);
     const archivesRef     = dbMod.ref(db, ARCHIVES_PATH);
+    const lockedRef       = dbMod.ref(db, LOCKED_PATH);
 
     return {
       kind: "firebase",
@@ -1458,6 +1535,17 @@ async function initBackend() {
       },
       deleteArchive(archiveId) {
         return dbMod.set(dbMod.ref(db, ARCHIVES_PATH + "/" + archiveId), null);
+      },
+      // Room lock. When true, non-admin sends are refused client-side
+      // (and server-side once tightened rules ship). Lock state survives
+      // clear-room — clearing wipes messages, not the lock.
+      setLocked(locked) {
+        return dbMod.set(lockedRef, locked ? true : null);
+      },
+      listenLocked(onChange) {
+        dbMod.onValue(lockedRef, (snap) => {
+          onChange(snap.val() === true);
+        });
       },
       listen(onMessage) {
         dbMod.onChildAdded(recent, (snap) => {
@@ -1535,7 +1623,9 @@ function makeDemoBackend() {
     listenArchives() {},
     getArchive() { return Promise.resolve(null); },
     deleteArchive() { return Promise.resolve(); },
-    listenRoomCleared() {}
+    listenRoomCleared() {},
+    setLocked() { return Promise.resolve(); },
+    listenLocked() {}
   };
 }
 
@@ -1907,6 +1997,8 @@ async function performAdminTakeover() {
   }
   isAdmin = true;
   document.body.classList.add("is-admin");
+  // Gaining admin lifts the lock for this device.
+  refreshComposerState();
 }
 
 function handleRemoteAdminSession(token) {
@@ -1972,21 +2064,54 @@ function iAmBanned() {
   return bannedDevices.has(deviceId);
 }
 
-function refreshBannedSelfState() {
+/* Room lock state. True when the admin has paused the room. Mirrored from
+   listenLocked. Admins are not subject to their own lock, so isAdmin
+   bypasses the composer disable. */
+let roomLocked = false;
+
+function handleLockedUpdate(locked) {
+  roomLocked = !!locked;
+  // Reflect lock state on the toggle button if present
+  const lockBtn = document.getElementById("lock-toggle");
+  if (lockBtn) {
+    lockBtn.setAttribute("aria-pressed", roomLocked ? "true" : "false");
+    lockBtn.textContent = roomLocked ? "Unlock room" : "Lock room";
+  }
+  refreshComposerState();
+}
+
+/* Single source of truth for composer disable/copy. Ban takes precedence
+   over lock (a banned user gets the "removed" copy regardless of lock state).
+   Called from handleBansUpdate, handleLockedUpdate, enterRoom, and
+   performAdminTakeover (since gaining admin lifts the lock for this device). */
+function refreshComposerState() {
   if (iAmBanned()) {
     msgInput.disabled = true;
     msgInput.placeholder = "You have been removed from this room.";
     charCountEl.textContent = "Removed by admin.";
     charCountEl.classList.remove("is-warn");
     charCountEl.classList.add("is-error");
-  } else if (msgInput.disabled) {
-    // Unbanned mid-session
-    msgInput.disabled = false;
-    msgInput.placeholder = "Say something.";
-    charCountEl.classList.remove("is-error");
-    updateCharCount();
+    return;
   }
+  if (roomLocked && !isAdmin) {
+    msgInput.disabled = true;
+    msgInput.placeholder = "The room is locked.";
+    charCountEl.textContent = "Locked by admin.";
+    charCountEl.classList.remove("is-warn", "is-error");
+    return;
+  }
+  // Normal state
+  if (msgInput.disabled) {
+    msgInput.disabled = false;
+  }
+  msgInput.placeholder = "Say something.";
+  charCountEl.classList.remove("is-error");
+  updateCharCount();
 }
+
+// Legacy alias retained for any external caller. The old name read as
+// ban-specific; the new one is unified. Both point to the same function.
+const refreshBannedSelfState = refreshComposerState;
 
 async function banDeviceWithConfirm(targetDeviceId, displayName) {
   if (!isAdmin || !backend) return;
@@ -2259,7 +2384,8 @@ function renderArchiveList() {
   const footer = document.createElement("li");
   footer.className = "admin-panel__empty";
   const link = document.createElement("a");
-  link.href = "archives/";
+  // Preserve the ?room= param so the archives page reads the same namespace.
+  link.href = ROOM.isDefault ? "archives/" : "archives/?room=" + encodeURIComponent(ROOM.key);
   const overflow = archivesData.length - preview.length;
   link.textContent = overflow > 0
     ? "View all archives (" + archivesData.length + ")"
@@ -2418,6 +2544,19 @@ adminToggleEl.addEventListener("click", () => {
 
 clearRoomBtn.addEventListener("click", clearRoomWithConfirm);
 
+const lockToggleEl = $("lock-toggle");
+lockToggleEl.addEventListener("click", async () => {
+  if (!isAdmin || !backend) return;
+  // Optimistic: flip the visible state immediately; the listenLocked
+  // callback will reconcile if the write fails.
+  const next = !roomLocked;
+  try {
+    await backend.setLocked(next);
+  } catch (err) {
+    console.error("Lock toggle failed:", err);
+  }
+});
+
 /* ============================================================
    Composer
    ============================================================ */
@@ -2479,7 +2618,11 @@ function showRateLimitHint(secs) {
 sendForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!backend || !myName) return;
-  if (iAmBanned()) { refreshBannedSelfState(); return; }
+  if (iAmBanned()) { refreshComposerState(); return; }
+  // Locked room: only the admin can send. refreshComposerState keeps the
+  // composer disabled for non-admins, but a determined user could still
+  // submit via DevTools; we re-check defensively here.
+  if (roomLocked && !isAdmin) { refreshComposerState(); return; }
   const text = msgInput.value.trim();
   if (!text) return;
 
@@ -2540,6 +2683,7 @@ sendForm.addEventListener("submit", async (e) => {
   backend.listenBans(handleBansUpdate);
   backend.listenRoomCleared(handleRoomCleared);
   backend.listenArchives(handleArchivesUpdate);
+  backend.listenLocked(handleLockedUpdate);
 
   // After the recent-message window plus a small buffer, no collision was found.
   // Drop the check so a returning student isn't surprised hours later.

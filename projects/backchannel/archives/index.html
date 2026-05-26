@@ -81,6 +81,14 @@ a:hover { opacity:0.8; }
   font-size:var(--text-xl); font-weight:600; line-height:var(--lh-tight);
   letter-spacing:var(--tracking-tight); margin:0;
 }
+.header__title-block { min-width:0; display:flex; flex-direction:column; gap:0.125rem; }
+.header__room {
+  font-size:var(--text-xs); font-family:var(--font-mono);
+  font-feature-settings:var(--feat-mono); font-weight:500;
+  text-transform:uppercase; letter-spacing:var(--tracking-wide);
+  color:var(--color-text-muted);
+}
+.header__room::before { content:"·"; padding-right:0.5rem; }
 .header__controls { display:flex; align-items:center; gap:var(--spacing-sm); }
 .header__back {
   font-size:var(--text-sm); color:var(--color-text-muted);
@@ -305,10 +313,13 @@ a:hover { opacity:0.8; }
           <path d="M4,16 Q10,22 16,16 T28,16" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.7"></path>
         </svg>
       </span>
-      <h1 class="header__title">Backchannel archives</h1>
+      <div class="header__title-block">
+        <h1 class="header__title">Backchannel archives</h1>
+        <span class="header__room" id="header-room" hidden></span>
+      </div>
     </div>
     <div class="header__controls">
-      <a class="header__back" href="../">Back to room</a>
+      <a class="header__back" id="back-link" href="../">Back to room</a>
       <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle theme">
         <!-- icon injected by JS -->
       </button>
@@ -347,7 +358,23 @@ const firebaseConfig = {
   projectId: "soundbox-9",
   appId: "1:1069332070599:web:4959225a4eb3d33e6ebee2"
 };
-const ARCHIVES_PATH = "backchannel/archives";
+/* Room key derivation matches the room page exactly so the archives
+   page reads the same namespace. See projects/backchannel/index.html
+   for the full rationale. */
+const DEFAULT_ROOM = "default";
+const ROOM_KEY_RE  = /^[a-z0-9-]{1,40}$/;
+function deriveRoomKey() {
+  let raw = "";
+  try {
+    const params = new URLSearchParams(window.location.search);
+    raw = (params.get("room") || "").trim().toLowerCase();
+  } catch (e) {}
+  if (!raw) return { key: DEFAULT_ROOM, isDefault: true, invalidInput: null };
+  if (!ROOM_KEY_RE.test(raw)) return { key: DEFAULT_ROOM, isDefault: true, invalidInput: raw };
+  return { key: raw, isDefault: raw === DEFAULT_ROOM, invalidInput: null };
+}
+const ROOM = deriveRoomKey();
+const ARCHIVES_PATH = "backchannel/" + ROOM.key + "/archives";
 
 const STORAGE_THEME = "backchannel.theme";
 
@@ -363,6 +390,20 @@ const listEl       = $("archive-list");
 const listEmptyEl  = $("archive-empty");
 const viewerEl     = $("viewer");
 const viewerEmpty  = $("viewer-empty");
+const headerRoomEl = $("header-room");
+const backLinkEl   = $("back-link");
+
+// Surface the room key in the header when non-default, and preserve the
+// ?room= parameter on the back link so the user stays in the same room.
+if (!ROOM.isDefault) {
+  headerRoomEl.textContent = ROOM.key;
+  headerRoomEl.hidden = false;
+  backLinkEl.href = "../?room=" + encodeURIComponent(ROOM.key);
+}
+if (ROOM.invalidInput) {
+  noticeText.textContent = "That room name has invalid characters. Showing archives for the default room instead.";
+  noticeEl.classList.add("is-visible");
+}
 
 /* ============================================================
    Theme (shared key with the room so the choice persists across pages)

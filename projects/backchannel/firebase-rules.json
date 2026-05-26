@@ -1,0 +1,64 @@
+{
+  "//": "Backchannel Realtime Database rules. Deploy via Firebase Console -> Realtime Database -> Rules. These rules replace the previous {read:true, write:true} test-mode rules with shape validation and ban/lock enforcement. The threat model is still 'classroom backchannel,' not 'FERPA-grade': because there is no Firebase Auth, the admin name is still soft-locked at the application layer. What these rules buy is: (1) garbage writes can't pollute the database, (2) banned devices can't post, (3) locked rooms only accept admin-name writes.",
+  "rules": {
+    "backchannel": {
+      "$room": {
+        ".read": true,
+        ".validate": "$room.matches(/^[a-z0-9-]{1,40}$/)",
+
+        "messages": {
+          ".write": true,
+          "$msgId": {
+            ".validate": "newData.hasChildren(['name','text','ts','deviceId']) && newData.child('deviceId').isString() && !root.child('backchannel').child($room).child('bans').child(newData.child('deviceId').val()).exists() && (root.child('backchannel').child($room).child('locked').val() != true || newData.child('name').val() == 'Blake')",
+            "name":     { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40" },
+            "text":     { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 500" },
+            "ts":       { ".validate": "newData.val() == now || (newData.isNumber() && newData.val() <= now + 5000)" },
+            "deviceId": { ".validate": "newData.isString() && newData.val().length >= 8 && newData.val().length <= 80" },
+            "$other": { ".validate": false }
+          }
+        },
+
+        "adminSession": {
+          ".read": true,
+          ".write": true,
+          ".validate": "newData.hasChildren(['token','ts']) || !newData.exists()",
+          "token": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80" },
+          "ts":    { ".validate": "newData.val() == now || (newData.isNumber() && newData.val() <= now + 5000)" },
+          "$other": { ".validate": false }
+        },
+
+        "bans": {
+          ".read": true,
+          "$deviceId": {
+            ".write": true,
+            ".validate": "!newData.exists() || (newData.hasChildren(['ts','byName']))",
+            "ts":     { ".validate": "newData.val() == now || (newData.isNumber() && newData.val() <= now + 5000)" },
+            "byName": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40" },
+            "$other": { ".validate": false }
+          }
+        },
+
+        "archives": {
+          ".read": true,
+          ".write": true,
+          "$archiveId": {
+            ".validate": "!newData.exists() || newData.hasChildren(['ts','archivedBy','count','messages'])",
+            "ts":         { ".validate": "newData.val() == now || (newData.isNumber() && newData.val() <= now + 5000)" },
+            "archivedBy": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40" },
+            "count":      { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000" },
+            "messages":   { ".validate": true },
+            "$other": { ".validate": false }
+          }
+        },
+
+        "locked": {
+          ".read": true,
+          ".write": true,
+          ".validate": "newData.val() == true || !newData.exists()"
+        },
+
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}
