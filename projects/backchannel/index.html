@@ -312,7 +312,9 @@ input, textarea { font:inherit; color:inherit; }
 .msg-chain--banned .msg { font-style:italic; }
 
 /* Admin header toggle — visually echoes the live button but only renders
-   when the room carries .is-admin. Sits in the header next to live. */
+   when body carries .is-admin (set on admin takeover, cleared when admin is
+   yielded). Class lives on body, not .room, because this toggle is in the
+   header, which is a sibling of .room. Sits in the header next to live. */
 .admin-toggle {
   display:none;
   align-items:center;
@@ -325,7 +327,7 @@ input, textarea { font:inherit; color:inherit; }
   cursor:pointer;
   transition:border-color var(--transition-fast), background var(--transition-fast);
 }
-.room.is-admin .admin-toggle { display:inline-flex; }
+body.is-admin .admin-toggle { display:inline-flex; }
 .admin-toggle:hover {
   border-color:var(--color-accent);
   background:var(--color-accent-light);
@@ -1238,9 +1240,12 @@ function enterRoom(name) {
   selfNameEl.style.color = colorFor(name);
   joinEl.classList.add("is-hidden");
   roomEl.classList.remove("is-hidden");
-  // Reflect current admin status on the room element so admin-only affordances
-  // can be CSS-gated rather than re-rendered on status change.
-  roomEl.classList.toggle("is-admin", isAdmin);
+  // Reflect current admin status on <body> so admin-only affordances can be
+  // CSS-gated rather than re-rendered on status change. Class lives on body
+  // (not roomEl) because the admin toggle button is inside the <header>, which
+  // is a sibling of .room, not a descendant — a .room.is-admin descendant
+  // selector would never reach it.
+  document.body.classList.toggle("is-admin", isAdmin);
   // The admin gesture toggles the who-panel as a side effect of its taps on
   // the live button. Force the who-panel closed on join so the user lands in
   // a clean room regardless of how they got here.
@@ -1816,7 +1821,7 @@ async function performAdminTakeover() {
     await backend.setAdminSession(myAdminToken);
   }
   isAdmin = true;
-  roomEl.classList.add("is-admin");
+  document.body.classList.add("is-admin");
 }
 
 function handleRemoteAdminSession(token) {
@@ -1825,7 +1830,7 @@ function handleRemoteAdminSession(token) {
     isAdmin = false;
     myAdminToken = null;
     myName = null;
-    roomEl.classList.remove("is-admin");
+    document.body.classList.remove("is-admin");
     // Close the admin panel if it's open; the button itself is also hidden by CSS now.
     adminPanelEl.classList.add("is-hidden");
     adminToggleEl.setAttribute("aria-expanded", "false");

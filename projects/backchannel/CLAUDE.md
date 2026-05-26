@@ -122,7 +122,7 @@ This is a soft lock. Anyone with View Source can find the gesture. Acceptable th
 
 ## Admin actions
 
-When `isAdmin` is true, the room element carries `.is-admin`, which reveals admin-only affordances via CSS:
+When `isAdmin` is true, `<body>` carries `.is-admin`, which reveals admin-only affordances via CSS. The class lives on `<body>` (not on `.room`) because the admin toggle button sits inside `<header>`, which is a sibling of `.room`, not a descendant — a `.room.is-admin` selector would never reach it.
 
 - **Admin button in header**: an "admin" toggle appears next to the live indicator. Clicking it expands `.admin-panel` (mirrors the `.who-panel` pattern: card, multiple sections, list rows). The button doubles as the visible admin indicator — its presence tells the user this tab holds the admin slot.
 - **Clear room**: first section of the admin panel. Confirm dialog, then `backend.clearRoom()` calls `set(messagesRef, null)`. This device immediately empties its rendered chains and reinserts the empty-state element. Other already-loaded clients keep showing what they had until they reload (no remote clear-detection yet); new joiners see an empty room.
