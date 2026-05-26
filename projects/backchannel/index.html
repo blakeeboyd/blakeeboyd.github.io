@@ -1282,11 +1282,33 @@ let isAdmin = false;
 // at ADMIN_SESSION_PATH; if a different token appears there, we've been kicked.
 let myAdminToken = null;
 
-function loadName() {
+/* Two-level name memory:
+   - Per-room slot at backchannel.name.{room} — what this user was called the
+     last time they were in THIS room. Authoritative on return to the room.
+   - Global default at backchannel.name — what this user was called most
+     recently in any room. Used as a prefill when they land in a room they've
+     never visited before.
+
+   Renames update both slots: the per-room slot for the active room, and the
+   global default. Other rooms' per-room slots are left alone, so a user who
+   was "Alex" in mus399 and "Sam" in mus430 stays distinct in each. */
+const STORAGE_NAME_FOR_ROOM = "backchannel.name." + ROOM.key;
+
+function loadNameForRoom() {
+  try { return localStorage.getItem(STORAGE_NAME_FOR_ROOM); } catch (e) { return null; }
+}
+function loadGlobalDefaultName() {
   try { return localStorage.getItem(STORAGE_NAME); } catch (e) { return null; }
 }
+// Boot-time resolution: per-room name beats global default; either may be null.
+function loadName() {
+  return loadNameForRoom() || loadGlobalDefaultName();
+}
 function saveName(name) {
-  try { localStorage.setItem(STORAGE_NAME, name); } catch (e) {}
+  try {
+    localStorage.setItem(STORAGE_NAME, name);
+    localStorage.setItem(STORAGE_NAME_FOR_ROOM, name);
+  } catch (e) {}
 }
 
 /* ------------------------------------------------------------
@@ -2986,19 +3008,33 @@ function restoreAdminFromSession() {
 
   // Join screen decision (after backend init so the join hint can reflect
   // backend state if needed).
-  const stored = loadName();
-  if (adminRestored && stored && isAdminName(stored)) {
+  //
+  // Two-level name memory:
+  // - Per-room name (loadNameForRoom): the user has been HERE before. Auto-enter.
+  // - Global default (loadGlobalDefaultName): the user has been in SOME room
+  //   before, just not this one. Prefill the join screen so they only need to
+  //   confirm. Don't auto-enter — landing in a brand-new room with a name they
+  //   used elsewhere would be surprising.
+  const perRoomName = loadNameForRoom();
+  const globalDefault = loadGlobalDefaultName();
+
+  if (adminRestored && perRoomName && isAdminName(perRoomName)) {
     // Tab still holds admin from earlier in this session — drop straight
     // into the room as Blake without the gesture.
     pendingCollisionCheck = false;
-    enterRoom(stored);
-  } else if (stored && isAdminName(stored)) {
+    enterRoom(perRoomName);
+  } else if (perRoomName && isAdminName(perRoomName)) {
     // Stored name is "Blake" but the session token is gone. Make them re-do
     // the gesture rather than auto-enter as admin.
     showJoin("", "Sign in as admin from the admin panel, or pick another name.");
-  } else if (stored) {
+  } else if (perRoomName) {
     pendingCollisionCheck = true;
-    enterRoom(stored);
+    enterRoom(perRoomName);
+  } else if (globalDefault && !isAdminName(globalDefault)) {
+    // First time in this specific room. Prefill the join screen with the
+    // global default so a quick Join lands them in. Suppress admin auto-fill;
+    // claiming Blake always requires the gesture in this session.
+    showJoin(globalDefault, "");
   } else {
     showJoin();
   }

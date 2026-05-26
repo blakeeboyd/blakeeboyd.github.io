@@ -19,6 +19,19 @@ All Firebase paths are namespaced under `backchannel/{roomKey}/...` so multiple 
 
 When the room is non-default, the header shows the room key as a small `· <key>` badge under the title. The "View all archives" link in the admin panel and the "Back to room" link on the archives page both preserve `?room=` so the user stays in the same namespace.
 
+### Name memory (two levels)
+
+Name storage in localStorage is split across two slots so the user can keep distinct identities per room while still defaulting sensibly in a brand-new room:
+
+- `backchannel.name` — global default. Holds whatever name was used most recently in any room. Used as a prefill on the join screen when this device has never been in the current room.
+- `backchannel.name.{room}` — per-room. Holds the name this device last used in this specific room. Drives auto-enter on return visits.
+
+Resolution at boot: if a per-room name exists, auto-enter with it. Otherwise, if a global default exists, show the join screen with the global default prefilled (the user still has to click Join — landing in a new room as a name from somewhere else would be surprising). Otherwise, blank join screen.
+
+Renaming via `saveName()` writes to BOTH slots: the active room's per-room slot, and the global default. Other rooms' per-room slots are not touched, so a user who was "Alex" in mus399 and "Sam" in mus430 stays distinct in each.
+
+The admin name (Blake) is never auto-filled — claiming the admin name requires the gesture every session, regardless of what's in localStorage.
+
 ### Room registry and admin-gated creation
 
 Custom rooms must be registered before non-admins can land on them. The registry lives at `backchannel/_rooms/{key}` (underscore prefix keeps it from colliding with valid room keys, which are `[a-z0-9-]` only). Each entry: `{ ts, createdBy, label }`. The default room exists implicitly without a registry entry.
@@ -48,7 +61,8 @@ Other Firebase paths (all room-scoped):
 | Where | What | Lifespan |
 |---|---|---|
 | Firebase RTDB | Messages, admin session, bans | Persistent, server-side |
-| `localStorage["backchannel.name"]` | Per-user name | Per-browser, until cleared |
+| `localStorage["backchannel.name"]` | Global default name (most-recent name used in any room) | Per-browser, until cleared |
+| `localStorage["backchannel.name.{room}"]` | Per-room remembered name | Per-browser, until cleared |
 | `localStorage["backchannel.theme"]` | Light/dark choice | Per-browser, until cleared |
 | `localStorage["backchannel.notify"]` | Notification opt-in | Per-browser, until cleared |
 | `localStorage["backchannel.deviceId"]` | Stable random per-device id (rides on every message) | Per-browser, until cleared |
