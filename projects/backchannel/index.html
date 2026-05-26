@@ -369,6 +369,11 @@ body.is-admin .admin-toggle { display:inline-flex; }
   border-radius:var(--radius-sm);
   background:var(--color-control-bg);
 }
+/* Right-side action cluster on archive rows. Stays on one line at desktop;
+   wraps to a second line on narrow phones. */
+.admin-panel__row-actions {
+  display:flex; align-items:center; gap:0.375rem; flex-wrap:wrap; justify-content:flex-end;
+}
 .admin-panel__row-name {
   font-family:var(--font-mono);
   font-feature-settings:var(--feat-mono);
@@ -792,6 +797,10 @@ body.is-admin .admin-toggle { display:inline-flex; }
         <p class="t-label admin-panel__title">Banned devices</p>
         <ul class="admin-panel__list" id="ban-list"></ul>
       </div>
+      <div class="admin-panel__section">
+        <p class="t-label admin-panel__title">Archives</p>
+        <ul class="admin-panel__list" id="archive-list"></ul>
+      </div>
     </div>
 
     <div class="messages" id="messages" aria-live="polite" aria-relevant="additions" aria-atomic="false">
@@ -883,6 +892,7 @@ const ROOM_PATH = "backchannel/messages";
 const ADMIN_NAME         = "Blake";
 const ADMIN_SESSION_PATH = "backchannel/adminSession";
 const BANS_PATH          = "backchannel/bans";
+const ARCHIVES_PATH      = "backchannel/archives";
 /* ============================================================ */
 
 const STORAGE_NAME      = "backchannel.name";
@@ -970,6 +980,7 @@ const adminToggleEl = $("admin-toggle");
 const adminPanelEl  = $("admin-panel");
 const banListEl     = $("ban-list");
 const participantsListEl = $("participants-list");
+const archiveListEl = $("archive-list");
 const clearRoomBtn  = $("clear-room");
 
 /* ============================================================
@@ -1373,6 +1384,7 @@ async function initBackend() {
     const recent = dbMod.query(messagesRef, dbMod.limitToLast(200));
     const adminSessionRef = dbMod.ref(db, ADMIN_SESSION_PATH);
     const bansRef         = dbMod.ref(db, BANS_PATH);
+    const archivesRef     = dbMod.ref(db, ARCHIVES_PATH);
 
     return {
       kind: "firebase",
@@ -1392,11 +1404,60 @@ async function initBackend() {
           onChange(v);
         });
       },
-      clearRoom() {
-        // Wipe all messages. Existing clients with the room open will keep
-        // showing what they already rendered until they reload; new joiners
-        // see an empty room. We deliberately don't wipe bans or adminSession.
-        return dbMod.set(messagesRef, null);
+      // Atomically archive the current messages snapshot, then clear the room.
+      // Archive shape under ARCHIVES_PATH/{pushId}:
+      //   { ts: serverTimestamp(), archivedBy, count, messages: { ...snapshot... } }
+      // The archive write happens BEFORE the wipe so a failed archive aborts
+      // the destructive step. Returns { archiveId, count } so the caller can
+      // surface what just happened.
+      async archiveAndClearRoom(archivedBy) {
+        const snap = await dbMod.get(messagesRef);
+        const messages = snap.val() || {};
+        const count = Object.keys(messages).length;
+        if (count === 0) {
+          // Nothing to archive; just no-op the clear too.
+          return { archiveId: null, count: 0 };
+        }
+        const newRef = dbMod.push(archivesRef);
+        await dbMod.set(newRef, {
+          ts: dbMod.serverTimestamp(),
+          archivedBy: archivedBy || "unknown",
+          count,
+          messages
+        });
+        await dbMod.set(messagesRef, null);
+        return { archiveId: newRef.key, count };
+      },
+      // List archives, most recent first. Subscribes via onValue so the panel
+      // updates live when a new archive lands or one gets deleted. Each entry
+      // strips the heavy messages payload; full archives are fetched on demand
+      // via getArchive() below.
+      listenArchives(onChange) {
+        dbMod.onValue(archivesRef, (snap) => {
+          const v = snap.val() || {};
+          const rows = [];
+          for (const id of Object.keys(v)) {
+            const entry = v[id] || {};
+            rows.push({
+              id,
+              ts: typeof entry.ts === "number" ? entry.ts : 0,
+              archivedBy: entry.archivedBy || "unknown",
+              count: typeof entry.count === "number" ? entry.count : 0
+            });
+          }
+          rows.sort((a, b) => b.ts - a.ts);
+          onChange(rows);
+        });
+      },
+      // One-shot fetch of a single archive's full message payload. Used by the
+      // viewer rather than holding all archives in memory at once.
+      async getArchive(archiveId) {
+        const ref = dbMod.ref(db, ARCHIVES_PATH + "/" + archiveId);
+        const snap = await dbMod.get(ref);
+        return snap.val();
+      },
+      deleteArchive(archiveId) {
+        return dbMod.set(dbMod.ref(db, ARCHIVES_PATH + "/" + archiveId), null);
       },
       listen(onMessage) {
         dbMod.onChildAdded(recent, (snap) => {
@@ -1470,7 +1531,10 @@ function makeDemoBackend() {
     banDevice() { return Promise.resolve(); },
     unbanDevice() { return Promise.resolve(); },
     listenBans() {},
-    clearRoom() { return Promise.resolve(); },
+    archiveAndClearRoom() { return Promise.resolve({ archiveId: null, count: 0 }); },
+    listenArchives() {},
+    getArchive() { return Promise.resolve(null); },
+    deleteArchive() { return Promise.resolve(); },
     listenRoomCleared() {}
   };
 }
@@ -1971,15 +2035,19 @@ function clearRoomLocally() {
 
 async function clearRoomWithConfirm() {
   if (!isAdmin || !backend) return;
-  const ok = window.confirm("Clear all messages from this room? This cannot be undone.");
+  const ok = window.confirm("Clear all messages from this room? The transcript is saved to the archive first.");
   if (!ok) return;
   try {
-    await backend.clearRoom();
+    const result = await backend.archiveAndClearRoom(myName || ADMIN_NAME);
     // Our own clear: wipe locally immediately. Other clients catch up via
     // listenRoomCleared when their onValue fires.
     clearRoomLocally();
+    if (result && result.count > 0) {
+      console.log("Archived " + result.count + " messages as " + result.archiveId);
+    }
   } catch (err) {
     console.error("Clear room failed:", err);
+    window.alert("Could not archive the room. Nothing was cleared.");
   }
 }
 
@@ -2097,6 +2165,224 @@ function renderBanList() {
 function renderAdminPanel() {
   renderParticipantsList();
   renderBanList();
+  renderArchiveList();
+}
+
+/* In-memory list of archive metadata rows, refreshed via listenArchives.
+   Each row: { id, ts, archivedBy, count }. The full messages payload is
+   fetched on demand when the admin views or downloads an archive. */
+let archivesData = [];
+
+function handleArchivesUpdate(rows) {
+  archivesData = rows || [];
+  if (isAdmin && !adminPanelEl.classList.contains("is-hidden")) {
+    renderArchiveList();
+  }
+}
+
+function formatArchiveDate(ts) {
+  if (!ts) return "—";
+  const d = new Date(ts);
+  const y = d.getFullYear();
+  const mo = String(d.getMonth() + 1).padStart(2, "0");
+  const da = String(d.getDate()).padStart(2, "0");
+  const h24 = d.getHours();
+  const period = h24 >= 12 ? "PM" : "AM";
+  const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return y + "-" + mo + "-" + da + " " + h12 + ":" + mm + " " + period;
+}
+
+function renderArchiveList() {
+  archiveListEl.innerHTML = "";
+  if (archivesData.length === 0) {
+    const empty = document.createElement("li");
+    empty.className = "admin-panel__empty";
+    empty.textContent = "No archives yet.";
+    archiveListEl.appendChild(empty);
+    return;
+  }
+  for (const row of archivesData) {
+    const li = document.createElement("li");
+    li.className = "admin-panel__row";
+
+    const left = document.createElement("div");
+    const tsEl = document.createElement("div");
+    tsEl.className = "admin-panel__row-name";
+    tsEl.textContent = formatArchiveDate(row.ts);
+    left.appendChild(tsEl);
+    const metaEl = document.createElement("div");
+    metaEl.className = "admin-panel__row-meta";
+    metaEl.textContent = row.count + " messages, archived by " + row.archivedBy;
+    left.appendChild(metaEl);
+    li.appendChild(left);
+
+    const actions = document.createElement("div");
+    actions.className = "admin-panel__row-actions";
+
+    const viewBtn = document.createElement("button");
+    viewBtn.type = "button";
+    viewBtn.className = "admin-panel__unban";
+    viewBtn.textContent = "view";
+    viewBtn.setAttribute("aria-label", "View archive from " + formatArchiveDate(row.ts));
+    viewBtn.addEventListener("click", () => viewArchive(row));
+    actions.appendChild(viewBtn);
+
+    const dlBtn = document.createElement("button");
+    dlBtn.type = "button";
+    dlBtn.className = "admin-panel__unban";
+    dlBtn.textContent = "json";
+    dlBtn.setAttribute("aria-label", "Download archive JSON");
+    dlBtn.addEventListener("click", () => downloadArchive(row));
+    actions.appendChild(dlBtn);
+
+    const delBtn = document.createElement("button");
+    delBtn.type = "button";
+    delBtn.className = "admin-panel__danger-btn";
+    delBtn.textContent = "delete";
+    delBtn.setAttribute("aria-label", "Delete archive");
+    delBtn.addEventListener("click", () => deleteArchiveWithConfirm(row));
+    actions.appendChild(delBtn);
+
+    li.appendChild(actions);
+    archiveListEl.appendChild(li);
+  }
+}
+
+/* Sort a messages map (the same { pushId: msg } shape Firebase stores) by ts.
+   Returns a plain array of { name, text, ts, deviceId } in chronological order. */
+function archiveMessagesSorted(messagesMap) {
+  const rows = [];
+  for (const id of Object.keys(messagesMap || {})) {
+    const m = messagesMap[id] || {};
+    rows.push({
+      name: typeof m.name === "string" ? m.name : "",
+      text: typeof m.text === "string" ? m.text : "",
+      ts: typeof m.ts === "number" ? m.ts : 0,
+      deviceId: typeof m.deviceId === "string" ? m.deviceId : ""
+    });
+  }
+  rows.sort((a, b) => a.ts - b.ts);
+  return rows;
+}
+
+/* Escape user-supplied text for inclusion in the generated viewer HTML.
+   The viewer is opened from a Blob URL and treated as a separate document,
+   so HTML injection here would be a real XSS vector if we didn't escape. */
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/* Render a standalone HTML transcript and open it in a new tab via a Blob URL.
+   The viewer page includes a JSON download link as a sidecar. */
+async function viewArchive(row) {
+  try {
+    const full = await backend.getArchive(row.id);
+    if (!full) {
+      window.alert("Archive could not be loaded.");
+      return;
+    }
+    const sorted = archiveMessagesSorted(full.messages);
+    const archivedAt = formatArchiveDate(full.ts || row.ts);
+    const archivedBy = escapeHtml(full.archivedBy || row.archivedBy || "unknown");
+
+    // Build the body. Each row is plain text + timestamp; matches a stripped-
+    // down version of the in-room chain layout (header + bubble).
+    const bodyRows = sorted.map((m) => {
+      const t = new Date(m.ts);
+      const h24 = t.getHours();
+      const period = h24 >= 12 ? "PM" : "AM";
+      const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+      const mm = String(t.getMinutes()).padStart(2, "0");
+      const stamp = h12 + ":" + mm + " " + period;
+      return (
+        '<article class="m">' +
+          '<header><span class="n">' + escapeHtml(m.name) + '</span>' +
+          '<time>' + escapeHtml(stamp) + '</time></header>' +
+          '<p>' + escapeHtml(m.text) + '</p>' +
+        '</article>'
+      );
+    }).join("\n");
+
+    const html = '<!doctype html>\n' +
+'<html lang="en"><head><meta charset="utf-8"><title>Backchannel archive ' + escapeHtml(archivedAt) + '</title>' +
+'<meta name="viewport" content="width=device-width, initial-scale=1">' +
+'<style>' +
+'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;max-width:720px;margin:2rem auto;padding:0 1rem;color:#1a1a1a;background:#f8f9fa;line-height:1.55;}' +
+'header.top{border-bottom:1px solid #e5e7eb;padding-bottom:1rem;margin-bottom:1.5rem;}' +
+'h1{font-family:"Source Serif 4",Charter,Georgia,serif;font-size:1.75rem;margin:0 0 0.5rem;}' +
+'.meta{font-size:0.875rem;color:#5b6370;}' +
+'.meta a{color:#2563eb;}' +
+'article.m{margin:0 0 0.75rem;background:#fff;border:1px solid #e5e7eb;border-radius:0.5rem;padding:0.625rem 0.875rem;}' +
+'article.m header{display:flex;align-items:baseline;gap:0.5rem;margin-bottom:0.25rem;font-size:0.75rem;}' +
+'article.m .n{font-family:"JetBrains Mono",SFMono-Regular,Menlo,monospace;text-transform:uppercase;letter-spacing:0.05em;font-weight:500;color:#2563eb;}' +
+'article.m time{font-family:"JetBrains Mono",SFMono-Regular,Menlo,monospace;color:#5b6370;font-variant-numeric:tabular-nums;}' +
+'article.m p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;}' +
+'@media (prefers-color-scheme: dark){body{color:#f3f4f6;background:#111827;}article.m{background:#1f2937;border-color:#374151;}.meta{color:#9ca3af;}article.m time{color:#9ca3af;}header.top{border-color:#374151;}}' +
+'</style></head><body>' +
+'<header class="top">' +
+'<h1>Backchannel archive</h1>' +
+'<div class="meta">' + escapeHtml(sorted.length + " messages") + ' &middot; archived ' + escapeHtml(archivedAt) + ' by ' + archivedBy + '</div>' +
+'</header>' +
+bodyRows +
+'</body></html>';
+
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    window.open(url, "_blank", "noopener");
+    // Revoke after a delay so the new tab has time to load the resource.
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } catch (err) {
+    console.error("View archive failed:", err);
+    window.alert("Could not load archive.");
+  }
+}
+
+async function downloadArchive(row) {
+  try {
+    const full = await backend.getArchive(row.id);
+    if (!full) {
+      window.alert("Archive could not be loaded.");
+      return;
+    }
+    const sorted = archiveMessagesSorted(full.messages);
+    const payload = {
+      archiveId: row.id,
+      ts: full.ts || row.ts,
+      archivedBy: full.archivedBy || row.archivedBy,
+      count: sorted.length,
+      messages: sorted
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const stamp = new Date(full.ts || row.ts).toISOString().replace(/[:.]/g, "-").slice(0, 19);
+    a.download = "backchannel-archive-" + stamp + ".json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  } catch (err) {
+    console.error("Download archive failed:", err);
+    window.alert("Could not download archive.");
+  }
+}
+
+async function deleteArchiveWithConfirm(row) {
+  if (!isAdmin || !backend) return;
+  const ok = window.confirm("Delete the archive from " + formatArchiveDate(row.ts) + "? This cannot be undone.");
+  if (!ok) return;
+  try {
+    await backend.deleteArchive(row.id);
+  } catch (err) {
+    console.error("Delete archive failed:", err);
+  }
 }
 
 adminToggleEl.addEventListener("click", () => {
@@ -2234,6 +2520,7 @@ sendForm.addEventListener("submit", async (e) => {
   backend.listenAdminSession(handleRemoteAdminSession);
   backend.listenBans(handleBansUpdate);
   backend.listenRoomCleared(handleRoomCleared);
+  backend.listenArchives(handleArchivesUpdate);
 
   // After the recent-message window plus a small buffer, no collision was found.
   // Drop the check so a returning student isn't surprised hours later.
