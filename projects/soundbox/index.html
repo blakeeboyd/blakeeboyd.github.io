@@ -138,15 +138,33 @@ input, textarea { font:inherit; color:inherit; }
 .header__brand {
   display:flex; align-items:center; gap:0.75rem; flex:1; min-width:0;
 }
-.header__brand svg { flex-shrink:0; }
+.header__brand svg { flex-shrink:0; display:block; }
+.header__logo {
+  display:inline-flex;
+  /* Suppress accidental text selection / iOS callout during rapid tapping */
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
+  cursor:pointer;
+  border-radius:var(--radius-sm);
+}
 .header__title-block { min-width:0; }
 .header__title {
   font-family:var(--font-serif); font-variation-settings:"opsz" 28;
   font-size:var(--text-xl); font-weight:600; line-height:var(--lh-tight);
   letter-spacing:var(--tracking-tight);
+  /* Block iOS from extending text selection into the wordmark when the user
+     long-presses the adjacent logo. The logo target has its own user-select:none
+     but iOS treats nearby text as selectable from the press origin. */
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
 }
 .header__subtitle {
   font-size:var(--text-sm); color:var(--color-text-muted); margin-top:0.125rem;
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
 }
 .header__controls {
   display:flex; align-items:center; gap:var(--spacing-sm); padding-top:0.25rem;
@@ -166,6 +184,80 @@ input, textarea { font:inherit; color:inherit; }
   50% { opacity:0.5; }
 }
 .live__count { font-variant-numeric:tabular-nums; }
+
+/* Live indicator as a clickable button (active-users toggle) */
+.live--button {
+  cursor:pointer;
+  padding:0.375rem 0.625rem;
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  background:var(--color-card-bg);
+  transition:border-color var(--transition-fast), background var(--transition-fast);
+}
+.live--button:hover {
+  border-color:var(--color-text);
+  background:var(--color-control-bg);
+}
+.live--button[aria-expanded="true"] {
+  border-color:var(--color-accent);
+  background:var(--color-accent-light);
+}
+
+/* Active-users panel */
+.who-panel {
+  background:var(--color-card-bg);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  box-shadow:var(--shadow-sm);
+  padding:var(--spacing-sm);
+  display:flex; flex-direction:column; gap:0.5rem;
+}
+.who-panel.is-hidden { display:none; }
+.who-panel__title { margin:0; }
+.who-panel__list {
+  list-style:none; padding:0; margin:0;
+  display:flex; flex-wrap:wrap; gap:0.5rem;
+}
+.who-panel__item {
+  font-family:var(--font-mono);
+  font-feature-settings:var(--feat-mono);
+  font-size:var(--text-xs);
+  font-weight:500;
+  text-transform:uppercase;
+  letter-spacing:var(--tracking-wide);
+  padding:0.25rem 0.5rem;
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-sm);
+  background:var(--color-control-bg);
+}
+.who-panel__empty {
+  font-size:var(--text-sm);
+  color:var(--color-text-muted);
+}
+
+/* Admin panel (revealed only by the unlock gesture) */
+.admin-panel {
+  background:var(--color-card-bg);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  box-shadow:var(--shadow-sm);
+  padding:var(--spacing-sm);
+  display:flex; flex-direction:column; gap:0.5rem;
+}
+.admin-panel.is-hidden { display:none; }
+.admin-panel__title { margin:0; }
+.admin-panel__hint { margin:0; }
+.admin-panel__name {
+  font-family:var(--font-mono);
+  font-feature-settings:var(--feat-mono);
+  font-weight:500;
+  color:var(--color-text);
+}
+.admin-panel__action {
+  align-self:flex-start;
+  padding:0.5rem 1rem;
+  font-size:var(--text-sm);
+}
 
 /* Theme toggle */
 .theme-toggle {
@@ -210,6 +302,34 @@ input, textarea { font:inherit; color:inherit; }
   display:flex; flex-direction:column; gap:var(--spacing-sm);
   max-width:380px; margin:0 auto;
 }
+.join__hint {
+  font-size:var(--text-sm);
+  color:var(--color-text-muted);
+  min-height:1.25rem;
+}
+.join__hint.is-warn { color:var(--color-warning); }
+
+/* Admin badge on messages claiming the reserved name */
+.msg__admin {
+  font-size:var(--text-xs);
+  font-family:var(--font-mono);
+  font-feature-settings:var(--feat-mono);
+  font-weight:500;
+  text-transform:uppercase;
+  letter-spacing:var(--tracking-wide);
+  color:var(--color-accent);
+  margin-left:0.375rem;
+}
+
+/* "Previously known as" annotation, visible only on this device's own renamed messages */
+.msg__rename {
+  font-size:var(--text-xs);
+  color:var(--color-text-muted);
+  font-style:italic;
+  margin-left:0.375rem;
+}
+.msg__rename::before { content:"("; }
+.msg__rename::after  { content:")"; }
 
 /* ============================================================
    Inputs
@@ -441,22 +561,24 @@ input, textarea { font:inherit; color:inherit; }
   <!-- Header -->
   <header class="header">
     <div class="header__brand">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
-        <rect width="32" height="32" rx="6" fill="#2563eb"></rect>
-        <path d="M4,16 Q8,8 12,16 T20,16 T28,16" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"></path>
-        <path d="M4,16 Q10,22 16,16 T28,16" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.7"></path>
-      </svg>
+      <span class="header__logo" id="logo-target" role="img" aria-label="SoundBox">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
+          <rect width="32" height="32" rx="6" fill="#2563eb"></rect>
+          <path d="M4,16 Q8,8 12,16 T20,16 T28,16" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"></path>
+          <path d="M4,16 Q10,22 16,16 T28,16" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.7"></path>
+        </svg>
+      </span>
       <div class="header__title-block">
         <h1 class="header__title">SoundBox</h1>
-        <p class="header__subtitle">Talk during the session.</p>
+        <p class="header__subtitle">Chat app for SoundBox 9</p>
       </div>
     </div>
     <div class="header__controls">
-      <span class="live" aria-label="Live status">
+      <button class="live live--button" id="who-toggle" type="button" aria-expanded="false" aria-controls="who-panel" aria-label="Show active users">
         <span class="live__dot" aria-hidden="true"></span>
         <span class="t-label">live</span>
         <span class="t-label live__count" id="live-count" aria-hidden="true"></span>
-      </span>
+      </button>
       <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle theme">
         <!-- icon injected by JS -->
       </button>
@@ -479,6 +601,7 @@ input, textarea { font:inherit; color:inherit; }
           required
           placeholder="Your name"
         >
+        <p class="join__hint" id="join-hint" role="status" aria-live="polite"></p>
         <button class="btn-primary" type="submit">Join</button>
       </form>
     </div>
@@ -486,6 +609,17 @@ input, textarea { font:inherit; color:inherit; }
 
   <!-- Room -->
   <section class="room is-hidden" id="room" aria-label="Chat room">
+
+    <div class="who-panel is-hidden" id="who-panel" role="region" aria-label="Active users">
+      <p class="t-label who-panel__title">Active in the last 10 minutes</p>
+      <ul class="who-panel__list" id="who-list"></ul>
+    </div>
+
+    <div class="admin-panel is-hidden" id="admin-panel" role="region" aria-label="Admin panel">
+      <p class="t-label admin-panel__title">Admin</p>
+      <p class="t-small admin-panel__hint" id="admin-panel-hint">Take the admin name on this device. Any other device currently signed in as <span class="admin-panel__name" id="admin-name-label"></span> will be signed out.</p>
+      <button class="btn-primary admin-panel__action" id="admin-take" type="button">Become admin</button>
+    </div>
 
     <div class="messages" id="messages" aria-live="polite" aria-relevant="additions" aria-atomic="false">
       <div class="messages__empty" id="messages-empty">
@@ -499,6 +633,7 @@ input, textarea { font:inherit; color:inherit; }
           <span class="t-small">You are</span>
           <span class="composer__name" id="self-name"></span>
           <button class="btn-link" type="button" id="change-name">change name</button>
+          <button class="btn-link" type="button" id="notify-toggle" hidden>notifications: off</button>
         </span>
         <span class="composer__count" id="char-count" aria-live="polite"></span>
       </div>
@@ -533,10 +668,44 @@ const firebaseConfig = {
   appId: "1:1069332070599:web:4959225a4eb3d33e6ebee2"
 };
 const ROOM_PATH = "soundbox/messages";
+
+/* ------------------------------------------------------------
+   Admin name (soft lock via gesture, takeover via Firebase)
+
+   ADMIN_NAME is never selectable from the normal join screen:
+   the join handler treats it as taken for anyone who isn't
+   currently admin. The only way to get the admin name is the
+   admin panel, which is revealed by the unlock gesture (tap
+   the logo ADMIN_TAP_COUNT times within ADMIN_TAP_WINDOW_MS).
+
+   This is a UI gate, not real security: a reader of this source
+   can find the gesture. Acceptable threat model for a one-off
+   class session. For real security, gate with Firebase Auth
+   and database rules instead.
+
+   Also note: this lock only governs the join UI and the
+   takeover signal. A user with dev tools could push a message
+   bearing the admin name directly to the database, bypassing
+   the join check entirely. The admin badge in renderMessage
+   reflects only what the message body claims.
+
+   Takeover: this device generates an admin token when it
+   becomes admin and writes it to ADMIN_SESSION_PATH. Other
+   devices subscribed to that path will see the new token, and
+   any device currently admin with a different token boots
+   itself off (back to the join screen).
+   ------------------------------------------------------------ */
+const ADMIN_NAME            = "Blake";
+const ADMIN_SESSION_PATH    = "soundbox/adminSession";
+const ADMIN_TAP_COUNT       = 5;     // taps on the logo to reveal the admin panel
+const ADMIN_TAP_WINDOW_MS   = 2000;  // total window for those taps
 /* ============================================================ */
 
-const STORAGE_NAME  = "soundbox.name";
-const STORAGE_THEME = "soundbox.theme";
+const STORAGE_NAME      = "soundbox.name";
+const STORAGE_THEME     = "soundbox.theme";
+const STORAGE_NOTIFY    = "soundbox.notify";   // "on" once the user has opted in
+const STORAGE_DEVICE_ID = "soundbox.deviceId"; // stable per-device random id
+const STORAGE_RENAMES   = "soundbox.renames";  // JSON: array of {from, ts} this device used previously
 
 const PALETTE = [
   "var(--color-accent)",
@@ -560,6 +729,7 @@ const noticeText   = $("notice-text");
 const joinEl       = $("join");
 const joinForm     = $("join-form");
 const nameInput    = $("name-input");
+const joinHintEl   = $("join-hint");
 const roomEl       = $("room");
 const messagesEl   = $("messages");
 const emptyEl      = $("messages-empty");
@@ -570,6 +740,14 @@ const msgInput     = $("msg-input");
 const charCountEl  = $("char-count");
 const liveCountEl  = $("live-count");
 const themeBtn     = $("theme-toggle");
+const whoToggleEl  = $("who-toggle");
+const whoPanelEl   = $("who-panel");
+const whoListEl    = $("who-list");
+const notifyBtnEl  = $("notify-toggle");
+const logoEl       = $("logo-target");
+const adminPanelEl = $("admin-panel");
+const adminTakeEl  = $("admin-take");
+const adminNameLblEl = $("admin-name-label");
 
 /* ============================================================
    Theme
@@ -602,9 +780,106 @@ themeBtn.addEventListener("click", () => {
 initTheme();
 
 /* ============================================================
+   Notifications
+
+   Browser Notification API. Per-user opt-in, stored in localStorage.
+   Fires only when a new message arrives, the tab isn't focused, and
+   the message is not our own. Hydration replays at session start are
+   suppressed via sessionStartedAt + COLLISION_GRACE_MS.
+
+   Limits worth knowing about:
+   - Requires the page to be open. No service worker = no background notifications.
+   - iOS Safari only supports notifications for installed PWAs, not for tabs.
+   - Mobile browsers throttle background tabs, so notifications may be late.
+   ============================================================ */
+const notifySupported = "Notification" in window;
+let notifyOn = false;
+try { notifyOn = localStorage.getItem(STORAGE_NOTIFY) === "on"; } catch (e) {}
+
+function notifyAvailable() {
+  // Available means: supported, not blocked at the browser level
+  return notifySupported && Notification.permission !== "denied";
+}
+
+function refreshNotifyButton() {
+  if (!notifySupported) {
+    notifyBtnEl.hidden = true;
+    return;
+  }
+  notifyBtnEl.hidden = false;
+  if (Notification.permission === "denied") {
+    notifyBtnEl.textContent = "notifications: blocked";
+    notifyBtnEl.disabled = true;
+    return;
+  }
+  notifyBtnEl.disabled = false;
+  const effective = notifyOn && Notification.permission === "granted";
+  notifyBtnEl.textContent = "notifications: " + (effective ? "on" : "off");
+}
+
+notifyBtnEl.addEventListener("click", async () => {
+  if (!notifySupported || Notification.permission === "denied") return;
+  if (notifyOn && Notification.permission === "granted") {
+    // Toggle off
+    notifyOn = false;
+    try { localStorage.setItem(STORAGE_NOTIFY, "off"); } catch (e) {}
+    refreshNotifyButton();
+    return;
+  }
+  // Toggle on: need permission first if we don't already have it
+  if (Notification.permission !== "granted") {
+    try {
+      const result = await Notification.requestPermission();
+      if (result !== "granted") { refreshNotifyButton(); return; }
+    } catch (e) {
+      refreshNotifyButton();
+      return;
+    }
+  }
+  notifyOn = true;
+  try { localStorage.setItem(STORAGE_NOTIFY, "on"); } catch (e) {}
+  refreshNotifyButton();
+});
+
+// Initial paint (also called again after enterRoom, since the button lives in the room)
+refreshNotifyButton();
+
+// Listen for permission changes happening outside our UI (browser settings reset, etc.)
+if (notifySupported && navigator.permissions && navigator.permissions.query) {
+  navigator.permissions.query({ name: "notifications" }).then((status) => {
+    status.addEventListener("change", refreshNotifyButton);
+  }).catch(() => { /* not all browsers expose this; safe to ignore */ });
+}
+
+function shouldFireNotification(msg) {
+  if (!notifyOn || !notifyAvailable() || Notification.permission !== "granted") return false;
+  if (!document.hidden) return false;                    // user is looking at the page
+  if (myName && normalizeName(msg.name) === normalizeName(myName)) return false; // our own echo
+  if (msg.ts < sessionStartedAt - COLLISION_GRACE_MS) return false; // hydration replay
+  return true;
+}
+
+function fireNotification(msg) {
+  try {
+    // Notification body is rendered as plain text by the OS, not HTML, so it's safe with the
+    // raw message text. Truncate to keep the OS popup readable.
+    const body = msg.text.length > 140 ? msg.text.slice(0, 137) + "..." : msg.text;
+    new Notification(msg.name + " on SoundBox", { body, tag: "soundbox" });
+  } catch (e) { /* permission revoked between checks, ignore */ }
+}
+
+/* ============================================================
    Identity
    ============================================================ */
 let myName = null;
+// True only while this device holds the admin slot in this session.
+// Set by the admin panel's takeover button. Cleared by a remote takeover.
+// Intentionally NOT persisted in localStorage: admin status is per-session
+// and must be re-claimed via the gesture each time the tab opens.
+let isAdmin = false;
+// Random token identifying this device's admin claim. Stored in Firebase
+// at ADMIN_SESSION_PATH; if a different token appears there, we've been kicked.
+let myAdminToken = null;
 
 function loadName() {
   try { return localStorage.getItem(STORAGE_NAME); } catch (e) { return null; }
@@ -613,12 +888,123 @@ function saveName(name) {
   try { localStorage.setItem(STORAGE_NAME, name); } catch (e) {}
 }
 
+/* ------------------------------------------------------------
+   Per-device identity (for the "previously known as" feature)
+
+   deviceId is a random string generated once and persisted in
+   localStorage. It's attached to every outgoing message so this
+   device can recognize its own past messages and re-label them
+   when the name changes.
+
+   The rename log is per-device and stored only in localStorage:
+   when the user renames from "Alex" to "Bob", we push "Alex"
+   onto the log so this device knows old "Alex" messages were
+   theirs. Other people's screens don't get this re-labeling
+   (that would require publishing rename history to Firebase).
+
+   Privacy note: deviceId rides in every message and is visible
+   to anyone who reads the database. It's not personally
+   identifying, but it does let an observer cluster messages by
+   browser. Acceptable for a classroom backchannel. Bad for
+   anything FERPA-sensitive.
+   ------------------------------------------------------------ */
+function generateDeviceId() {
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+}
+
+let deviceId = null;
+try { deviceId = localStorage.getItem(STORAGE_DEVICE_ID); } catch (e) {}
+if (!deviceId) {
+  deviceId = generateDeviceId();
+  try { localStorage.setItem(STORAGE_DEVICE_ID, deviceId); } catch (e) {}
+}
+
+// In-memory rename log; loaded from localStorage and kept in sync on every push.
+// Shape: [{ from: "Alex", ts: 1700000000000 }, ...]
+let renameLog = [];
+try {
+  const raw = localStorage.getItem(STORAGE_RENAMES);
+  if (raw) renameLog = JSON.parse(raw) || [];
+} catch (e) { renameLog = []; }
+
+function recordRename(oldName) {
+  if (!oldName) return;
+  // Don't record no-op renames (entering the same name again, or renaming back to a current entry)
+  if (renameLog.length && renameLog[renameLog.length - 1].from === oldName) return;
+  renameLog.push({ from: oldName, ts: Date.now() });
+  try { localStorage.setItem(STORAGE_RENAMES, JSON.stringify(renameLog)); } catch (e) {}
+}
+
+// Returns true if this device used `name` at some point in the past (now uses a different name).
+// Used to decide whether to suffix one of our own messages with the current-name annotation.
+function nameWasOurs(name) {
+  if (!name) return false;
+  const n = normalizeName(name);
+  for (const entry of renameLog) {
+    if (normalizeName(entry.from) === n) return true;
+  }
+  return false;
+}
+
 function colorFor(name) {
   let h = 0;
   for (let i = 0; i < name.length; i++) {
     h = (h * 31 + name.charCodeAt(i)) >>> 0;
   }
   return PALETTE[h % PALETTE.length];
+}
+
+/* ============================================================
+   Name uniqueness
+
+   A name is "in use" if any device with that name has posted a
+   message in the last PARTICIPANT_WIN_MS. seenSenders already
+   tracks that for the live count, so we read from it directly.
+   Comparison is case-insensitive so "Alex" and "alex" collide.
+
+   The admin name is also treated as taken for non-admin users:
+   only the device that's currently admin (isAdmin = true) can
+   claim it. Admin is acquired via the gesture + takeover button.
+   ============================================================ */
+function normalizeName(name) {
+  return name.trim().toLowerCase();
+}
+
+function isAdminName(name) {
+  return normalizeName(name) === normalizeName(ADMIN_NAME);
+}
+
+function nameIsTaken(name, ignoreName) {
+  const cutoff = Date.now() - PARTICIPANT_WIN_MS;
+  const target = normalizeName(name);
+  const ignore = ignoreName ? normalizeName(ignoreName) : null;
+  if (target === ignore) return false;
+  // Reserve the admin name: only the device that's currently admin can claim it.
+  // When this device IS admin and is claiming the admin name, skip the recent-activity
+  // check too: the previous admin's recent messages would otherwise look like a collision.
+  if (isAdminName(name)) {
+    if (!isAdmin) return true;
+    return false;
+  }
+  for (const [seen, ts] of seenSenders) {
+    if (ts < cutoff) continue;
+    if (normalizeName(seen) === target) return true;
+  }
+  return false;
+}
+
+function suggestVariant(name, ignoreName) {
+  // Strip any trailing " N" the user might have already accepted
+  const base = name.replace(/\s+\d+$/, "").trim() || name.trim();
+  // If they're trying to take the admin name, suggest something off the admin family entirely
+  const suggestBase = isAdminName(base) ? base + " Guest" : base;
+  for (let n = 2; n < 100; n++) {
+    const candidate = suggestBase + " " + n;
+    if (!nameIsTaken(candidate, ignoreName)) return candidate;
+  }
+  // Fallback: 100 collisions in 10 minutes means something is wrong, but don't lock the user out
+  return suggestBase + " " + Math.floor(Math.random() * 9000 + 1000);
 }
 
 function enterRoom(name) {
@@ -631,20 +1017,48 @@ function enterRoom(name) {
   requestAnimationFrame(() => msgInput.focus());
 }
 
-function showJoin(prefill) {
+function showJoin(prefill, hint) {
   roomEl.classList.add("is-hidden");
   joinEl.classList.remove("is-hidden");
   nameInput.value = prefill || "";
+  setJoinHint(hint || "");
   requestAnimationFrame(() => {
     nameInput.focus();
     nameInput.select();
   });
 }
 
+function setJoinHint(text) {
+  joinHintEl.textContent = text;
+  joinHintEl.classList.toggle("is-warn", Boolean(text));
+}
+
+// Clear the warning as soon as the user types
+nameInput.addEventListener("input", () => setJoinHint(""));
+
 joinForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const name = nameInput.value.trim();
   if (!name) return;
+
+  // myName is set if the user is changing names from inside the room.
+  // Treat their current name as not-taken (otherwise re-joining as yourself collides with yourself).
+  if (nameIsTaken(name, myName)) {
+    const suggestion = suggestVariant(name, myName);
+    nameInput.value = suggestion;
+    nameInput.select();
+    // Reserved name (admin) gets a clearer message than a regular collision
+    const hint = (isAdminName(name) && !isAdmin)
+      ? "That name is reserved. Try " + suggestion + " or pick another."
+      : "That name is in use. Try " + suggestion + " or pick another.";
+    setJoinHint(hint);
+    return;
+  }
+  // Record the old name in the rename log so this device's previous messages
+  // can be retro-labeled. Only record when there's an actual change.
+  if (myName && normalizeName(myName) !== normalizeName(name)) {
+    recordRename(myName);
+  }
   saveName(name);
   enterRoom(name);
 });
@@ -683,11 +1097,12 @@ async function initBackend() {
     const db  = dbMod.getDatabase(app);
     const messagesRef = dbMod.ref(db, ROOM_PATH);
     const recent = dbMod.query(messagesRef, dbMod.limitToLast(200));
+    const adminSessionRef = dbMod.ref(db, ADMIN_SESSION_PATH);
 
     return {
       kind: "firebase",
-      send(name, text) {
-        return dbMod.push(messagesRef, { name, text, ts: dbMod.serverTimestamp() });
+      send(name, text, deviceId) {
+        return dbMod.push(messagesRef, { name, text, ts: dbMod.serverTimestamp(), deviceId });
       },
       listen(onMessage) {
         dbMod.onChildAdded(recent, (snap) => {
@@ -696,8 +1111,22 @@ async function initBackend() {
           onMessage({
             name: typeof v.name === "string" ? v.name : "",
             text: typeof v.text === "string" ? v.text : "",
-            ts:   typeof v.ts === "number" ? v.ts : Date.now()
+            ts:   typeof v.ts === "number" ? v.ts : Date.now(),
+            deviceId: typeof v.deviceId === "string" ? v.deviceId : null
           });
+        });
+      },
+      // Write a new admin-session token. Any other device watching this path will
+      // see the change and (if it was admin) sign itself out.
+      setAdminSession(token) {
+        return dbMod.set(adminSessionRef, { token, ts: dbMod.serverTimestamp() });
+      },
+      // Subscribe to admin-session changes. Fires once on connect with the current value,
+      // then again on every change.
+      listenAdminSession(onChange) {
+        dbMod.onValue(adminSessionRef, (snap) => {
+          const v = snap.val();
+          onChange(v && typeof v.token === "string" ? v.token : null);
         });
       }
     };
@@ -712,15 +1141,18 @@ function makeDemoBackend() {
   const listeners = [];
   return {
     kind: "demo",
-    send(name, text) {
-      const evt = { name, text, ts: Date.now() };
+    send(name, text, deviceId) {
+      const evt = { name, text, ts: Date.now(), deviceId };
       // Async to mimic network and to let render order match
       queueMicrotask(() => listeners.forEach((fn) => fn(evt)));
       return Promise.resolve();
     },
     listen(onMessage) {
       listeners.push(onMessage);
-    }
+    },
+    // Admin coordination is meaningless in demo mode (single-tab); these are no-ops.
+    setAdminSession() { return Promise.resolve(); },
+    listenAdminSession() {}
   };
 }
 
@@ -729,6 +1161,30 @@ function makeDemoBackend() {
    ============================================================ */
 let lastMessage = null;          // { name, ts }
 const seenSenders = new Map();   // name -> last ts seen
+
+/* If the user auto-entered the room from localStorage, watch for a
+   message bearing their name that predates this session: that means
+   another device already had the name. Cleared once we either confirm
+   no collision (PARTICIPANT_WIN_MS elapsed) or the user sends a message. */
+let pendingCollisionCheck = false;
+let sessionStartedAt = 0;
+const COLLISION_GRACE_MS = 5000; // tolerate timestamps within 5s of boot (clock skew, in-flight sends)
+
+function handlePotentialCollision(msg) {
+  if (!pendingCollisionCheck || !myName) return;
+  if (normalizeName(msg.name) !== normalizeName(myName)) return;
+  // Admin coordination has its own takeover path (handleRemoteAdminSession); the
+  // recent-activity collision check should not also fight over the admin name.
+  if (isAdmin && isAdminName(myName)) return;
+  // A message bearing our name from before we loaded means another device owns it
+  if (msg.ts < sessionStartedAt - COLLISION_GRACE_MS) {
+    pendingCollisionCheck = false;
+    const taken = myName;
+    const suggestion = suggestVariant(taken, null);
+    myName = null;
+    showJoin(suggestion, "That name is in use on another device. Try " + suggestion + " or pick another.");
+  }
+}
 
 function isNearBottom() {
   const gap = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight;
@@ -741,12 +1197,17 @@ function scrollToBottom() {
 
 function formatTime(ts) {
   const d = new Date(ts);
-  const hh = String(d.getHours()).padStart(2, "0");
+  const h24 = d.getHours();
+  const period = h24 >= 12 ? "PM" : "AM";
+  const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
   const mm = String(d.getMinutes()).padStart(2, "0");
-  return hh + ":" + mm;
+  return h12 + ":" + mm + " " + period;
 }
 
 function renderMessage(msg) {
+  handlePotentialCollision(msg);
+  if (shouldFireNotification(msg)) fireNotification(msg);
+
   // Remove the empty state on first render
   if (emptyEl && emptyEl.isConnected) emptyEl.remove();
 
@@ -770,6 +1231,25 @@ function renderMessage(msg) {
     nameEl.style.color = colorFor(msg.name);
     nameEl.textContent = msg.name; // textContent: never innerHTML for user data
     head.appendChild(nameEl);
+    // "Previously known as" annotation: only this device's own past messages get
+    // this label, and only when the displayed name is one we've since renamed
+    // away from. Other people's screens don't see this suffix.
+    if (msg.deviceId && msg.deviceId === deviceId && myName &&
+        normalizeName(msg.name) !== normalizeName(myName) &&
+        nameWasOurs(msg.name)) {
+      const noteEl = document.createElement("span");
+      noteEl.className = "msg__rename";
+      noteEl.textContent = "now " + myName;
+      head.appendChild(noteEl);
+    }
+    // Badge any message claiming the admin name. Note: this reflects the message body only.
+    // A determined user with dev tools could push a message under the admin name without the gesture.
+    if (isAdminName(msg.name)) {
+      const adminEl = document.createElement("span");
+      adminEl.className = "msg__admin";
+      adminEl.textContent = "admin";
+      head.appendChild(adminEl);
+    }
   } else {
     // Spacer to keep timestamp right-aligned in grouped rows
     const spacer = document.createElement("span");
@@ -807,8 +1287,158 @@ function updateLiveCount() {
     else seenSenders.delete(name);
   }
   liveCountEl.textContent = count > 0 ? String(count) : "";
+  // Keep the active-users panel in sync (cheap: it only redraws if it's open)
+  if (!whoPanelEl.classList.contains("is-hidden")) renderWhoPanel();
 }
 setInterval(updateLiveCount, 30000);
+
+function renderWhoPanel() {
+  // Sort by most-recent activity, descending
+  const cutoff = Date.now() - PARTICIPANT_WIN_MS;
+  const rows = [];
+  for (const [name, ts] of seenSenders) {
+    if (ts >= cutoff) rows.push({ name, ts });
+  }
+  rows.sort((a, b) => b.ts - a.ts);
+
+  whoListEl.innerHTML = ""; // safe: we don't insert any user-supplied HTML here
+  if (rows.length === 0) {
+    const empty = document.createElement("li");
+    empty.className = "who-panel__empty";
+    empty.textContent = "No one has posted yet.";
+    whoListEl.appendChild(empty);
+    return;
+  }
+  for (const { name } of rows) {
+    const li = document.createElement("li");
+    li.className = "who-panel__item";
+    li.style.color = colorFor(name);
+    li.textContent = name; // textContent: never trust the name
+    whoListEl.appendChild(li);
+  }
+}
+
+whoToggleEl.addEventListener("click", () => {
+  const isOpen = !whoPanelEl.classList.contains("is-hidden");
+  if (isOpen) {
+    whoPanelEl.classList.add("is-hidden");
+    whoToggleEl.setAttribute("aria-expanded", "false");
+  } else {
+    renderWhoPanel();
+    whoPanelEl.classList.remove("is-hidden");
+    whoToggleEl.setAttribute("aria-expanded", "true");
+  }
+});
+
+/* ============================================================
+   Admin unlock gesture
+
+   Tap the logo ADMIN_TAP_COUNT times within ADMIN_TAP_WINDOW_MS to
+   reveal the admin panel. Each tap restarts the rolling window, so
+   slow taps don't accumulate; the user has to genuinely tap fast.
+
+   No long-press, no two-stage chord — this is the simplest gesture
+   that resists casual mis-tap (a curious student double-tapping the
+   logo won't trip it; five taps in 2 seconds is intentional).
+
+   Suppressing contextmenu on the logo prevents iOS from popping a
+   menu if the user happens to long-press while tapping fast.
+   ============================================================ */
+let adminTapCount = 0;
+let adminTapTimer = null;
+
+function resetAdminTaps() {
+  adminTapCount = 0;
+  clearTimeout(adminTapTimer);
+  adminTapTimer = null;
+}
+
+logoEl.addEventListener("click", () => {
+  adminTapCount++;
+  clearTimeout(adminTapTimer);
+  adminTapTimer = setTimeout(resetAdminTaps, ADMIN_TAP_WINDOW_MS);
+  if (adminTapCount >= ADMIN_TAP_COUNT) {
+    resetAdminTaps();
+    openAdminPanel();
+  }
+});
+
+logoEl.addEventListener("contextmenu", (e) => e.preventDefault());
+
+/* ============================================================
+   Admin panel + takeover
+   ============================================================ */
+adminNameLblEl.textContent = ADMIN_NAME; // populated once at load
+
+function openAdminPanel() {
+  adminPanelEl.classList.remove("is-hidden");
+  adminTakeEl.focus();
+}
+
+function closeAdminPanel() {
+  adminPanelEl.classList.add("is-hidden");
+}
+
+function randomToken() {
+  // crypto.randomUUID exists in all modern browsers; fall back to a random hex string
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+}
+
+// Tracks the most recent token seen at ADMIN_SESSION_PATH. If this device is admin
+// and the token in the database stops matching myAdminToken, we've been superseded.
+let latestRemoteAdminToken = null;
+
+function applyAdminState(on) {
+  isAdmin = on;
+  // If we just became admin and our name is set, the room nameplate should reflect it.
+  // The name change happens via showJoin -> enterRoom from the takeover handler, so
+  // no DOM update is needed here besides closing the panel.
+  if (!on) closeAdminPanel();
+}
+
+adminTakeEl.addEventListener("click", async () => {
+  // If we were already admin and the user clicked "Become admin" again, no-op.
+  // (Shouldn't happen since the panel is hidden when admin, but defensive.)
+  if (isAdmin && myName === ADMIN_NAME) {
+    closeAdminPanel();
+    return;
+  }
+
+  // Record the prior name in the rename log so this device's earlier messages
+  // (under that name) still get the "(now Blake)" retro-label.
+  if (myName && normalizeName(myName) !== normalizeName(ADMIN_NAME)) {
+    recordRename(myName);
+  }
+
+  try {
+    myAdminToken = randomToken();
+    if (backend && backend.kind === "firebase") {
+      await backend.setAdminSession(myAdminToken);
+    }
+    applyAdminState(true);
+    closeAdminPanel();
+    saveName(ADMIN_NAME);
+    enterRoom(ADMIN_NAME);
+  } catch (err) {
+    console.error("Admin takeover failed:", err);
+    // Revert in-flight state so the user can try again
+    myAdminToken = null;
+    applyAdminState(false);
+  }
+});
+
+function handleRemoteAdminSession(token) {
+  latestRemoteAdminToken = token;
+  // If we're admin and the remote token isn't ours anymore, someone else took over.
+  if (isAdmin && token && token !== myAdminToken) {
+    applyAdminState(false);
+    myAdminToken = null;
+    myName = null;
+    // Bounce to join screen with a clear notice
+    showJoin("", "You were signed out of admin on another device.");
+  }
+}
 
 /* ============================================================
    Composer
@@ -852,7 +1482,9 @@ sendForm.addEventListener("submit", async (e) => {
   autosizeComposer();
   updateCharCount();
   try {
-    await backend.send(myName, capped);
+    await backend.send(myName, capped, deviceId);
+    // Once we've successfully posted, this session owns the name. No more collision checks.
+    pendingCollisionCheck = false;
   } catch (err) {
     console.error("Send failed:", err);
     // Restore text so the student does not lose what they typed
@@ -866,12 +1498,29 @@ sendForm.addEventListener("submit", async (e) => {
    Boot
    ============================================================ */
 (async function boot() {
+  sessionStartedAt = Date.now();
   const stored = loadName();
-  if (stored) enterRoom(stored);
-  else showJoin();
+  if (stored && isAdminName(stored) && !isAdmin) {
+    // The stored name is the admin name but this device hasn't done the unlock
+    // gesture yet (admin status is per-session, never persisted). Don't auto-enter
+    // as admin: send the user to the join screen and let them pick a new name.
+    showJoin("", "Sign in as admin from the admin panel, or pick another name.");
+  } else if (stored) {
+    // Auto-enter is optimistic: arm the collision check so we can bounce back to
+    // the join screen if a pre-existing message reveals the name is in use.
+    pendingCollisionCheck = true;
+    enterRoom(stored);
+  } else {
+    showJoin();
+  }
 
   backend = await initBackend();
   backend.listen(renderMessage);
+  backend.listenAdminSession(handleRemoteAdminSession);
+
+  // After the recent-message window plus a small buffer, no collision was found.
+  // Drop the check so a returning student isn't surprised hours later.
+  setTimeout(() => { pendingCollisionCheck = false; }, PARTICIPANT_WIN_MS + 5000);
 })();
 </script>
 </body>
