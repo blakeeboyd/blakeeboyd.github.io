@@ -93,6 +93,24 @@ These rules apply to **copy**. JS semicolons in code are fine.
 - Don't break the demo-mode fallback — the full UI must render with config still `"PASTE"`
 - Don't violate the voice rules even in "small" places like console warnings, notices, or alt text
 
+## Admin name unlock (Blake)
+
+The admin name (`Blake`, set as `ADMIN_NAME` in the script) is reserved and can't be typed into the join screen normally. To sign in as Blake:
+
+1. On the join screen, type `Blake` into the name field. The Join button greys out.
+2. Perform the unlock gesture:
+   - **Tap the blue logo icon 2 times**
+   - **Tap the LIVE indicator 3 times** (the active-users panel will toggle open/closed as a side effect; that's the visual feedback the taps landed)
+   - **Tap the logo 2 more times**
+3. Each tap has to land within 4 seconds of the previous. Wrong target or too slow resets to stage 0.
+4. Join button enables. Click Join. You're in the room as Blake.
+
+This is enforced by `ADMIN_GESTURE` in `index.html`. Sticky for the session once completed.
+
+Takeover: each Blake-join writes a new token to `soundbox/adminSession`. Any other device already admin sees the token change and bounces itself to the join screen with "You were signed out of admin on another device."
+
+This is a soft lock. Anyone with View Source can find the gesture. Acceptable threat model for a class session, not for anything FERPA-sensitive.
+
 ## Deployment
 
 Static site on blakeeboyd.github.io (or any static host). Just upload `index.html`. Firebase database rules during a trusted event:
