@@ -2891,6 +2891,55 @@ function handleRoomsUpdate(rows) {
   if (isAdmin && !adminPanelEl.classList.contains("is-hidden")) {
     renderRoomsList();
   }
+  // First registry update of the page-load is the right moment to clean up
+  // localStorage: we now know which rooms are real.
+  pruneStaleRoomNameKeys();
+}
+
+/* Drop localStorage entries of the form backchannel.name.{key} where {key}
+   is neither the default room nor a room currently in the registry. Runs
+   once per page load, gated by hasPrunedStaleNameKeys.
+
+   Why this is safe:
+   - The current room's key is always in roomsData (or is DEFAULT_ROOM),
+     because we'd have already bounced to default otherwise.
+   - If the registry read failed (offline boot, etc.), roomsData stays
+     empty and the prune skips. Better to keep stale keys than to wipe
+     legitimate ones during a transient network blip.
+   - The global default backchannel.name (no .room suffix) is never
+     touched; this only filters keys with a third dot-separated segment.
+
+   The work is bounded by the localStorage key count, which is small in
+   practice. */
+let hasPrunedStaleNameKeys = false;
+const NAME_KEY_PREFIX = "backchannel.name.";
+
+function pruneStaleRoomNameKeys() {
+  if (hasPrunedStaleNameKeys) return;
+  // If the registry came back empty, that COULD mean "no custom rooms exist"
+  // (legitimate) or "couldn't read" (transient). We can't fully tell from
+  // here. The safe rule: only prune if the current room is either
+  // DEFAULT_ROOM or is present in roomsData. That confirms the registry
+  // data is real, not a connection-failure echo.
+  const currentInRegistry = ROOM.isDefault || roomsData.some((r) => r.key === ROOM.key);
+  if (!currentInRegistry) return;
+
+  hasPrunedStaleNameKeys = true;
+  const validRooms = new Set([DEFAULT_ROOM, ...roomsData.map((r) => r.key)]);
+  try {
+    const toDelete = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!k || !k.startsWith(NAME_KEY_PREFIX)) continue;
+      const room = k.slice(NAME_KEY_PREFIX.length);
+      // Defensive: a key like backchannel.name. (empty suffix) shouldn't
+      // exist, but drop it if it does. Same for any key whose room segment
+      // contains characters that wouldn't pass ROOM_KEY_RE — those weren't
+      // written by us either.
+      if (!room || !ROOM_KEY_RE.test(room) || !validRooms.has(room)) toDelete.push(k);
+    }
+    for (const k of toDelete) localStorage.removeItem(k);
+  } catch (e) { /* Safari private mode; nothing to do */ }
 }
 
 function renderRoomsList() {

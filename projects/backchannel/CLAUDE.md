@@ -30,6 +30,8 @@ Resolution at boot: if a per-room name exists, auto-enter with it. Otherwise, if
 
 Renaming via `saveName()` writes to BOTH slots: the active room's per-room slot, and the global default. Other rooms' per-room slots are not touched, so a user who was "Alex" in mus399 and "Sam" in mus430 stays distinct in each.
 
+`pruneStaleRoomNameKeys()` runs once per page load, the first time the rooms registry loads. It enumerates `localStorage` for `backchannel.name.{key}` entries and deletes any whose `{key}` is neither `DEFAULT_ROOM` nor present in the current registry. Safe-by-design: it only runs after the registry has confirmed-real data (the current room is in it), so an offline boot doesn't wipe legitimate keys. This is the device's natural cleanup loop for rooms the admin has since deleted from the registry.
+
 The admin name (Blake) is never auto-filled — claiming the admin name requires the gesture every session, regardless of what's in localStorage.
 
 ### Room registry and admin-gated creation
