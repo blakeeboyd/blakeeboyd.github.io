@@ -19,6 +19,20 @@ All Firebase paths are namespaced under `backchannel/{roomKey}/...` so multiple 
 
 When the room is non-default, the header shows the room key as a small `· <key>` badge under the title. The "View all archives" link in the admin panel and the "Back to room" link on the archives page both preserve `?room=` so the user stays in the same namespace.
 
+### Room registry and admin-gated creation
+
+Custom rooms must be registered before non-admins can land on them. The registry lives at `backchannel/_rooms/{key}` (underscore prefix keeps it from colliding with valid room keys, which are `[a-z0-9-]` only). Each entry: `{ ts, createdBy, label }`. The default room exists implicitly without a registry entry.
+
+When a non-admin lands on `?room=foo` and `foo` is not in the registry, the boot path bounces them to the default room with a `?missing=foo` query param that the destination uses to show a one-shot notice ("Room \"foo\" does not exist. Showing the default room instead."), then strips the param via `history.replaceState`. The bounce uses `window.location.replace` (not `assign`) so the back button doesn't trap the user on the missing room.
+
+Admins bypass the bounce: their sessionStorage admin token (see below) lets them land on a brand-new room URL and bootstrap it by creating it from the in-panel "Rooms" section or the standalone rooms page.
+
+### Cross-page admin status
+
+Admin status is stored in `sessionStorage["backchannel.admin"]` as `{ token, ts }` on a successful gesture + Blake-join. Other pages in the same tab (archives, rooms) read this key to know "this tab is admin." Tab-close clears it (the whole point of sessionStorage). A remote-takeover via `handleRemoteAdminSession` also clears it.
+
+On the room page, if the admin token exists at boot, `restoreAdminFromSession()` sets `isAdmin = true`, `myAdminToken = stored.token`, and `gestureComplete = true` before the listeners attach. The `listenAdminSession` callback then fires with the current Firebase value; if Firebase has a different token (another device took admin while this tab was elsewhere), `handleRemoteAdminSession` bumps us out. So the restore is provisional — the live Firebase state is still the source of truth.
+
 ### Data model
 
 Messages live at `backchannel/{room}/messages`. Each message: `{ name, text, ts: serverTimestamp(), deviceId }`. Read via `query(ref(db, ROOM_PATH), limitToLast(200))` plus `onChildAdded`.
@@ -133,9 +147,14 @@ This is a soft lock. Anyone with View Source can find the gesture. Acceptable th
 When `isAdmin` is true, `<body>` carries `.is-admin`, which reveals admin-only affordances via CSS. The class lives on `<body>` (not on `.room`) because the admin toggle button sits inside `<header>`, which is a sibling of `.room`, not a descendant — a `.room.is-admin` selector would never reach it.
 
 - **Admin button in header**: an "admin" toggle appears next to the live indicator. Clicking it expands `.admin-panel` (mirrors the `.who-panel` pattern: card, multiple sections, list rows). The button doubles as the visible admin indicator — its presence tells the user this tab holds the admin slot.
-- **Lock room**: first section of the admin panel, alongside Clear room. Toggle button (`#lock-toggle`) that writes `true` or `null` to `backchannel/{room}/locked`. While locked, non-admin clients see a disabled composer with "The room is locked." placeholder and "Locked by admin." in the character-count slot. The admin's own composer is never disabled by the lock (the lock check in `refreshComposerState()` short-circuits when `isAdmin` is true). Lock state is mirrored on every client via `listenLocked` and survives `clearRoom` — clearing wipes messages, not the lock.
+- **Rooms section** (first section of the admin panel): shows the current room as a `Current room: <key>` line, then a list of all known rooms (default plus everything in `_rooms`), each with a `switch` button. A create form below the list (key input + `Create` button) writes to `_rooms` and navigates to the new room. Footer link goes to the standalone rooms page (`projects/backchannel/rooms/`). The rooms page is itself admin-gated via sessionStorage — non-admins see a gate screen with a link back to the room.
+- **Lock room**: second section of the admin panel, alongside Clear room. Toggle button (`#lock-toggle`) that writes `true` or `null` to `backchannel/{room}/locked`. While locked, non-admin clients see a disabled composer with "The room is locked." placeholder and "Locked by admin." in the character-count slot. The admin's own composer is never disabled by the lock (the lock check in `refreshComposerState()` short-circuits when `isAdmin` is true). Lock state is mirrored on every client via `listenLocked` and survives `clearRoom` — clearing wipes messages, not the lock.
 - **Clear room**: first section of the admin panel. Confirm dialog, then `backend.archiveAndClearRoom(myName)` runs: a one-shot `get(messagesRef)` reads the current snapshot, that snapshot plus metadata gets written to `backchannel/archives/{pushId}`, and only then does `set(messagesRef, null)` fire. An archive write failure aborts the wipe (the destructive step never runs without a successful archive first). The initiating device empties its rendered chains via `clearRoomLocally()`. Every other connected device is subscribed to `backend.listenRoomCleared`, which fires when `onValue(messagesRef)` transitions from populated to empty, and they run the same `clearRoomLocally()` to catch up without a reload. New joiners see an empty room.
-- **Archives**: fourth section of the admin panel. Shows the `ADMIN_PANEL_ARCHIVE_PREVIEW` (3) most-recent archives for quick access, each with three actions: `view` opens a standalone HTML transcript in a new tab via a Blob URL, `json` downloads a `backchannel-archive-{iso}.json` file, and `delete` permanently removes the archive. The section footer is a link to the dedicated archives page (see below) showing the full count when there are more archives than fit in the preview. The metadata listing is live via `listenArchives` (refreshes when archives are created or deleted elsewhere); the full messages payload is fetched on demand via `getArchive(id)` rather than held in memory.
+- **Ban**: "Recent participants" section — every deviceId we've seen post within `PARTICIPANT_WIN_MS` (10 min), minus the admin themselves and anyone already banned. Each row has a "ban" button that prompts a confirm and writes the deviceId to `backchannel/{room}/bans`. Ban affordances are intentionally NOT placed next to messages — touch targets adjacent to names are too easy to fat-finger on a phone.
+- **Unban**: "Banned devices" section lists every device currently in `backchannel/{room}/bans`. Each row shows the most recent display name we've seen from that deviceId (from the in-memory `deviceLastName` map populated as messages arrive), plus who placed the ban. An "unban" button on each row writes `null` to that deviceId's slot in the banlist.
+- **Ban enforcement on the banned device**: composer disables, character-count slot shows "Removed by admin.", placeholder changes to "You have been removed from this room.", and the device's already-rendered messages go to opacity 0.4 italic on every client.
+- **Archives**: last section. Shows the `ADMIN_PANEL_ARCHIVE_PREVIEW` (3) most-recent archives for quick access, each with three actions: `view` opens a standalone HTML transcript in a new tab via a Blob URL, `json` downloads a `backchannel-archive-{iso}.json` file, and `delete` permanently removes the archive. The section footer is a link to the dedicated archives page (see below) showing the full count when there are more archives than fit in the preview. The metadata listing is live via `listenArchives` (refreshes when archives are created or deleted elsewhere); the full messages payload is fetched on demand via `getArchive(id)` rather than held in memory.
+- **Soft lock**: same caveat as the admin gesture. A user with dev tools can post messages with a custom `deviceId` field and dodge the ban (unless the tightened Firebase rules in `firebase-rules.json` are deployed — those enforce the banlist server-side).
 
 ## Archives page
 
@@ -143,11 +162,17 @@ A separate standalone page lives at `projects/backchannel/archives/index.html`. 
 
 The page has its own self-contained HTML/CSS/JS (no shared build, no imports from the room). It mirrors the design tokens manually — keep them in sync if you change tokens in the room. Two-column layout: a left list of every archive sorted most-recent first, and a right-side viewer that renders the selected archive's transcript inline (no Blob-URL new tab; the transcript appears in place). Each archive has its own `download json` and `delete` actions in the viewer header. The theme toggle shares the `backchannel.theme` localStorage key with the room so the choice persists across the two pages.
 
-Access model: no auth gate. The page reads from `backchannel/archives` directly. Under current Firebase rules (`.read: true`), anyone with the URL can read. Same soft-lock threat model as everything else.
-- **Ban**: second section is "Recent participants" — every deviceId we've seen post within `PARTICIPANT_WIN_MS` (10 min), minus the admin themselves and anyone already banned. Each row has a "ban" button that prompts a confirm and writes the deviceId to `backchannel/bans`. Ban affordances are intentionally NOT placed next to messages anymore — touch targets adjacent to names are too easy to fat-finger on a phone.
-- **Unban**: third section lists every device currently in `backchannel/bans`. Each row shows the most recent display name we've seen from that deviceId (from the in-memory `deviceLastName` map populated as messages arrive), plus who placed the ban. An "unban" button on each row writes `null` to that deviceId's slot in the banlist.
-- **Ban enforcement on the banned device**: composer disables, character-count slot shows "Removed by admin.", placeholder changes to "You have been removed from this room.", and the device's already-rendered messages go to opacity 0.4 italic on every client.
-- **Soft lock**: same caveat as the admin gesture. A user with dev tools can post messages with a custom `deviceId` field and dodge the ban. Real enforcement needs Firebase security rules or Cloud Functions (planned alongside push notifications).
+Access model: admin-gated at the application layer. On boot the page checks `sessionStorage["backchannel.admin"]` for a token. Without one, it renders a gate screen ("Admin sign-in required") with a link back to the room. With one, it renders the normal two-column archive browser. The Firebase database itself is still publicly readable under current rules — the gate is a UI lock, same soft-lock threat model as the admin gesture itself.
+
+## Rooms page
+
+A separate standalone page lives at `projects/backchannel/rooms/index.html`. Same access model as the archives page: admin-gated via sessionStorage. URL: `blakeeboyd.github.io/projects/backchannel/rooms/`.
+
+Shows every room in `backchannel/_rooms` plus the default room (synthesized at render time, never in the registry). Each row has an `open` button to navigate into the room and, for custom rooms only, a `delete` button. Deleting removes the registry entry — non-admins can no longer land on the URL — but does NOT wipe existing messages, bans, archives, or lock state for that room. To fully retire a room, clear it first inside the room, then delete the registry entry.
+
+Below the list: a create form that writes a new entry to `_rooms` and navigates into the new room.
+
+Like the archives page, this page is self-contained and mirrors the design tokens manually.
 
 ## Send rate limit
 

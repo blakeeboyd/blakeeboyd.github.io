@@ -1,20 +1,33 @@
 {
-  "//": "Backchannel Realtime Database rules. Deploy via Firebase Console -> Realtime Database -> Rules. These rules replace the previous {read:true, write:true} test-mode rules with shape validation and ban/lock enforcement. The threat model is still 'classroom backchannel,' not 'FERPA-grade': because there is no Firebase Auth, the admin name is still soft-locked at the application layer. What these rules buy is: (1) garbage writes can't pollute the database, (2) banned devices can't post, (3) locked rooms only accept admin-name writes.",
+  "//": "Backchannel Realtime Database rules. Deploy via Firebase Console -> Realtime Database -> Rules. These rules replace the previous {read:true, write:true} test-mode rules with shape validation and ban/lock enforcement. The threat model is still 'classroom backchannel,' not 'FERPA-grade': because there is no Firebase Auth, the admin name is still soft-locked at the application layer. What these rules buy is: (1) garbage writes can't pollute the database, (2) banned devices can't post, (3) locked rooms only accept admin-name writes, (4) rooms must exist in the _rooms registry (or be the default) to accept message writes from clients.",
   "rules": {
     "backchannel": {
+
+      "_rooms": {
+        ".read": true,
+        ".write": true,
+        "$roomKey": {
+          ".validate": "$roomKey.matches(/^[a-z0-9-]{1,40}$/) && (!newData.exists() || newData.hasChildren(['ts','createdBy']))",
+          "ts":        { ".validate": "newData.val() == now || (newData.isNumber() && newData.val() <= now + 5000)" },
+          "createdBy": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40" },
+          "label":     { ".validate": "newData.isString() && newData.val().length <= 80" },
+          "$other":    { ".validate": false }
+        }
+      },
+
       "$room": {
         ".read": true,
         ".validate": "$room.matches(/^[a-z0-9-]{1,40}$/)",
 
         "messages": {
-          ".write": true,
+          ".write": "$room == 'default' || root.child('backchannel').child('_rooms').child($room).exists()",
           "$msgId": {
             ".validate": "newData.hasChildren(['name','text','ts','deviceId']) && newData.child('deviceId').isString() && !root.child('backchannel').child($room).child('bans').child(newData.child('deviceId').val()).exists() && (root.child('backchannel').child($room).child('locked').val() != true || newData.child('name').val() == 'Blake')",
             "name":     { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40" },
             "text":     { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 500" },
             "ts":       { ".validate": "newData.val() == now || (newData.isNumber() && newData.val() <= now + 5000)" },
             "deviceId": { ".validate": "newData.isString() && newData.val().length >= 8 && newData.val().length <= 80" },
-            "$other": { ".validate": false }
+            "$other":   { ".validate": false }
           }
         },
 

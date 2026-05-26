@@ -292,6 +292,21 @@ a:hover { opacity:0.8; }
   font-size:var(--text-base);
 }
 
+/* Admin-gate screen, shown when this tab has no admin token in sessionStorage */
+.gate {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  flex:1; min-height:50vh; text-align:center; gap:var(--spacing-sm);
+  background:var(--color-card-bg);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  padding:var(--spacing-lg);
+}
+.gate__title {
+  font-family:var(--font-serif); font-variation-settings:"opsz" 28;
+  font-size:var(--text-xl); margin:0;
+}
+.gate__hint { color:var(--color-text-muted); margin:0; }
+
 /* Small-screen tightening */
 @media (max-width: 480px) {
   .app { padding:var(--spacing-sm) var(--spacing-xs); }
@@ -331,7 +346,7 @@ a:hover { opacity:0.8; }
     <span id="notice-text">Could not reach the archive database.</span>
   </div>
 
-  <div class="layout">
+  <div id="content-area" class="layout">
     <aside class="list-card" aria-label="Archive list">
       <p class="list-card__title">All archives</p>
       <ul class="list-card__list" id="archive-list">
@@ -377,6 +392,7 @@ const ROOM = deriveRoomKey();
 const ARCHIVES_PATH = "backchannel/" + ROOM.key + "/archives";
 
 const STORAGE_THEME = "backchannel.theme";
+const SESSION_ADMIN = "backchannel.admin";
 
 /* ============================================================
    DOM
@@ -737,9 +753,43 @@ async function deleteWithConfirm(meta) {
 }
 
 /* ============================================================
+   Admin gate
+   ============================================================ */
+function readAdminToken() {
+  try {
+    const raw = sessionStorage.getItem(SESSION_ADMIN);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed.token === "string" ? parsed.token : null;
+  } catch (e) { return null; }
+}
+
+function renderGate() {
+  const area = document.getElementById("content-area");
+  area.className = "gate";
+  area.innerHTML = "";
+  const title = document.createElement("h2");
+  title.className = "gate__title";
+  title.textContent = "Admin sign-in required";
+  const hint = document.createElement("p");
+  hint.className = "gate__hint";
+  hint.textContent = "Open the room and sign in as admin from the join screen, then come back to this page.";
+  const link = document.createElement("a");
+  link.href = document.getElementById("back-link").href;
+  link.textContent = "Back to room";
+  area.appendChild(title);
+  area.appendChild(hint);
+  area.appendChild(link);
+}
+
+/* ============================================================
    Boot
    ============================================================ */
-initBackend();
+if (!readAdminToken()) {
+  renderGate();
+} else {
+  initBackend();
+}
 </script>
 </body>
 </html>
