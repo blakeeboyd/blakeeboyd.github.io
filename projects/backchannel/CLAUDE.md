@@ -125,7 +125,7 @@ This is a soft lock. Anyone with View Source can find the gesture. Acceptable th
 When `isAdmin` is true, `<body>` carries `.is-admin`, which reveals admin-only affordances via CSS. The class lives on `<body>` (not on `.room`) because the admin toggle button sits inside `<header>`, which is a sibling of `.room`, not a descendant — a `.room.is-admin` selector would never reach it.
 
 - **Admin button in header**: an "admin" toggle appears next to the live indicator. Clicking it expands `.admin-panel` (mirrors the `.who-panel` pattern: card, multiple sections, list rows). The button doubles as the visible admin indicator — its presence tells the user this tab holds the admin slot.
-- **Clear room**: first section of the admin panel. Confirm dialog, then `backend.clearRoom()` calls `set(messagesRef, null)`. This device immediately empties its rendered chains and reinserts the empty-state element. Other already-loaded clients keep showing what they had until they reload (no remote clear-detection yet); new joiners see an empty room.
+- **Clear room**: first section of the admin panel. Confirm dialog, then `backend.clearRoom()` calls `set(messagesRef, null)`. The initiating device empties its rendered chains via `clearRoomLocally()`. Every other connected device is subscribed to `backend.listenRoomCleared`, which fires when `onValue(messagesRef)` transitions from populated to empty, and they run the same `clearRoomLocally()` to catch up without a reload. New joiners see an empty room.
 - **Ban**: second section is "Recent participants" — every deviceId we've seen post within `PARTICIPANT_WIN_MS` (10 min), minus the admin themselves and anyone already banned. Each row has a "ban" button that prompts a confirm and writes the deviceId to `backchannel/bans`. Ban affordances are intentionally NOT placed next to messages anymore — touch targets adjacent to names are too easy to fat-finger on a phone.
 - **Unban**: third section lists every device currently in `backchannel/bans`. Each row shows the most recent display name we've seen from that deviceId (from the in-memory `deviceLastName` map populated as messages arrive), plus who placed the ban. An "unban" button on each row writes `null` to that deviceId's slot in the banlist.
 - **Ban enforcement on the banned device**: composer disables, character-count slot shows "Removed by admin.", placeholder changes to "You have been removed from this room.", and the device's already-rendered messages go to opacity 0.4 italic on every client.
@@ -162,7 +162,6 @@ If a request conflicts with the design system, voice rules, or constraints above
 
 These are plausible next features that have been discussed but not implemented. Don't assume any are wanted without confirmation.
 
-- Remote clear-detection: when one admin clears the room, other already-loaded clients keep showing their hydrated messages. Subscribing to `onValue(messagesRef)` and noticing when it goes empty would let everyone visibly clear together.
 - Optional pseudonym prompting on the join card for FERPA-sensitive sessions
 - Tightened Firebase rules with shape validation and per-IP rate limits via Cloud Functions (this is what makes the client-side ban and rate-limit actually enforceable)
 - A per-session room ID in the URL hash (or query param) so multiple classes can run in parallel without sharing backfill

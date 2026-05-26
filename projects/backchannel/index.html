@@ -1422,6 +1422,26 @@ async function initBackend() {
           const v = snap.val();
           onChange(v && typeof v.token === "string" ? v.token : null);
         });
+      },
+      // Fire onClear() exactly when the messages path transitions from
+      // populated to empty (i.e. some other device just cleared the room).
+      // The initial `onValue` fire on connect is suppressed by a have-we-seen-
+      // any-data gate so a freshly-empty room at boot doesn't trigger a clear.
+      listenRoomCleared(onClear) {
+        let seenAnyMessages = false;
+        dbMod.onValue(messagesRef, (snap) => {
+          if (snap.exists()) {
+            seenAnyMessages = true;
+            return;
+          }
+          if (seenAnyMessages) {
+            onClear();
+            // After firing, treat the room as empty until something gets posted.
+            // If another admin clears it again later, the next non-empty -> empty
+            // transition will fire again the same way.
+            seenAnyMessages = false;
+          }
+        });
       }
     };
   } catch (err) {
@@ -1450,7 +1470,8 @@ function makeDemoBackend() {
     banDevice() { return Promise.resolve(); },
     unbanDevice() { return Promise.resolve(); },
     listenBans() {},
-    clearRoom() { return Promise.resolve(); }
+    clearRoom() { return Promise.resolve(); },
+    listenRoomCleared() {}
   };
 }
 
@@ -1929,20 +1950,44 @@ async function unbanDeviceById(targetDeviceId) {
   }
 }
 
+/* Local-only wipe of the rendered chat. Called both when this device clears
+   the room (after the Firebase write succeeds) and when another device clears
+   and we get the listenRoomCleared callback. */
+function clearRoomLocally() {
+  messagesEl.innerHTML = "";
+  messagesEl.appendChild(emptyEl);
+  lastMessage = null;
+  // The deviceLastName map is per-message-stream context; once the room is
+  // wiped, treating those entries as "still recent" overstates activity in
+  // the admin panel. Drop them too. (seenSenders / live count are bounded by
+  // PARTICIPANT_WIN_MS and self-expire, so leave those alone.)
+  deviceLastName.clear();
+  // If the admin panel is open, refresh both lists so the recent-participants
+  // section reflects the now-empty state.
+  if (isAdmin && !adminPanelEl.classList.contains("is-hidden")) {
+    renderAdminPanel();
+  }
+}
+
 async function clearRoomWithConfirm() {
   if (!isAdmin || !backend) return;
   const ok = window.confirm("Clear all messages from this room? This cannot be undone.");
   if (!ok) return;
   try {
     await backend.clearRoom();
-    // Locally clear the rendered chains. Other clients keep seeing what they
-    // already loaded until they reload, but new joiners see an empty room.
-    messagesEl.innerHTML = "";
-    messagesEl.appendChild(emptyEl);
-    lastMessage = null;
+    // Our own clear: wipe locally immediately. Other clients catch up via
+    // listenRoomCleared when their onValue fires.
+    clearRoomLocally();
   } catch (err) {
     console.error("Clear room failed:", err);
   }
+}
+
+/* Remote clear callback. Fires on every device (including the one that
+   initiated the clear, but that device has already wiped via clearRoomLocally
+   above, so a second wipe is a no-op). */
+function handleRoomCleared() {
+  clearRoomLocally();
 }
 
 /* Admin panel rendering.
@@ -2188,6 +2233,7 @@ sendForm.addEventListener("submit", async (e) => {
   backend.listen(renderMessage);
   backend.listenAdminSession(handleRemoteAdminSession);
   backend.listenBans(handleBansUpdate);
+  backend.listenRoomCleared(handleRoomCleared);
 
   // After the recent-message window plus a small buffer, no collision was found.
   // Drop the check so a returning student isn't surprised hours later.
