@@ -109,9 +109,9 @@ The admin name (`Blake`, set as `ADMIN_NAME` in the script) is reserved and can'
 1. On the join screen, type `Blake` into the name field. The Join button greys out.
 2. Perform the unlock gesture:
    - **Tap the blue logo icon 2 times**
-   - **Tap the LIVE indicator 3 times** (the active-users panel will toggle open/closed as a side effect; that's the visual feedback the taps landed)
+   - **Tap the LIVE indicator 3 times**
    - **Tap the logo 2 more times**
-3. Each tap has to land within 4 seconds of the previous. Wrong target or too slow resets to stage 0.
+3. Each tap has to land within 4 seconds of the previous. Wrong target or too slow resets to stage 0. A small accent-colored dot appears next to the join hint copy each time a correct tap is registered; this is the only visible feedback. (The live-panel toggle is suppressed on the join screen, so it no longer flashes open during the gesture.)
 4. Join button enables. Click Join. You're in the room as Blake.
 
 This is enforced by `ADMIN_GESTURE` in `index.html`. Sticky for the session once completed.
@@ -124,10 +124,11 @@ This is a soft lock. Anyone with View Source can find the gesture. Acceptable th
 
 When `isAdmin` is true, the room element carries `.is-admin`, which reveals admin-only affordances via CSS:
 
-- **Admin button in header**: an "admin" toggle appears next to the live indicator. Clicking it expands `.admin-panel` (mirrors the `.who-panel` pattern: card, two sections, list rows). The button doubles as the visible admin indicator — its presence tells the user this tab holds the admin slot.
-- **Clear room**: section one of the admin panel. Confirm dialog, then `backend.clearRoom()` calls `set(messagesRef, null)`. This device immediately empties its rendered chains and reinserts the empty-state element. Other already-loaded clients keep showing what they had until they reload (no remote clear-detection yet); new joiners see an empty room.
-- **Ban**: a small "ban" button appears in every non-own, non-admin chain header. Clicking it prompts a confirm, then writes the message's `deviceId` to `backchannel/bans`. The banned device's client sees its own id appear in the banlist on the next `onValue` fire, disables its composer, and the device's messages get visually muted (opacity 0.4, italic) on every client.
-- **Unban**: section two of the admin panel lists every device currently in `backchannel/bans`. Each row shows the most recent display name we've seen from that deviceId (from the in-memory `deviceLastName` map populated as messages arrive), plus who placed the ban. An "unban" button on each row writes `null` to that deviceId's slot in the banlist.
+- **Admin button in header**: an "admin" toggle appears next to the live indicator. Clicking it expands `.admin-panel` (mirrors the `.who-panel` pattern: card, multiple sections, list rows). The button doubles as the visible admin indicator — its presence tells the user this tab holds the admin slot.
+- **Clear room**: first section of the admin panel. Confirm dialog, then `backend.clearRoom()` calls `set(messagesRef, null)`. This device immediately empties its rendered chains and reinserts the empty-state element. Other already-loaded clients keep showing what they had until they reload (no remote clear-detection yet); new joiners see an empty room.
+- **Ban**: second section is "Recent participants" — every deviceId we've seen post within `PARTICIPANT_WIN_MS` (10 min), minus the admin themselves and anyone already banned. Each row has a "ban" button that prompts a confirm and writes the deviceId to `backchannel/bans`. Ban affordances are intentionally NOT placed next to messages anymore — touch targets adjacent to names are too easy to fat-finger on a phone.
+- **Unban**: third section lists every device currently in `backchannel/bans`. Each row shows the most recent display name we've seen from that deviceId (from the in-memory `deviceLastName` map populated as messages arrive), plus who placed the ban. An "unban" button on each row writes `null` to that deviceId's slot in the banlist.
+- **Ban enforcement on the banned device**: composer disables, character-count slot shows "Removed by admin.", placeholder changes to "You have been removed from this room.", and the device's already-rendered messages go to opacity 0.4 italic on every client.
 - **Soft lock**: same caveat as the admin gesture. A user with dev tools can post messages with a custom `deviceId` field and dodge the ban. Real enforcement needs Firebase security rules or Cloud Functions (planned alongside push notifications).
 
 ## Send rate limit

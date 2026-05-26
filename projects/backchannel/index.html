@@ -280,8 +280,20 @@ input, textarea { font:inherit; color:inherit; }
   font-size:var(--text-sm);
   color:var(--color-text-muted);
   min-height:1.25rem;
+  transition:color var(--transition-fast);
 }
 .join__hint.is-warn { color:var(--color-warning); }
+/* Brief feedback when an admin-gesture tap lands. Tinted dot trailing the
+   hint copy reads as "registered" without saying anything overt. */
+.join__hint.is-pulse::after {
+  content:"\00B7";
+  margin-left:0.25rem;
+  color:var(--color-accent);
+  font-weight:600;
+}
+@media (prefers-reduced-motion: reduce) {
+  .join__hint.is-pulse::after { content:""; }
+}
 
 /* Admin badge on chain headers claiming the reserved name */
 .msg-header__admin {
@@ -293,25 +305,6 @@ input, textarea { font:inherit; color:inherit; }
   letter-spacing:var(--tracking-wide);
   color:var(--color-accent);
 }
-
-/* Admin-only "ban" button on other people's chain headers.
-   Hidden by default; revealed when the room element carries .is-admin
-   (set on admin takeover, cleared when admin is yielded). */
-.msg-header__ban {
-  display:none;
-  font-size:var(--text-xs);
-  font-family:var(--font-mono);
-  font-feature-settings:var(--feat-mono);
-  font-weight:500;
-  text-transform:uppercase;
-  letter-spacing:var(--tracking-wide);
-  color:var(--color-error);
-  padding:0 0.25rem;
-  border-radius:var(--radius-sm);
-  transition:background var(--transition-fast);
-}
-.msg-header__ban:hover { background:var(--color-control-bg); }
-.room.is-admin .msg-header__ban { display:inline; }
 
 /* Visually mute messages from banned devices. Earlier messages stay in place
    (we can't unsend) but read as deprioritized. */
@@ -386,22 +379,28 @@ input, textarea { font:inherit; color:inherit; }
   font-size:var(--text-xs);
   color:var(--color-text-muted);
 }
-.admin-panel__unban {
+.admin-panel__unban,
+.admin-panel__danger-btn {
   font-size:var(--text-xs);
   font-family:var(--font-mono);
   font-feature-settings:var(--feat-mono);
   font-weight:500;
   text-transform:uppercase;
   letter-spacing:var(--tracking-wide);
-  color:var(--color-accent);
   padding:0.125rem 0.5rem;
   border:1px solid var(--color-border);
   border-radius:var(--radius-sm);
   background:transparent;
   transition:border-color var(--transition-fast), background var(--transition-fast);
 }
+.admin-panel__unban { color:var(--color-accent); }
 .admin-panel__unban:hover {
   border-color:var(--color-accent);
+  background:var(--color-card-bg);
+}
+.admin-panel__danger-btn { color:var(--color-error); }
+.admin-panel__danger-btn:hover {
+  border-color:var(--color-error);
   background:var(--color-card-bg);
 }
 .admin-panel__empty {
@@ -784,6 +783,10 @@ input, textarea { font:inherit; color:inherit; }
         <button class="btn-ghost admin-panel__danger" id="clear-room" type="button">Clear all messages</button>
       </div>
       <div class="admin-panel__section">
+        <p class="t-label admin-panel__title">Recent participants</p>
+        <ul class="admin-panel__list" id="participants-list"></ul>
+      </div>
+      <div class="admin-panel__section">
         <p class="t-label admin-panel__title">Banned devices</p>
         <ul class="admin-panel__list" id="ban-list"></ul>
       </div>
@@ -964,6 +967,7 @@ const jumpBtnEl    = $("jump-button");
 const adminToggleEl = $("admin-toggle");
 const adminPanelEl  = $("admin-panel");
 const banListEl     = $("ban-list");
+const participantsListEl = $("participants-list");
 const clearRoomBtn  = $("clear-room");
 
 /* ============================================================
@@ -1235,8 +1239,13 @@ function enterRoom(name) {
   joinEl.classList.add("is-hidden");
   roomEl.classList.remove("is-hidden");
   // Reflect current admin status on the room element so admin-only affordances
-  // (ban buttons) can be CSS-gated rather than re-rendered on status change.
+  // can be CSS-gated rather than re-rendered on status change.
   roomEl.classList.toggle("is-admin", isAdmin);
+  // The admin gesture toggles the who-panel as a side effect of its taps on
+  // the live button. Force the who-panel closed on join so the user lands in
+  // a clean room regardless of how they got here.
+  whoPanelEl.classList.add("is-hidden");
+  whoToggleEl.setAttribute("aria-expanded", "false");
   // If we're already in the banlist on entry, freeze the composer immediately.
   refreshBannedSelfState();
   // Defer focus so layout has settled
@@ -1582,23 +1591,6 @@ function renderMessage(msg) {
         adminEl.textContent = "admin";
         header.appendChild(adminEl);
       }
-
-      // Admin-only ban affordance. Visible only to the device currently holding
-      // the admin slot, and never on the admin's own chains or chains already
-      // claiming the admin name. Hidden via CSS when isAdmin is false (toggled
-      // on the room element below) so we can paint the button into every header
-      // up front and avoid re-rendering on admin status changes.
-      if (msg.deviceId && msg.deviceId !== deviceId && !isAdminName(msg.name)) {
-        const banBtn = document.createElement("button");
-        banBtn.type = "button";
-        banBtn.className = "msg-header__ban";
-        banBtn.textContent = "ban";
-        banBtn.setAttribute("aria-label", "Ban " + msg.name);
-        const capturedDeviceId = msg.deviceId;
-        const capturedName = msg.name;
-        banBtn.addEventListener("click", () => banDeviceWithConfirm(capturedDeviceId, capturedName));
-        header.appendChild(banBtn);
-      }
     }
 
     const timeEl = document.createElement("time");
@@ -1633,6 +1625,12 @@ function renderMessage(msg) {
   if (inHydrationWindow || wasNearBottom) scrollToBottom();
   // The new message just changed scrollHeight; refresh the jump-to-bottom button
   updateJumpButton();
+
+  // If the admin panel is open, the participants list may have just gained a
+  // new device (or seen a renamed device). Keep it in sync. Cheap when closed.
+  if (isAdmin && !adminPanelEl.classList.contains("is-hidden")) {
+    renderParticipantsList();
+  }
 }
 
 function updateLiveCount() {
@@ -1675,6 +1673,12 @@ function renderWhoPanel() {
 }
 
 whoToggleEl.addEventListener("click", () => {
+  // Gate the live-panel toggle on being in the room. The admin unlock gesture
+  // taps this button three times while still on the join screen; without this
+  // guard, the panel would expand and contract behind the join card and then
+  // remain open after entering the room. Keeping the gesture tap counting
+  // (handleGestureTap) intact while suppressing the toggle is the cleanest fix.
+  if (!myName) return;
   const isOpen = !whoPanelEl.classList.contains("is-hidden");
   if (isOpen) {
     whoPanelEl.classList.add("is-hidden");
@@ -1738,6 +1742,15 @@ function armGestureTimer() {
   }, ADMIN_GESTURE_WINDOW_MS);
 }
 
+/* Brief visual confirmation that a gesture tap landed. We can't rely on the
+   live-panel toggle anymore (it's gated on myName so it never fires from the
+   join screen), so flash the join hint area as feedback. Quiet enough to be
+   ignored by anyone not looking for it. */
+function flashGestureFeedback() {
+  joinHintEl.classList.add("is-pulse");
+  setTimeout(() => joinHintEl.classList.remove("is-pulse"), 180);
+}
+
 function handleGestureTap(targetName) {
   if (gestureComplete) return;       // already proven for this session
   if (!gestureActive()) return;      // only on the join screen with admin name in the field
@@ -1750,6 +1763,7 @@ function handleGestureTap(targetName) {
     return;
   }
   gestureProgress++;
+  flashGestureFeedback();
   armGestureTimer();
   if (gestureProgress >= stage.count) {
     gestureStage++;
@@ -1928,13 +1942,63 @@ async function clearRoomWithConfirm() {
 
 /* Admin panel rendering.
 
-   The panel has two sections: a clear-room button and a list of banned
-   devices. The list shows the most recent display name we've seen for that
-   deviceId (from the in-memory deviceLastName map, populated as messages
-   arrive), plus who placed the ban. If we never saw the device post, we
-   show a truncated deviceId so the row is still actionable.
+   Three sections: a clear-room button, a list of recent participants with a
+   ban button on each row, and a list of currently banned devices with an
+   unban button on each row. Both lists key off deviceLastName (populated as
+   messages arrive); if we never saw the device post in this session, the
+   banned row falls back to a truncated deviceId so it's still actionable.
 */
-function renderAdminPanel() {
+function renderParticipantsList() {
+  participantsListEl.innerHTML = "";
+
+  // Candidates: every deviceId we've seen post within PARTICIPANT_WIN_MS
+  // (matches the live count's notion of "active"), minus our own, minus
+  // anyone already banned, minus chains claiming the admin name. Excluding
+  // the admin name keeps us from offering to ban whoever currently is admin.
+  const cutoff = Date.now() - PARTICIPANT_WIN_MS;
+  const rows = [];
+  for (const [id, info] of deviceLastName) {
+    if (info.ts < cutoff) continue;
+    if (id === deviceId) continue;
+    if (bannedDevices.has(id)) continue;
+    if (isAdminName(info.name)) continue;
+    rows.push({ id, name: info.name, ts: info.ts });
+  }
+  rows.sort((a, b) => b.ts - a.ts);
+
+  if (rows.length === 0) {
+    const empty = document.createElement("li");
+    empty.className = "admin-panel__empty";
+    empty.textContent = "No other participants have posted yet.";
+    participantsListEl.appendChild(empty);
+    return;
+  }
+
+  for (const { id, name } of rows) {
+    const row = document.createElement("li");
+    row.className = "admin-panel__row";
+
+    const left = document.createElement("div");
+    const nameEl = document.createElement("span");
+    nameEl.className = "admin-panel__row-name";
+    nameEl.style.color = colorFor(name);
+    nameEl.textContent = name;
+    left.appendChild(nameEl);
+    row.appendChild(left);
+
+    const banBtn = document.createElement("button");
+    banBtn.type = "button";
+    banBtn.className = "admin-panel__danger-btn";
+    banBtn.textContent = "ban";
+    banBtn.setAttribute("aria-label", "Ban " + name);
+    banBtn.addEventListener("click", () => banDeviceWithConfirm(id, name));
+    row.appendChild(banBtn);
+
+    participantsListEl.appendChild(row);
+  }
+}
+
+function renderBanList() {
   banListEl.innerHTML = "";
   const ids = Object.keys(bansData);
   if (ids.length === 0) {
@@ -1978,6 +2042,11 @@ function renderAdminPanel() {
 
     banListEl.appendChild(row);
   }
+}
+
+function renderAdminPanel() {
+  renderParticipantsList();
+  renderBanList();
 }
 
 adminToggleEl.addEventListener("click", () => {
