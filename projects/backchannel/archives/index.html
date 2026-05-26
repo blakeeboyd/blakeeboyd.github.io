@@ -302,6 +302,14 @@ a:hover { opacity:0.8; }
   margin:0; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word;
   font-size:var(--text-base);
 }
+.transcript__text a {
+  color:var(--color-accent);
+  text-decoration:underline;
+  text-decoration-thickness:1px;
+  text-underline-offset:2px;
+  word-break:break-all;
+}
+.transcript__text a:hover { opacity:0.8; }
 
 /* Admin-gate screen, shown when this tab has no admin token in sessionStorage */
 .gate {
@@ -675,12 +683,46 @@ function renderViewer(meta, full) {
 
     const p = document.createElement("p");
     p.className = "transcript__text";
-    p.textContent = m.text || "";
+    appendLinkified(p, m.text || "");
     msg.appendChild(p);
 
     transcript.appendChild(msg);
   }
   viewerEl.appendChild(transcript);
+}
+
+/* Linkify URLs as anchor elements. Safe: every text run goes through
+   textContent on either a text node or an anchor. Mirrors the helper
+   in the room page exactly so behavior is consistent across pages. */
+const URL_RE = /(\b(?:https?:\/\/|www\.)[^\s<>"']+)/gi;
+function appendLinkified(node, text) {
+  if (!text) return;
+  let lastIndex = 0;
+  URL_RE.lastIndex = 0;
+  let match;
+  while ((match = URL_RE.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      node.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
+    }
+    let raw = match[0];
+    let trailing = "";
+    while (raw.length > 0 && ").,!?;:".indexOf(raw[raw.length - 1]) !== -1) {
+      trailing = raw[raw.length - 1] + trailing;
+      raw = raw.slice(0, -1);
+    }
+    const href = /^https?:\/\//i.test(raw) ? raw : "https://" + raw;
+    const a = document.createElement("a");
+    a.href = href;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.textContent = raw;
+    node.appendChild(a);
+    if (trailing) node.appendChild(document.createTextNode(trailing));
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) {
+    node.appendChild(document.createTextNode(text.slice(lastIndex)));
+  }
 }
 
 function sortMessages(messagesMap) {

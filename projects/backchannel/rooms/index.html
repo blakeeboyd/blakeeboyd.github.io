@@ -392,7 +392,8 @@ async function initBackend() {
           key,
           ts: typeof entry.ts === "number" ? entry.ts : 0,
           createdBy: entry.createdBy || "unknown",
-          label: typeof entry.label === "string" ? entry.label : ""
+          label: typeof entry.label === "string" ? entry.label : "",
+          passwordHash: typeof entry.passwordHash === "string" ? entry.passwordHash : null
         });
       }
       rows.sort((a, b) => b.ts - a.ts);
@@ -405,12 +406,31 @@ async function initBackend() {
   }
 }
 
-async function createRoom(key, createdBy) {
-  await dbMod.set(dbMod.ref(db, ROOMS_REGISTRY_PATH + "/" + key), {
+async function createRoom(key, createdBy, passwordHash) {
+  const entry = {
     ts: dbMod.serverTimestamp(),
     createdBy: createdBy || "unknown",
     label: ""
-  });
+  };
+  if (passwordHash) entry.passwordHash = passwordHash;
+  await dbMod.set(dbMod.ref(db, ROOMS_REGISTRY_PATH + "/" + key), entry);
+}
+
+/* Hash a password with Web Crypto SHA-256. Matches the room page exactly. */
+async function hashPassword(s) {
+  const input = String(s || "");
+  if (window.crypto && crypto.subtle && crypto.subtle.digest) {
+    const bytes = new TextEncoder().encode(input);
+    const buf = await crypto.subtle.digest("SHA-256", bytes);
+    return Array.from(new Uint8Array(buf))
+      .map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+  let h = 0x811c9dc5;
+  for (let i = 0; i < input.length; i++) {
+    h = (h ^ input.charCodeAt(i)) >>> 0;
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return "fnv1a:" + h.toString(16);
 }
 
 async function deleteRoom(key) {
@@ -467,11 +487,19 @@ function buildShell() {
   input.autocomplete = "off";
   input.maxLength = 40;
   input.placeholder = "new-room-key";
+  const passwordInput = document.createElement("input");
+  passwordInput.className = "create-form__input";
+  passwordInput.id = "create-password";
+  passwordInput.type = "password";
+  passwordInput.autocomplete = "new-password";
+  passwordInput.maxLength = 60;
+  passwordInput.placeholder = "password (optional)";
   const btn = document.createElement("button");
   btn.className = "create-form__btn";
   btn.type = "submit";
   btn.textContent = "Create room";
   form.appendChild(input);
+  form.appendChild(passwordInput);
   form.appendChild(btn);
   const hint = document.createElement("p");
   hint.className = "create-hint";
@@ -500,6 +528,14 @@ function renderRooms() {
     const key = document.createElement("div");
     key.className = "room-row__key";
     key.textContent = row.key;
+    if (row.passwordHash) {
+      const lock = document.createElement("span");
+      lock.style.marginLeft = "0.5rem";
+      lock.style.fontSize = "0.75em";
+      lock.style.color = "var(--color-text-muted)";
+      lock.textContent = "(locked)";
+      key.appendChild(lock);
+    }
     info.appendChild(key);
     const meta = document.createElement("div");
     meta.className = "room-row__meta";
@@ -574,9 +610,13 @@ async function onCreateSubmit(e) {
     if (stored) {
       try { const p = JSON.parse(stored); if (p && p.token) by = "Blake"; } catch (e2) {}
     }
-    await createRoom(raw, by);
-    hint.textContent = "Created. Opening…";
+    const passwordInput = $("create-password");
+    const rawPassword = (passwordInput && passwordInput.value) || "";
+    const passwordHash = rawPassword ? await hashPassword(rawPassword) : null;
+    await createRoom(raw, by, passwordHash);
+    hint.textContent = passwordHash ? "Created with password. Opening…" : "Created. Opening…";
     input.value = "";
+    if (passwordInput) passwordInput.value = "";
     setTimeout(() => openRoom(raw), 250);
   } catch (err) {
     console.error("Create room failed:", err);

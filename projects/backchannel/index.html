@@ -516,6 +516,88 @@ body.is-admin .admin-toggle { display:inline-flex; }
   background:var(--color-accent-light);
 }
 
+/* User toggle — same visual chrome as the admin toggle, but for everyone.
+   Shown when the user is NOT admin (admin gets the admin button instead,
+   which provides the same room-switcher plus moderation controls). */
+.user-toggle {
+  display:inline-flex;
+  align-items:center;
+  gap:0.5rem;
+  padding:0.375rem 0.625rem;
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  background:var(--color-card-bg);
+  color:var(--color-text);
+  cursor:pointer;
+  transition:border-color var(--transition-fast), background var(--transition-fast);
+}
+body.is-admin .user-toggle { display:none; }
+.user-toggle:hover {
+  border-color:var(--color-text);
+  background:var(--color-control-bg);
+}
+.user-toggle[aria-expanded="true"] {
+  border-color:var(--color-accent);
+  background:var(--color-accent-light);
+}
+
+/* User panel — same chrome as who-panel/admin-panel. */
+.user-panel {
+  background:var(--color-card-bg);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  box-shadow:var(--shadow-sm);
+  padding:var(--spacing-sm);
+  display:flex; flex-direction:column; gap:var(--spacing-sm);
+}
+.user-panel.is-hidden { display:none; }
+.user-panel__section { display:flex; flex-direction:column; gap:0.5rem; }
+.user-panel__title { margin:0; }
+.user-panel__list {
+  list-style:none; padding:0; margin:0;
+  display:flex; flex-direction:column; gap:0.375rem;
+}
+.user-panel__row {
+  display:flex; align-items:center; justify-content:space-between; gap:var(--spacing-xs);
+  padding:0.5rem 0.625rem;
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-sm);
+  background:var(--color-control-bg);
+}
+.user-panel__row--current {
+  border-color:var(--color-accent);
+  background:var(--color-accent-light);
+}
+.user-panel__row-name {
+  font-family:var(--font-mono); font-feature-settings:var(--feat-mono);
+  font-size:var(--text-xs); font-weight:500;
+  text-transform:uppercase; letter-spacing:var(--tracking-wide);
+}
+.user-panel__row-meta {
+  font-size:var(--text-xs); color:var(--color-text-muted);
+}
+.user-panel__switch {
+  font-size:var(--text-xs); font-family:var(--font-mono);
+  font-feature-settings:var(--feat-mono); font-weight:500;
+  text-transform:uppercase; letter-spacing:var(--tracking-wide);
+  color:var(--color-text-muted);
+  padding:0.125rem 0.5rem;
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-sm);
+  background:transparent;
+  transition:border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
+}
+.user-panel__switch:hover {
+  border-color:var(--color-text);
+  color:var(--color-text);
+  background:var(--color-card-bg);
+}
+.user-panel__lock {
+  font-size:var(--text-xs);
+  color:var(--color-text-muted);
+  margin-left:0.5rem;
+}
+
 /* Admin panel — same chrome as .who-panel, but with multiple sections. */
 .admin-panel {
   background:var(--color-card-bg);
@@ -851,6 +933,19 @@ body.is-admin .admin-toggle { display:inline-flex; }
   background:var(--color-accent-light);
   border-color:transparent;
 }
+/* Inline links inside message bubbles + pin popover text. Keep underline
+   for affordance, soft accent color so they read as actionable without
+   overpowering the surrounding text. */
+.msg a,
+.pin-panel__text a {
+  color:var(--color-accent);
+  text-decoration:underline;
+  text-decoration-thickness:1px;
+  text-underline-offset:2px;
+  word-break:break-all;
+}
+.msg a:hover,
+.pin-panel__text a:hover { opacity:0.8; }
 
 /* ============================================================
    Composer
@@ -994,6 +1089,9 @@ body.is-admin .admin-toggle { display:inline-flex; }
         </svg>
         <span class="t-label pin-count" id="pin-count" aria-hidden="true"></span>
       </button>
+      <button class="user-toggle" id="user-toggle" type="button" aria-expanded="false" aria-controls="user-panel" aria-label="User menu">
+        <span class="t-label">user</span>
+      </button>
       <button class="admin-toggle" id="admin-toggle" type="button" aria-expanded="false" aria-controls="admin-panel" aria-label="Admin controls">
         <span class="t-label">admin</span>
       </button>
@@ -1048,6 +1146,13 @@ body.is-admin .admin-toggle { display:inline-flex; }
       <ul class="pin-panel__list" id="pin-list"></ul>
     </div>
 
+    <div class="user-panel is-hidden" id="user-panel" role="region" aria-label="User menu">
+      <div class="user-panel__section">
+        <p class="t-label user-panel__title">Rooms</p>
+        <ul class="user-panel__list" id="user-rooms-list"></ul>
+      </div>
+    </div>
+
     <div class="admin-panel is-hidden" id="admin-panel" role="region" aria-label="Admin controls">
       <div class="admin-panel__section">
         <p class="t-label admin-panel__title">Rooms</p>
@@ -1056,6 +1161,8 @@ body.is-admin .admin-toggle { display:inline-flex; }
         <form class="admin-panel__create-room" id="create-room-form" novalidate>
           <label class="visually-hidden" for="new-room-key">New room key</label>
           <input class="input admin-panel__create-input" id="new-room-key" type="text" autocomplete="off" maxlength="40" placeholder="new-room-key">
+          <label class="visually-hidden" for="new-room-password">Optional password</label>
+          <input class="input admin-panel__create-input" id="new-room-password" type="password" autocomplete="new-password" maxlength="60" placeholder="password (optional)">
           <button class="btn-ghost" type="submit">Create</button>
         </form>
         <p class="admin-panel__create-hint t-small" id="create-room-hint" role="status" aria-live="polite"></p>
@@ -1229,6 +1336,34 @@ const STORAGE_RENAMES   = "backchannel.renames";  // JSON: array of {from, ts} t
 // so the archives page and the rooms page on the same tab can recognize admin
 // without re-running the unlock gesture. Shape: JSON { token, ts }.
 const SESSION_ADMIN     = "backchannel.admin";
+// Per-tab record of rooms whose password gate has been satisfied in this
+// session. Shape: { [roomKey]: true }. Cleared on tab close.
+const SESSION_UNLOCKS   = "backchannel.unlocks";
+
+/* Hash a password with SHA-256 via Web Crypto. The hash stored in the
+   registry is hex-encoded SHA-256(password). This is a soft gate, not
+   real auth: the hash sits in a publicly readable Firebase node, so
+   a determined attacker can rainbow-table common passwords. Sufficient
+   for "wrong room" UX, not for secrets.
+
+   Falls back to a non-crypto fnv1a hash if Web Crypto is unavailable
+   (very old browsers or non-HTTPS contexts), with a console warning. */
+async function hashPassword(s) {
+  const input = String(s || "");
+  if (window.crypto && crypto.subtle && crypto.subtle.digest) {
+    const bytes = new TextEncoder().encode(input);
+    const buf = await crypto.subtle.digest("SHA-256", bytes);
+    return Array.from(new Uint8Array(buf))
+      .map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+  console.warn("Web Crypto unavailable; falling back to non-crypto hash.");
+  let h = 0x811c9dc5;
+  for (let i = 0; i < input.length; i++) {
+    h = (h ^ input.charCodeAt(i)) >>> 0;
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return "fnv1a:" + h.toString(16);
+}
 
 /* One-time localStorage migration from the previous "soundbox.*" key namespace.
    Runs at module load. After a returning user opens the app once, the old keys
@@ -1320,6 +1455,9 @@ const createRoomHint = $("create-room-hint");
 const roomsPageLink  = $("rooms-page-link");
 const pinToggleEl    = $("pin-toggle");
 const pinPanelEl     = $("pin-panel");
+const userToggleEl   = $("user-toggle");
+const userPanelEl    = $("user-panel");
+const userRoomsListEl = $("user-rooms-list");
 const pinListEl      = $("pin-list");
 const pinCountEl     = $("pin-count");
 
@@ -1583,24 +1721,36 @@ let myAdminToken = null;
    Renames update both slots: the per-room slot for the active room, and the
    global default. Other rooms' per-room slots are left alone, so a user who
    was "Alex" in mus399 and "Sam" in mus430 stays distinct in each. */
-const STORAGE_NAME_FOR_ROOM = "backchannel.name." + ROOM.key;
-
-function loadNameForRoom() {
-  try { return localStorage.getItem(STORAGE_NAME_FOR_ROOM); } catch (e) { return null; }
-}
-function loadGlobalDefaultName() {
+function loadName() {
   try { return localStorage.getItem(STORAGE_NAME); } catch (e) { return null; }
 }
-// Boot-time resolution: per-room name beats global default; either may be null.
-function loadName() {
-  return loadNameForRoom() || loadGlobalDefaultName();
-}
 function saveName(name) {
-  try {
-    localStorage.setItem(STORAGE_NAME, name);
-    localStorage.setItem(STORAGE_NAME_FOR_ROOM, name);
-  } catch (e) {}
+  try { localStorage.setItem(STORAGE_NAME, name); } catch (e) {}
 }
+
+/* One-time migration: collapse any leftover backchannel.name.{room} keys
+   from the previous two-level model into the single global slot. If we
+   already have a global default, the per-room keys are just deleted; if
+   not, we promote one of them. Safe to leave in place; safe to delete
+   after a few sessions when no returning user has stale keys left. */
+(function migratePerRoomNameKeys() {
+  try {
+    const PREFIX = "backchannel.name.";
+    const toDelete = [];
+    let candidate = null;
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!k || !k.startsWith(PREFIX)) continue;
+      toDelete.push(k);
+      if (candidate === null) candidate = localStorage.getItem(k);
+    }
+    if (toDelete.length === 0) return;
+    if (!localStorage.getItem(STORAGE_NAME) && candidate) {
+      localStorage.setItem(STORAGE_NAME, candidate);
+    }
+    for (const k of toDelete) localStorage.removeItem(k);
+  } catch (e) {}
+})();
 
 /* ------------------------------------------------------------
    Per-device identity (for the "previously known as" feature)
@@ -1994,12 +2144,15 @@ async function initBackend() {
       // registry (it's how non-admins on an unknown room get bounced to
       // default); only admin writes are expected, enforced at the UI layer
       // until Firebase Auth is in place.
-      createRoom(roomKey, createdBy, label) {
-        return dbMod.set(dbMod.ref(db, ROOMS_REGISTRY_PATH + "/" + roomKey), {
+      createRoom(roomKey, createdBy, label, passwordHash) {
+        const entry = {
           ts: dbMod.serverTimestamp(),
           createdBy: createdBy || "unknown",
           label: label || ""
-        });
+        };
+        // Optional. Empty/null means "no password," same as omitting.
+        if (passwordHash) entry.passwordHash = passwordHash;
+        return dbMod.set(dbMod.ref(db, ROOMS_REGISTRY_PATH + "/" + roomKey), entry);
       },
       deleteRoom(roomKey) {
         return dbMod.set(dbMod.ref(db, ROOMS_REGISTRY_PATH + "/" + roomKey), null);
@@ -2014,7 +2167,8 @@ async function initBackend() {
               key,
               ts: typeof entry.ts === "number" ? entry.ts : 0,
               createdBy: entry.createdBy || "unknown",
-              label: typeof entry.label === "string" ? entry.label : ""
+              label: typeof entry.label === "string" ? entry.label : "",
+              passwordHash: typeof entry.passwordHash === "string" ? entry.passwordHash : null
             });
           }
           rows.sort((a, b) => b.ts - a.ts);
@@ -2028,6 +2182,15 @@ async function initBackend() {
         if (roomKey === DEFAULT_ROOM) return true;
         const snap = await dbMod.get(dbMod.ref(db, ROOMS_REGISTRY_PATH + "/" + roomKey));
         return snap.exists();
+      },
+      // Returns the full registry entry (including passwordHash if set) or
+      // null if the room isn't in the registry. The default room returns a
+      // synthetic empty-password entry so callers can uniformly check it.
+      async getRoomEntry(roomKey) {
+        if (roomKey === DEFAULT_ROOM) return { synthetic: true };
+        const snap = await dbMod.get(dbMod.ref(db, ROOMS_REGISTRY_PATH + "/" + roomKey));
+        if (!snap.exists()) return null;
+        return snap.val();
       },
       listen(onMessage) {
         dbMod.onChildAdded(recent, (snap) => {
@@ -2113,6 +2276,9 @@ function makeDemoBackend() {
     deleteRoom() { return Promise.resolve(); },
     listenRooms() {},
     roomExists(roomKey) { return Promise.resolve(roomKey === DEFAULT_ROOM); },
+    getRoomEntry(roomKey) {
+      return Promise.resolve(roomKey === DEFAULT_ROOM ? { synthetic: true } : null);
+    },
     pinMessage() { return Promise.resolve(); },
     unpinMessage() { return Promise.resolve(); },
     listenPinned() {}
@@ -2196,6 +2362,52 @@ function formatTime(ts) {
   return h12 + ":" + mm + " " + period;
 }
 
+/* Append text to a node, linkifying URLs as anchor elements.
+
+   Safety: builds the DOM with createElement and textContent — never
+   innerHTML — so injected HTML in either segment can't escape into
+   the document. Anchors get noopener/noreferrer so the linked tab
+   can't reach back into this one.
+
+   Detection: http(s)://... matches as-is; www.foo runs of dots/path
+   get prefixed with https://. The regex stops at whitespace and the
+   small set of common trailing punctuation chars that almost always
+   belong to the sentence, not the URL ( ).,!?;: ). */
+const URL_RE = /(\b(?:https?:\/\/|www\.)[^\s<>"']+)/gi;
+
+function appendLinkified(node, text) {
+  if (!text) return;
+  let lastIndex = 0;
+  URL_RE.lastIndex = 0;
+  let match;
+  while ((match = URL_RE.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      node.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
+    }
+    let raw = match[0];
+    // Strip trailing sentence punctuation that almost certainly belongs to
+    // the sentence rather than the URL. Loop in case a URL is followed by
+    // multiple ("foo.com),").
+    let trailing = "";
+    while (raw.length > 0 && ").,!?;:".indexOf(raw[raw.length - 1]) !== -1) {
+      trailing = raw[raw.length - 1] + trailing;
+      raw = raw.slice(0, -1);
+    }
+    const href = /^https?:\/\//i.test(raw) ? raw : "https://" + raw;
+    const a = document.createElement("a");
+    a.href = href;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.textContent = raw;
+    node.appendChild(a);
+    if (trailing) node.appendChild(document.createTextNode(trailing));
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) {
+    node.appendChild(document.createTextNode(text.slice(lastIndex)));
+  }
+}
+
 function renderMessage(msg) {
   handlePotentialCollision(msg);
   if (shouldFireNotification(msg)) fireNotification(msg);
@@ -2274,7 +2486,10 @@ function renderMessage(msg) {
 
   const bubble = document.createElement("div");
   bubble.className = "msg " + (isOwn ? "msg--own" : "msg--other");
-  bubble.textContent = msg.text; // textContent: safe against any HTML/script
+  // Linkified text: URLs become clickable anchors. Still safe against HTML
+  // injection because appendLinkified uses textContent for non-URL segments
+  // and sets the URL string via textContent on the anchor (not innerHTML).
+  appendLinkified(bubble, msg.text);
   if (msg.id) bubble.dataset.msgId = msg.id;
   // Remember the message by id so the pin/unpin gesture handler can look it
   // up without a closure capture per bubble. Bounded by the 200-message
@@ -2840,7 +3055,7 @@ function renderPinPanel() {
 
     const text = document.createElement("p");
     text.className = "pin-panel__text";
-    text.textContent = p.text || "";
+    appendLinkified(text, p.text || "");
     li.appendChild(text);
 
     const actions = document.createElement("div");
@@ -3038,55 +3253,9 @@ function handleRoomsUpdate(rows) {
   if (isAdmin && !adminPanelEl.classList.contains("is-hidden")) {
     renderRoomsList();
   }
-  // First registry update of the page-load is the right moment to clean up
-  // localStorage: we now know which rooms are real.
-  pruneStaleRoomNameKeys();
-}
-
-/* Drop localStorage entries of the form backchannel.name.{key} where {key}
-   is neither the default room nor a room currently in the registry. Runs
-   once per page load, gated by hasPrunedStaleNameKeys.
-
-   Why this is safe:
-   - The current room's key is always in roomsData (or is DEFAULT_ROOM),
-     because we'd have already bounced to default otherwise.
-   - If the registry read failed (offline boot, etc.), roomsData stays
-     empty and the prune skips. Better to keep stale keys than to wipe
-     legitimate ones during a transient network blip.
-   - The global default backchannel.name (no .room suffix) is never
-     touched; this only filters keys with a third dot-separated segment.
-
-   The work is bounded by the localStorage key count, which is small in
-   practice. */
-let hasPrunedStaleNameKeys = false;
-const NAME_KEY_PREFIX = "backchannel.name.";
-
-function pruneStaleRoomNameKeys() {
-  if (hasPrunedStaleNameKeys) return;
-  // If the registry came back empty, that COULD mean "no custom rooms exist"
-  // (legitimate) or "couldn't read" (transient). We can't fully tell from
-  // here. The safe rule: only prune if the current room is either
-  // DEFAULT_ROOM or is present in roomsData. That confirms the registry
-  // data is real, not a connection-failure echo.
-  const currentInRegistry = ROOM.isDefault || roomsData.some((r) => r.key === ROOM.key);
-  if (!currentInRegistry) return;
-
-  hasPrunedStaleNameKeys = true;
-  const validRooms = new Set([DEFAULT_ROOM, ...roomsData.map((r) => r.key)]);
-  try {
-    const toDelete = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (!k || !k.startsWith(NAME_KEY_PREFIX)) continue;
-      const room = k.slice(NAME_KEY_PREFIX.length);
-      // Defensive: a key like backchannel.name. (empty suffix) shouldn't
-      // exist, but drop it if it does. Same for any key whose room segment
-      // contains characters that wouldn't pass ROOM_KEY_RE — those weren't
-      // written by us either.
-      if (!room || !ROOM_KEY_RE.test(room) || !validRooms.has(room)) toDelete.push(k);
-    }
-    for (const k of toDelete) localStorage.removeItem(k);
-  } catch (e) { /* Safari private mode; nothing to do */ }
+  // The user-menu panel (visible to everyone) lists rooms too; refresh it
+  // if it happens to be open.
+  if (userPanelEl && !userPanelEl.classList.contains("is-hidden")) renderUserPanel();
 }
 
 function renderRoomsList() {
@@ -3145,6 +3314,98 @@ function switchToRoom(roomKey) {
   window.location.href = url.toString();
 }
 
+/* User panel — visible to non-admins via the "user" header button. Shows
+   the same rooms list the admin panel shows (default + registry), with
+   switch buttons but no create/delete. Password-protected rooms get a
+   small lock indicator; clicking switch on a locked room prompts for the
+   password before navigation (handled in switchToRoom via the registry
+   metadata once we have it). */
+function renderUserPanel() {
+  userRoomsListEl.innerHTML = "";
+  const all = [{ key: DEFAULT_ROOM, label: "", synthetic: true }].concat(roomsData);
+  for (const row of all) {
+    const li = document.createElement("li");
+    li.className = "user-panel__row" + (row.key === ROOM.key ? " user-panel__row--current" : "");
+
+    const left = document.createElement("div");
+    const keyEl = document.createElement("div");
+    keyEl.className = "user-panel__row-name";
+    keyEl.textContent = row.key;
+    left.appendChild(keyEl);
+    if (row.label) {
+      const labelEl = document.createElement("div");
+      labelEl.className = "user-panel__row-meta";
+      labelEl.textContent = row.label;
+      left.appendChild(labelEl);
+    }
+    // Lock indicator for password-protected rooms.
+    if (row.passwordHash) {
+      const lockEl = document.createElement("span");
+      lockEl.className = "user-panel__lock";
+      lockEl.textContent = "locked";
+      lockEl.setAttribute("aria-label", "Password required");
+      left.appendChild(lockEl);
+    }
+    li.appendChild(left);
+
+    if (row.key !== ROOM.key) {
+      const switchBtn = document.createElement("button");
+      switchBtn.type = "button";
+      switchBtn.className = "user-panel__switch";
+      switchBtn.textContent = "switch";
+      switchBtn.setAttribute("aria-label", "Switch to room " + row.key);
+      switchBtn.addEventListener("click", () => attemptRoomSwitch(row));
+      li.appendChild(switchBtn);
+    } else {
+      const here = document.createElement("span");
+      here.className = "user-panel__row-meta";
+      here.textContent = "here";
+      li.appendChild(here);
+    }
+
+    userRoomsListEl.appendChild(li);
+  }
+}
+
+/* Switch into a room, prompting for password if the registry entry has one.
+   Admin always bypasses the prompt. The password check is purely UI: the
+   actual hash comparison happens against the registry's stored hash. */
+async function attemptRoomSwitch(row) {
+  if (row.key === ROOM.key) return;
+  // No password set, or admin: switch directly.
+  if (!row.passwordHash || isAdmin) {
+    switchToRoom(row.key);
+    return;
+  }
+  const guess = window.prompt('Password for room "' + row.key + '":');
+  if (guess === null) return; // cancelled
+  const guessHash = await hashPassword(guess);
+  if (guessHash !== row.passwordHash) {
+    window.alert("That password is incorrect.");
+    return;
+  }
+  // Remember the unlock so subsequent switches to this room in the same tab
+  // don't re-prompt. Lives in sessionStorage so closing the tab resets.
+  try {
+    const unlocks = JSON.parse(sessionStorage.getItem(SESSION_UNLOCKS) || "{}");
+    unlocks[row.key] = true;
+    sessionStorage.setItem(SESSION_UNLOCKS, JSON.stringify(unlocks));
+  } catch (e) {}
+  switchToRoom(row.key);
+}
+
+userToggleEl.addEventListener("click", () => {
+  const isOpen = !userPanelEl.classList.contains("is-hidden");
+  if (isOpen) {
+    userPanelEl.classList.add("is-hidden");
+    userToggleEl.setAttribute("aria-expanded", "false");
+  } else {
+    renderUserPanel();
+    userPanelEl.classList.remove("is-hidden");
+    userToggleEl.setAttribute("aria-expanded", "true");
+  }
+});
+
 createRoomForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!isAdmin || !backend) return;
@@ -3166,10 +3427,16 @@ createRoomForm.addEventListener("submit", async (e) => {
     return;
   }
   try {
-    await backend.createRoom(raw, myName || ADMIN_NAME, "");
+    const passwordInput = document.getElementById("new-room-password");
+    const rawPassword = (passwordInput && passwordInput.value) || "";
+    const passwordHash = rawPassword ? await hashPassword(rawPassword) : null;
+    await backend.createRoom(raw, myName || ADMIN_NAME, "", passwordHash);
     createRoomHint.classList.remove("is-error");
-    createRoomHint.textContent = "Created. Switching…";
+    createRoomHint.textContent = passwordHash
+      ? "Created with password. Switching…"
+      : "Created. Switching…";
     newRoomInput.value = "";
+    if (passwordInput) passwordInput.value = "";
     // Give Firebase a beat to propagate to listenRooms before navigation.
     setTimeout(() => switchToRoom(raw), 250);
   } catch (err) {
@@ -3574,10 +3841,12 @@ function restoreAdminFromSession() {
   // Room-access gate: if the URL specified a custom room, and that room is
   // NOT in the registry, and we're not admin, bounce to the default room
   // with a notice. Admin bypasses this so they can bootstrap brand-new rooms.
+  // If the room IS in the registry and has a password, prompt for it unless
+  // this tab has already satisfied the gate for that room.
   if (!ROOM.isDefault && !adminRestored) {
     try {
-      const exists = await backend.roomExists(ROOM.key);
-      if (!exists) {
+      const entry = await backend.getRoomEntry(ROOM.key);
+      if (!entry) {
         // Bounce: rewrite URL to default room without reload, and surface a notice.
         // Using replaceState avoids a back-button trap on the missing room.
         const here = new URL(window.location.href);
@@ -3585,10 +3854,45 @@ function restoreAdminFromSession() {
         window.location.replace(here.toString() + (here.search ? "&" : "?") + "missing=" + encodeURIComponent(ROOM.key));
         return;
       }
+      if (entry.passwordHash) {
+        let unlocked = false;
+        try {
+          const unlocks = JSON.parse(sessionStorage.getItem(SESSION_UNLOCKS) || "{}");
+          unlocked = unlocks[ROOM.key] === true;
+        } catch (e) {}
+        if (!unlocked) {
+          // Prompt up to 3 times. Bounce to default on failure or cancel.
+          let satisfied = false;
+          for (let attempt = 0; attempt < 3; attempt++) {
+            const guess = window.prompt(
+              attempt === 0
+                ? 'Password for room "' + ROOM.key + '":'
+                : 'Incorrect. Password for room "' + ROOM.key + '":'
+            );
+            if (guess === null) break; // cancelled
+            const guessHash = await hashPassword(guess);
+            if (guessHash === entry.passwordHash) {
+              satisfied = true;
+              try {
+                const unlocks = JSON.parse(sessionStorage.getItem(SESSION_UNLOCKS) || "{}");
+                unlocks[ROOM.key] = true;
+                sessionStorage.setItem(SESSION_UNLOCKS, JSON.stringify(unlocks));
+              } catch (e) {}
+              break;
+            }
+          }
+          if (!satisfied) {
+            const here = new URL(window.location.href);
+            here.searchParams.delete("room");
+            window.location.replace(here.toString());
+            return;
+          }
+        }
+      }
     } catch (e) {
       // If the registry read fails (offline, etc.), let the user through.
       // Better to show an empty room than a hard error.
-      console.warn("Room existence check failed; proceeding:", e);
+      console.warn("Room access check failed; proceeding:", e);
     }
   }
 
@@ -3617,35 +3921,23 @@ function restoreAdminFromSession() {
   backend.listenPinned(handlePinnedUpdate);
   backend.listenRooms(handleRoomsUpdate);
 
-  // Join screen decision (after backend init so the join hint can reflect
-  // backend state if needed).
-  //
-  // Two-level name memory:
-  // - Per-room name (loadNameForRoom): the user has been HERE before. Auto-enter.
-  // - Global default (loadGlobalDefaultName): the user has been in SOME room
-  //   before, just not this one. Prefill the join screen so they only need to
-  //   confirm. Don't auto-enter — landing in a brand-new room with a name they
-  //   used elsewhere would be surprising.
-  const perRoomName = loadNameForRoom();
-  const globalDefault = loadGlobalDefaultName();
+  // Join screen decision. One identity per device: if there's a stored
+  // name, auto-enter every room with it. First-time-ever users get the
+  // join screen blank.
+  const stored = loadName();
 
-  if (adminRestored && perRoomName && isAdminName(perRoomName)) {
+  if (adminRestored && stored && isAdminName(stored)) {
     // Tab still holds admin from earlier in this session — drop straight
     // into the room as Blake without the gesture.
     pendingCollisionCheck = false;
-    enterRoom(perRoomName);
-  } else if (perRoomName && isAdminName(perRoomName)) {
-    // Stored name is "Blake" but the session token is gone. Make them re-do
-    // the gesture rather than auto-enter as admin.
+    enterRoom(stored);
+  } else if (stored && isAdminName(stored)) {
+    // Stored name is "Blake" but the session token is gone. Make them
+    // re-do the gesture rather than auto-enter as admin.
     showJoin("", "Sign in as admin from the admin panel, or pick another name.");
-  } else if (perRoomName) {
+  } else if (stored) {
     pendingCollisionCheck = true;
-    enterRoom(perRoomName);
-  } else if (globalDefault && !isAdminName(globalDefault)) {
-    // First time in this specific room. Prefill the join screen with the
-    // global default so a quick Join lands them in. Suppress admin auto-fill;
-    // claiming Blake always requires the gesture in this session.
-    showJoin(globalDefault, "");
+    enterRoom(stored);
   } else {
     showJoin();
   }

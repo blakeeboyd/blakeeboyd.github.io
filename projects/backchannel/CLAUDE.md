@@ -19,24 +19,21 @@ All Firebase paths are namespaced under `backchannel/{roomKey}/...` so multiple 
 
 When the room is non-default, the header shows the room key as a small `· <key>` badge under the title. The "View all archives" link in the admin panel and the "Back to room" link on the archives page both preserve `?room=` so the user stays in the same namespace.
 
-### Name memory (two levels)
+### Name memory (one identity per device)
 
-Name storage in localStorage is split across two slots so the user can keep distinct identities per room while still defaulting sensibly in a brand-new room:
+Single localStorage slot `backchannel.name`. Whatever name is stored is the user's identity in every room until they change it via the "change name" link. Renaming saves to that one slot and takes effect everywhere on the next room load.
 
-- `backchannel.name` — global default. Holds whatever name was used most recently in any room. Used as a prefill on the join screen when this device has never been in the current room.
-- `backchannel.name.{room}` — per-room. Holds the name this device last used in this specific room. Drives auto-enter on return visits.
+Boot resolution: if a stored name exists, auto-enter with it. Otherwise show the join screen blank. The admin name is never auto-restored; claiming Blake requires the gesture each session.
 
-Resolution at boot: if a per-room name exists, auto-enter with it. Otherwise, if a global default exists, show the join screen with the global default prefilled (the user still has to click Join — landing in a new room as a name from somewhere else would be surprising). Otherwise, blank join screen.
-
-Renaming via `saveName()` writes to BOTH slots: the active room's per-room slot, and the global default. Other rooms' per-room slots are not touched, so a user who was "Alex" in mus399 and "Sam" in mus430 stays distinct in each.
-
-`pruneStaleRoomNameKeys()` runs once per page load, the first time the rooms registry loads. It enumerates `localStorage` for `backchannel.name.{key}` entries and deletes any whose `{key}` is neither `DEFAULT_ROOM` nor present in the current registry. Safe-by-design: it only runs after the registry has confirmed-real data (the current room is in it), so an offline boot doesn't wipe legitimate keys. This is the device's natural cleanup loop for rooms the admin has since deleted from the registry.
+A one-time migration in the script body sweeps up any leftover `backchannel.name.{room}` keys from the previous two-level model. If no global default exists, one of the per-room values is promoted; the per-room keys are then deleted. Safe to leave in place; safe to delete after enough time has passed.
 
 The admin name (Blake) is never auto-filled — claiming the admin name requires the gesture every session, regardless of what's in localStorage.
 
 ### Room registry and admin-gated creation
 
-Custom rooms must be registered before non-admins can land on them. The registry lives at `backchannel/_rooms/{key}` (underscore prefix keeps it from colliding with valid room keys, which are `[a-z0-9-]` only). Each entry: `{ ts, createdBy, label }`. The default room exists implicitly without a registry entry.
+Custom rooms must be registered before non-admins can land on them. The registry lives at `backchannel/_rooms/{key}` (underscore prefix keeps it from colliding with valid room keys, which are `[a-z0-9-]` only). Each entry: `{ ts, createdBy, label, passwordHash? }`. The default room exists implicitly without a registry entry.
+
+Rooms can optionally be password-protected: at create time the admin types a password, the client SHA-256 hashes it (`hashPassword()`), and the hash goes into `passwordHash` on the registry entry. On boot, a non-admin landing on a protected room is prompted for the password (up to 3 attempts); a correct guess writes `{ [roomKey]: true }` into `sessionStorage["backchannel.unlocks"]` so subsequent switches in the same tab don't re-prompt. Admin always bypasses the prompt. This is a soft gate (the hash is publicly readable; a determined attacker could brute-force common passwords) — sufficient for "wrong room" UX, not for real access control.
 
 When a non-admin lands on `?room=foo` and `foo` is not in the registry, the boot path bounces them to the default room with a `?missing=foo` query param that the destination uses to show a one-shot notice ("Room \"foo\" does not exist. Showing the default room instead."), then strips the param via `history.replaceState`. The bounce uses `window.location.replace` (not `assign`) so the back button doesn't trap the user on the missing room.
 
@@ -64,8 +61,7 @@ Other Firebase paths (all room-scoped):
 | Where | What | Lifespan |
 |---|---|---|
 | Firebase RTDB | Messages, admin session, bans | Persistent, server-side |
-| `localStorage["backchannel.name"]` | Global default name (most-recent name used in any room) | Per-browser, until cleared |
-| `localStorage["backchannel.name.{room}"]` | Per-room remembered name | Per-browser, until cleared |
+| `localStorage["backchannel.name"]` | User's display name (one identity per device, used everywhere) | Per-browser, until cleared |
 | `localStorage["backchannel.theme"]` | Light/dark choice | Per-browser, until cleared |
 | `localStorage["backchannel.notify"]` | Notification opt-in | Per-browser, until cleared |
 | `localStorage["backchannel.deviceId"]` | Stable random per-device id (rides on every message) | Per-browser, until cleared |
@@ -212,6 +208,16 @@ Shows every room in `backchannel/_rooms` plus the default room (synthesized at r
 Below the list: a create form that writes a new entry to `_rooms` and navigates into the new room.
 
 Like the archives page, this page is self-contained and mirrors the design tokens manually.
+
+## User menu
+
+Header carries two mutually exclusive buttons: `user` (for non-admins) and `admin` (for admins). The user button opens `.user-panel`, a slim version of the admin panel containing just the rooms list. Each row shows the room key (with a small `(locked)` indicator for password-protected rooms) and a `switch` button. Clicking switch on a password-protected room prompts for the password via `attemptRoomSwitch()`; correct guesses unlock the room for this tab via `sessionStorage["backchannel.unlocks"]`.
+
+The user panel intentionally does NOT link to the standalone rooms page — that page is admin-only, gated behind the sessionStorage admin token. Non-admins discover and switch between rooms only via the user-menu list.
+
+## URL linkification
+
+Message text, pin popover text, and archive viewer text all run through `appendLinkified()` (defined separately in `index.html` and `archives/index.html`). It detects `http(s)://...` and `www.` URLs, splits the text into runs, and builds `<a target="_blank" rel="noopener noreferrer">` elements. Every text run goes through `textContent` (never `innerHTML`), so HTML injection stays impossible. Trailing sentence punctuation (`).,!?;:`) is stripped from the URL and reattached as text so "see foo.com." doesn't include the period in the link.
 
 ## Send rate limit
 
