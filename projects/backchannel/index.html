@@ -26,6 +26,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Backchannel</title>
 
+<!-- PWA metadata. The manifest lives under projects/backchannel/ and its
+     scope is also projects/backchannel/, so installing this page adds
+     Backchannel as a standalone app without touching the rest of the site.
+     The Service Worker (sw.js) is registered from inside the module script
+     below. Apple-specific tags duplicate the manifest for iOS Safari, which
+     doesn't fully honor manifest icons. -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2563eb">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Backchannel">
+
 <style>
 /* ============================================================
    Tokens
@@ -131,6 +146,36 @@ input, textarea { font:inherit; color:inherit; }
 .notice__dot {
   display:inline-block; width:8px; height:8px; border-radius:50%;
   background:var(--color-warning); margin-right:0.5rem; vertical-align:middle;
+}
+
+/* iOS install banner. Same card chrome as .notice, but slimmer copy and a
+   dismiss button on the right. Shown only when JS confirms iOS Safari +
+   not standalone + not previously dismissed. */
+.install-banner {
+  display:flex; align-items:center; gap:var(--spacing-sm);
+  padding:var(--spacing-xs) var(--spacing-sm);
+  background:var(--color-accent-light);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  box-shadow:var(--shadow-sm);
+}
+.install-banner__text {
+  margin:0; flex:1;
+  font-size:var(--text-sm);
+  color:var(--color-text);
+}
+.install-banner__dismiss {
+  padding:0.375rem 0.75rem;
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  background:var(--color-card-bg);
+  color:var(--color-text);
+  font-size:var(--text-sm);
+  transition:border-color var(--transition-fast), background var(--transition-fast);
+}
+.install-banner__dismiss:hover {
+  border-color:var(--color-text);
+  background:var(--color-control-bg);
 }
 
 /* ============================================================
@@ -958,6 +1003,16 @@ body.is-admin .admin-toggle { display:inline-flex; }
     </div>
   </header>
 
+  <!-- iOS install banner. Hidden by default; JS reveals it only when the
+       client is iOS Safari NOT already running as a PWA, and the user
+       hasn't previously dismissed it. -->
+  <div class="install-banner" id="install-banner" role="region" aria-label="Install as app" hidden>
+    <p class="install-banner__text">
+      Install Backchannel for notifications when the tab is closed. Tap the Share button, then "Add to Home Screen."
+    </p>
+    <button class="install-banner__dismiss" id="install-banner-dismiss" type="button" aria-label="Dismiss">Got it</button>
+  </div>
+
   <!-- Join screen -->
   <section class="join" id="join" aria-labelledby="join-title">
     <div class="join__card">
@@ -1321,6 +1376,80 @@ themeBtn.addEventListener("click", () => {
 initTheme();
 
 /* ============================================================
+   Service Worker registration (PWA shell, Stage 1 of notifications)
+
+   Register sw.js so the page is installable as a PWA and so notifications
+   can be raised via registration.showNotification(), which is more reliable
+   than `new Notification()` on Android background tabs and required for
+   iOS PWA notifications. Stage 1 only does the registration; push handling
+   is wired in sw.js for when Stage 2 lands a server.
+
+   swRegistration is null until registration resolves. fireNotification
+   checks for it and falls back to the Notification constructor otherwise,
+   so the existing behavior is preserved on browsers without SW support.
+   ============================================================ */
+let swRegistration = null;
+if ("serviceWorker" in navigator) {
+  // Register from the page's own scope so the SW controls this page and
+  // anything else under projects/backchannel/. The relative path resolves
+  // to projects/backchannel/sw.js from the room page; the archives/rooms
+  // pages link manifest.json but don't register the SW separately because
+  // the room's registration already covers the directory.
+  navigator.serviceWorker.register("sw.js").then((reg) => {
+    swRegistration = reg;
+  }).catch((err) => {
+    // Non-fatal: the in-tab notification path still works.
+    console.warn("Service Worker registration failed:", err);
+  });
+}
+
+/* iOS install banner.
+
+   iOS Safari doesn't surface a beforeinstallprompt event; the user has to
+   tap Share -> Add to Home Screen manually. We show a banner explaining
+   this, but only when:
+   - The user agent is iOS Safari (not Chrome on iOS, which is also WebKit
+     under the hood but doesn't expose the right install flow either).
+   - The page is not already running in standalone mode (display-mode: standalone
+     or navigator.standalone, both checked because iOS reports them inconsistently).
+   - The user hasn't previously dismissed the banner.
+
+   The dismissal is sticky per device via localStorage. */
+const STORAGE_INSTALL_DISMISSED = "backchannel.installDismissed";
+
+function isIOSSafari() {
+  const ua = window.navigator.userAgent || "";
+  const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  if (!isIOS) return false;
+  // Reject iOS Chrome/Firefox/Edge (which share the WebKit engine but don't
+  // expose the Share -> Add to Home Screen flow in a useful way).
+  if (/CriOS|FxiOS|EdgiOS/.test(ua)) return false;
+  return true;
+}
+
+function isStandalone() {
+  // iOS uses navigator.standalone; everyone else uses display-mode media query.
+  // Cover both because iOS PWAs can be either state depending on installation.
+  return (window.navigator.standalone === true) ||
+         (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
+}
+
+(function maybeShowInstallBanner() {
+  if (!isIOSSafari() || isStandalone()) return;
+  try {
+    if (localStorage.getItem(STORAGE_INSTALL_DISMISSED) === "yes") return;
+  } catch (e) {}
+  const banner = document.getElementById("install-banner");
+  if (!banner) return;
+  banner.hidden = false;
+  const dismiss = document.getElementById("install-banner-dismiss");
+  dismiss.addEventListener("click", () => {
+    banner.hidden = true;
+    try { localStorage.setItem(STORAGE_INSTALL_DISMISSED, "yes"); } catch (e) {}
+  });
+})();
+
+/* ============================================================
    Notifications
 
    Browser Notification API. Per-user opt-in, stored in localStorage.
@@ -1405,11 +1534,29 @@ function shouldFireNotification(msg) {
 }
 
 function fireNotification(msg) {
+  // Notification body is rendered as plain text by the OS, not HTML, so it's safe with the
+  // raw message text. Truncate to keep the OS popup readable.
+  const body = msg.text.length > 140 ? msg.text.slice(0, 137) + "..." : msg.text;
+  const title = msg.name + " on Backchannel";
+  const options = {
+    body,
+    tag: "backchannel",
+    icon: "icons/icon-192.png",
+    badge: "icons/icon-192.png",
+    // The notificationclick handler in sw.js reads this and focuses an
+    // existing tab or opens one. Preserve the current ?room= so taps land
+    // back in the same room the message came from.
+    data: { url: ROOM.isDefault ? "./" : ("./?room=" + encodeURIComponent(ROOM.key)) }
+  };
+  // Prefer the Service Worker path when available: it's more reliable on
+  // Android background tabs and required on iOS PWAs. Fall back to the
+  // constructor for browsers without SW or where registration failed.
   try {
-    // Notification body is rendered as plain text by the OS, not HTML, so it's safe with the
-    // raw message text. Truncate to keep the OS popup readable.
-    const body = msg.text.length > 140 ? msg.text.slice(0, 137) + "..." : msg.text;
-    new Notification(msg.name + " on Backchannel", { body, tag: "backchannel" });
+    if (swRegistration && swRegistration.showNotification) {
+      swRegistration.showNotification(title, options);
+    } else {
+      new Notification(title, options);
+    }
   } catch (e) { /* permission revoked between checks, ignore */ }
 }
 

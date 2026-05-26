@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Solid background fills the whole canvas. Android adaptive icons mask
+       the inner 80% as a "safe zone"; the waveform sits comfortably inside
+       that zone. iOS doesn't mask, so the full square is visible. -->
+  <rect width="512" height="512" rx="96" fill="#2563eb"/>
+  <!-- Same waveform pair as the inline header logo, scaled to 512px. The
+       second path at 0.7 opacity adds depth without color contrast. -->
+  <path d="M64,256 Q128,128 192,256 T320,256 T448,256"
+        fill="none" stroke="white" stroke-width="40" stroke-linecap="round"/>
+  <path d="M64,256 Q160,352 256,256 T448,256"
+        fill="none" stroke="white" stroke-width="24" stroke-linecap="round" opacity="0.7"/>
+</svg>

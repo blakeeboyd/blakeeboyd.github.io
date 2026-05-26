@@ -70,7 +70,28 @@ Other Firebase paths (all room-scoped):
 | `localStorage["backchannel.notify"]` | Notification opt-in | Per-browser, until cleared |
 | `localStorage["backchannel.deviceId"]` | Stable random per-device id (rides on every message) | Per-browser, until cleared |
 | `localStorage["backchannel.renames"]` | This device's name-change history (for "previously known as") | Per-browser, until cleared |
+| `localStorage["backchannel.installDismissed"]` | iOS install banner dismissed flag ("yes" once dismissed) | Per-browser, until cleared |
 | In-memory only | Demo-mode messages, live participant count, admin status, rate-limit window, banlist | Tab-scoped |
+
+## PWA shell and Service Worker (Stage 1 of push notifications)
+
+Stage 1 of the notifications work landed: the page is now installable as a PWA, and notifications go through `registration.showNotification()` when a Service Worker is active. No backend changes yet; tab-closed push notifications wait for Stage 2 (Cloud Function + Firebase Blaze).
+
+Files involved:
+- `manifest.json` — PWA manifest with name, theme color (`#2563eb`), display:standalone, and icons. Scope is `./` so installing from any of the three pages produces the same app.
+- `sw.js` — Minimal Service Worker. Handles `install` (skipWaiting), `activate` (claim clients), `push` (showNotification from a JSON payload), and `notificationclick` (focus existing tab or open a new one). The push handler is wired ahead of Stage 2 so the worker doesn't need a redeploy when the server starts sending pushes.
+- `icons/` — `icon.svg` (source), `icon-192.png`, `icon-512.png`, `apple-touch-icon.png` (180×180). Generated with `rsvg-convert` from the SVG source.
+
+Registration happens once on room page load (`navigator.serviceWorker.register("sw.js")`). The archives and rooms pages link the manifest but don't register the SW themselves because the room's registration already covers the directory.
+
+`fireNotification(msg)` prefers `swRegistration.showNotification(...)` when available (more reliable on Android background tabs, required on iOS PWAs) and falls back to `new Notification(...)` otherwise. The notification's `data.url` carries the current room's URL so taps land back in the right room.
+
+The dismissible iOS install banner shows only when: (1) the user agent is iOS Safari, (2) the page is not in standalone mode (neither `navigator.standalone` nor `display-mode: standalone`), and (3) `backchannel.installDismissed` is not set. Dismissal is sticky per device.
+
+What Stage 2 will add (not built):
+- VAPID keys + push subscriptions stored at `backchannel/{room}/subscriptions/{deviceId}`.
+- Firebase Cloud Function triggered by writes to `backchannel/{room}/messages` that fans out push notifications to all subscriptions in the same room (minus the sender's own deviceId, minus banned deviceIds).
+- Per-room subscription cleanup when the room is deleted from the registry.
 
 ## Design system (Blake Boyd)
 
