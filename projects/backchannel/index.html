@@ -1411,6 +1411,23 @@ const SCROLL_THRESHOLD   = 60;              // px from bottom to count as "near"
 const SEND_RATE_MAX      = 5;               // messages allowed per window
 const SEND_RATE_WINDOW_MS = 10 * 1000;      // window length
 
+/* Web Push public key (VAPID). Pairs with the private key held server-side
+   in the Cloud Function's environment. Safe to publish — the public half
+   only lets the browser tell the push service "this app is who it claims
+   to be." */
+const VAPID_PUBLIC = "BAJ9YsRACmcW-K4RYjbbkX0WP1PMuv9pQDUknBU6Ak85mMrIb9E4tMu9EPmqtQ86yKBxDQ1dfBpfAYYn-CPHQy0";
+
+// VAPID public keys arrive as URL-safe base64 strings; the Push API wants
+// a Uint8Array of raw bytes. Conversion helper.
+function urlBase64ToUint8Array(base64) {
+  const padding = "=".repeat((4 - base64.length % 4) % 4);
+  const b64 = (base64 + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(b64);
+  const out = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+  return out;
+}
+
 /* ============================================================
    DOM
    ============================================================ */
@@ -1632,13 +1649,14 @@ function refreshNotifyButton() {
 notifyBtnEl.addEventListener("click", async () => {
   if (!notifySupported || Notification.permission === "denied") return;
   if (notifyOn && Notification.permission === "granted") {
-    // Toggle off
+    // Toggle off: unsubscribe from push and clear local state.
     notifyOn = false;
     try { localStorage.setItem(STORAGE_NOTIFY, "off"); } catch (e) {}
+    await unsubscribeFromPush();
     refreshNotifyButton();
     return;
   }
-  // Toggle on: need permission first if we don't already have it
+  // Toggle on: need permission first if we don't already have it.
   if (Notification.permission !== "granted") {
     try {
       const result = await Notification.requestPermission();
@@ -1650,8 +1668,63 @@ notifyBtnEl.addEventListener("click", async () => {
   }
   notifyOn = true;
   try { localStorage.setItem(STORAGE_NOTIFY, "on"); } catch (e) {}
+  // Subscribe to push for this room. Failure is non-fatal: in-tab
+  // notifications still work via the existing path; the user just won't
+  // get tab-closed push delivery until the next attempt succeeds.
+  await subscribeToPush();
   refreshNotifyButton();
 });
+
+/* Subscribe this device to Web Push for the current room.
+
+   Requires:
+   - serviceWorker registered (swRegistration set)
+   - Notification permission granted
+   - Push API supported (pushManager on the registration)
+   - VAPID public key configured
+
+   The resulting PushSubscription is written to
+   backchannel/{room}/subscriptions/{deviceId} via backend.subscribeDevice.
+   The Cloud Function reads that path on every new message and fans out. */
+async function subscribeToPush() {
+  if (!swRegistration || !swRegistration.pushManager) {
+    console.warn("Push subscribe skipped: no Service Worker registration or no push support.");
+    return;
+  }
+  if (!VAPID_PUBLIC) {
+    console.warn("Push subscribe skipped: VAPID_PUBLIC not configured.");
+    return;
+  }
+  try {
+    // If we already have a subscription, reuse it. Browsers can change the
+    // endpoint at any time, so we still rewrite to Firebase to be safe.
+    let sub = await swRegistration.pushManager.getSubscription();
+    if (!sub) {
+      sub = await swRegistration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC)
+      });
+    }
+    if (backend && backend.kind === "firebase") {
+      await backend.subscribeDevice(deviceId, sub.toJSON());
+    }
+  } catch (err) {
+    console.warn("Push subscribe failed:", err);
+  }
+}
+
+async function unsubscribeFromPush() {
+  if (!swRegistration || !swRegistration.pushManager) return;
+  try {
+    const sub = await swRegistration.pushManager.getSubscription();
+    if (sub) await sub.unsubscribe();
+  } catch (e) { /* ignore */ }
+  // Remove the Firebase record regardless of whether the browser side
+  // succeeded — better a stale record on the server than a missed cleanup.
+  if (backend && backend.kind === "firebase") {
+    try { await backend.unsubscribeDevice(deviceId); } catch (e) {}
+  }
+}
 
 // Initial paint (also called again after enterRoom, since the button lives in the room)
 refreshNotifyButton();
@@ -2103,6 +2176,20 @@ async function initBackend() {
           onChange(snap.val() === true);
         });
       },
+      // Push subscriptions per device per room. Keyed by deviceId so a single
+      // device has at most one subscription per room. The Cloud Function reads
+      // this path on each message to fan out pushes.
+      subscribeDevice(devId, subscriptionJson) {
+        const path = ROOM_BASE + "/subscriptions/" + devId;
+        return dbMod.set(dbMod.ref(db, path), {
+          endpoint: subscriptionJson.endpoint,
+          keys: subscriptionJson.keys || {},
+          ts: dbMod.serverTimestamp()
+        });
+      },
+      unsubscribeDevice(devId) {
+        return dbMod.set(dbMod.ref(db, ROOM_BASE + "/subscriptions/" + devId), null);
+      },
       // Pinned messages. Keyed by the original message's pushId for natural
       // de-duplication: pinning the same message twice is a no-op. Each entry
       // denormalizes the message content so the pin popover can render
@@ -2271,6 +2358,8 @@ function makeDemoBackend() {
     deleteArchive() { return Promise.resolve(); },
     listenRoomCleared() {},
     setLocked() { return Promise.resolve(); },
+    subscribeDevice() { return Promise.resolve(); },
+    unsubscribeDevice() { return Promise.resolve(); },
     listenLocked() {},
     createRoom() { return Promise.resolve(); },
     deleteRoom() { return Promise.resolve(); },
@@ -3920,6 +4009,14 @@ function restoreAdminFromSession() {
   backend.listenLocked(handleLockedUpdate);
   backend.listenPinned(handlePinnedUpdate);
   backend.listenRooms(handleRoomsUpdate);
+
+  // If notifications are toggled on but we have no push subscription (or the
+  // subscription needs to be re-registered for this room), do it now. Runs
+  // once per boot. Failures are non-fatal — the in-tab notification path
+  // still works via swRegistration.showNotification().
+  if (notifyOn && Notification.permission === "granted") {
+    subscribeToPush().catch(() => {});
+  }
 
   // Join screen decision. One identity per device: if there's a stored
   // name, auto-enter every room with it. First-time-ever users get the

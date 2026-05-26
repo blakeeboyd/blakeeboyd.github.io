@@ -1,0 +1,24 @@
+{
+  "//": "Firebase project config. Used by the Firebase CLI for deploying Cloud Functions and Realtime Database rules. Does NOT affect GitHub Pages hosting — the site is served from the gh-pages branch via GitHub. Static-site deploy stays as it was.",
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ]
+    }
+  ],
+  "database": {
+    "rules": "projects/backchannel/firebase-rules.json"
+  },
+  "emulators": {
+    "functions": { "port": 5001 },
+    "database": { "port": 9000 },
+    "ui": { "enabled": true }
+  }
+}

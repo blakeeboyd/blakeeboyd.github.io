@@ -71,6 +71,22 @@
           ".validate": "newData.val() == true || !newData.exists()"
         },
 
+        "subscriptions": {
+          ".read": true,
+          ".write": true,
+          "$deviceId": {
+            ".validate": "!newData.exists() || newData.hasChildren(['endpoint','ts'])",
+            "endpoint": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 1024" },
+            "ts":       { ".validate": "newData.val() == now || (newData.isNumber() && newData.val() <= now + 5000)" },
+            "keys": {
+              "p256dh": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 256" },
+              "auth":   { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 256" },
+              "$other": { ".validate": false }
+            },
+            "$other": { ".validate": false }
+          }
+        },
+
         "pinned": {
           ".read": true,
           ".write": true,

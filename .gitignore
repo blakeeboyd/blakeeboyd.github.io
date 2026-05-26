@@ -10,3 +10,12 @@ audio/stadium-rock/
 # script consumes them to generate the committed videos/ and courses/ output.
 projects/youtube-university/source
 projects/youtube-university/courses-source
+
+# Firebase Cloud Functions
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+functions/node_modules/
+functions/.env
+functions/.env.local
+functions/*.local

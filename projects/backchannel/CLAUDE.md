@@ -55,6 +55,7 @@ Other Firebase paths (all room-scoped):
 - `backchannel/{room}/archives/{pushId}` — `{ ts, archivedBy, count, messages: { ...snapshot... } }`. Snapshot of the messages path captured at clear-room time. Every admin "Clear all messages" archives before wiping, so destruction is always reversible from the admin panel's Archives section.
 - `backchannel/{room}/locked` — `true` when the room is paused, absent otherwise. When true, non-admin clients are blocked from sending (UI-disabled composer + send-handler guard, and server-side rejection once the tightened Firebase rules are deployed).
 - `backchannel/{room}/pinned/{msgId}` — `{ ts, pinnedBy, name, text, msgTs }`. Admin-pinned messages. The msgId is the original message's pushId; pin entries are denormalized with the message content so the pin popover can render without further reads. Soft cap of `PIN_CAP` (50). Pins are wiped along with messages by `archiveAndClearRoom` since they're conversation-state.
+- `backchannel/{room}/subscriptions/{deviceId}` — `{ endpoint, keys: { p256dh, auth }, ts }`. Web Push subscriptions. One per device per room (keyed by `deviceId`). Written by `subscribeToPush()` when a user toggles notifications on. Read by the Cloud Function on every new message to fan out pushes. Subscriptions that fail with HTTP 410 Gone get cleaned up by the Cloud Function.
 
 ### State
 
@@ -69,9 +70,9 @@ Other Firebase paths (all room-scoped):
 | `localStorage["backchannel.installDismissed"]` | iOS install banner dismissed flag ("yes" once dismissed) | Per-browser, until cleared |
 | In-memory only | Demo-mode messages, live participant count, admin status, rate-limit window, banlist | Tab-scoped |
 
-## PWA shell and Service Worker (Stage 1 of push notifications)
+## PWA shell, Service Worker, and push notifications
 
-Stage 1 of the notifications work landed: the page is now installable as a PWA, and notifications go through `registration.showNotification()` when a Service Worker is active. No backend changes yet; tab-closed push notifications wait for Stage 2 (Cloud Function + Firebase Blaze).
+Stage 1 landed the PWA shell + Service Worker + iOS install banner. Stage 2 added the push-subscription client code and the Cloud Function that fans out pushes server-side. The Cloud Function lives in `functions/` and deploys separately from the static site.
 
 Files involved:
 - `manifest.json` — PWA manifest with name, theme color (`#2563eb`), display:standalone, and icons. Scope is `./` so installing from any of the three pages produces the same app.
@@ -84,10 +85,28 @@ Registration happens once on room page load (`navigator.serviceWorker.register("
 
 The dismissible iOS install banner shows only when: (1) the user agent is iOS Safari, (2) the page is not in standalone mode (neither `navigator.standalone` nor `display-mode: standalone`), and (3) `backchannel.installDismissed` is not set. Dismissal is sticky per device.
 
-What Stage 2 will add (not built):
-- VAPID keys + push subscriptions stored at `backchannel/{room}/subscriptions/{deviceId}`.
-- Firebase Cloud Function triggered by writes to `backchannel/{room}/messages` that fans out push notifications to all subscriptions in the same room (minus the sender's own deviceId, minus banned deviceIds).
-- Per-room subscription cleanup when the room is deleted from the registry.
+### Push subscription lifecycle (Stage 2)
+
+- VAPID public key inline in `index.html` (`VAPID_PUBLIC` constant). The matching private key lives at `~/.config/backchannel-vapid.json` on the deployer's machine (0600, outside the repo) and gets injected into the Cloud Function via `functions/.env` at deploy time.
+- Composer "notifications: off" toggle is the subscription handle. Turning it on requests Notification permission, then calls `subscribeToPush()` which uses `swRegistration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey })` and writes the resulting `PushSubscription` JSON to `backchannel/{room}/subscriptions/{deviceId}`. Turning it off calls `unsubscribeFromPush()` which unsubscribes the browser and deletes the Firebase record.
+- Reconciliation: on boot, if `notifyOn` is true and we have Notification permission, `subscribeToPush()` runs to make sure the current room has a fresh subscription. Failures are non-fatal (in-tab notifications still work).
+- Per-room subscriptions: a device toggling notifications in mus399 subscribes only for mus399. Walking into mus430 with notifications already on triggers the boot-time reconciliation, which subscribes that device for mus430 too. The Cloud Function only delivers to subscriptions in the room a message was sent to.
+
+### Cloud Function (functions/index.js)
+
+`fanoutMessagePush` triggers on `onValueCreated` for `/backchannel/{room}/messages/{msgId}`. It:
+1. Reads the room's subscriptions and bans nodes.
+2. Builds a JSON payload with `title`, `body` (truncated to 140 chars), `tag` (`backchannel-{room}` so notifications collapse per-room), and `url` (the room's URL — `./` for default, `./?room=<key>` otherwise).
+3. Sends to every subscription EXCEPT the sender's deviceId and any banned deviceIds.
+4. Cleans up subscriptions that return 410 Gone (browser side unsubscribed).
+
+The function is the only place that needs the VAPID private key. Deploy with `firebase deploy --only functions` (see `functions/DEPLOY.md`).
+
+### Roadmap candidates
+
+- Cleanup of subscription records when a room is deleted from the registry (currently leaves orphaned subscription nodes).
+- Optional per-room notification toggles in the user menu (right now the composer toggle covers it).
+- Server-side rate limiting via the Cloud Function (currently only client-side, soft-locked).
 
 ## Design system (Blake Boyd)
 
