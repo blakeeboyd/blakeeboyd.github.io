@@ -70,6 +70,20 @@
           ".validate": "newData.val() == true || !newData.exists()"
         },
 
+        "pinned": {
+          ".read": true,
+          ".write": true,
+          "$msgId": {
+            ".validate": "!newData.exists() || newData.hasChildren(['ts','pinnedBy','name','text'])",
+            "ts":       { ".validate": "newData.val() == now || (newData.isNumber() && newData.val() <= now + 5000)" },
+            "pinnedBy": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40" },
+            "name":     { ".validate": "newData.isString() && newData.val().length <= 40" },
+            "text":     { ".validate": "newData.isString() && newData.val().length <= 500" },
+            "msgTs":    { ".validate": "newData.isNumber() && newData.val() >= 0" },
+            "$other":   { ".validate": false }
+          }
+        },
+
         "$other": { ".validate": false }
       }
     }
