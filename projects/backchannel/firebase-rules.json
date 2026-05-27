@@ -1,5 +1,4 @@
 {
-  "//": "Backchannel Realtime Database rules. Deploy via Firebase Console -> Realtime Database -> Rules. These rules replace the previous {read:true, write:true} test-mode rules with shape validation and ban/lock enforcement. The threat model is still 'classroom backchannel,' not 'FERPA-grade': because there is no Firebase Auth, the admin name is still soft-locked at the application layer. What these rules buy is: (1) garbage writes can't pollute the database, (2) banned devices can't post, (3) locked rooms only accept admin-name writes, (4) rooms must exist in the _rooms registry (or be the default) to accept message writes from clients.",
   "rules": {
     "backchannel": {
 
