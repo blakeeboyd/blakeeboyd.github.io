@@ -338,6 +338,7 @@
             display: block;
             border-radius: var(--radius-md);
             overflow: hidden;
+            container-type: inline-size;
         }
         .kc-overlay-img {
             display: block;
@@ -374,6 +375,13 @@
             line-height: 1;
             font-weight: 700;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+            /* Size badge font relative to the rendered overlay width so it
+               scales with the visible board on phones and desktop alike.
+               Roughly 1 cell ≈ 100cqw / 13; badge ≈ 22% of cell. */
+            font-size: clamp(8px, 1.7cqw, 13px);
+        }
+        .kc-overlay-tiles .kc-ocell-badge.kc-ten {
+            font-size: clamp(7px, 1.4cqw, 11px);
         }
         .kc-overlay-tiles .kc-ocell.kc-red {
             color: #c0392b;

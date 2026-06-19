@@ -650,13 +650,12 @@
       cell.style.height = ((y1-y0)/imgH*100)+'%';
       if(t){
         // Render the rank as a small corner badge instead of a full-cell
-        // overlay so the source tile underneath stays legible.
+        // overlay so the source tile underneath stays legible. Sizing
+        // (clamp + cqw) is handled in CSS so the badge scales with the
+        // rendered overlay width, not the source-image pixels.
         const badge=document.createElement('span');
-        badge.className='kc-ocell-badge';
+        badge.className='kc-ocell-badge'+(t.rank==='10'?' kc-ten':'');
         badge.textContent=t.rank;
-        const cellPx=(x1-x0);
-        const factor = (t.rank==='10') ? 0.18 : 0.22;
-        badge.style.fontSize = Math.max(8, cellPx*factor)+'px';
         cell.appendChild(badge);
       }
       cell.addEventListener('click',e=>{e.stopPropagation(); openEditor(cell,key);});
