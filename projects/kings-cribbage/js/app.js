@@ -52,6 +52,11 @@
     // letter confusions
     'O':'Q',          // capital O is Tesseract's favourite mis-read for Q
     'D':'Q',          // sometimes the Q tail gets lost → D
+    'C':'Q',          // Q without the closed bottom → C
+    '\\':'Q',         // Q where Tesseract latched onto the tail as a slash
+    '/':'Q',          // same, other slash direction
+    '(':'Q',          // open curve only → opening paren
+    ')':'Q',          // closing paren variant
     'I':'10','L':'10','l':'10',   // lowercase L / capital I → "1" of 10
     'B':'8',          // 8 with broken top loop reads as B
     'G':'6',          // 6 with extended tail reads as G
@@ -338,6 +343,7 @@
       return t && t.rank === '?';
     });
     if (lenientStragglers.length) {
+      window.__kcMisses = [];
       setOcrProgress(0, lenientStragglers.length, 'Lenient retry');
       await worker.setParameters({
         tessedit_char_whitelist: '',                    // empty → no filter
@@ -351,6 +357,18 @@
             const { data } = await worker.recognize(canv);
             const raw = (data.text || '').trim();
             const rank = mapTokenLenient(raw);
+            // Log what Tesseract returned so we can see what mappings are
+            // still missing for cells that won't recognize. Visible only
+            // in DevTools; not user-facing.
+            if (rank === '?') {
+              window.__kcMisses = window.__kcMisses || [];
+              window.__kcMisses.push({
+                cell: cell.r+'_'+cell.c,
+                color: cell.color,
+                raw: raw,
+                conf: data.confidence
+              });
+            }
             if (rank !== '?') {
               const conf = (data.confidence || 0) / 100;
               // Lenient reads are less trustworthy — flag them so the constraint
@@ -377,6 +395,20 @@
         tessedit_char_whitelist: 'A234567890JQK',
         tessedit_pageseg_mode: '10'
       });
+      // Dump lenient-pass misses into the page so we can see them without
+      // wrestling with browser console filters. Visible just below the hint.
+      const debugEl = $('#kc-debug-misses');
+      if (debugEl) {
+        const misses = window.__kcMisses || [];
+        if (misses.length) {
+          debugEl.hidden = false;
+          debugEl.textContent = 'Lenient misses: ' + misses.map(m =>
+            m.cell + '(' + m.color + ')→' + JSON.stringify(m.raw) + '@' + Math.round(m.conf||0) + '%'
+          ).join(' · ');
+        } else {
+          debugEl.hidden = true;
+        }
+      }
     }
     // Final pass: constraint-solver. Demote over-limit / low-confidence reads
     // to their next candidate when one's available.
