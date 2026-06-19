@@ -106,6 +106,13 @@ When building new features:
     │   ├── index.html          # Timer main page (uses .container.wide)
     │   └── js/
     │       └── app.js          # Pure JavaScript, Web Audio API
+    ├── kings-cribbage/
+    │   ├── index.html          # Tile counter main page (uses .container.wide)
+    │   ├── sw.js               # Optional offline cache (registered by index.html)
+    │   └── js/
+    │       ├── core.js         # Pure board-reader functions (KC namespace, no DOM)
+    │       ├── templates.js    # Embedded glyph bank (base64 grayscale exemplars)
+    │       └── app.js          # UI wiring (drag/drop, board render, editor popover)
     ├── soundbench/
     │   ├── index.html          # Host page (loads bundled React app)
     │   ├── assets/
@@ -390,7 +397,42 @@ For N items: N × (N-1) / 2 comparisons
 - `ideas.md` - Future feature ideas
 - `js/app.js` - Complete application logic
 
-### BandLab Parser
+### King's Cribbage — what's left
+
+A board-image reader for the tile game King's Cribbage. The user drops a screenshot of an in-progress board, the page reads the placed tiles via grid detection + template matching, and the side panel reports which of the 104 tiles are still in the bag (or on a rack). Mis-reads can be fixed tile-by-tile with a popover editor.
+
+**Location:** `projects/kings-cribbage/`
+
+**Key Features:**
+- Drag-drop, file picker, or paste (⌘/Ctrl-V) a board screenshot
+- Grid detection from the green felt background, per-cell occupancy + colour (red/black)
+- Rank classification via 1-NN against an embedded glyph bank (103 verified exemplars)
+- Low-confidence reads marked with a yellow ring + "?" badge for easy correction
+- Tap any cell to open a popover and fix colour/rank or clear the square
+- Live count of placed tiles (0..104) with a progress bar
+- "Still in the bag" panel listing remaining tiles by rank/colour with counts
+- "6 & 9 share one reversible tile" toggle (physical-tile mode vs independent ranks)
+- "More tiles than exist" warning surfaces when a rank exceeds 4-per-colour (mis-read indicator)
+- Optional offline Service Worker registration (`sw.js`)
+
+**Technical Stack:**
+- Pure JavaScript (no external dependencies)
+- Web Audio APIs are not used; everything is canvas-based pixel reading
+- Canvas 2D for image decoding into RGBA pixel buffers
+- Custom grid detection (row/column "green" profiles → line positions)
+- Connected-components glyph isolation to drop the tile frame, keep the numeral
+- 1-nearest-neighbour grayscale template matching with runner-up margin used to flag uncertain reads
+
+**Module Structure:**
+- `js/core.js` — `KC` namespace, pure functions on `{data, width, height}` images: `profiles`, `detectGrid`, `cellStats`, `glyphVector`, `buildTemplates`, `classifyRank`, `readBoard`, `remaining`. Also exports as a CommonJS module for Node test harness use.
+- `js/templates.js` — global `TEMPLATES` constant holding the base64-encoded glyph bank (labels, aspect ratios, packed grayscale data). ~260KB; the bulk of the page weight.
+- `js/app.js` — UI wiring. Handles file/drop/paste input, calls `KC.readBoard`, renders the board grid (`#kc-board`), the editor popover, and the side panel. All DOM selectors and class names are `kc-` prefixed.
+
+**CSS Architecture:**
+- All classes prefixed `kc-` to avoid conflicts with site CSS
+- Uses site design tokens (`--color-card-bg`, `--color-accent`, `--color-error`, etc.) instead of the original felt/brass palette
+- Tiles render as bone-white cards with serif numerals (red for red tiles)
+- Low-confidence flag uses `--color-warning`
 
 A browser-based tool for parsing BandLab sample pack HTML pages into structured JSON.
 
