@@ -72,6 +72,21 @@
     return { rb, cb };
   }
 
+  // Color of a tile pixel by hue. Returns 'R' if it sits in the red half of the
+  // hue wheel (roughly -45°..+45° in HSV), otherwise null. Robust to whatever
+  // shade of red the renderer uses (pink, orange-red, brown-red, etc.) and to
+  // brightness changes that broke the old fixed-RGB test.
+  function pixelIsRedish(r, g, b) {
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const chroma = max - min;
+    if (chroma < 25) return false;          // too gray to commit to a hue
+    if (max !== r) return false;            // red can only dominate if it's the max
+    // hue in [-60, +60] when r is max:
+    //   h = 60 * (g - b) / chroma   (negative toward magenta, positive toward yellow)
+    // accept the central red wedge.
+    const h = 60 * (g - b) / chroma;
+    return h >= -45 && h <= 45;
+  }
   // ---- per-cell sampling ------------------------------------------------
   function cellStats(img, rb, cb, r, c) {
     const { data, width: W } = img;
@@ -86,161 +101,247 @@
       if (greenAt(data, i) <= 20) occN++;
     }
     const occupied = occT && occN/occT > 0.5;
-    // colour over interior 18-82%
+    // colour over interior 18-82%, looking only at *non-bone* pixels because
+    // the glyph itself carries the colour signal; pure white bone gives a
+    // chroma of zero and just dilutes the vote.
     const cy0 = y0 + (h*0.18|0), cy1 = y1 - (h*0.18|0);
     const cx0 = x0 + (w*0.18|0), cx1 = x1 - (w*0.18|0);
     for (let y = cy0; y < cy1; y++) for (let x = cx0; x < cx1; x++) {
       const i = (y*W + x)*4;
       if (greenAt(data, i) <= 20) {
         tileN++;
-        if (data[i] > data[i+1]+30 && data[i] > data[i+2]+30) redN++;
+        if (pixelIsRedish(data[i], data[i+1], data[i+2])) redN++;
       }
     }
-    const color = (tileN && redN/tileN > 0.25) ? 'R' : 'B';
+    const color = (tileN && redN/tileN > 0.10) ? 'R' : 'B';
     return { occupied, color };
   }
 
-  // ---- glyph isolation + template matching ------------------------------
-  // The bright tile pixels are the numeral PLUS a thin rounded-rect frame.
-  // The frame is the only component spanning ~the whole cell, so we drop any
-  // component whose bounding box exceeds 80% of the crop and keep the centred
-  // numeral. Returns the grayscale numeral, normalised to GxG, + its aspect.
-  function glyphVector(img, rb, cb, r, c) {
-    const { data, width: W } = img;
-    const y0 = rb[r], y1 = rb[r+1], x0 = cb[c], x1 = cb[c+1];
-    const h = y1 - y0, w = x1 - x0;
-    const iy0 = y0 + (h*0.12|0), iy1 = y1 - (h*0.12|0);
-    const ix0 = x0 + (w*0.12|0), ix1 = x1 - (w*0.12|0);
-    const ih = iy1 - iy0, iw = ix1 - ix0;
-    if (ih <= 2 || iw <= 2) return null;
-    const gray = new Float64Array(ih*iw), mask = new Uint8Array(ih*iw);
-    for (let y = 0; y < ih; y++) for (let x = 0; x < iw; x++) {
-      const i = ((iy0+y)*W + (ix0+x))*4;
-      const v = (data[i]+data[i+1]+data[i+2])/3;
-      gray[y*iw+x] = v;
-      if (v > 135) mask[y*iw+x] = 1;
-    }
-    // connected components (8-conn) with per-component bounding box + size
-    const lbl = new Int32Array(ih*iw).fill(0);
-    const comp = [null]; let nlbl = 0;          // comp[k] = {minx,maxx,miny,maxy,size}
-    const stack = [];
-    for (let p = 0; p < mask.length; p++) {
-      if (mask[p] && !lbl[p]) {
-        nlbl++; lbl[p] = nlbl; stack.push(p);
-        let sz = 0, mnx = iw, mxx = -1, mny = ih, mxy = -1;
-        while (stack.length) {
-          const q = stack.pop(); sz++;
-          const qy = (q/iw)|0, qx = q - qy*iw;
-          if (qx<mnx)mnx=qx; if (qx>mxx)mxx=qx; if (qy<mny)mny=qy; if (qy>mxy)mxy=qy;
-          // 4-connectivity (matches the reference isolation; keeps the frame
-          // ring from merging with the numeral at rounded corners)
-          const nb = [[qy-1,qx],[qy+1,qx],[qy,qx-1],[qy,qx+1]];
-          for (let t = 0; t < 4; t++) {
-            const ny = nb[t][0], nx = nb[t][1];
-            if (ny<0||nx<0||ny>=ih||nx>=iw) continue;
-            const np = ny*iw+nx;
-            if (mask[np] && !lbl[np]) { lbl[np] = nlbl; stack.push(np); }
-          }
-        }
-        comp.push({ mnx, mxx, mny, mxy, size: sz });
-      }
-    }
-    if (nlbl === 0) return null;
-    // keep components that aren't the frame (span < 80% of crop) and aren't specks
-    const keep = new Uint8Array(nlbl+1);
-    for (let k = 1; k <= nlbl; k++) {
-      const cc = comp[k];
-      const bw = cc.mxx-cc.mnx+1, bh = cc.mxy-cc.mny+1;
-      keep[k] = (bw <= 0.80*iw && bh <= 0.80*ih && cc.size >= 6) ? 1 : 0;
-    }
-    let minx=iw, miny=ih, maxx=-1, maxy=-1, kept=0;
-    for (let y = 0; y < ih; y++) for (let x = 0; x < iw; x++) {
-      if (keep[lbl[y*iw+x]]) {
-        kept++;
-        if (x<minx)minx=x; if (x>maxx)maxx=x; if (y<miny)miny=y; if (y>maxy)maxy=y;
-      }
-    }
-    if (kept < 8 || maxx < 0) return null;
-    const gw = maxx-minx+1, gh = maxy-miny+1, side = Math.max(gw, gh);
-    const oy = (side-gh)>>1, ox = (side-gw)>>1;
-    const canv = new Float64Array(side*side); // 0 background
-    for (let y = 0; y < gh; y++) for (let x = 0; x < gw; x++)
-      canv[(oy+y)*side + (ox+x)] = gray[(miny+y)*iw + (minx+x)];
-    // bilinear resize to GxG (smoother + more discriminative than nearest)
-    const vec = new Float64Array(G*G), gray8 = new Uint8Array(G*G);
-    for (let y = 0; y < G; y++) {
-      let fy = (y+0.5)*side/G - 0.5; if (fy<0) fy=0; if (fy>side-1) fy=side-1;
-      const y0 = fy|0, y1 = Math.min(y0+1, side-1), wy = fy-y0;
-      for (let x = 0; x < G; x++) {
-        let fx = (x+0.5)*side/G - 0.5; if (fx<0) fx=0; if (fx>side-1) fx=side-1;
-        const x0 = fx|0, x1 = Math.min(x0+1, side-1), wx = fx-x0;
-        const v = canv[y0*side+x0]*(1-wx)*(1-wy) + canv[y0*side+x1]*wx*(1-wy)
-                + canv[y1*side+x0]*(1-wx)*wy   + canv[y1*side+x1]*wx*wy;
-        vec[y*G+x] = v; gray8[y*G+x] = v|0;
-      }
-    }
-    let mean = 0; for (let i = 0; i < vec.length; i++) mean += vec[i]; mean /= vec.length;
-    let sd = 0; for (let i = 0; i < vec.length; i++) sd += (vec[i]-mean)**2;
-    sd = Math.sqrt(sd/vec.length) + 1e-6;
-    for (let i = 0; i < vec.length; i++) vec[i] = (vec[i]-mean)/sd;
-    return { vec, aspect: gw/gh, gray: gray8 };
-  }
 
-  // bank = {S, labels:[...], aspects:[...], data:base64 of N*S*S grayscale bytes}
-  // -> array of {rank, vec (z-scored), aspect}
-  function b64ToBytes(b64) {
-    const bin = (typeof atob === 'function') ? atob(b64)
-              : Buffer.from(b64, 'base64').toString('binary');
-    const out = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-    return out;
-  }
-  function buildTemplates(bank) {
-    const S = bank.S, n = S*S, bytes = b64ToBytes(bank.data), out = [];
-    for (let e = 0; e < bank.labels.length; e++) {
-      const off = e*n; let mean = 0;
-      for (let i = 0; i < n; i++) mean += bytes[off+i]; mean /= n;
-      let sd = 0; for (let i = 0; i < n; i++) sd += (bytes[off+i]-mean)**2;
-      sd = Math.sqrt(sd/n) + 1e-6;
-      const vec = new Float64Array(n);
-      for (let i = 0; i < n; i++) vec[i] = (bytes[off+i]-mean)/sd;
-      out.push({ rank: bank.labels[e], vec, aspect: bank.aspects[e] });
-    }
-    return out;
-  }
-  // 1-nearest-neighbour over the exemplar bank (normalised cross-correlation
-  // plus a light aspect term). Also returns the margin to the runner-up rank,
-  // which flags genuinely ambiguous reads better than the raw score does.
-  function classifyRank(gl, bank) {
-    if (!gl) return { rank: '?', score: 0, margin: 0 };
-    const perRank = {};
-    for (let e = 0; e < bank.length; e++) {
-      const t = bank[e]; let ncc = 0;
-      for (let i = 0; i < gl.vec.length; i++) ncc += gl.vec[i]*t.vec[i];
-      ncc /= gl.vec.length;
-      const ap = 1 - Math.min(Math.abs(gl.aspect-t.aspect)/Math.max(gl.aspect,t.aspect), 1);
-      const s = ncc + 0.10*ap;
-      if (!(t.rank in perRank) || s > perRank[t.rank]) perRank[t.rank] = s;
-    }
-    let best = '?', bs = -9, sec = -9;
-    for (const r in perRank) {
-      if (perRank[r] > bs) { sec = bs; bs = perRank[r]; best = r; }
-      else if (perRank[r] > sec) sec = perRank[r];
-    }
-    return { rank: best, score: +bs.toFixed(3), margin: +(bs-sec).toFixed(3) };
-  }
-
-  function readBoard(img, T) {
+  function readBoard(img) {
     const { rb, cb } = detectGrid(img);
     const nrows = rb.length-1, ncols = cb.length-1;
     const cells = [];
     for (let r = 0; r < nrows; r++) for (let c = 0; c < ncols; c++) {
       const st = cellStats(img, rb, cb, r, c);
       if (!st.occupied) continue;
-      const cl = classifyRank(glyphVector(img, rb, cb, r, c), T);
-      cells.push({ r, c, rank: cl.rank, color: st.color, score: cl.score, margin: cl.margin });
+      // Rank is filled in by OCR downstream. We seed it as unknown so the UI
+      // still flags the cell until it's recognised.
+      cells.push({ r, c, rank: '?', color: st.color, score: 0, margin: 0 });
     }
     return { rb, cb, nrows, ncols, cells };
+  }
+
+  // Otsu's method: choose the grayscale cutoff that maximises between-class
+  // variance. Used to binarize cell crops before sending to OCR.
+  function otsuThreshold(gray) {
+    const hist = new Uint32Array(256);
+    for (let i = 0; i < gray.length; i++) hist[Math.min(255, Math.max(0, gray[i]|0))]++;
+    let total = 0, sum = 0;
+    for (let i = 0; i < 256; i++) { total += hist[i]; sum += i*hist[i]; }
+    let wB = 0, sumB = 0, bestVar = -1, bestT = 128;
+    for (let t = 0; t < 256; t++) {
+      wB += hist[t]; if (wB === 0) continue;
+      const wF = total - wB; if (wF === 0) break;
+      sumB += t*hist[t];
+      const mB = sumB / wB, mF = (sum - sumB) / wF;
+      const v = wB * wF * (mB - mF) * (mB - mF);
+      if (v > bestVar) { bestVar = v; bestT = t; }
+    }
+    return bestT;
+  }
+  // Binary morphology: 3x3 structuring element. `dilate` grows ink; `erode`
+  // shrinks it. Combining (dilate then erode = closing) fills tiny JPEG
+  // noise holes inside strokes without expanding the overall glyph.
+  // Operates in-place is awkward in JS, so each step produces a new buffer.
+  function morphDilate(src, w, h) {
+    const out = new Uint8Array(src.length);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      let any = 0;
+      for (let dy = -1; dy <= 1 && !any; dy++) {
+        const ny = y + dy; if (ny < 0 || ny >= h) continue;
+        for (let dx = -1; dx <= 1; dx++) {
+          const nx = x + dx; if (nx < 0 || nx >= w) continue;
+          if (src[ny*w + nx]) { any = 1; break; }
+        }
+      }
+      out[y*w + x] = any;
+    }
+    return out;
+  }
+  function morphErode(src, w, h) {
+    const out = new Uint8Array(src.length);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      let all = 1;
+      for (let dy = -1; dy <= 1 && all; dy++) {
+        const ny = y + dy;
+        if (ny < 0 || ny >= h) { all = 0; break; }
+        for (let dx = -1; dx <= 1; dx++) {
+          const nx = x + dx;
+          if (nx < 0 || nx >= w || !src[ny*w + nx]) { all = 0; break; }
+        }
+      }
+      out[y*w + x] = all;
+    }
+    return out;
+  }
+  // 4-connected component labeller + small-blob filter. Returns the cleaned
+  // ink mask with any component smaller than `minFrac` of the largest blob
+  // erased. Kills stray notches/specks left behind by binarization without
+  // touching the main glyph.
+  function dropSmallComponents(ink, w, h, minFrac = 0.05) {
+    const lbl = new Int32Array(w*h);
+    const stack = [];
+    const sizes = [0];      // sizes[k] = pixel count of component k
+    let nlbl = 0;
+    for (let p = 0; p < ink.length; p++) {
+      if (!ink[p] || lbl[p]) continue;
+      nlbl++; lbl[p] = nlbl; stack.push(p);
+      let sz = 0;
+      while (stack.length) {
+        const q = stack.pop(); sz++;
+        const qy = (q / w) | 0, qx = q - qy*w;
+        if (qy > 0)   { const np = q - w; if (ink[np] && !lbl[np]) { lbl[np] = nlbl; stack.push(np); } }
+        if (qy < h-1) { const np = q + w; if (ink[np] && !lbl[np]) { lbl[np] = nlbl; stack.push(np); } }
+        if (qx > 0)   { const np = q - 1; if (ink[np] && !lbl[np]) { lbl[np] = nlbl; stack.push(np); } }
+        if (qx < w-1) { const np = q + 1; if (ink[np] && !lbl[np]) { lbl[np] = nlbl; stack.push(np); } }
+      }
+      sizes.push(sz);
+    }
+    if (nlbl === 0) return ink;
+    let maxSize = 0;
+    for (let k = 1; k <= nlbl; k++) if (sizes[k] > maxSize) maxSize = sizes[k];
+    const minSize = Math.max(4, maxSize * minFrac);
+    const out = new Uint8Array(ink.length);
+    for (let p = 0; p < ink.length; p++) {
+      const k = lbl[p];
+      out[p] = (k && sizes[k] >= minSize) ? 1 : 0;
+    }
+    return out;
+  }
+  // Estimate the average stroke width of an ink mask by counting horizontal
+  // run lengths through each row and taking the median. Used downstream to
+  // decide whether to dilate (thicken) or erode (thin) for normalization.
+  function estimateStrokeWidth(ink, w, h) {
+    const runs = [];
+    for (let y = 0; y < h; y++) {
+      let run = 0;
+      for (let x = 0; x < w; x++) {
+        if (ink[y*w + x]) run++;
+        else if (run) { runs.push(run); run = 0; }
+      }
+      if (run) runs.push(run);
+    }
+    if (!runs.length) return 0;
+    runs.sort((a, b) => a - b);
+    // Use the 30th-percentile run length: the bottom of the distribution
+    // approximates the true stroke width (horizontal slabs at corners etc.
+    // dominate the upper half).
+    return runs[Math.max(0, Math.floor(runs.length * 0.30))];
+  }
+  // Crop, upscale, binarize, clean, normalize stroke width, recenter — and
+  // hand Tesseract a high-DPI, high-contrast, well-padded glyph that mimics
+  // its scanned-print training distribution.
+  function cellGlyphCanvas(img, rb, cb, r, c, outSize = 256) {
+    const { data, width: W } = img;
+    const y0 = rb[r], y1 = rb[r+1], x0 = cb[c], x1 = cb[c+1];
+    const h = y1 - y0, w = x1 - x0;
+    // Crop the central ~80% of the cell to drop the tile frame/border.
+    const iy0 = y0 + (h*0.10|0), iy1 = y1 - (h*0.10|0);
+    const ix0 = x0 + (w*0.10|0), ix1 = x1 - (w*0.10|0);
+    const ih = iy1 - iy0, iw = ix1 - ix0;
+    if (ih <= 4 || iw <= 4) return null;
+    // ---- Step 1: grayscale + polarity detection ----
+    const grayLo = new Uint8Array(ih * iw);
+    let bright = 0;
+    for (let y = 0; y < ih; y++) for (let x = 0; x < iw; x++) {
+      const i = ((iy0+y)*W + (ix0+x))*4;
+      const v = ((data[i] + data[i+1] + data[i+2]) / 3) | 0;
+      grayLo[y*iw + x] = v;
+      if (v > 135) bright++;
+    }
+    // If bright dominates, glyph is dark on bone → keep as-is. Otherwise the
+    // glyph is bright on dark → invert so subsequent steps see consistent
+    // "dark ink on white" polarity.
+    const needsInvert = bright < (ih * iw) * 0.5;
+    if (needsInvert) {
+      for (let i = 0; i < grayLo.length; i++) grayLo[i] = 255 - grayLo[i];
+    }
+    // ---- Step 2: upscale grayscale 4× via bilinear ----
+    // Doing this BEFORE binarize is the key change: anti-aliased edges that
+    // would otherwise harshly threshold get smoothed into a clean gradient
+    // first, and Otsu finds a much better cutoff on the upscaled histogram.
+    const scaleUp = 4;
+    const gw = iw * scaleUp, gh = ih * scaleUp;
+    const grayHi = new Uint8Array(gw * gh);
+    for (let y = 0; y < gh; y++) {
+      const fy = (y + 0.5) / scaleUp - 0.5;
+      const y1i = Math.floor(fy), y2i = Math.min(ih - 1, y1i + 1);
+      const wy = fy - y1i; const y1c = Math.max(0, y1i);
+      for (let x = 0; x < gw; x++) {
+        const fx = (x + 0.5) / scaleUp - 0.5;
+        const x1i = Math.floor(fx), x2i = Math.min(iw - 1, x1i + 1);
+        const wx = fx - x1i; const x1c = Math.max(0, x1i);
+        const a = grayLo[y1c*iw + x1c], b = grayLo[y1c*iw + x2i];
+        const c2 = grayLo[y2i*iw + x1c], d = grayLo[y2i*iw + x2i];
+        const top = a*(1-wx) + b*wx;
+        const bot = c2*(1-wx) + d*wx;
+        grayHi[y*gw + x] = (top*(1-wy) + bot*wy) | 0;
+      }
+    }
+    // ---- Step 3: Otsu threshold + binarize at high resolution ----
+    const T = Math.max(80, Math.min(210, otsuThreshold(grayHi)));
+    let ink = new Uint8Array(gw * gh);
+    for (let i = 0; i < grayHi.length; i++) ink[i] = (grayHi[i] < T) ? 1 : 0;
+    // ---- Step 4: morphological closing to fill JPEG noise inside strokes ----
+    ink = morphErode(morphDilate(ink, gw, gh), gw, gh);
+    // ---- Step 5: stroke-width normalization ----
+    // Target ~6-8 pixels at the upscaled resolution. Too thin and Tesseract
+    // confuses curves; too thick and adjacent strokes merge into blobs.
+    const sw = estimateStrokeWidth(ink, gw, gh);
+    if (sw > 0 && sw < 5) {
+      ink = morphDilate(ink, gw, gh);                 // thicken once
+    } else if (sw > 10) {
+      ink = morphErode(ink, gw, gh);                  // thin once
+    }
+    // ---- Step 6: find the glyph's true bounding box ----
+    let minX = gw, maxX = -1, minY = gh, maxY = -1, area = 0;
+    for (let y = 0; y < gh; y++) for (let x = 0; x < gw; x++) {
+      if (ink[y*gw + x]) {
+        area++;
+        if (x < minX) minX = x; if (x > maxX) maxX = x;
+        if (y < minY) minY = y; if (y > maxY) maxY = y;
+      }
+    }
+    if (area < 16 || maxX < 0) { minX = 0; minY = 0; maxX = gw - 1; maxY = gh - 1; }
+    const bw = maxX - minX + 1, bh = maxY - minY + 1;
+    // ---- Step 7: render to final canvas with quiet zone ----
+    const cv = document.createElement('canvas');
+    cv.width = outSize; cv.height = outSize;
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, outSize, outSize);
+    const maskScratch = document.createElement('canvas');
+    maskScratch.width = bw; maskScratch.height = bh;
+    const mctx = maskScratch.getContext('2d');
+    const mImg = mctx.createImageData(bw, bh);
+    for (let y = 0; y < bh; y++) for (let x = 0; x < bw; x++) {
+      const v = ink[(minY+y)*gw + (minX+x)] ? 0 : 255;
+      const di = (y*bw + x) * 4;
+      mImg.data[di+0] = v;
+      mImg.data[di+1] = v;
+      mImg.data[di+2] = v;
+      mImg.data[di+3] = 255;
+    }
+    mctx.putImageData(mImg, 0, 0);
+    const targetSide = outSize * 0.65;
+    const scale = targetSide / Math.max(bw, bh);
+    const drawW = bw * scale, drawH = bh * scale;
+    const dx = (outSize - drawW) / 2, dy = (outSize - drawH) / 2;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(maskScratch, dx, dy, drawW, drawH);
+    return cv;
   }
 
   // ---- remaining-tile accounting ---------------------------------------
@@ -271,8 +372,8 @@
     return { rem, pool, over, total, placedCount };
   }
 
-  const api = { RANKS, COPIES, greenAt: greenAt, feltBBox, detectGrid, cellStats, glyphVector,
-                buildTemplates, classifyRank, readBoard, remaining };
+  const api = { RANKS, COPIES, greenAt: greenAt, feltBBox, detectGrid, cellStats,
+                cellGlyphCanvas, readBoard, remaining };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.KC = api;
 })(typeof window !== 'undefined' ? window : globalThis);

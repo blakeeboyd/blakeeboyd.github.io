@@ -1,14 +1,397 @@
 (function(){
   const $ = s => document.querySelector(s);
   const RANKS = KC.RANKS;
-  let templates=null, geom=null;
+  let geom=null;
+  let imgCanvas=null;               // cropped board canvas (for re-OCR if needed)
+  let imgData=null;                 // cropped board ImageData (for cell extraction)
   const tiles = new Map();          // "r_c" -> {rank,color,score}
   let displayRows=[], displayCols=[];
-  let imgW=0, imgH=0;               // resampled image dimensions (for overlay positioning)
+  let imgW=0, imgH=0;               // cropped image dimensions (for overlay positioning)
   let viewMode = 'overlay';         // 'overlay' | 'board'
 
-  // ---- load templates (base64 PNG -> grayscale vectors) ----
-  function loadTemplates(){ templates = KC.buildTemplates(TEMPLATES); }
+  // ---- OCR (Tesseract.js) ----
+  let ocrWorker = null;
+  let ocrReady = null;              // Promise that resolves when worker is initialised
+  function initOCR(){
+    if (ocrReady) return ocrReady;
+    ocrReady = (async () => {
+      const worker = await Tesseract.createWorker('eng', 1, {
+        logger: () => {}
+      });
+      await worker.setParameters({
+        tessedit_char_whitelist: 'A234567890JQK',
+        tessedit_pageseg_mode: '10',                // single character
+      });
+      ocrWorker = worker;
+      return worker;
+    })();
+    return ocrReady;
+  }
+  // Map a raw OCR token to a canonical rank string. Returns '?' if it can't
+  // be mapped. The whitelist excludes everything but the 13 ranks, so any
+  // digit 0 or 1 must come from "10" — there's no other rank with those glyphs.
+  function mapToken(t, confidence) {
+    if (!t) return '?';
+    t = t.trim().toUpperCase().replace(/[^A234567890JQK]/g, '');
+    if (!t) return '?';
+    if (t === '10' || t === '01' || t.includes('10')) return '10';
+    const c = t[0];
+    if ('A23456789JQK'.includes(c)) return c;
+    if ((c === '0' || c === '1') && confidence >= 60) return '10';
+    return '?';
+  }
+  // Same job as mapToken, but accepts the broader Latin alphabet/digits that
+  // Tesseract can return when run without a whitelist. Maps obvious letter
+  // confusions back to the rank they almost certainly came from. Used only
+  // for the third OCR pass on cells the strict mapper rejected.
+  const LENIENT_RANK_FROM = {
+    // ranks pass through
+    'A':'A','J':'J','Q':'Q','K':'K',
+    '2':'2','3':'3','4':'4','5':'5','6':'6','7':'7','8':'8','9':'9',
+    '0':'10','1':'10',
+    // letter confusions
+    'O':'Q',          // capital O is Tesseract's favourite mis-read for Q
+    'D':'Q',          // sometimes the Q tail gets lost → D
+    'I':'10','L':'10','l':'10',   // lowercase L / capital I → "1" of 10
+    'B':'8',          // 8 with broken top loop reads as B
+    'G':'6',          // 6 with extended tail reads as G
+    'S':'5',          // 5 with smoothed corners reads as S
+    'Z':'2',          // 2 with sharp angles reads as Z
+    'T':'7',          // 7 with horizontal serif reads as T
+    'R':'A',          // rare: a serif A reads as R
+    'H':'K',          // K with reduced diagonals reads as H
+  };
+  function mapTokenLenient(t) {
+    if (!t) return '?';
+    t = t.trim();
+    if (!t) return '?';
+    // Explicit two-character "10" or "IO" / "lO" variants.
+    const upper = t.toUpperCase().replace(/\s+/g, '');
+    if (upper === '10' || upper === '1O' || upper === 'IO' || upper === 'LO') return '10';
+    if (upper.includes('10') || upper.includes('1O') || upper.includes('IO')) return '10';
+    // Take the first character. Don't pre-uppercase — lowercase l/i carry
+    // different info than uppercase L/I in some confusion tables.
+    const c0 = t[0];
+    if (c0 in LENIENT_RANK_FROM) return LENIENT_RANK_FROM[c0];
+    const c1 = c0.toUpperCase();
+    if (c1 in LENIENT_RANK_FROM) return LENIENT_RANK_FROM[c1];
+    return '?';
+  }
+  // Extract the top-N candidate ranks from a Tesseract result with their
+  // confidences. Uses data.symbols[].choices when available, falling back to
+  // just the top read. Returns [{rank, confidence}, ...] sorted desc.
+  function extractCandidates(data, topN = 3) {
+    const cands = [];
+    const seen = new Set();
+    const add = (rank, conf) => {
+      if (rank === '?' || seen.has(rank)) return;
+      seen.add(rank);
+      cands.push({ rank, confidence: conf });
+    };
+    // Primary text always wins as candidate 0.
+    const primary = mapToken(data.text || '', data.confidence || 0);
+    add(primary, data.confidence || 0);
+    // Pull alternatives from symbol choices when available.
+    const sym = data.symbols && data.symbols[0];
+    if (sym && Array.isArray(sym.choices)) {
+      for (const ch of sym.choices) {
+        const r = mapToken(ch.text || '', ch.confidence || 0);
+        add(r, ch.confidence || 0);
+      }
+    }
+    return cands.slice(0, topN);
+  }
+  // Hand-coded geometric tests for the two known systematic confusions:
+  //  3 vs 5 — 5 has a flat horizontal top stroke that extends to the left edge;
+  //            3 starts with a curve that doesn't.
+  //  K vs 4 — K is symmetric vertical bar + diagonals on right; 4 has a strong
+  //            horizontal bar in the middle and an empty top-right.
+  // Both run on the same 96x96 canvas we sent to Tesseract. Returns a hint
+  // object {bias: 'rank', against: 'rank'} or null if no signal.
+  function shapeDisambiguate(canvas) {
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const img = ctx.getImageData(0, 0, W, H).data;
+    // Binarize using the same heuristic as the crop: anything noticeably darker
+    // than mid-gray counts as ink.
+    const ink = new Uint8Array(W * H);
+    for (let i = 0; i < W*H; i++) {
+      const r = img[i*4], g = img[i*4+1], b = img[i*4+2];
+      const lum = (r + g + b) / 3;
+      if (lum < 160) ink[i] = 1;
+    }
+    // Find the glyph's bounding box.
+    let minX = W, minY = H, maxX = -1, maxY = -1;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      if (ink[y*W + x]) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+    if (maxX < 0 || maxX - minX < 8 || maxY - minY < 8) return null;
+    const bw = maxX - minX + 1, bh = maxY - minY + 1;
+    // ---- 3 vs 5: top strip left-side fill ratio.
+    // 5: flat bar at top → left third of top is mostly inked.
+    // 3: curve at top   → left third of top is mostly empty.
+    const topStrip = Math.max(2, (bh * 0.18) | 0);
+    let topLeftInk = 0, topLeftTotal = 0;
+    const leftCutoff = minX + (bw * 0.35);
+    for (let y = minY; y < minY + topStrip; y++) {
+      for (let x = minX; x < leftCutoff; x++) {
+        topLeftTotal++;
+        if (ink[y*W + x]) topLeftInk++;
+      }
+    }
+    const topLeftRatio = topLeftTotal ? topLeftInk / topLeftTotal : 0;
+    // ---- K vs 4: middle horizontal bar at right side.
+    // 4: strong horizontal bar through the middle, plus closed top-left box.
+    // K: no horizontal bar; right side is diagonal strokes only.
+    const midY = ((minY + maxY) / 2) | 0;
+    const midBand = Math.max(2, (bh * 0.12) | 0);
+    let midRightInk = 0, midRightTotal = 0;
+    const rightStart = minX + (bw * 0.55);
+    for (let y = midY - midBand; y <= midY + midBand; y++) {
+      if (y < minY || y > maxY) continue;
+      for (let x = rightStart; x <= maxX; x++) {
+        midRightTotal++;
+        if (ink[y*W + x]) midRightInk++;
+      }
+    }
+    const midRightRatio = midRightTotal ? midRightInk / midRightTotal : 0;
+    // Decide which (if any) confusion this glyph might belong to and give a hint.
+    // Thresholds are coarse; we use these only as tiebreakers, not as hard rules.
+    if (topLeftRatio > 0.55) return { bias: '5', against: '3' };
+    if (topLeftRatio < 0.15) return { bias: '3', against: '5' };
+    if (midRightRatio > 0.55) return { bias: '4', against: 'K' };
+    if (midRightRatio < 0.15) return { bias: 'K', against: '4' };
+    return null;
+  }
+  // If the shape hint suggests `bias` over `against`, swap their order in the
+  // candidates list if `against` currently outranks `bias`.
+  function reorderForShapeHint(cands, hint) {
+    const iBias = cands.findIndex(c => c.rank === hint.bias);
+    const iAgainst = cands.findIndex(c => c.rank === hint.against);
+    if (iBias < 0 || iAgainst < 0) return;
+    if (iAgainst < iBias) {
+      const tmp = cands[iBias]; cands[iBias] = cands[iAgainst]; cands[iAgainst] = tmp;
+    }
+  }
+  // Constraint-solver post-pass. Two rules:
+  //   1. Any low-confidence read with a 2nd candidate gets demoted IF demoting
+  //      doesn't push another rank over the 4-per-color cap.
+  //   2. Any rank+color over the cap gets its lowest-confidence cells demoted
+  //      to their next candidate (repeat until under).
+  // Both rules run iteratively until convergence.
+  function runConstraintSolver(){
+    const CONF_THRESHOLD = 80;   // %
+    const MAX_PER_RANK_COLOR = 4;
+    const countRanks = () => {
+      const counts = {};
+      for (const [key, t] of tiles) {
+        if (t.rank === '?') continue;
+        const k = t.rank + t.color;
+        counts[k] = (counts[k] || 0) + 1;
+      }
+      return counts;
+    };
+    // Up to a few passes to let demotions cascade.
+    for (let pass = 0; pass < 5; pass++) {
+      let changed = false;
+      const counts = countRanks();
+      // Rule 2: handle over-limit ranks first. Sort over-the-limit cells by
+      // confidence ascending, demote the weakest.
+      for (const k of Object.keys(counts)) {
+        if (counts[k] <= MAX_PER_RANK_COLOR) continue;
+        const overby = counts[k] - MAX_PER_RANK_COLOR;
+        const matching = [];
+        for (const [key, t] of tiles) {
+          if (t.rank + t.color === k && t.candidates && t.candidates.length > 1) {
+            matching.push({ key, score: t.score || 0, t });
+          }
+        }
+        matching.sort((a, b) => a.score - b.score);
+        for (let i = 0; i < Math.min(overby, matching.length); i++) {
+          const { key, t } = matching[i];
+          // Demote to the next candidate that isn't the current one.
+          const next = t.candidates.find(c => c.rank !== t.rank);
+          if (!next) continue;
+          tiles.set(key, {
+            rank: next.rank,
+            color: t.color,
+            score: next.confidence/100,
+            margin: Math.max(0, (next.confidence/100 - 0.6) * 2.5),
+            candidates: t.candidates.slice(1)
+          });
+          changed = true;
+        }
+      }
+      // Rule 1: low-confidence reads — try the next candidate if it doesn't
+      // create a new over-limit problem.
+      const cur = countRanks();
+      for (const [key, t] of tiles) {
+        if (t.rank === '?' || !t.candidates || t.candidates.length < 2) continue;
+        if ((t.score || 0) * 100 >= CONF_THRESHOLD) continue;
+        const next = t.candidates.find(c => c.rank !== t.rank);
+        if (!next) continue;
+        const nextK = next.rank + t.color;
+        if ((cur[nextK] || 0) >= MAX_PER_RANK_COLOR) continue;
+        // Only demote if next candidate's confidence is competitive (within 15%).
+        const drop = (t.score || 0)*100 - next.confidence;
+        if (drop > 15) continue;
+        tiles.set(key, {
+          rank: next.rank,
+          color: t.color,
+          score: next.confidence/100,
+          margin: Math.max(0, (next.confidence/100 - 0.6) * 2.5),
+          candidates: t.candidates.slice(1)
+        });
+        cur[nextK] = (cur[nextK] || 0) + 1;
+        cur[t.rank + t.color] = (cur[t.rank + t.color] || 1) - 1;
+        changed = true;
+      }
+      if (!changed) break;
+    }
+  }
+  // Run OCR over every occupied cell. Each result updates the map and re-renders.
+  async function recogniseAll(){
+    const worker = await initOCR();
+    const queue = geom.cells.slice();
+    const total = queue.length;
+    let done = 0;
+    setOcrProgress(0, total);
+    // Sequential is plenty fast in practice and keeps the worker simple.
+    // First pass: collect Tesseract's top-N candidates per cell.
+    const cellCandidates = new Map();        // "r_c" -> [{rank, confidence}, ...]
+    for (const cell of queue) {
+      const canv = KC.cellGlyphCanvas(imgData, geom.rb, geom.cb, cell.r, cell.c);
+      if (!canv) { done++; setOcrProgress(done, total); continue; }
+      try {
+        const { data } = await worker.recognize(canv);
+        // Apply hand-coded geometric disambiguators using the same crop.
+        const shapeHint = shapeDisambiguate(canv);
+        const cands = extractCandidates(data, 4);
+        if (shapeHint) reorderForShapeHint(cands, shapeHint);
+        cellCandidates.set(cell.r+'_'+cell.c, cands);
+        const top = cands[0] || { rank: '?', confidence: 0 };
+        const conf = top.confidence/100;
+        const margin = (top.rank === '?') ? 0 : Math.max(0, (conf - 0.6) * 2.5);
+        const cur = tiles.get(cell.r+'_'+cell.c) || {color: cell.color};
+        tiles.set(cell.r+'_'+cell.c, {rank: top.rank, color: cur.color, score: conf, margin, candidates: cands});
+      } catch (e) {
+        console.warn('OCR failed for cell', cell.r, cell.c, e);
+      }
+      done++;
+      setOcrProgress(done, total);
+      // Re-render every N cells so the user sees progress.
+      if (done % 8 === 0 || done === total) {
+        renderBoard(); renderOverlay(); recompute();
+      }
+    }
+    // Second OCR pass: PSM 10 is a single character; PSM 7 is a single text
+    // line. PSM 7 sometimes recovers reads that PSM 10 gave up on. Only retry
+    // cells that came back as '?'.
+    const stragglers = queue.filter(cell => {
+      const t = tiles.get(cell.r+'_'+cell.c);
+      return t && t.rank === '?';
+    });
+    if (stragglers.length) {
+      setOcrProgress(0, stragglers.length, 'Retrying');
+      await worker.setParameters({ tessedit_pageseg_mode: '7' });
+      let s = 0;
+      for (const cell of stragglers) {
+        const canv = KC.cellGlyphCanvas(imgData, geom.rb, geom.cb, cell.r, cell.c);
+        if (canv) {
+          try {
+            const { data } = await worker.recognize(canv);
+            const shapeHint = shapeDisambiguate(canv);
+            const cands = extractCandidates(data, 4);
+            if (shapeHint) reorderForShapeHint(cands, shapeHint);
+            const top = cands[0] || { rank: '?', confidence: 0 };
+            if (top.rank !== '?') {
+              const conf = top.confidence/100;
+              const margin = Math.max(0, (conf - 0.6) * 2.5);
+              const cur = tiles.get(cell.r+'_'+cell.c) || {color: cell.color};
+              tiles.set(cell.r+'_'+cell.c, {rank: top.rank, color: cur.color, score: conf, margin, candidates: cands});
+            }
+          } catch (e) {
+            console.warn('PSM 7 retry failed for cell', cell.r, cell.c, e);
+          }
+        }
+        s++;
+        setOcrProgress(s, stragglers.length, 'Retrying');
+        if (s % 4 === 0 || s === stragglers.length) {
+          renderBoard(); renderOverlay(); recompute();
+        }
+      }
+      // Restore PSM 10 for any future runs in this session.
+      await worker.setParameters({ tessedit_pageseg_mode: '10' });
+    }
+    // Third OCR pass: relax the whitelist on cells still marked ?. Tesseract
+    // sometimes rejects a glyph because its top hypothesis is a letter that
+    // the whitelist filters out (e.g. "O" for Q, "S" for 5). By letting any
+    // alphanumeric through and then mapping common confusions back to ranks,
+    // we recover those cells.
+    const lenientStragglers = queue.filter(cell => {
+      const t = tiles.get(cell.r+'_'+cell.c);
+      return t && t.rank === '?';
+    });
+    if (lenientStragglers.length) {
+      setOcrProgress(0, lenientStragglers.length, 'Lenient retry');
+      await worker.setParameters({
+        tessedit_char_whitelist: '',                    // empty → no filter
+        tessedit_pageseg_mode: '7'
+      });
+      let s = 0;
+      for (const cell of lenientStragglers) {
+        const canv = KC.cellGlyphCanvas(imgData, geom.rb, geom.cb, cell.r, cell.c);
+        if (canv) {
+          try {
+            const { data } = await worker.recognize(canv);
+            const raw = (data.text || '').trim();
+            const rank = mapTokenLenient(raw);
+            if (rank !== '?') {
+              const conf = (data.confidence || 0) / 100;
+              // Lenient reads are less trustworthy — flag them so the constraint
+              // solver and the UI both treat them as low-confidence candidates.
+              const margin = Math.max(0, (conf - 0.6) * 1.5);
+              const cur = tiles.get(cell.r+'_'+cell.c) || {color: cell.color};
+              tiles.set(cell.r+'_'+cell.c, {
+                rank, color: cur.color, score: conf * 0.8, margin,
+                candidates: [{rank, confidence: data.confidence || 0}]
+              });
+            }
+          } catch (e) {
+            console.warn('Lenient retry failed for cell', cell.r, cell.c, e);
+          }
+        }
+        s++;
+        setOcrProgress(s, lenientStragglers.length, 'Lenient retry');
+        if (s % 4 === 0 || s === lenientStragglers.length) {
+          renderBoard(); renderOverlay(); recompute();
+        }
+      }
+      // Restore the whitelist and PSM mode for next time.
+      await worker.setParameters({
+        tessedit_char_whitelist: 'A234567890JQK',
+        tessedit_pageseg_mode: '10'
+      });
+    }
+    // Final pass: constraint-solver. Demote over-limit / low-confidence reads
+    // to their next candidate when one's available.
+    runConstraintSolver();
+    renderBoard(); renderOverlay(); recompute();
+    setOcrProgress(null);
+  }
+  function setOcrProgress(done, total, label){
+    const el = $('#kc-ocr-progress');
+    if (!el) return;
+    if (done == null) { el.hidden = true; return; }
+    el.hidden = false;
+    const prefix = label || 'Reading tiles';
+    el.textContent = total ? `${prefix}… ${done}/${total}` : `${prefix}…`;
+  }
 
   // ---- image -> board ----
   function handleImage(srcImg){
@@ -26,10 +409,11 @@
     const cv=document.createElement('canvas'); cv.width=cw; cv.height=ch;
     cv.getContext('2d').drawImage(cv0, bb.x0, bb.y0, cw, ch, 0, 0, cw, ch);
     const id=cv.getContext('2d').getImageData(0,0,cw,ch);
-    const res=KC.readBoard({data:id.data,width:cw,height:ch}, templates);
+    imgCanvas = cv; imgData = {data:id.data,width:cw,height:ch};
+    const res = KC.readBoard(imgData);
     geom=res; imgW=cw; imgH=ch;
     tiles.clear();
-    res.cells.forEach(t=>tiles.set(t.r+'_'+t.c,{rank:t.rank,color:t.color,score:t.score}));
+    res.cells.forEach(t=>tiles.set(t.r+'_'+t.c,{rank:t.rank,color:t.color,score:t.score,margin:t.margin}));
     // play area: drop fully-empty border rows/cols, keep interior
     const rs=res.cells.map(t=>t.r), cs=res.cells.map(t=>t.c);
     const r0=Math.min(...rs), r1=Math.max(...rs), c0=Math.min(...cs), c1=Math.max(...cs);
@@ -39,6 +423,8 @@
     $('#kc-drop').hidden=true; $('#kc-boardbox').hidden=false; $('#kc-panel').hidden=false;
     applyViewMode();
     renderBoard(); renderOverlay(); renderGrid(); recompute();
+    // Kick off OCR in the background.
+    recogniseAll().catch(e => { console.error('OCR pass failed', e); setOcrProgress(null); });
   }
 
   function tileEl(rank,color){
@@ -48,7 +434,7 @@
   }
   function renderBoard(){
     const b=$('#kc-board'); b.innerHTML='';
-    b.style.gridTemplateColumns='repeat('+displayCols.length+',auto)';
+    b.style.gridTemplateColumns='repeat('+displayCols.length+',minmax(0,1fr))';
     for(const r of displayRows) for(const c of displayCols){
       const key=r+'_'+c, t=tiles.get(key);
       const cell=document.createElement('button');
@@ -264,6 +650,55 @@
   window.addEventListener('paste',e=>{ for(const it of e.clipboardData.items) if(it.type.startsWith('image/')) fileToImage(it.getAsFile()); });
   $('#kc-pool69').onchange=recompute;
   $('#kc-another').onclick=()=>{ $('#kc-boardbox').hidden=true; $('#kc-panel').hidden=true; $('#kc-drop').hidden=false; $('#kc-file').value=''; };
+  // Debug: open a new window showing every preprocessed cell crop so we can
+  // compare what Tesseract is actually seeing for each cell. Cells are sorted
+  // by detected rank/color so visually-identical glyphs end up adjacent.
+  $('#kc-export-crops').onclick = () => {
+    if (!geom || !imgData) return;
+    const rows = [];
+    for (const cell of geom.cells) {
+      const key = cell.r + '_' + cell.c;
+      const t = tiles.get(key);
+      const canv = KC.cellGlyphCanvas(imgData, geom.rb, geom.cb, cell.r, cell.c);
+      if (!canv) continue;
+      rows.push({
+        key,
+        rank: t ? t.rank : '?',
+        color: t ? t.color : cell.color,
+        score: t && t.score ? Math.round(t.score*100) : 0,
+        dataUrl: canv.toDataURL('image/png')
+      });
+    }
+    rows.sort((a, b) => {
+      const ra = a.rank, rb = b.rank;
+      if (ra === rb) return a.color.localeCompare(b.color) || a.key.localeCompare(b.key);
+      if (ra === '?') return 1;
+      if (rb === '?') return -1;
+      return ra.localeCompare(rb);
+    });
+    const html = `<!DOCTYPE html><html><head><title>KC glyph crops</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #222; color: #eee; padding: 16px; }
+  h1 { font-weight: 600; font-size: 18px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+  .cell { background: #333; border-radius: 6px; padding: 8px; text-align: center; font-size: 12px; }
+  .cell img { width: 120px; height: 120px; image-rendering: pixelated; background: #fff; border-radius: 4px; }
+  .cell .lbl { margin-top: 6px; font-family: monospace; }
+  .red { color: #ff6b6b; }
+  .unk { color: #ffd23f; }
+</style></head><body>
+<h1>${rows.length} cells — sorted by detected rank. Click a tile to see filename.</h1>
+<div class="grid">
+${rows.map(r => {
+  const cls = r.rank === '?' ? 'unk' : (r.color === 'R' ? 'red' : '');
+  return `<div class="cell"><img src="${r.dataUrl}" title="${r.key}"><div class="lbl ${cls}">${r.rank}${r.color} · ${r.key} · ${r.score}%</div></div>`;
+}).join('')}
+</div></body></html>`;
+    const w = window.open('', '_blank');
+    if (!w) { alert('Popup blocked — allow popups for this page'); return; }
+    w.document.write(html);
+    w.document.close();
+  };
 
   // ---- view mode + opacity ----
   document.querySelectorAll('.kc-mode').forEach(b=>{
@@ -277,5 +712,5 @@
     $('#kc-overlay').classList.toggle('kc-show-grid', e.target.checked);
   });
 
-  loadTemplates();
+  // Tesseract initialises on first image drop.
 })();

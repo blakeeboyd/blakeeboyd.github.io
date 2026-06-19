@@ -109,16 +109,17 @@
 
         /* ---- Board ---- */
         .kc-boardbox {
-            overflow: auto;
+            width: 100%;
         }
         .kc-board {
             display: grid;
-            gap: clamp(3px, 1vw, 7px);
-            width: max-content;
+            gap: clamp(2px, 0.6vw, 6px);
             margin: 0 auto;
+            width: 100%;
+            max-width: 700px;
         }
         .kc-cell {
-            width: clamp(34px, 6.4vw, 52px);
+            min-width: 0;
             aspect-ratio: 1;
             padding: 0;
             border: 0;
@@ -650,6 +651,7 @@
                                 <div id="kc-overlay-tiles" class="kc-overlay-tiles"></div>
                             </div>
                             <div id="kc-board" class="kc-board" hidden></div>
+                            <p class="kc-hint" id="kc-ocr-progress" hidden>Reading tiles…</p>
                             <p class="kc-hint">Tap any square to fix a mis-read tile. Yellow rings mark low-confidence reads.</p>
                         </div>
                     </section>
@@ -673,6 +675,7 @@
                         <div id="kc-warn"></div>
                         <div class="kc-actions">
                             <button class="kc-btn" id="kc-another">New image</button>
+                            <button class="kc-btn" id="kc-export-crops" title="Download every preprocessed cell crop as a ZIP for debugging recognition">Export crops</button>
                         </div>
                     </aside>
                 </div>
@@ -684,8 +687,8 @@
         </footer>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
     <script src="js/core.js"></script>
-    <script src="js/templates.js"></script>
     <script src="js/app.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
