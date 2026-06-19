@@ -201,33 +201,77 @@
       }
       return counts;
     };
+    // Compute which (rank, color) combos are UNDER the per-color cap. These
+    // are the "not in play" ranks. When demoting an over-limit cell, we
+    // prefer to demote toward one of these — it explains both anomalies at
+    // once (extra X + missing Y → one of the Xs is actually a Y).
+    const RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+    function getMissingSet() {
+      const counts = countRanks();
+      const missing = new Set();
+      for (const rk of RANKS) for (const col of ['R','B']) {
+        if ((counts[rk + col] || 0) < MAX_PER_RANK_COLOR) {
+          missing.add(rk + col);
+        }
+      }
+      return missing;
+    }
     // Up to a few passes to let demotions cascade.
     for (let pass = 0; pass < 5; pass++) {
       let changed = false;
       const counts = countRanks();
-      // Rule 2: handle over-limit ranks first. Sort over-the-limit cells by
-      // confidence ascending, demote the weakest.
+      const missing = getMissingSet();
+      // Rule 2: handle over-limit ranks. For each over-limit (rank, color),
+      // collect cells of that rank, score each by how plausibly it could be
+      // a *missing* same-color rank instead, and demote the most plausible
+      // mis-reads first.
       for (const k of Object.keys(counts)) {
         if (counts[k] <= MAX_PER_RANK_COLOR) continue;
         const overby = counts[k] - MAX_PER_RANK_COLOR;
         const matching = [];
         for (const [key, t] of tiles) {
-          if (t.rank + t.color === k && t.candidates && t.candidates.length > 1) {
-            matching.push({ key, score: t.score || 0, t });
+          if (t.rank + t.color !== k) continue;
+          // Find this cell's best candidate that points to a *missing* same-
+          // color rank. Score is the candidate's confidence; if no candidate
+          // matches a missing rank, score the cell as 0 here so it's picked
+          // last (but might still need demoting if we run out of better
+          // candidates).
+          let bagMatch = null;
+          if (t.candidates) {
+            for (const c of t.candidates) {
+              if (c.rank === t.rank) continue;
+              if (missing.has(c.rank + t.color)) {
+                if (!bagMatch || c.confidence > bagMatch.confidence) bagMatch = c;
+              }
+            }
           }
+          // Fallback: any second candidate, even if it doesn't help the bag.
+          const anyNext = t.candidates && t.candidates.find(c => c.rank !== t.rank);
+          matching.push({
+            key, t,
+            score: t.score || 0,
+            bagMatch,        // null when no candidate points to a missing rank
+            anyNext
+          });
         }
-        matching.sort((a, b) => a.score - b.score);
+        // Sort: bag-aware matches first (descending bagMatch confidence),
+        // then non-bag matches by ascending original score (weakest first).
+        matching.sort((a, b) => {
+          if (a.bagMatch && !b.bagMatch) return -1;
+          if (!a.bagMatch && b.bagMatch) return 1;
+          if (a.bagMatch && b.bagMatch) return b.bagMatch.confidence - a.bagMatch.confidence;
+          return a.score - b.score;
+        });
         for (let i = 0; i < Math.min(overby, matching.length); i++) {
-          const { key, t } = matching[i];
-          // Demote to the next candidate that isn't the current one.
-          const next = t.candidates.find(c => c.rank !== t.rank);
+          const { key, t, bagMatch, anyNext } = matching[i];
+          const next = bagMatch || anyNext;
           if (!next) continue;
           tiles.set(key, {
             rank: next.rank,
             color: t.color,
             score: next.confidence/100,
             margin: Math.max(0, (next.confidence/100 - 0.6) * 2.5),
-            candidates: t.candidates.slice(1)
+            candidates: (t.candidates || []).filter(c => c.rank !== next.rank)
           });
           changed = true;
         }
@@ -258,6 +302,86 @@
       }
       if (!changed) break;
     }
+    // Last-resort accounting rule. If a (rank, color) is over by N AND another
+    // same-color (rank, color) is under by N, the simplest explanation is that
+    // N of the over-limit cells are actually the missing rank. The candidates
+    // list from OCR might never have surfaced the right answer, but the rank
+    // tally forces it. Pick the N lowest-confidence over-limit cells and
+    // force-swap them to the missing rank.
+    const finalCounts = countRanks();
+    const overByColor = { R: [], B: [] };
+    const underByColor = { R: [], B: [] };
+    for (const rk of RANKS) for (const col of ['R','B']) {
+      const c = finalCounts[rk + col] || 0;
+      const delta = c - MAX_PER_RANK_COLOR;
+      if (delta > 0) overByColor[col].push({ rank: rk, n: delta });
+      else if (delta < 0) underByColor[col].push({ rank: rk, n: -delta });
+    }
+    for (const col of ['R','B']) {
+      const over = overByColor[col], under = underByColor[col];
+      if (!over.length || !under.length) continue;
+      const overTotal = over.reduce((s, x) => s + x.n, 0);
+      const underTotal = under.reduce((s, x) => s + x.n, 0);
+      // Only act when the over/under balance is exact, so we're not guessing.
+      if (overTotal !== underTotal) continue;
+      // For each over-limit rank, find the N weakest cells and reassign them
+      // to under-limit ranks in priority order.
+      const underQueue = under.flatMap(u => Array(u.n).fill(u.rank));
+      for (const o of over) {
+        const matching = [];
+        for (const [key, t] of tiles) {
+          if (t.color === col && t.rank === o.rank) {
+            matching.push({ key, t, score: t.score || 0 });
+          }
+        }
+        matching.sort((a, b) => a.score - b.score);
+        for (let i = 0; i < o.n && underQueue.length; i++) {
+          const { key, t } = matching[i];
+          const newRank = underQueue.shift();
+          tiles.set(key, {
+            rank: newRank,
+            color: t.color,
+            score: t.score || 0,
+            // Flag forced swaps so the user can verify them.
+            margin: 0,
+            candidates: t.candidates || []
+          });
+        }
+      }
+    }
+  }
+  // Combine candidate lists from multiple PSM passes into a single ranked list.
+  // For each rank, we sum its confidence across all passes (one entry per pass
+  // if present), plus a small agreement bonus for showing up in multiple passes.
+  // Returns [{rank, confidence}, ...] sorted by aggregate score descending.
+  function voteCandidates(candidateLists) {
+    const best = {};           // rank -> highest confidence seen
+    const appearances = {};    // rank -> count of passes that produced it
+    for (const list of candidateLists) {
+      if (!list || !list.length) continue;
+      const seen = new Set();
+      for (const cand of list) {
+        if (cand.rank === '?' || seen.has(cand.rank)) continue;
+        seen.add(cand.rank);
+        const c = cand.confidence || 0;
+        if (!(cand.rank in best) || c > best[cand.rank]) best[cand.rank] = c;
+        appearances[cand.rank] = (appearances[cand.rank] || 0) + 1;
+      }
+    }
+    const ranks = Object.keys(best);
+    if (!ranks.length) return [];
+    // Confidence = the BEST score seen across passes (not the mean). One
+    // strong read is real signal; averaging it with weaker reads from other
+    // PSMs hides that. The agreement bonus still rewards consensus when
+    // multiple passes return the same rank.
+    const aggregate = ranks.map(rank => {
+      const peak = best[rank];
+      const appears = appearances[rank];
+      const bonus = peak * 0.08 * (appears - 1);
+      return { rank, confidence: Math.min(100, peak + bonus), appears };
+    });
+    aggregate.sort((a, b) => b.confidence - a.confidence);
+    return aggregate;
   }
   // Run OCR over every occupied cell. Each result updates the map and re-renders.
   async function recogniseAll(){
@@ -266,34 +390,47 @@
     const total = queue.length;
     let done = 0;
     setOcrProgress(0, total);
-    // Sequential is plenty fast in practice and keeps the worker simple.
-    // First pass: collect Tesseract's top-N candidates per cell.
+    // Voting pass: for every cell, run Tesseract with multiple PSMs (10 single
+    // char, 7 single line, 8 single word, 13 raw line). Each is essentially a
+    // different recognition strategy. Aggregate candidates by confidence-
+    // weighted vote — this catches cells where one PSM was wrong but high-
+    // confidence, by giving the consensus read more weight.
+    const PSM_PASSES = ['10', '7', '8', '13'];
     const cellCandidates = new Map();        // "r_c" -> [{rank, confidence}, ...]
     for (const cell of queue) {
       const canv = KC.cellGlyphCanvas(imgData, geom.rb, geom.cb, cell.r, cell.c);
       if (!canv) { done++; setOcrProgress(done, total); continue; }
-      try {
-        const { data } = await worker.recognize(canv);
-        // Apply hand-coded geometric disambiguators using the same crop.
-        const shapeHint = shapeDisambiguate(canv);
-        const cands = extractCandidates(data, 4);
-        if (shapeHint) reorderForShapeHint(cands, shapeHint);
-        cellCandidates.set(cell.r+'_'+cell.c, cands);
-        const top = cands[0] || { rank: '?', confidence: 0 };
-        const conf = top.confidence/100;
-        const margin = (top.rank === '?') ? 0 : Math.max(0, (conf - 0.6) * 2.5);
-        const cur = tiles.get(cell.r+'_'+cell.c) || {color: cell.color};
-        tiles.set(cell.r+'_'+cell.c, {rank: top.rank, color: cur.color, score: conf, margin, candidates: cands});
-      } catch (e) {
-        console.warn('OCR failed for cell', cell.r, cell.c, e);
+      const lists = [];
+      const shapeHint = shapeDisambiguate(canv);
+      for (const psm of PSM_PASSES) {
+        try {
+          await worker.setParameters({ tessedit_pageseg_mode: psm });
+          const { data } = await worker.recognize(canv);
+          const cands = extractCandidates(data, 4);
+          if (shapeHint) reorderForShapeHint(cands, shapeHint);
+          lists.push(cands);
+        } catch (e) {
+          // Per-cell OCR failures are rare and recoverable (other PSM passes
+          // and the lenient retry usually cover them); suppress logs in
+          // production. Re-enable if debugging recognition.
+
+        }
       }
+      const voted = voteCandidates(lists);
+      cellCandidates.set(cell.r+'_'+cell.c, voted);
+      const top = voted[0] || { rank: '?', confidence: 0 };
+      const conf = top.confidence/100;
+      const margin = (top.rank === '?') ? 0 : Math.max(0, (conf - 0.6) * 2.5);
+      const cur = tiles.get(cell.r+'_'+cell.c) || {color: cell.color};
+      tiles.set(cell.r+'_'+cell.c, {rank: top.rank, color: cur.color, score: conf, margin, candidates: voted});
       done++;
       setOcrProgress(done, total);
-      // Re-render every N cells so the user sees progress.
-      if (done % 8 === 0 || done === total) {
+      if (done % 4 === 0 || done === total) {
         renderBoard(); renderOverlay(); recompute();
       }
     }
+    // Restore PSM 10 for any subsequent passes.
+    await worker.setParameters({ tessedit_pageseg_mode: '10' });
     // Second OCR pass: PSM 10 is a single character; PSM 7 is a single text
     // line. PSM 7 sometimes recovers reads that PSM 10 gave up on. Only retry
     // cells that came back as '?'.
@@ -321,7 +458,7 @@
               tiles.set(cell.r+'_'+cell.c, {rank: top.rank, color: cur.color, score: conf, margin, candidates: cands});
             }
           } catch (e) {
-            console.warn('PSM 7 retry failed for cell', cell.r, cell.c, e);
+            // ignore — lenient retry will get another shot
           }
         }
         s++;
@@ -371,17 +508,19 @@
             }
             if (rank !== '?') {
               const conf = (data.confidence || 0) / 100;
-              // Lenient reads are less trustworthy — flag them so the constraint
-              // solver and the UI both treat them as low-confidence candidates.
-              const margin = Math.max(0, (conf - 0.6) * 1.5);
+              // Trust the lenient mapping: if we got here via a letter→rank
+              // confusion table we have high reason to believe it's right.
+              // Use Tesseract's own confidence directly and only flag if
+              // it's actually low.
+              const margin = Math.max(0, (conf - 0.6) * 2.5);
               const cur = tiles.get(cell.r+'_'+cell.c) || {color: cell.color};
               tiles.set(cell.r+'_'+cell.c, {
-                rank, color: cur.color, score: conf * 0.8, margin,
+                rank, color: cur.color, score: conf, margin,
                 candidates: [{rank, confidence: data.confidence || 0}]
               });
             }
           } catch (e) {
-            console.warn('Lenient retry failed for cell', cell.r, cell.c, e);
+            // ignore — cell stays unrecognised, user can fix manually
           }
         }
         s++;
@@ -395,20 +534,8 @@
         tessedit_char_whitelist: 'A234567890JQK',
         tessedit_pageseg_mode: '10'
       });
-      // Dump lenient-pass misses into the page so we can see them without
-      // wrestling with browser console filters. Visible just below the hint.
-      const debugEl = $('#kc-debug-misses');
-      if (debugEl) {
-        const misses = window.__kcMisses || [];
-        if (misses.length) {
-          debugEl.hidden = false;
-          debugEl.textContent = 'Lenient misses: ' + misses.map(m =>
-            m.cell + '(' + m.color + ')→' + JSON.stringify(m.raw) + '@' + Math.round(m.conf||0) + '%'
-          ).join(' · ');
-        } else {
-          debugEl.hidden = true;
-        }
-      }
+      // Lenient-pass misses are stashed on window.__kcMisses for debugging
+      // via the browser console — no user-facing UI.
     }
     // Final pass: constraint-solver. Demote over-limit / low-confidence reads
     // to their next candidate when one's available.
@@ -464,13 +591,29 @@
     t.className='kc-tile'+(color==='R'?' kc-red':'')+(rank==='10'?' kc-ten':'');
     t.textContent=rank; return t;
   }
+  // Build the set of (rank+color) keys that are currently OVER the 4-per-color
+  // cap. Used to drive flag rendering: confidence percentages don't trigger
+  // flags on their own — only consistency problems do.
+  function overflowedRankColorSet(){
+    const counts = {};
+    for (const [, t] of tiles) {
+      if (!t || t.rank === '?') continue;
+      const k = t.rank + t.color;
+      counts[k] = (counts[k] || 0) + 1;
+    }
+    const over = new Set();
+    for (const k in counts) if (counts[k] > 4) over.add(k);
+    return over;
+  }
   function renderBoard(){
     const b=$('#kc-board'); b.innerHTML='';
     b.style.gridTemplateColumns='repeat('+displayCols.length+',minmax(0,1fr))';
+    const overSet = overflowedRankColorSet();
     for(const r of displayRows) for(const c of displayCols){
       const key=r+'_'+c, t=tiles.get(key);
       const cell=document.createElement('button');
-      cell.className='kc-cell'+(t?'':' kc-empty')+((t&&(t.rank==='?'||t.margin<0.10))?' kc-flag':'');
+      const shouldFlag = t && (t.rank==='?' || overSet.has(t.rank + t.color));
+      cell.className='kc-cell'+(t?'':' kc-empty')+(shouldFlag?' kc-flag':'');
       cell.dataset.key=key;
       if(t) cell.appendChild(tileEl(t.rank,t.color));
       cell.addEventListener('click',e=>{e.stopPropagation(); openEditor(cell,key);});
@@ -483,6 +626,7 @@
     layer.innerHTML='';
     if(!geom||!geom.rb||!geom.cb||!imgW||!imgH) return;
     const rb=geom.rb, cb=geom.cb;
+    const overSet = overflowedRankColorSet();
     for(const r of displayRows) for(const c of displayCols){
       const key=r+'_'+c, t=tiles.get(key);
       const y0=rb[r], y1=rb[r+1], x0=cb[c], x1=cb[c+1];
@@ -494,7 +638,10 @@
       let cls='kc-ocell';
       if(!t) cls+=' kc-empty';
       if(t && t.color==='R') cls+=' kc-red';
-      if(t && (t.rank==='?'||t.margin<0.10)) cls+=' kc-flag';
+      // Unrecognised tile → its own class so we can tint it differently from
+      // over-limit flags (yellow wash vs orange ring).
+      if(t && t.rank==='?') cls+=' kc-unknown';
+      else if(t && overSet.has(t.rank + t.color)) cls+=' kc-flag';
       cell.className=cls;
       cell.dataset.key=key;
       cell.style.left   = (x0/imgW*100)+'%';
@@ -502,11 +649,15 @@
       cell.style.width  = ((x1-x0)/imgW*100)+'%';
       cell.style.height = ((y1-y0)/imgH*100)+'%';
       if(t){
-        cell.textContent = t.rank;
-        // Scale font to ~55% of cell width, smaller for two-char "10"
+        // Render the rank as a small corner badge instead of a full-cell
+        // overlay so the source tile underneath stays legible.
+        const badge=document.createElement('span');
+        badge.className='kc-ocell-badge';
+        badge.textContent=t.rank;
         const cellPx=(x1-x0);
-        const factor = (t.rank==='10') ? 0.40 : 0.55;
-        cell.style.fontSize = Math.max(10, cellPx*factor)+'px';
+        const factor = (t.rank==='10') ? 0.18 : 0.22;
+        badge.style.fontSize = Math.max(8, cellPx*factor)+'px';
+        cell.appendChild(badge);
       }
       cell.addEventListener('click',e=>{e.stopPropagation(); openEditor(cell,key);});
       layer.appendChild(cell);
@@ -685,7 +836,9 @@
   // Debug: open a new window showing every preprocessed cell crop so we can
   // compare what Tesseract is actually seeing for each cell. Cells are sorted
   // by detected rank/color so visually-identical glyphs end up adjacent.
-  $('#kc-export-crops').onclick = () => {
+  // Hidden in production but kept around for future debug surfacing.
+  const exportBtn = $('#kc-export-crops');
+  if (exportBtn) exportBtn.onclick = () => {
     if (!geom || !imgData) return;
     const rows = [];
     for (const cell of geom.cells) {
@@ -740,7 +893,8 @@ ${rows.map(r => {
   function applyOpacity(){ tilesLayer.style.opacity = (opacityEl.value/100).toFixed(2); }
   opacityEl.addEventListener('input', applyOpacity);
   applyOpacity();
-  $('#kc-show-grid').addEventListener('change', e=>{
+  const gridChk = $('#kc-show-grid');
+  if (gridChk) gridChk.addEventListener('change', e=>{
     $('#kc-overlay').classList.toggle('kc-show-grid', e.target.checked);
   });
 

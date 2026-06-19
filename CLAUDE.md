@@ -111,8 +111,7 @@ When building new features:
     │   ├── sw.js               # Optional offline cache (registered by index.html)
     │   └── js/
     │       ├── core.js         # Pure board-reader functions (KC namespace, no DOM)
-    │       ├── templates.js    # Embedded glyph bank (base64 grayscale exemplars)
-    │       └── app.js          # UI wiring (drag/drop, board render, editor popover)
+    │       └── app.js          # UI wiring + Tesseract OCR orchestration
     ├── soundbench/
     │   ├── index.html          # Host page (loads bundled React app)
     │   ├── assets/
@@ -397,42 +396,45 @@ For N items: N × (N-1) / 2 comparisons
 - `ideas.md` - Future feature ideas
 - `js/app.js` - Complete application logic
 
-### King's Cribbage — what's left
+### King's Cribbage Tile Counter
 
-A board-image reader for the tile game King's Cribbage. The user drops a screenshot of an in-progress board, the page reads the placed tiles via grid detection + template matching, and the side panel reports which of the 104 tiles are still in the bag (or on a rack). Mis-reads can be fixed tile-by-tile with a popover editor.
+A board-image reader for the tile game King's Cribbage. The user drops a screenshot of an in-progress board; the page detects the felt grid, crops to it, OCRs each occupied cell with Tesseract.js, runs a constraint solver against the 4-per-color-per-rank game rule, and reports which of the 104 tiles are not in play. Mis-reads can be fixed tile-by-tile with a popover editor (keyboard shortcuts: a/1=A, 2–9, 0/t=10, j/q/k, r/b for color).
 
 **Location:** `projects/kings-cribbage/`
 
+**Status:** Listed on `lab.html` (under construction) — Tesseract recognition still being iterated. Typical recognition rate on a tested board: 100+/104 raw reads, ~104/104 after the constraint solver.
+
 **Key Features:**
 - Drag-drop, file picker, or paste (⌘/Ctrl-V) a board screenshot
-- Grid detection from the green felt background, per-cell occupancy + colour (red/black)
-- Rank classification via 1-NN against an embedded glyph bank (103 verified exemplars)
-- Low-confidence reads marked with a yellow ring + "?" badge for easy correction
-- Tap any cell to open a popover and fix colour/rank or clear the square
-- Live count of placed tiles (0..104) with a progress bar
-- "Still in the bag" panel listing remaining tiles by rank/colour with counts
-- "6 & 9 share one reversible tile" toggle (physical-tile mode vs independent ranks)
-- "More tiles than exist" warning surfaces when a rank exceeds 4-per-colour (mis-read indicator)
+- Felt bounding box detection then crops the image to the playing area
+- 13×13 evenly-divided grid over the cropped board (cell width = cropW/13)
+- Per-cell occupancy + color via HSV-hue red-vs-black detection
+- Multi-pass Tesseract OCR for rank: PSM 10/7/8/13 vote per cell with peak-confidence aggregation + small consensus bonus
+- Aggressive preprocessing per cell: polarity-normalize, 4× bilinear upscale, Otsu binarize, drop tiny disconnected components, stroke-width normalize
+- Three OCR passes total: strict whitelist, PSM 7 retry on `?` cells, then a no-whitelist lenient pass with a letter→rank table (O/D/C/\\→Q, S→5, G→6, etc.)
+- Constraint solver: demotes over-the-cap reads toward missing same-color ranks (bag-aware); falls back to forced swap when accounting is exact
+- Overlay view: source image + small corner-pill rank labels for every detected tile, with an opacity slider
+- Unrecognized cells show a yellow wash in the overlay; over-limit cells get an orange ring with a "?" badge
+- "6 & 9 share one reversible tile" toggle
 - Optional offline Service Worker registration (`sw.js`)
 
 **Technical Stack:**
-- Pure JavaScript (no external dependencies)
-- Web Audio APIs are not used; everything is canvas-based pixel reading
-- Canvas 2D for image decoding into RGBA pixel buffers
-- Custom grid detection (row/column "green" profiles → line positions)
-- Connected-components glyph isolation to drop the tile frame, keep the numeral
-- 1-nearest-neighbour grayscale template matching with runner-up margin used to flag uncertain reads
+- Vanilla JavaScript (no build step)
+- Tesseract.js 5.x from CDN for OCR (~10MB English language data, browser-cached)
+- Canvas 2D for image decoding, cropping, preprocessing, and the overlay render
+- Custom preprocessing pipeline in `core.js`: Otsu thresholding, morphological dilate/erode, connected-component labeling
 
 **Module Structure:**
-- `js/core.js` — `KC` namespace, pure functions on `{data, width, height}` images: `profiles`, `detectGrid`, `cellStats`, `glyphVector`, `buildTemplates`, `classifyRank`, `readBoard`, `remaining`. Also exports as a CommonJS module for Node test harness use.
-- `js/templates.js` — global `TEMPLATES` constant holding the base64-encoded glyph bank (labels, aspect ratios, packed grayscale data). ~260KB; the bulk of the page weight.
-- `js/app.js` — UI wiring. Handles file/drop/paste input, calls `KC.readBoard`, renders the board grid (`#kc-board`), the editor popover, and the side panel. All DOM selectors and class names are `kc-` prefixed.
+- `js/core.js` — `KC` namespace, pure functions on `{data, width, height}` images: `feltBBox`, `detectGrid`, `cellStats`, `cellGlyphCanvas`, `readBoard`, `remaining`. Also exports as a CommonJS module for Node test harness use.
+- `js/app.js` — UI wiring + OCR orchestration. Manages the Tesseract worker, runs the multi-PSM vote, constraint solver, lenient retry pass, board+overlay rendering, and the editor popover. All DOM selectors and class names are `kc-` prefixed.
 
 **CSS Architecture:**
 - All classes prefixed `kc-` to avoid conflicts with site CSS
-- Uses site design tokens (`--color-card-bg`, `--color-accent`, `--color-error`, etc.) instead of the original felt/brass palette
+- Uses site design tokens (`--color-card-bg`, `--color-accent`, `--color-error`, etc.)
 - Tiles render as bone-white cards with serif numerals (red for red tiles)
-- Low-confidence flag uses `--color-warning`
+- Over-limit flag uses `--color-warning`
+
+### BandLab Parser
 
 A browser-based tool for parsing BandLab sample pack HTML pages into structured JSON.
 

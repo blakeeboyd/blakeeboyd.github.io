@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Read a King's Cribbage board image and see which of the 104 tiles are still in the bag.">
-    <title>King's Cribbage — what's left - Blake Boyd</title>
+    <meta name="description" content="Drop a screenshot of a King's Cribbage board to see which of the 104 tiles are not in play.">
+    <title>King's Cribbage Tile Counter - Blake Boyd</title>
     <meta name="theme-color" content="#2563eb">
     <meta name="author" content="Blake E. Boyd">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <!-- Open Graph -->
-    <meta property="og:title" content="King's Cribbage — what's left - Blake Boyd">
-    <meta property="og:description" content="Read a King's Cribbage board image and see which of the 104 tiles are still in the bag.">
+    <meta property="og:title" content="King's Cribbage Tile Counter - Blake Boyd">
+    <meta property="og:description" content="Drop a screenshot of a King's Cribbage board to see which of the 104 tiles are not in play.">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Blake Boyd">
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="King's Cribbage — what's left - Blake Boyd">
-    <meta name="twitter:description" content="Read a King's Cribbage board image and see which of the 104 tiles are still in the bag.">
+    <meta name="twitter:title" content="King's Cribbage Tile Counter - Blake Boyd">
+    <meta name="twitter:description" content="Drop a screenshot of a King's Cribbage board to see which of the 104 tiles are not in play.">
     <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
     <link rel="stylesheet" href="../../css/base.css">
     <link rel="stylesheet" href="../../css/layout.css">
@@ -235,13 +235,68 @@
         .kc-opacity {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.625rem;
             font-size: 0.8rem;
             color: var(--color-text-muted);
         }
         .kc-opacity input[type="range"] {
             width: 140px;
-            accent-color: var(--color-accent);
+            height: 18px;
+            appearance: none;
+            -webkit-appearance: none;
+            background: transparent;
+            cursor: pointer;
+            margin: 0;
+        }
+        .kc-opacity input[type="range"]::-webkit-slider-runnable-track {
+            height: 4px;
+            background: var(--color-border);
+            border-radius: 2px;
+        }
+        .kc-opacity input[type="range"]::-moz-range-track {
+            height: 4px;
+            background: var(--color-border);
+            border-radius: 2px;
+        }
+        .kc-opacity input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            margin-top: -5px;
+            background: var(--color-accent);
+            border: 2px solid var(--color-card-bg);
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .kc-opacity input[type="range"]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            background: var(--color-accent);
+            border: 2px solid var(--color-card-bg);
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .kc-opacity input[type="range"]:hover::-webkit-slider-thumb {
+            transform: scale(1.15);
+        }
+        .kc-opacity input[type="range"]:hover::-moz-range-thumb {
+            transform: scale(1.15);
+        }
+        .kc-opacity input[type="range"]:focus-visible {
+            outline: none;
+        }
+        .kc-opacity input[type="range"]:focus-visible::-webkit-slider-thumb {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
+        }
+        .kc-opacity input[type="range"]:focus-visible::-moz-range-thumb {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
         }
         .kc-checkopt {
             display: inline-flex;
@@ -302,13 +357,23 @@
             cursor: pointer;
             pointer-events: auto;
             line-height: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             font-family: var(--font-sans);
             font-weight: 700;
             color: #1a1a1a;
-            text-shadow: 0 0 3px rgba(255, 255, 255, 0.9), 0 0 3px rgba(255, 255, 255, 0.9);
+        }
+        .kc-overlay-tiles .kc-ocell-badge {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            background: rgba(255, 255, 255, 0.92);
+            color: inherit;
+            min-width: 1.6em;
+            text-align: center;
+            padding: 0.15em 0.2em;
+            border-radius: 3px;
+            line-height: 1;
+            font-weight: 700;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
         }
         .kc-overlay-tiles .kc-ocell.kc-red {
             color: #c0392b;
@@ -342,6 +407,13 @@
             font: 700 11px/16px var(--font-sans);
             text-align: center;
             text-shadow: none;
+        }
+        /* Unrecognised cells get a yellow wash over the whole cell so you can
+           scan the overlay and immediately spot which tiles weren't read. */
+        .kc-overlay-tiles .kc-ocell.kc-unknown {
+            background: rgba(245, 158, 11, 0.45);
+            outline: 2px solid var(--color-warning);
+            outline-offset: -2px;
         }
 
         /* ---- Panel ---- */
@@ -615,8 +687,8 @@
 
         <main id="main-content">
             <div class="page-header">
-                <h1 class="page-title">King's Cribbage — what's left</h1>
-                <p class="page-subtitle">Drop a screenshot of a King's Cribbage board. It reads the tiles, you fix anything it mis-reads, and it tells you which of the 104 tiles are still in the bag.</p>
+                <h1 class="page-title">King's Cribbage Tile Counter</h1>
+                <p class="page-subtitle">Drop a screenshot of a King's Cribbage board. It will tell you which of the 104 tiles are not in play.</p>
             </div>
 
             <div class="kc-app">
@@ -639,10 +711,6 @@
                                         <span class="kc-opacity-label">Overlay</span>
                                         <input type="range" id="kc-opacity" min="0" max="100" value="70" aria-label="Overlay opacity">
                                     </label>
-                                    <label class="kc-checkopt">
-                                        <input type="checkbox" id="kc-show-grid">
-                                        <span>Grid</span>
-                                    </label>
                                 </div>
                             </div>
                             <div id="kc-overlay" class="kc-overlay">
@@ -652,8 +720,7 @@
                             </div>
                             <div id="kc-board" class="kc-board" hidden></div>
                             <p class="kc-hint" id="kc-ocr-progress" hidden>Reading tiles…</p>
-                            <p class="kc-hint" id="kc-debug-misses" hidden style="font-family: monospace; font-size: 11px; word-break: break-all; color: #b91c1c;"></p>
-                            <p class="kc-hint">Tap any square to fix a mis-read tile. Yellow rings mark low-confidence reads.</p>
+                            <p class="kc-hint">Tap any square to fix a mis-read tile. Yellow flags mark unread cells or ranks placed more than four times.</p>
                         </div>
                     </section>
 
@@ -663,7 +730,7 @@
                         <div class="kc-street"><div class="kc-fill" id="kc-fill" style="width:0"></div></div>
 
                         <div class="kc-remwrap">
-                            <h2>Still in the bag</h2>
+                            <h2>Not in play</h2>
                             <div id="kc-remtiles" class="kc-remtiles"></div>
                             <div id="kc-emptynote" class="kc-empty-note" hidden></div>
                         </div>
@@ -676,7 +743,6 @@
                         <div id="kc-warn"></div>
                         <div class="kc-actions">
                             <button class="kc-btn" id="kc-another">New image</button>
-                            <button class="kc-btn" id="kc-export-crops" title="Download every preprocessed cell crop as a ZIP for debugging recognition">Export crops</button>
                         </div>
                     </aside>
                 </div>
