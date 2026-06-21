@@ -2,7 +2,7 @@
    Drop this next to index.html. The app works without it; with it,
    the page (and fonts, once seen) are cached so it opens offline and
    satisfies Chrome's installability criteria. */
-const CACHE = 'kings-cribbage-v1';
+const CACHE = 'kings-cribbage-v21';
 const SHELL = ['./', './index.html'];
 
 self.addEventListener('install', e => {

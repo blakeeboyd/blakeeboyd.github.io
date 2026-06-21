@@ -8,6 +8,33 @@
   let displayRows=[], displayCols=[];
   let imgW=0, imgH=0;               // cropped image dimensions (for overlay positioning)
   let viewMode = 'overlay';         // 'overlay' | 'board'
+  let palette = null;               // auto-calibrated palette: {felt,light,dark} as {R,G,B}
+  let highlightUncertain = false;   // when true, fade confident tiles to make suspect ones pop
+
+  // A tile is "suspect" if the constraint solver actively flagged it: either
+  // it's unread (rank '?'), or its rank+colour is over the 4-per-suit limit.
+  // We deliberately don't include low-confidence reads here — confidence is
+  // noisy and most low-confidence cells are still correct. The user wants to
+  // see clearly-broken tiles, not "tiles the OCR was slightly unsure about."
+  function isSuspect(t, overSet) {
+    if (!t) return false;
+    if (t.rank === '?') return true;                              // unread
+    if (overSet && overSet.has(t.rank + t.color)) return true;    // over-limit
+    return false;
+  }
+
+  // Pick the OCR preprocessing mode for a cell. Bright-background tiles
+  // (bone, red) work best with the original absolute-luminance pipeline;
+  // dark-background tiles (brown, wood) need relative polarity + contrast
+  // stretching. Threshold of 100 lum cleanly separates the renderers we've
+  // seen: bone≈135, red≈138, brown≈70.
+  function ocrModeForCell(cell) {
+    if (!palette) return 'bright';
+    const c = cell.color === 'R' ? palette.dark : palette.light;
+    if (!c) return 'bright';
+    const lum = 0.30 * c.R + 0.59 * c.G + 0.11 * c.B;
+    return lum > 100 ? 'bright' : 'lowContrast';
+  }
 
   // ---- OCR (Tesseract.js) ----
   let ocrWorker = null;
@@ -398,7 +425,7 @@
     const PSM_PASSES = ['10', '7', '8', '13'];
     const cellCandidates = new Map();        // "r_c" -> [{rank, confidence}, ...]
     for (const cell of queue) {
-      const canv = KC.cellGlyphCanvas(imgData, geom.rb, geom.cb, cell.r, cell.c);
+      const canv = KC.cellGlyphCanvas(imgData, geom.rb, geom.cb, cell.r, cell.c, 256, ocrModeForCell(cell));
       if (!canv) { done++; setOcrProgress(done, total); continue; }
       const lists = [];
       const shapeHint = shapeDisambiguate(canv);
@@ -443,7 +470,7 @@
       await worker.setParameters({ tessedit_pageseg_mode: '7' });
       let s = 0;
       for (const cell of stragglers) {
-        const canv = KC.cellGlyphCanvas(imgData, geom.rb, geom.cb, cell.r, cell.c);
+        const canv = KC.cellGlyphCanvas(imgData, geom.rb, geom.cb, cell.r, cell.c, 256, ocrModeForCell(cell));
         if (canv) {
           try {
             const { data } = await worker.recognize(canv);
@@ -488,7 +515,7 @@
       });
       let s = 0;
       for (const cell of lenientStragglers) {
-        const canv = KC.cellGlyphCanvas(imgData, geom.rb, geom.cb, cell.r, cell.c);
+        const canv = KC.cellGlyphCanvas(imgData, geom.rb, geom.cb, cell.r, cell.c, 256, ocrModeForCell(cell));
         if (canv) {
           try {
             const { data } = await worker.recognize(canv);
@@ -560,24 +587,39 @@
     const cv0=document.createElement('canvas'); cv0.width=w0; cv0.height=h0;
     cv0.getContext('2d').drawImage(srcImg,0,0,w0,h0);
     const id0=cv0.getContext('2d').getImageData(0,0,w0,h0);
-    // Find the felt bounding box and crop to it. From here on, the cropped
-    // canvas IS the board: detection, display, and overlay positioning all
-    // share the same coordinate space, so alignment is automatic.
-    const bb = KC.feltBBox({data:id0.data,width:w0,height:h0});
-    const cw = bb.x1-bb.x0+1, ch = bb.y1-bb.y0+1;
-    const cv=document.createElement('canvas'); cv.width=cw; cv.height=ch;
-    cv.getContext('2d').drawImage(cv0, bb.x0, bb.y0, cw, ch, 0, 0, cw, ch);
-    const id=cv.getContext('2d').getImageData(0,0,cw,ch);
-    imgCanvas = cv; imgData = {data:id.data,width:cw,height:ch};
-    const res = KC.readBoard(imgData);
-    geom=res; imgW=cw; imgH=ch;
+    // Renderer-agnostic detection: find the 13×13 grid by periodic-edge
+    // search, then classify cells by auto-calibrated three-class colour
+    // (felt / light tile / dark tile). Works on any renderer and on full
+    // app screenshots with surrounding UI chrome.
+    const res = KC.detectBoard({data:id0.data,width:w0,height:h0});
+    if (!res) {
+      alert('Could not find a 13×13 board in this image.');
+      return;
+    }
+    // Crop the source canvas to the detected bbox so all downstream code
+    // (OCR cell extraction, overlay positioning) shares one coord space.
+    const cw = res.croppedImg.width, ch = res.croppedImg.height;
+    const cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
+    const ctxC = cv.getContext('2d');
+    ctxC.drawImage(cv0, res.bbox.x0, res.bbox.y0, cw, ch, 0, 0, cw, ch);
+    imgCanvas = cv;
+    imgData = res.croppedImg;
+    geom = { rb: res.rb, cb: res.cb, nrows: 13, ncols: 13, cells: res.cells };
+    imgW = cw; imgH = ch;
+    palette = res.palette;
     tiles.clear();
     res.cells.forEach(t=>tiles.set(t.r+'_'+t.c,{rank:t.rank,color:t.color,score:t.score,margin:t.margin}));
-    // play area: drop fully-empty border rows/cols, keep interior
-    const rs=res.cells.map(t=>t.r), cs=res.cells.map(t=>t.c);
-    const r0=Math.min(...rs), r1=Math.max(...rs), c0=Math.min(...cs), c1=Math.max(...cs);
-    displayRows=[]; for(let r=r0;r<=r1;r++) displayRows.push(r);
-    displayCols=[]; for(let c=c0;c<=c1;c++) displayCols.push(c);
+    // play area: drop fully-empty border rows/cols, keep interior. If no
+    // tiles were detected (fresh board), show the full 13×13 grid.
+    if (res.cells.length) {
+      const rs=res.cells.map(t=>t.r), cs=res.cells.map(t=>t.c);
+      const r0=Math.min(...rs), r1=Math.max(...rs), c0=Math.min(...cs), c1=Math.max(...cs);
+      displayRows=[]; for(let r=r0;r<=r1;r++) displayRows.push(r);
+      displayCols=[]; for(let c=c0;c<=c1;c++) displayCols.push(c);
+    } else {
+      displayRows=[]; for(let r=0;r<13;r++) displayRows.push(r);
+      displayCols=[]; for(let c=0;c<13;c++) displayCols.push(c);
+    }
     $('#kc-overlay-img').src = cv.toDataURL('image/png');
     $('#kc-drop').hidden=true; $('#kc-boardbox').hidden=false; $('#kc-panel').hidden=false;
     applyViewMode();
@@ -589,7 +631,23 @@
   function tileEl(rank,color){
     const t=document.createElement('div');
     t.className='kc-tile'+(color==='R'?' kc-red':'')+(rank==='10'?' kc-ten':'');
-    t.textContent=rank; return t;
+    t.textContent=rank;
+    // Paint the mini-tile to mimic the source: background = detected tile
+    // colour, text = whichever of black/white contrasts better. Same scheme
+    // as the overlay badges so the Not-in-play panel matches the source
+    // image regardless of renderer (red/bone, brown/cream, etc.).
+    const tileRGB = palette && (color === 'R' ? palette.dark : palette.light);
+    if (tileRGB) {
+      const bg = `rgb(${Math.round(tileRGB.R)}, ${Math.round(tileRGB.G)}, ${Math.round(tileRGB.B)})`;
+      const lum = 0.30 * tileRGB.R + 0.59 * tileRGB.G + 0.11 * tileRGB.B;
+      const isLightText = lum <= 140;
+      t.style.background = bg;
+      t.style.color = isLightText ? '#ffffff' : '#1a1a1a';
+      t.style.textShadow = isLightText
+        ? '0 1px 1px rgba(0, 0, 0, 0.5)'
+        : '0 1px 1px rgba(255, 255, 255, 0.5)';
+    }
+    return t;
   }
   // Build the set of (rank+color) keys that are currently OVER the 4-per-color
   // cap. Used to drive flag rendering: confidence percentages don't trigger
@@ -607,13 +665,18 @@
   }
   function renderBoard(){
     const b=$('#kc-board'); b.innerHTML='';
+    b.classList.toggle('kc-highlight-uncertain', highlightUncertain);
     b.style.gridTemplateColumns='repeat('+displayCols.length+',minmax(0,1fr))';
     const overSet = overflowedRankColorSet();
     for(const r of displayRows) for(const c of displayCols){
       const key=r+'_'+c, t=tiles.get(key);
       const cell=document.createElement('button');
       const shouldFlag = t && (t.rank==='?' || overSet.has(t.rank + t.color));
-      cell.className='kc-cell'+(t?'':' kc-empty')+(shouldFlag?' kc-flag':'');
+      const suspect = isSuspect(t, overSet);
+      cell.className='kc-cell'
+        +(t?'':' kc-empty')
+        +(shouldFlag?' kc-flag':'')
+        +(suspect?' kc-suspect':' kc-confident');
       cell.dataset.key=key;
       if(t) cell.appendChild(tileEl(t.rank,t.color));
       cell.addEventListener('click',e=>{e.stopPropagation(); openEditor(cell,key);});
@@ -623,6 +686,7 @@
 
   function renderOverlay(){
     const layer=$('#kc-overlay-tiles'); if(!layer) return;
+    layer.classList.toggle('kc-highlight-uncertain', highlightUncertain);
     layer.innerHTML='';
     if(!geom||!geom.rb||!geom.cb||!imgW||!imgH) return;
     const rb=geom.rb, cb=geom.cb;
@@ -635,9 +699,11 @@
       const cellW=x1-x0, cellH=y1-y0;
       if(cellW<=0||cellH<=0||cellW>imgW*0.5||cellH>imgH*0.5) continue;
       const cell=document.createElement('button');
+      const suspect = isSuspect(t, overSet);
       let cls='kc-ocell';
       if(!t) cls+=' kc-empty';
       if(t && t.color==='R') cls+=' kc-red';
+      cls += suspect ? ' kc-suspect' : ' kc-confident';
       // Unrecognised tile → its own class so we can tint it differently from
       // over-limit flags (yellow wash vs orange ring).
       if(t && t.rank==='?') cls+=' kc-unknown';
@@ -656,6 +722,24 @@
         const badge=document.createElement('span');
         badge.className='kc-ocell-badge'+(t.rank==='10'?' kc-ten':'');
         badge.textContent=t.rank;
+        // Paint the badge to mimic the source tile: same background colour
+        // as the detected tile, with text in whichever of black/white gives
+        // better contrast. Makes the overlay legible on any renderer (red,
+        // bone, brown, cream …) without needing per-theme CSS.
+        const tileRGB = palette && (t.color === 'R' ? palette.dark : palette.light);
+        if (tileRGB) {
+          const bg = `rgb(${Math.round(tileRGB.R)}, ${Math.round(tileRGB.G)}, ${Math.round(tileRGB.B)})`;
+          const lum = 0.30 * tileRGB.R + 0.59 * tileRGB.G + 0.11 * tileRGB.B;
+          const isLightText = lum <= 140;
+          badge.style.background = bg;
+          badge.style.color = isLightText ? '#ffffff' : '#1a1a1a';
+          // Subtle drop shadow on the text so it stays readable on busy
+          // backgrounds. Shadow contrasts with text colour — dark shadow
+          // under white text, light shadow under black text.
+          badge.style.textShadow = isLightText
+            ? '0 1px 1px rgba(0, 0, 0, 0.5)'
+            : '0 1px 1px rgba(255, 255, 255, 0.5)';
+        }
         cell.appendChild(badge);
       }
       cell.addEventListener('click',e=>{e.stopPropagation(); openEditor(cell,key);});
@@ -667,7 +751,9 @@
     const isOverlay = viewMode==='overlay';
     $('#kc-overlay').hidden = !isOverlay;
     $('#kc-board').hidden   = isOverlay;
-    $('#kc-viewopts').hidden = !isOverlay;
+    // Opacity slider only makes sense in overlay view; the highlight toggle
+    // applies to both views, so it stays visible always.
+    $('#kc-opacity-wrap').hidden = !isOverlay;
     document.querySelectorAll('.kc-mode').forEach(b=>{
       const on = b.dataset.mode===viewMode;
       b.classList.toggle('kc-mode-on', on);
@@ -843,7 +929,7 @@
     for (const cell of geom.cells) {
       const key = cell.r + '_' + cell.c;
       const t = tiles.get(key);
-      const canv = KC.cellGlyphCanvas(imgData, geom.rb, geom.cb, cell.r, cell.c);
+      const canv = KC.cellGlyphCanvas(imgData, geom.rb, geom.cb, cell.r, cell.c, 256, ocrModeForCell(cell));
       if (!canv) continue;
       rows.push({
         key,
@@ -895,6 +981,11 @@ ${rows.map(r => {
   const gridChk = $('#kc-show-grid');
   if (gridChk) gridChk.addEventListener('change', e=>{
     $('#kc-overlay').classList.toggle('kc-show-grid', e.target.checked);
+  });
+  const hlChk = $('#kc-highlight-uncertain');
+  if (hlChk) hlChk.addEventListener('change', e => {
+    highlightUncertain = e.target.checked;
+    renderBoard(); renderOverlay();
   });
 
   // Tesseract initialises on first image drop.

@@ -1,6 +1,9 @@
 changelog/
 audio/stadium-rock/
 
+# King's Cribbage test boards — local-only eval images, not site content.
+projects/kings-cribbage/test-boards/
+
 # Claude Code local settings & session artifacts
 .claude/
 *-compacted.md
