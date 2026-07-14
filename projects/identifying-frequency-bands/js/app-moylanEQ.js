@@ -1264,7 +1264,10 @@ function loadRNBOScript(version) {
             echoCancellation: false,
             noiseSuppression: false,
             autoGainControl: false,
-            suppressLocalAudioPlayback: true
+            // Brave mutes the whole capture path when this is set, so output is
+            // silent. Keep it in Chrome (cleaner: source tab muted at source),
+            // drop it in Brave. "Mute tab" tip covers Brave's double-audio.
+            suppressLocalAudioPlayback: !navigator.brave
           },
           preferCurrentTab: false
         });

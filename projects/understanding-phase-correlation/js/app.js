@@ -427,7 +427,9 @@ async function startTabCapture() {
                 echoCancellation: false,
                 noiseSuppression: false,
                 autoGainControl: false,
-                suppressLocalAudioPlayback: true
+                // Brave mutes the whole capture path when this is set, so drop
+                // it in Brave; keep it in Chrome (source tab muted at source).
+                suppressLocalAudioPlayback: !navigator.brave
             },
             preferCurrentTab: false
         });
