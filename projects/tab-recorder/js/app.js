@@ -9,7 +9,7 @@
 
   var context = null;      // AudioContext (lazy — created on first capture)
   var recordBus = null;    // everything to be recorded connects here
-  var processor = null;    // ScriptProcessorNode pulling PCM off the bus
+  var processor = null;    // AudioWorkletNode pulling PCM off the bus
   var tabStream = null;    // active getDisplayMedia stream
   var tabSource = null;    // MediaStreamSource for the tab
 
@@ -77,7 +77,7 @@
       stopTab();
     });
 
-    ensureContext();
+    await ensureContext();
     tabSource = context.createMediaStreamSource(tabStream);
     tabSource.connect(recordBus);
 
@@ -92,27 +92,26 @@
 
   // --- Recording bus + PCM capture ------------------------------------------
 
-  function ensureContext() {
+  async function ensureContext() {
     if (context) return;
     context = new (window.AudioContext || window.webkitAudioContext)();
     recordBus = context.createGain();
 
-    // ScriptProcessor is deprecated but needs no separate worklet file — the lazy
-    // way to pull raw stereo PCM. 4096-frame buffer, 2 in / 2 out.
-    // ponytail: ScriptProcessorNode; move to AudioWorklet only if we hear glitches.
-    processor = context.createScriptProcessor(4096, 2, 2);
-    processor.onaudioprocess = function (e) {
+    // AudioWorklet runs on the audio render thread, so capture survives tab
+    // backgrounding — which is the normal workflow here (you leave this tab to
+    // reach the source tab). The worklet posts copied stereo frames back.
+    await context.audioWorklet.addModule('js/recorder-worklet.js');
+    processor = new AudioWorkletNode(context, 'recorder-processor', {
+      numberOfInputs: 1, numberOfOutputs: 1, channelCount: 2
+    });
+    processor.port.onmessage = function (e) {
       if (!recording) return;
-      var inBuf = e.inputBuffer;
-      // Copy — the buffer is reused by the engine after this callback returns.
-      chunksL.push(new Float32Array(inBuf.getChannelData(0)));
-      chunksR.push(new Float32Array(inBuf.numberOfChannels > 1
-        ? inBuf.getChannelData(1)
-        : inBuf.getChannelData(0)));
+      chunksL.push(e.data.l);
+      chunksR.push(e.data.r);
     };
     recordBus.connect(processor);
-    // ScriptProcessor only fires while connected to the graph; a zero-gain sink
-    // keeps it pulling without routing tab audio to the speakers (avoids echo).
+    // The worklet only pulls while connected to the graph; a zero-gain sink keeps
+    // it running without routing tab audio to the speakers (avoids echo).
     var sink = context.createGain();
     sink.gain.value = 0;
     processor.connect(sink);
@@ -125,6 +124,7 @@
     chunksL = [];
     chunksR = [];
     recording = true;
+    processor.port.postMessage('start');
     startTime = performance.now();
     setRecording();
     timer = setInterval(updateTime, 200);
@@ -133,6 +133,7 @@
   function finishRecording() {
     if (!recording) return;
     recording = false;
+    if (processor) processor.port.postMessage('stop');
     clearInterval(timer);
 
     var left = flatten(chunksL);
