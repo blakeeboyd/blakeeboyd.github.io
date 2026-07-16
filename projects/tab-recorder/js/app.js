@@ -104,8 +104,9 @@
     processor = new AudioWorkletNode(context, 'recorder-processor', {
       numberOfInputs: 1, numberOfOutputs: 1, channelCount: 2
     });
+    // Worklet only posts while recording, plus one final flush on stop. No guard
+    // here — dropping late frames would lose that final block.
     processor.port.onmessage = function (e) {
-      if (!recording) return;
       chunksL.push(e.data.l);
       chunksR.push(e.data.r);
     };
@@ -133,9 +134,14 @@
   function finishRecording() {
     if (!recording) return;
     recording = false;
-    if (processor) processor.port.postMessage('stop');
     clearInterval(timer);
+    if (processor) processor.port.postMessage('stop');
+    // The worklet flushes its final partial block on 'stop'; that message is still
+    // in flight. Defer encoding to the next tick so the last block lands first.
+    setTimeout(encodeAndDownload, 0);
+  }
 
+  function encodeAndDownload() {
     var left = flatten(chunksL);
     var right = flatten(chunksR);
     chunksL = [];
