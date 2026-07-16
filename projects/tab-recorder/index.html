@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Capture audio from another browser tab and record it to a stereo WAV file.">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="author" content="Blake E. Boyd">
+    <title>Tab Recorder - Blake Boyd</title>
+    <!-- SEO -->
+    <link rel="canonical" href="https://blakeeboyd.github.io/projects/tab-recorder/">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Tab Recorder - Blake Boyd">
+    <meta property="og:description" content="Capture audio from another browser tab and record it to a stereo WAV file.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://blakeeboyd.github.io/projects/tab-recorder/">
+    <meta property="og:site_name" content="Blake Boyd">
+    <meta property="og:image" content="https://blakeeboyd.github.io/images/social-card.jpg">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Tab Recorder - Blake Boyd">
+    <meta name="twitter:description" content="Capture audio from another browser tab and record it to a stereo WAV file.">
+    <meta name="twitter:image" content="https://blakeeboyd.github.io/images/social-card.jpg">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+    <link rel="manifest" href="../../manifest.json">
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../css/base.css">
+    <link rel="stylesheet" href="../../css/layout.css">
+    <link rel="stylesheet" href="../../css/components.css">
+    <link rel="stylesheet" href="../../css/components-audio.css">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400..700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+    <!-- JS -->
+    <script src="../../js/theme.js"></script>
+    <script src="../../js/nav-component.js" defer></script>
+    <style>
+        .rec-app { max-width: 640px; margin: 0 auto; }
+        .rec-controls { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1.25rem 0; }
+        .rec-status {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-variant-numeric: tabular-nums;
+            margin: 0.5rem 0;
+        }
+        .rec-dot {
+            display: inline-block; width: 0.7em; height: 0.7em;
+            border-radius: 50%; background: var(--color-error);
+            margin-right: 0.4rem; vertical-align: baseline;
+        }
+        .rec-dot.idle { background: var(--color-border); }
+        .rec-dot.armed { background: var(--color-success); }
+        .rec-dot.recording { animation: rec-blink 1s steps(2, start) infinite; }
+        @keyframes rec-blink { 50% { opacity: 0.2; } }
+        .rec-hint { color: var(--color-text-muted); font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div class="container">
+        <site-nav base="../../"></site-nav>
+
+        <main id="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Tab Recorder</h1>
+                <p class="page-subtitle">Capture audio from another browser tab and record it to a stereo WAV file. Chrome or Edge only.</p>
+            </div>
+
+            <div class="rec-app">
+                <div class="card">
+                    <p class="rec-status">
+                        <span id="rec-dot" class="rec-dot idle"></span><span id="rec-time">No source</span>
+                    </p>
+                    <p id="rec-source" class="rec-hint">Capture a tab to arm the recorder.</p>
+
+                    <div class="rec-controls">
+                        <button type="button" id="rec-capture" class="btn btn-primary">Capture Tab</button>
+                        <button type="button" id="rec-record" class="btn" disabled>Record</button>
+                        <button type="button" id="rec-stop" class="btn" disabled>Stop &amp; Download</button>
+                    </div>
+
+                    <p class="rec-hint">
+                        In the browser's share dialog, choose <strong>Chrome Tab</strong> and check
+                        <strong>Share tab audio</strong>. Hearing double? Right-click the source tab and select "Mute tab."
+                        Output is stereo 32-bit float WAV at the browser's sample rate.
+                    </p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
