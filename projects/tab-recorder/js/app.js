@@ -13,6 +13,8 @@
   var tabStream = null;    // active getDisplayMedia stream
   var tabSource = null;    // MediaStreamSource for the tab
 
+  var TRIM_THRESHOLD_DB = -60; // samples below this on both channels count as silence
+
   var recording = false;
   var chunksL = [];        // Float32Array frames, left channel
   var chunksR = [];        // right channel
@@ -23,6 +25,7 @@
     capture: document.getElementById('rec-capture'),
     record: document.getElementById('rec-record'),
     stop: document.getElementById('rec-stop'),
+    trim: document.getElementById('rec-trim'),
     dot: document.getElementById('rec-dot'),
     time: document.getElementById('rec-time'),
     source: document.getElementById('rec-source')
@@ -142,9 +145,19 @@
       return;
     }
 
-    var wav = encodeWavFloat32([left, right], context.sampleRate);
+    var channels = [left, right];
+    if (els.trim.checked) {
+      var b = silenceBounds(channels, TRIM_THRESHOLD_DB);
+      if (b.end > b.start) {
+        channels = [left.slice(b.start, b.end), right.slice(b.start, b.end)];
+      }
+      // else: entirely below threshold — keep the untrimmed take rather than an empty file.
+    }
+
+    var secs = channels[0].length / context.sampleRate;
+    var wav = encodeWavFloat32(channels, context.sampleRate);
     download(wav, 'tab-recording-' + timestamp() + '.wav');
-    setArmed('Saved ' + (left.length / context.sampleRate).toFixed(1) + 's. Ready to record again.');
+    setArmed('Saved ' + secs.toFixed(1) + 's. Ready to record again.');
   }
 
   function flatten(chunks) {
@@ -156,6 +169,33 @@
       offset += chunks[i].length;
     }
     return out;
+  }
+
+  // Find [start, end) sample range with leading/trailing silence stripped.
+  // Ported from SoundBench trim.ts detectSilence. end is exclusive.
+  function silenceBounds(channelData, thresholdDb) {
+    var threshold = Math.pow(10, thresholdDb / 20);
+    var nc = channelData.length;
+    var total = channelData[0].length;
+
+    var start = total;
+    for (var i = 0; i < total; i++) {
+      for (var ch = 0; ch < nc; ch++) {
+        if (Math.abs(channelData[ch][i]) > threshold) { start = i; break; }
+      }
+      if (start !== total) break;
+    }
+    if (start === total) return { start: 0, end: 0 }; // all silent
+
+    var end = start;
+    for (var j = total - 1; j >= start; j--) {
+      var above = false;
+      for (var c = 0; c < nc; c++) {
+        if (Math.abs(channelData[c][j]) > threshold) { above = true; break; }
+      }
+      if (above) { end = j + 1; break; }
+    }
+    return { start: start, end: end };
   }
 
   // --- WAV encoder (32-bit float, ported from SoundBench wav-encoder.ts) ------
