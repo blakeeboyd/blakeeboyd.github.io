@@ -152,6 +152,7 @@
       return;
     }
 
+    var rawSecs = left.length / context.sampleRate;
     var channels = [left, right];
     if (els.trim.checked) {
       var b = silenceBounds(channels, TRIM_THRESHOLD_DB);
@@ -162,8 +163,12 @@
     }
 
     var secs = channels[0].length / context.sampleRate;
+    // Filename carries both lengths: raw duration, then trimmed. e.g. ...-43.1s-raw-21.8s.wav
+    var lengths = els.trim.checked
+      ? secs.toFixed(1) + 's-raw-' + rawSecs.toFixed(1) + 's'
+      : rawSecs.toFixed(1) + 's';
     var wav = encodeWavFloat32(channels, context.sampleRate);
-    download(wav, 'tab-recording-' + timestamp() + '.wav');
+    download(wav, 'tab-recording-' + timestamp() + '-' + lengths + '.wav');
     setArmed('Saved ' + secs.toFixed(1) + 's. Ready to record again.');
   }
 
