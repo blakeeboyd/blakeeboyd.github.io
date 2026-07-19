@@ -68,6 +68,14 @@ metaDescription.addEventListener('input', () => handleMetadataChange('descriptio
 // Check for bookmarklet data on page load
 window.addEventListener('DOMContentLoaded', checkForBookmarkletData);
 
+// Accept large packs delivered via postMessage (URL hash can't carry >~800 KB).
+window.addEventListener('message', function (e) {
+    if (e.origin !== 'https://www.bandlab.com') return;      // only trust BandLab tabs
+    if (!e.data || e.data.type !== 'bandlab-pack') return;
+    if (e.source) e.source.postMessage({ type: 'parser-ack' }, e.origin);  // stop the retries
+    parseHTML(e.data.html, e.data.title, true);              // same call the hash path makes
+});
+
 function handleFileUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
