@@ -73,8 +73,47 @@ window.addEventListener('message', function (e) {
     if (e.origin !== 'https://www.bandlab.com') return;      // only trust BandLab tabs
     if (!e.data || e.data.type !== 'bandlab-pack') return;
     if (e.source) e.source.postMessage({ type: 'parser-ack' }, e.origin);  // stop the retries
+    const before = jsonOutput;
     parseHTML(e.data.html, e.data.title, true);              // same call the hash path makes
+    // Only this path auto-closes. The file-upload path also passes autoDownload,
+    // but there the window is the user's own tab and closing it would be wrong.
+    // Compare against the pre-parse value rather than just truthiness: on a parse
+    // failure jsonOutput still holds an earlier result, and closing the window on
+    // a failed parse would hide the error the user needs to see.
+    if (jsonOutput && jsonOutput !== before) offerAutoClose();
 });
+
+// After a bookmarklet-driven download, count down and close the popup. The
+// window is script-opened (the bookmarklet called window.open), so window.close()
+// is permitted here; it silently no-ops in a tab the user opened themselves.
+// Escapable, because closing discards the parsed JSON and the metadata editor.
+function offerAutoClose(seconds = 5) {
+    const box = document.getElementById('autoCloseNotice');
+    const countEl = document.getElementById('autoCloseCount');
+    const stayBtn = document.getElementById('autoCloseStay');
+    if (!box || !countEl || !stayBtn) return;   // markup absent: skip, never throw
+
+    let left = seconds;
+    countEl.textContent = left;
+    box.classList.remove('hidden');
+
+    const timer = setInterval(() => {
+        left -= 1;
+        countEl.textContent = left;
+        if (left <= 0) {
+            clearInterval(timer);
+            window.close();
+            // Still here? The browser refused to close (not script-opened, or
+            // the popup was reused). Say so rather than leaving a dead counter.
+            box.textContent = 'Download complete. You can close this window.';
+        }
+    }, 1000);
+
+    stayBtn.addEventListener('click', () => {
+        clearInterval(timer);
+        box.classList.add('hidden');
+    }, { once: true });
+}
 
 function handleFileUpload(event) {
     const file = event.target.files[0];

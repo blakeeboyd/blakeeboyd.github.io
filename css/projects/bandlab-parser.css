@@ -388,3 +388,38 @@
 .about-content p:last-child {
     margin-bottom: 0;
 }
+
+/* Auto-close countdown, shown only after a bookmarklet-driven download.
+   Inherits layout from .message; adds a success tone and pushes the escape
+   button to the trailing edge. */
+.auto-close-notice {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--color-success);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    justify-content: space-between;
+}
+
+.auto-close-notice strong {
+    font-variant-numeric: tabular-nums;  /* counter shouldn't reflow as it ticks */
+}
+
+.auto-close-stay {
+    flex-shrink: 0;
+    padding: 0.25rem 0.625rem;
+    font-size: 0.8125rem;
+    font-family: inherit;
+    color: #ffffff;
+    background-color: var(--color-success);
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+
+.auto-close-stay:hover {
+    background-color: var(--color-success-hover);
+}
+
+.auto-close-stay:focus-visible {
+    outline: 2px solid var(--color-success);
+    outline-offset: 2px;
+}

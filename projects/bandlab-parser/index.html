@@ -103,6 +103,13 @@
                     </div>
 
                     <div id="debugInfo" class="message debug-message hidden"></div>
+
+                    <!-- Shown only after a bookmarklet-driven download, when this
+                         window was opened by the bookmarklet and can close itself. -->
+                    <div id="autoCloseNotice" class="message auto-close-notice hidden" role="status" aria-live="polite">
+                        <span>Download complete. Closing this window in <strong id="autoCloseCount">5</strong>&hellip;</span>
+                        <button type="button" id="autoCloseStay" class="auto-close-stay">Stay open</button>
+                    </div>
                 </div>
 
                 <!-- Metadata Section -->
