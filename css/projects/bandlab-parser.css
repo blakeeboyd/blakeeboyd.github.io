@@ -390,14 +390,31 @@
 }
 
 /* Auto-close countdown, shown only after a bookmarklet-driven download.
-   Inherits layout from .message; adds a success tone and pushes the escape
-   button to the trailing edge. */
+   Pinned to the bottom of the viewport rather than placed in the page flow:
+   parsing reveals the metadata and JSON cards at the same moment, so an in-flow
+   notice gets pushed below the fold of a short popup and is never seen. */
 .auto-close-notice {
-    background-color: rgba(16, 185, 129, 0.1);
+    position: fixed;
+    left: 50%;
+    bottom: var(--spacing-md);
+    transform: translateX(-50%);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    max-width: calc(100vw - 2 * var(--spacing-md));
+    white-space: nowrap;   /* keep the countdown on one line so it reads at a glance */
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    background-color: var(--color-card-bg);
     color: var(--color-success);
-    border: 1px solid rgba(16, 185, 129, 0.2);
-    justify-content: space-between;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
 }
+
+/* .hidden is display:none !important, so the fixed notice still hides
+   correctly when the Stay open button dismisses it. */
 
 .auto-close-notice strong {
     font-variant-numeric: tabular-nums;  /* counter shouldn't reflow as it ticks */

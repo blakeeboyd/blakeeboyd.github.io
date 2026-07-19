@@ -87,7 +87,7 @@ window.addEventListener('message', function (e) {
 // window is script-opened (the bookmarklet called window.open), so window.close()
 // is permitted here; it silently no-ops in a tab the user opened themselves.
 // Escapable, because closing discards the parsed JSON and the metadata editor.
-function offerAutoClose(seconds = 5) {
+function offerAutoClose(seconds = 8) {
     const box = document.getElementById('autoCloseNotice');
     const countEl = document.getElementById('autoCloseCount');
     const stayBtn = document.getElementById('autoCloseStay');

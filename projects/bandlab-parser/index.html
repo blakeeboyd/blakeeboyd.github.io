@@ -104,12 +104,6 @@
 
                     <div id="debugInfo" class="message debug-message hidden"></div>
 
-                    <!-- Shown only after a bookmarklet-driven download, when this
-                         window was opened by the bookmarklet and can close itself. -->
-                    <div id="autoCloseNotice" class="message auto-close-notice hidden" role="status" aria-live="polite">
-                        <span>Download complete. Closing this window in <strong id="autoCloseCount">5</strong>&hellip;</span>
-                        <button type="button" id="autoCloseStay" class="auto-close-stay">Stay open</button>
-                    </div>
                 </div>
 
                 <!-- Metadata Section -->
@@ -242,6 +236,15 @@
         <footer>
             <p>&copy; <span class="footer-year"></span> Blake Boyd</p>
         </footer>
+    </div>
+
+    <!-- Auto-close countdown after a bookmarklet-driven download. Lives outside
+         the page flow and is pinned to the viewport: parsing reveals the metadata
+         and JSON cards at the same moment, which would otherwise push an in-flow
+         notice below the fold of a short popup window. -->
+    <div id="autoCloseNotice" class="auto-close-notice hidden" role="status" aria-live="polite">
+        <span>Download complete. Closing this window in <strong id="autoCloseCount">8</strong>&hellip;</span>
+        <button type="button" id="autoCloseStay" class="auto-close-stay">Stay open</button>
     </div>
 
     <script src="../../js/notify.js"></script>
