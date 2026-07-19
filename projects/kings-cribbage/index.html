@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Drop a screenshot of a King's Cribbage board to see which of the 104 tiles are not in play.">
+    <meta name="description" content="Drop in a screenshot of a King's Cribbage board to discover which tiles are unplayed.">
     <title>King's Cribbage Tile Counter - Blake Boyd</title>
     <meta name="theme-color" content="#2563eb">
     <meta name="author" content="Blake E. Boyd">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <!-- Open Graph -->
     <meta property="og:title" content="King's Cribbage Tile Counter - Blake Boyd">
-    <meta property="og:description" content="Drop a screenshot of a King's Cribbage board to see which of the 104 tiles are not in play.">
+    <meta property="og:description" content="Drop in a screenshot of a King's Cribbage board to discover which tiles are unplayed.">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Blake Boyd">
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="King's Cribbage Tile Counter - Blake Boyd">
-    <meta name="twitter:description" content="Drop a screenshot of a King's Cribbage board to see which of the 104 tiles are not in play.">
+    <meta name="twitter:description" content="Drop in a screenshot of a King's Cribbage board to discover which tiles are unplayed.">
     <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
     <link rel="stylesheet" href="../../css/base.css">
     <link rel="stylesheet" href="../../css/layout.css">
@@ -232,72 +232,6 @@
             gap: 1rem;
             flex-wrap: wrap;
         }
-        .kc-opacity {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.625rem;
-            font-size: 0.8rem;
-            color: var(--color-text-muted);
-        }
-        .kc-opacity input[type="range"] {
-            width: 140px;
-            height: 18px;
-            appearance: none;
-            -webkit-appearance: none;
-            background: transparent;
-            cursor: pointer;
-            margin: 0;
-        }
-        .kc-opacity input[type="range"]::-webkit-slider-runnable-track {
-            height: 4px;
-            background: var(--color-border);
-            border-radius: 2px;
-        }
-        .kc-opacity input[type="range"]::-moz-range-track {
-            height: 4px;
-            background: var(--color-border);
-            border-radius: 2px;
-        }
-        .kc-opacity input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 14px;
-            height: 14px;
-            margin-top: -5px;
-            background: var(--color-accent);
-            border: 2px solid var(--color-card-bg);
-            border-radius: 50%;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-        .kc-opacity input[type="range"]::-moz-range-thumb {
-            width: 14px;
-            height: 14px;
-            background: var(--color-accent);
-            border: 2px solid var(--color-card-bg);
-            border-radius: 50%;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-        .kc-opacity input[type="range"]:hover::-webkit-slider-thumb {
-            transform: scale(1.15);
-        }
-        .kc-opacity input[type="range"]:hover::-moz-range-thumb {
-            transform: scale(1.15);
-        }
-        .kc-opacity input[type="range"]:focus-visible {
-            outline: none;
-        }
-        .kc-opacity input[type="range"]:focus-visible::-webkit-slider-thumb {
-            outline: 2px solid var(--color-accent);
-            outline-offset: 2px;
-        }
-        .kc-opacity input[type="range"]:focus-visible::-moz-range-thumb {
-            outline: 2px solid var(--color-accent);
-            outline-offset: 2px;
-        }
         .kc-checkopt {
             display: inline-flex;
             align-items: center;
@@ -415,6 +349,15 @@
             font: 700 11px/16px var(--font-sans);
             text-align: center;
             text-shadow: none;
+            /* Sit above neighbouring cells' dark wash in highlight mode so
+               the flag stays fully visible. */
+            z-index: 3;
+        }
+        /* Make suspect overlay cells (the ones we want the user to focus on)
+           render above confident cells so any corner badge overhang lands on
+           top of, not under, the dark wash of the neighbour. */
+        .kc-overlay-tiles .kc-ocell.kc-suspect {
+            z-index: 2;
         }
         /* Unrecognised cells get a yellow wash over the whole cell so you can
            scan the overlay and immediately spot which tiles weren't read. */
@@ -434,6 +377,13 @@
         }
         .kc-overlay-tiles.kc-highlight-uncertain .kc-ocell.kc-confident .kc-ocell-badge {
             opacity: 0.35;
+        }
+        /* Suspect cells already get a yellow wash via .kc-unknown — but in
+           highlight mode that wash makes the underlying tile read as dim too,
+           which defeats the "make it pop" intent. Drop the wash; the yellow
+           outline alone is enough of a flag. */
+        .kc-overlay-tiles.kc-highlight-uncertain .kc-ocell.kc-unknown {
+            background: transparent;
         }
         .kc-board.kc-highlight-uncertain .kc-cell.kc-confident {
             opacity: 0.3;
@@ -711,7 +661,7 @@
         <main id="main-content">
             <div class="page-header">
                 <h1 class="page-title">King's Cribbage Tile Counter</h1>
-                <p class="page-subtitle">Drop a screenshot of a King's Cribbage board. It will tell you which of the 104 tiles are not in play.</p>
+                <p class="page-subtitle">Drop in a screenshot of a King's Cribbage board to discover which tiles are unplayed.</p>
             </div>
 
             <div class="kc-app">
@@ -733,10 +683,6 @@
                                     <label class="kc-checkopt" title="Fade confident tiles so unread or low-confidence tiles stand out">
                                         <input type="checkbox" id="kc-highlight-uncertain">
                                         <span>Highlight uncertain</span>
-                                    </label>
-                                    <label class="kc-opacity" id="kc-opacity-wrap">
-                                        <span class="kc-opacity-label">Overlay</span>
-                                        <input type="range" id="kc-opacity" min="0" max="100" value="70" aria-label="Overlay opacity">
                                     </label>
                                 </div>
                             </div>
@@ -770,6 +716,7 @@
                         <div id="kc-warn"></div>
                         <div class="kc-actions">
                             <button class="kc-btn" id="kc-another">New image</button>
+                            <button class="kc-btn" id="kc-rerun-ocr" title="Re-run OCR on the current board; logs per-cell diffs to the console">Re-run OCR</button>
                             <button class="kc-btn" id="kc-export-crops">Export crops</button>
                         </div>
                     </aside>
@@ -783,8 +730,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
-    <script src="js/core.js?v=21"></script>
-    <script src="js/app.js?v=21"></script>
+    <script src="js/core.js?v=28"></script>
+    <script src="js/app.js?v=28"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').catch(function () {});

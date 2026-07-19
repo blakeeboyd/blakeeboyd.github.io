@@ -192,12 +192,40 @@
       }
     }
     const midRightRatio = midRightTotal ? midRightInk / midRightTotal : 0;
+    // ---- Q vs 10: connected-component count.
+    // 10: vertical "1" stem on the left + "0" oval on the right = 2 disjoint
+    //     components in the binarised glyph.
+    // Q : single closed oval (possibly with a small tail) = 1 component.
+    // Count distinct 4-connected blobs above a minimum-area threshold.
+    const compMinArea = (bw * bh * 0.03) | 0;  // ignore specks <3% of bbox area
+    const lbl = new Int32Array(W * H);
+    const stack = [];
+    let nlbl = 0, bigComps = 0;
+    for (let y = minY; y <= maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
+        const p = y * W + x;
+        if (!ink[p] || lbl[p]) continue;
+        nlbl++; lbl[p] = nlbl; stack.push(p);
+        let sz = 0;
+        while (stack.length) {
+          const q = stack.pop(); sz++;
+          const qy = (q / W) | 0, qx = q - qy * W;
+          if (qy > minY)     { const np = q - W; if (ink[np] && !lbl[np]) { lbl[np] = nlbl; stack.push(np); } }
+          if (qy < maxY)     { const np = q + W; if (ink[np] && !lbl[np]) { lbl[np] = nlbl; stack.push(np); } }
+          if (qx > minX)     { const np = q - 1; if (ink[np] && !lbl[np]) { lbl[np] = nlbl; stack.push(np); } }
+          if (qx < maxX)     { const np = q + 1; if (ink[np] && !lbl[np]) { lbl[np] = nlbl; stack.push(np); } }
+        }
+        if (sz >= compMinArea) bigComps++;
+      }
+    }
     // Decide which (if any) confusion this glyph might belong to and give a hint.
     // Thresholds are coarse; we use these only as tiebreakers, not as hard rules.
     if (topLeftRatio > 0.55) return { bias: '5', against: '3' };
     if (topLeftRatio < 0.15) return { bias: '3', against: '5' };
     if (midRightRatio > 0.55) return { bias: '4', against: 'K' };
     if (midRightRatio < 0.15) return { bias: 'K', against: '4' };
+    if (bigComps === 1) return { bias: 'Q', against: '10' };
+    if (bigComps >= 2) return { bias: '10', against: 'Q' };
     return null;
   }
   // If the shape hint suggests `bias` over `against`, swap their order in the
@@ -384,8 +412,14 @@
   function voteCandidates(candidateLists) {
     const best = {};           // rank -> highest confidence seen
     const appearances = {};    // rank -> count of passes that produced it
+    // Number of passes that produced any non-? result — used to normalise the
+    // agreement bonus so glyphs that are hard for some PSMs (e.g. serif Q,
+    // where PSMs 8/13 reliably give up) aren't penalised for "low consensus."
+    let activePasses = 0;
     for (const list of candidateLists) {
       if (!list || !list.length) continue;
+      const hasRead = list.some(cand => cand.rank && cand.rank !== '?');
+      if (hasRead) activePasses++;
       const seen = new Set();
       for (const cand of list) {
         if (cand.rank === '?' || seen.has(cand.rank)) continue;
@@ -399,36 +433,64 @@
     if (!ranks.length) return [];
     // Confidence = the BEST score seen across passes (not the mean). One
     // strong read is real signal; averaging it with weaker reads from other
-    // PSMs hides that. The agreement bonus still rewards consensus when
-    // multiple passes return the same rank.
+    // PSMs hides that. The agreement bonus rewards consensus, but scales by
+    // the FRACTION of active passes that agreed — so a glyph where only 2 of
+    // 4 PSMs could produce any read, and both agreed on Q, still gets the
+    // full +24% bonus rather than being capped at +8% for "only 2 agreed."
     const aggregate = ranks.map(rank => {
       const peak = best[rank];
       const appears = appearances[rank];
-      const bonus = peak * 0.08 * (appears - 1);
+      const denom = Math.max(1, activePasses);
+      const consensusFrac = appears / denom;   // 0..1
+      const bonus = peak * 0.24 * consensusFrac;
       return { rank, confidence: Math.min(100, peak + bonus), appears };
     });
     aggregate.sort((a, b) => b.confidence - a.confidence);
     return aggregate;
   }
   // Run OCR over every occupied cell. Each result updates the map and re-renders.
+  // FNV-1a 32-bit over a canvas's RGBA bytes. Fast, good enough to detect any
+  // pixel difference between runs of the same cell crop.
+  function canvasHash(canv) {
+    const ctx = canv.getContext('2d', { willReadFrequently: true });
+    const { data } = ctx.getImageData(0, 0, canv.width, canv.height);
+    let h = 0x811c9dc5;
+    for (let i = 0; i < data.length; i += 4) {
+      // Skip alpha — preprocessed crops are opaque white/black with no
+      // transparency that should be hashed separately.
+      h ^= data[i]; h = Math.imul(h, 0x01000193);
+      h ^= data[i+1]; h = Math.imul(h, 0x01000193);
+      h ^= data[i+2]; h = Math.imul(h, 0x01000193);
+    }
+    return (h >>> 0).toString(16).padStart(8, '0');
+  }
+
+  // Capture per-cell diagnostics during recogniseAll() so we can isolate
+  // non-determinism. Toggled on by the Re-run OCR button.
+  let captureRun = null;
+
   async function recogniseAll(){
     const worker = await initOCR();
     const queue = geom.cells.slice();
     const total = queue.length;
     let done = 0;
     setOcrProgress(0, total);
-    // Voting pass: for every cell, run Tesseract with multiple PSMs (10 single
-    // char, 7 single line, 8 single word, 13 raw line). Each is essentially a
-    // different recognition strategy. Aggregate candidates by confidence-
-    // weighted vote — this catches cells where one PSM was wrong but high-
-    // confidence, by giving the consensus read more weight.
-    const PSM_PASSES = ['10', '7', '8', '13'];
+    const runCapture = captureRun;        // local ref so we can null out captureRun safely
+    // Voting pass: for every cell, run Tesseract with two PSMs — 10 (single
+    // character) and 7 (single line). These two reliably produce a non-empty
+    // read on ≥94% of cells across our test boards. We dropped PSMs 8 (single
+    // word) and 13 (raw line) after diagnostics showed they fail half the
+    // time and bring no recovery wins on this glyph style — both PSMs return
+    // '?' on the same cells, and the cells they could read were already
+    // handled by 10 or 7.
+    const PSM_PASSES = ['10', '7'];
     const cellCandidates = new Map();        // "r_c" -> [{rank, confidence}, ...]
     for (const cell of queue) {
       const canv = KC.cellGlyphCanvas(imgData, geom.rb, geom.cb, cell.r, cell.c, 256, ocrModeForCell(cell));
       if (!canv) { done++; setOcrProgress(done, total); continue; }
       const lists = [];
       const shapeHint = shapeDisambiguate(canv);
+      const psmReads = [];   // per-PSM raw output, for diagnostics
       for (const psm of PSM_PASSES) {
         try {
           await worker.setParameters({ tessedit_pageseg_mode: psm });
@@ -436,6 +498,10 @@
           const cands = extractCandidates(data, 4);
           if (shapeHint) reorderForShapeHint(cands, shapeHint);
           lists.push(cands);
+          if (runCapture) {
+            const top = cands[0] || { rank: '?', confidence: 0 };
+            psmReads.push({ psm, rank: top.rank, conf: Math.round(top.confidence) });
+          }
         } catch (e) {
           // Per-cell OCR failures are rare and recoverable (other PSM passes
           // and the lenient retry usually cover them); suppress logs in
@@ -450,6 +516,14 @@
       const margin = (top.rank === '?') ? 0 : Math.max(0, (conf - 0.6) * 2.5);
       const cur = tiles.get(cell.r+'_'+cell.c) || {color: cell.color};
       tiles.set(cell.r+'_'+cell.c, {rank: top.rank, color: cur.color, score: conf, margin, candidates: voted});
+      if (runCapture) {
+        runCapture.cells[cell.r+'_'+cell.c] = {
+          hash: canvasHash(canv),
+          psm: psmReads,
+          voted: top.rank,
+          conf: Math.round(top.confidence),
+        };
+      }
       done++;
       setOcrProgress(done, total);
       if (done % 4 === 0 || done === total) {
@@ -520,7 +594,13 @@
           try {
             const { data } = await worker.recognize(canv);
             const raw = (data.text || '').trim();
-            const rank = mapTokenLenient(raw);
+            let rank = mapTokenLenient(raw);
+            // Apply the same shape disambiguator the voting pass uses, so a
+            // single-blob glyph that Tesseract called "10" / "IO" gets re-
+            // mapped to Q (and vice versa for a two-blob "Q" that's really
+            // 10). The lenient pass otherwise trusts mapTokenLenient blindly.
+            const shapeHint = shapeDisambiguate(canv);
+            if (shapeHint && rank === shapeHint.against) rank = shapeHint.bias;
             // Log what Tesseract returned so we can see what mappings are
             // still missing for cells that won't recognize. Visible only
             // in DevTools; not user-facing.
@@ -624,8 +704,13 @@
     $('#kc-drop').hidden=true; $('#kc-boardbox').hidden=false; $('#kc-panel').hidden=false;
     applyViewMode();
     renderBoard(); renderOverlay(); renderGrid(); recompute();
-    // Kick off OCR in the background.
-    recogniseAll().catch(e => { console.error('OCR pass failed', e); setOcrProgress(null); });
+    // Kick off OCR in the background. Capture this initial run too so the
+    // first Re-run OCR click immediately produces a diff.
+    window.__kcRuns = [];
+    captureRun = { idx: 1, started: Date.now(), cells: {} };
+    recogniseAll()
+      .then(() => { if (captureRun) { window.__kcRuns.push(captureRun); captureRun = null; } })
+      .catch(e => { captureRun = null; console.error('OCR pass failed', e); setOcrProgress(null); });
   }
 
   function tileEl(rank,color){
@@ -751,9 +836,6 @@
     const isOverlay = viewMode==='overlay';
     $('#kc-overlay').hidden = !isOverlay;
     $('#kc-board').hidden   = isOverlay;
-    // Opacity slider only makes sense in overlay view; the highlight toggle
-    // applies to both views, so it stays visible always.
-    $('#kc-opacity-wrap').hidden = !isOverlay;
     document.querySelectorAll('.kc-mode').forEach(b=>{
       const on = b.dataset.mode===viewMode;
       b.classList.toggle('kc-mode-on', on);
@@ -918,6 +1000,66 @@
   window.addEventListener('paste',e=>{ for(const it of e.clipboardData.items) if(it.type.startsWith('image/')) fileToImage(it.getAsFile()); });
   $('#kc-pool69').onchange=recompute;
   $('#kc-another').onclick=()=>{ $('#kc-boardbox').hidden=true; $('#kc-panel').hidden=true; $('#kc-drop').hidden=false; $('#kc-file').value=''; };
+
+  // Re-run OCR on the current board with diagnostic capture. Stores each run
+  // in window.__kcRuns. After every run from the second onward, logs a diff
+  // table to the console showing which cells changed in:
+  //   - hash:  preprocessed-canvas pixel hash (any difference here means
+  //            cellGlyphCanvas is non-deterministic for this cell)
+  //   - PSM raw: raw per-PSM Tesseract output (rank + confidence)
+  //   - voted: the final voted rank
+  // Use this to isolate whether non-determinism lives in our preprocessing,
+  // Tesseract's worker, or our vote logic.
+  $('#kc-rerun-ocr').onclick = async () => {
+    if (!geom || !imgData) return;
+    window.__kcRuns = window.__kcRuns || [];
+    const runIdx = window.__kcRuns.length + 1;
+    captureRun = { idx: runIdx, started: Date.now(), cells: {} };
+    console.log(`[KC re-run ${runIdx}] starting…`);
+    try {
+      await recogniseAll();
+    } catch (e) {
+      console.error(`[KC re-run ${runIdx}] failed:`, e);
+      captureRun = null;
+      return;
+    }
+    const thisRun = captureRun;
+    captureRun = null;
+    window.__kcRuns.push(thisRun);
+    console.log(`[KC re-run ${runIdx}] done. ${Object.keys(thisRun.cells).length} cells.`);
+    if (window.__kcRuns.length >= 2) {
+      const prev = window.__kcRuns[window.__kcRuns.length - 2];
+      const cur  = thisRun;
+      const keys = new Set([...Object.keys(prev.cells), ...Object.keys(cur.cells)]);
+      const diffs = [];
+      for (const k of keys) {
+        const a = prev.cells[k], b = cur.cells[k];
+        if (!a || !b) { diffs.push({ cell: k, change: a ? 'gone' : 'new' }); continue; }
+        const hashSame = a.hash === b.hash;
+        const votedSame = a.voted === b.voted;
+        const psmSame = a.psm.length === b.psm.length &&
+          a.psm.every((p, i) => p.psm === b.psm[i].psm && p.rank === b.psm[i].rank && p.conf === b.psm[i].conf);
+        if (hashSame && votedSame && psmSame) continue;
+        diffs.push({
+          cell: k,
+          hash: hashSame ? 'same' : `${a.hash} → ${b.hash}`,
+          voted: votedSame ? a.voted : `${a.voted} → ${b.voted}`,
+          psm: psmSame ? 'same' : `${a.psm.map(p => p.rank+':'+p.conf).join('|')} → ${b.psm.map(p => p.rank+':'+p.conf).join('|')}`,
+        });
+      }
+      console.log(`[KC re-run ${runIdx} vs ${runIdx-1}] ${diffs.length} cells differ.`);
+      if (diffs.length) {
+        // Show summary: how many differ on each dimension.
+        const nHash  = diffs.filter(d => d.hash  && d.hash  !== 'same').length;
+        const nPsm   = diffs.filter(d => d.psm   && d.psm   !== 'same').length;
+        const nVoted = diffs.filter(d => d.voted && typeof d.voted === 'string' && d.voted.includes(' → ')).length;
+        console.log(`  hash differs: ${nHash} (preprocessing varies)`);
+        console.log(`  PSM raw differs: ${nPsm} (Tesseract varies)`);
+        console.log(`  voted rank differs: ${nVoted}`);
+        console.table(diffs);
+      }
+    }
+  };
   // Debug: open a new window showing every preprocessed cell crop so we can
   // compare what Tesseract is actually seeing for each cell. Cells are sorted
   // by detected rank/color so visually-identical glyphs end up adjacent.
@@ -974,10 +1116,6 @@ ${rows.map(r => {
   document.querySelectorAll('.kc-mode').forEach(b=>{
     b.addEventListener('click', ()=>{ viewMode = b.dataset.mode; applyViewMode(); });
   });
-  const opacityEl = $('#kc-opacity'), tilesLayer = $('#kc-overlay-tiles');
-  function applyOpacity(){ tilesLayer.style.opacity = (opacityEl.value/100).toFixed(2); }
-  opacityEl.addEventListener('input', applyOpacity);
-  applyOpacity();
   const gridChk = $('#kc-show-grid');
   if (gridChk) gridChk.addEventListener('change', e=>{
     $('#kc-overlay').classList.toggle('kc-show-grid', e.target.checked);

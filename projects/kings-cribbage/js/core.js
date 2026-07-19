@@ -715,7 +715,10 @@
     // ---- Step 7: render to final canvas with quiet zone ----
     const cv = document.createElement('canvas');
     cv.width = outSize; cv.height = outSize;
-    const ctx = cv.getContext('2d');
+    // `willReadFrequently: true` is critical: this canvas is read back by
+    // both Tesseract (per-PSM recognise) and the diagnostic hash, multiple
+    // times per cell. Without the hint Chrome warns and uses a slower path.
+    const ctx = cv.getContext('2d', { willReadFrequently: true });
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, outSize, outSize);
     const maskScratch = document.createElement('canvas');
