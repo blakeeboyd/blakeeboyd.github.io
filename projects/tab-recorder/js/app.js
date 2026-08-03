@@ -13,7 +13,8 @@
   var tabStream = null;    // active getDisplayMedia stream
   var tabSource = null;    // MediaStreamSource for the tab
 
-  var TRIM_THRESHOLD_DB = -60; // samples below this on both channels count as silence
+  var TRIM_THRESHOLD_DB = -70; // samples below this on both channels count as silence
+  var TRIM_PAD_SECS = 0.25;    // kept either side of the detected bounds, so tails survive the cut
 
   var recording = false;
   var chunksL = [];        // Float32Array frames, left channel
@@ -155,7 +156,7 @@
     var rawSecs = left.length / context.sampleRate;
     var channels = [left, right];
     if (els.trim.checked) {
-      var b = silenceBounds(channels, TRIM_THRESHOLD_DB);
+      var b = silenceBounds(channels, TRIM_THRESHOLD_DB, context.sampleRate, TRIM_PAD_SECS);
       if (b.end > b.start) {
         channels = [left.slice(b.start, b.end), right.slice(b.start, b.end)];
       }
@@ -185,7 +186,9 @@
 
   // Find [start, end) sample range with leading/trailing silence stripped.
   // Ported from SoundBench trim.ts detectSilence. end is exclusive.
-  function silenceBounds(channelData, thresholdDb) {
+  // padSecs is kept either side of the detected bounds: cutting at the exact
+  // first/last sample above threshold clips decaying tails and leaves a click.
+  function silenceBounds(channelData, thresholdDb, sampleRate, padSecs) {
     var threshold = Math.pow(10, thresholdDb / 20);
     var nc = channelData.length;
     var total = channelData[0].length;
@@ -207,7 +210,9 @@
       }
       if (above) { end = j + 1; break; }
     }
-    return { start: start, end: end };
+
+    var pad = Math.round((padSecs || 0) * sampleRate);
+    return { start: Math.max(0, start - pad), end: Math.min(total, end + pad) };
   }
 
   // --- WAV encoder (32-bit float, ported from SoundBench wav-encoder.ts) ------
