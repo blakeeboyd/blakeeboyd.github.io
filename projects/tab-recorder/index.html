@@ -55,6 +55,19 @@
         .rec-dot.recording { animation: rec-blink 1s steps(2, start) infinite; }
         @keyframes rec-blink { 50% { opacity: 0.2; } }
         .rec-hint { color: var(--color-text-muted); font-size: 0.9rem; }
+        .rec-trim-opts {
+            display: flex; flex-direction: column; gap: 0.4rem;
+            color: var(--color-text-muted); font-size: 0.9rem;
+            margin: 0.75rem 0;
+        }
+        .rec-trim-nums { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 0.15rem; }
+        .rec-trim-opts input[type="number"] {
+            width: 5rem; padding: 0.15rem 0.35rem;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+            color: var(--color-text); background: var(--color-card-bg);
+            border: 1px solid var(--color-border); border-radius: 4px;
+        }
+        .rec-trim-nums.disabled { opacity: 0.5; }
     </style>
 </head>
 <body>
@@ -81,10 +94,20 @@
                         <button type="button" id="rec-stop" class="btn" disabled>Stop &amp; Download</button>
                     </div>
 
-                    <label class="rec-hint" style="display:block; margin:0.75rem 0;">
-                        <input type="checkbox" id="rec-trim" checked>
-                        Trim silence from the start and end
-                    </label>
+                    <div class="rec-trim-opts">
+                        <label><input type="checkbox" id="rec-trim-start" checked> Trim silence from the start</label>
+                        <label><input type="checkbox" id="rec-trim-end" checked> Trim silence from the end</label>
+                        <div class="rec-trim-nums">
+                            <label>
+                                Silence below
+                                <input type="number" id="rec-threshold" value="-70" min="-90" max="-20" step="1"> dBFS
+                            </label>
+                            <label>
+                                Keep
+                                <input type="number" id="rec-pad" value="0.25" min="0" max="5" step="0.05"> s either side
+                            </label>
+                        </div>
+                    </div>
 
                     <p class="rec-hint">
                         In the browser's share dialog, choose <strong>Chrome Tab</strong> and check
@@ -94,7 +117,7 @@
                 </div>
 
                 <p class="rec-hint" style="text-align:center; margin-top:1rem;">
-                    build v7 · 2026-08-02
+                    build v8 · 2026-08-02
                 </p>
             </div>
         </main>

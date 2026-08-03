@@ -13,8 +13,21 @@
   var tabStream = null;    // active getDisplayMedia stream
   var tabSource = null;    // MediaStreamSource for the tab
 
+  // Fallbacks if an input is blank or non-numeric. The UI owns the live values.
   var TRIM_THRESHOLD_DB = -70; // samples below this on both channels count as silence
   var TRIM_PAD_SECS = 0.25;    // kept either side of the detected bounds, so tails survive the cut
+
+  // Read a number input, falling back to `fallback` when blank/NaN, clamped to
+  // the input's own min/max so a typed-in wild value can't produce a bad trim.
+  function numFrom(el, fallback) {
+    var v = parseFloat(el.value);
+    if (!isFinite(v)) return fallback;
+    var min = parseFloat(el.min);
+    var max = parseFloat(el.max);
+    if (isFinite(min) && v < min) v = min;
+    if (isFinite(max) && v > max) v = max;
+    return v;
+  }
 
   var recording = false;
   var chunksL = [];        // Float32Array frames, left channel
@@ -26,7 +39,10 @@
     capture: document.getElementById('rec-capture'),
     record: document.getElementById('rec-record'),
     stop: document.getElementById('rec-stop'),
-    trim: document.getElementById('rec-trim'),
+    trimStart: document.getElementById('rec-trim-start'),
+    trimEnd: document.getElementById('rec-trim-end'),
+    threshold: document.getElementById('rec-threshold'),
+    pad: document.getElementById('rec-pad'),
     dot: document.getElementById('rec-dot'),
     time: document.getElementById('rec-time'),
     source: document.getElementById('rec-source')
@@ -155,8 +171,16 @@
 
     var rawSecs = left.length / context.sampleRate;
     var channels = [left, right];
-    if (els.trim.checked) {
-      var b = silenceBounds(channels, TRIM_THRESHOLD_DB, context.sampleRate, TRIM_PAD_SECS);
+    var trimming = els.trimStart.checked || els.trimEnd.checked;
+    if (trimming) {
+      var b = silenceBounds(
+        channels,
+        numFrom(els.threshold, TRIM_THRESHOLD_DB),
+        context.sampleRate,
+        numFrom(els.pad, TRIM_PAD_SECS),
+        els.trimStart.checked,
+        els.trimEnd.checked
+      );
       if (b.end > b.start) {
         channels = [left.slice(b.start, b.end), right.slice(b.start, b.end)];
       }
@@ -165,7 +189,7 @@
 
     var secs = channels[0].length / context.sampleRate;
     // Filename carries both lengths: raw duration, then trimmed. e.g. ...-43.1s-raw-21.8s.wav
-    var lengths = els.trim.checked
+    var lengths = trimming
       ? secs.toFixed(1) + 's-raw-' + rawSecs.toFixed(1) + 's'
       : rawSecs.toFixed(1) + 's';
     var wav = encodeWavFloat32(channels, context.sampleRate);
@@ -188,31 +212,35 @@
   // Ported from SoundBench trim.ts detectSilence. end is exclusive.
   // padSecs is kept either side of the detected bounds: cutting at the exact
   // first/last sample above threshold clips decaying tails and leaves a click.
-  function silenceBounds(channelData, thresholdDb, sampleRate, padSecs) {
+  // doStart/doEnd select which edges get trimmed; an unselected edge stays put.
+  function silenceBounds(channelData, thresholdDb, sampleRate, padSecs, doStart, doEnd) {
     var threshold = Math.pow(10, thresholdDb / 20);
     var nc = channelData.length;
     var total = channelData[0].length;
 
-    var start = total;
+    var first = total;
     for (var i = 0; i < total; i++) {
       for (var ch = 0; ch < nc; ch++) {
-        if (Math.abs(channelData[ch][i]) > threshold) { start = i; break; }
+        if (Math.abs(channelData[ch][i]) > threshold) { first = i; break; }
       }
-      if (start !== total) break;
+      if (first !== total) break;
     }
-    if (start === total) return { start: 0, end: 0 }; // all silent
+    if (first === total) return { start: 0, end: 0 }; // all silent
 
-    var end = start;
-    for (var j = total - 1; j >= start; j--) {
+    var last = first;
+    for (var j = total - 1; j >= first; j--) {
       var above = false;
       for (var c = 0; c < nc; c++) {
         if (Math.abs(channelData[c][j]) > threshold) { above = true; break; }
       }
-      if (above) { end = j + 1; break; }
+      if (above) { last = j + 1; break; }
     }
 
     var pad = Math.round((padSecs || 0) * sampleRate);
-    return { start: Math.max(0, start - pad), end: Math.min(total, end + pad) };
+    return {
+      start: doStart ? Math.max(0, first - pad) : 0,
+      end: doEnd ? Math.min(total, last + pad) : total
+    };
   }
 
   // --- WAV encoder (32-bit float, ported from SoundBench wav-encoder.ts) ------
@@ -304,4 +332,15 @@
   els.capture.addEventListener('click', captureTab);
   els.record.addEventListener('click', startRecording);
   els.stop.addEventListener('click', finishRecording);
+
+  // Threshold/pad only matter when at least one edge is being trimmed.
+  function syncTrimOpts() {
+    var on = els.trimStart.checked || els.trimEnd.checked;
+    els.threshold.disabled = !on;
+    els.pad.disabled = !on;
+    els.threshold.closest('.rec-trim-nums').classList.toggle('disabled', !on);
+  }
+  els.trimStart.addEventListener('change', syncTrimOpts);
+  els.trimEnd.addEventListener('change', syncTrimOpts);
+  syncTrimOpts();
 })();
